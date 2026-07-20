@@ -1,0 +1,36 @@
+/* InsureCheck-only leftovers from its original globals.css. The shared
+   navy/teal token block now lives in src/styles/legacy-brand.css (scoped to
+   .v-insure/.v-drive). The @tailwind directives from the original file are
+   dropped — auditing the source app found no Tailwind utility classes
+   actually used (everything is inline `style={{}}`), so they compiled to
+   nothing. The external Clash Display Fontshare @import is dropped too, in
+   favour of coah's no-third-party-font-CDN policy — it only backed
+   `--font-coah`, which already falls back to system-ui. */
+
+@keyframes fadeSlideUp {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Print summary: hidden on screen, shown alone when printing / saving as PDF. */
+.print-summary {
+  display: none;
+}
+
+@media print {
+  body * {
+    visibility: hidden;
+  }
+  .print-summary,
+  .print-summary * {
+    visibility: visible;
+  }
+  .print-summary {
+    display: block !important;
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    padding: 24px;
+  }
+}

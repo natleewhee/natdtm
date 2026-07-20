@@ -1,0 +1,5873 @@
+{
+  "_meta": {
+    "note": "COE bidding history, Cat A and Cat B premiums. LTA DataMall's COEResult endpoint only ever returns the current + previous bidding exercise — there is no historical range endpoint — so this file has no way to be backfilled with past data. It accumulates going forward, one entry per bidding exercise, via scripts/refresh-coe-history.mjs run on a schedule (see .github/workflows/refresh-data.yml). Backfilled from a user-provided LTA export (2010-01 to 2026-07) on 2026-07-19; continues to build forward via the scheduled refresh script from there.",
+    "updated": "2026-07-19"
+  },
+  "history": [
+    {
+      "month": "2010-01",
+      "biddingNo": 1,
+      "catA": {
+        "premium": 18502,
+        "quota": 1152,
+        "bids": 1145
+      },
+      "catB": {
+        "premium": 19190,
+        "quota": 687,
+        "bids": 679
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2010-01",
+      "biddingNo": 2,
+      "catA": {
+        "premium": 20501,
+        "quota": 1151,
+        "bids": 1149
+      },
+      "catB": {
+        "premium": 22400,
+        "quota": 717,
+        "bids": 717
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2010-02",
+      "biddingNo": 1,
+      "catA": {
+        "premium": 19989,
+        "quota": 1154,
+        "bids": 1153
+      },
+      "catB": {
+        "premium": 23180,
+        "quota": 693,
+        "bids": 690
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2010-02",
+      "biddingNo": 2,
+      "catA": {
+        "premium": 20340,
+        "quota": 1148,
+        "bids": 1148
+      },
+      "catB": {
+        "premium": 23889,
+        "quota": 685,
+        "bids": 658
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2010-03",
+      "biddingNo": 1,
+      "catA": {
+        "premium": 20802,
+        "quota": 1148,
+        "bids": 1141
+      },
+      "catB": {
+        "premium": 26389,
+        "quota": 688,
+        "bids": 667
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2010-03",
+      "biddingNo": 2,
+      "catA": {
+        "premium": 28389,
+        "quota": 1146,
+        "bids": 1137
+      },
+      "catB": {
+        "premium": 36089,
+        "quota": 711,
+        "bids": 699
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2010-04",
+      "biddingNo": 1,
+      "catA": {
+        "premium": 34001,
+        "quota": 705,
+        "bids": 597
+      },
+      "catB": {
+        "premium": 45501,
+        "quota": 571,
+        "bids": 571
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2010-04",
+      "biddingNo": 2,
+      "catA": {
+        "premium": 30000,
+        "quota": 706,
+        "bids": 704
+      },
+      "catB": {
+        "premium": 40001,
+        "quota": 561,
+        "bids": 549
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2010-05",
+      "biddingNo": 1,
+      "catA": {
+        "premium": 26102,
+        "quota": 806,
+        "bids": 798
+      },
+      "catB": {
+        "premium": 38000,
+        "quota": 550,
+        "bids": 547
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2010-05",
+      "biddingNo": 2,
+      "catA": {
+        "premium": 27389,
+        "quota": 699,
+        "bids": 697
+      },
+      "catB": {
+        "premium": 34600,
+        "quota": 561,
+        "bids": 553
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2010-06",
+      "biddingNo": 1,
+      "catA": {
+        "premium": 30051,
+        "quota": 706,
+        "bids": 704
+      },
+      "catB": {
+        "premium": 40002,
+        "quota": 553,
+        "bids": 546
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2010-06",
+      "biddingNo": 2,
+      "catA": {
+        "premium": 31510,
+        "quota": 699,
+        "bids": 697
+      },
+      "catB": {
+        "premium": 39911,
+        "quota": 557,
+        "bids": 554
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2010-07",
+      "biddingNo": 1,
+      "catA": {
+        "premium": 29501,
+        "quota": 700,
+        "bids": 676
+      },
+      "catB": {
+        "premium": 35909,
+        "quota": 557,
+        "bids": 557
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2010-07",
+      "biddingNo": 2,
+      "catA": {
+        "premium": 36162,
+        "quota": 699,
+        "bids": 691
+      },
+      "catB": {
+        "premium": 42889,
+        "quota": 552,
+        "bids": 548
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2010-08",
+      "biddingNo": 1,
+      "catA": {
+        "premium": 32104,
+        "quota": 622,
+        "bids": 589
+      },
+      "catB": {
+        "premium": 43334,
+        "quota": 479,
+        "bids": 479
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2010-08",
+      "biddingNo": 2,
+      "catA": {
+        "premium": 29000,
+        "quota": 606,
+        "bids": 606
+      },
+      "catB": {
+        "premium": 42810,
+        "quota": 482,
+        "bids": 472
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2010-09",
+      "biddingNo": 1,
+      "catA": {
+        "premium": 33089,
+        "quota": 631,
+        "bids": 628
+      },
+      "catB": {
+        "premium": 44129,
+        "quota": 479,
+        "bids": 479
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2010-09",
+      "biddingNo": 2,
+      "catA": {
+        "premium": 30001,
+        "quota": 597,
+        "bids": 547
+      },
+      "catB": {
+        "premium": 42501,
+        "quota": 488,
+        "bids": 488
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2010-10",
+      "biddingNo": 1,
+      "catA": {
+        "premium": 33132,
+        "quota": 601,
+        "bids": 601
+      },
+      "catB": {
+        "premium": 42801,
+        "quota": 479,
+        "bids": 476
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2010-10",
+      "biddingNo": 2,
+      "catA": {
+        "premium": 32415,
+        "quota": 647,
+        "bids": 647
+      },
+      "catB": {
+        "premium": 44600,
+        "quota": 479,
+        "bids": 478
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2010-11",
+      "biddingNo": 1,
+      "catA": {
+        "premium": 34001,
+        "quota": 598,
+        "bids": 598
+      },
+      "catB": {
+        "premium": 45501,
+        "quota": 482,
+        "bids": 482
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2010-11",
+      "biddingNo": 2,
+      "catA": {
+        "premium": 39000,
+        "quota": 597,
+        "bids": 577
+      },
+      "catB": {
+        "premium": 47890,
+        "quota": 480,
+        "bids": 459
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2010-12",
+      "biddingNo": 1,
+      "catA": {
+        "premium": 47604,
+        "quota": 598,
+        "bids": 582
+      },
+      "catB": {
+        "premium": 62502,
+        "quota": 479,
+        "bids": 477
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2010-12",
+      "biddingNo": 2,
+      "catA": {
+        "premium": 46129,
+        "quota": 617,
+        "bids": 607
+      },
+      "catB": {
+        "premium": 72001,
+        "quota": 499,
+        "bids": 494
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2011-01",
+      "biddingNo": 1,
+      "catA": {
+        "premium": 38889,
+        "quota": 614,
+        "bids": 602
+      },
+      "catB": {
+        "premium": 69000,
+        "quota": 481,
+        "bids": 474
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2011-01",
+      "biddingNo": 2,
+      "catA": {
+        "premium": 40123,
+        "quota": 607,
+        "bids": 606
+      },
+      "catB": {
+        "premium": 58910,
+        "quota": 483,
+        "bids": 482
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2011-02",
+      "biddingNo": 1,
+      "catA": {
+        "premium": 37124,
+        "quota": 523,
+        "bids": 501
+      },
+      "catB": {
+        "premium": 53400,
+        "quota": 431,
+        "bids": 431
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2011-02",
+      "biddingNo": 2,
+      "catA": {
+        "premium": 42999,
+        "quota": 511,
+        "bids": 494
+      },
+      "catB": {
+        "premium": 62000,
+        "quota": 424,
+        "bids": 423
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2011-03",
+      "biddingNo": 1,
+      "catA": {
+        "premium": 42600,
+        "quota": 532,
+        "bids": 530
+      },
+      "catB": {
+        "premium": 61894,
+        "quota": 424,
+        "bids": 423
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2011-03",
+      "biddingNo": 2,
+      "catA": {
+        "premium": 43813,
+        "quota": 527,
+        "bids": 472
+      },
+      "catB": {
+        "premium": 57002,
+        "quota": 424,
+        "bids": 424
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2011-04",
+      "biddingNo": 1,
+      "catA": {
+        "premium": 43212,
+        "quota": 512,
+        "bids": 511
+      },
+      "catB": {
+        "premium": 55001,
+        "quota": 425,
+        "bids": 410
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2011-04",
+      "biddingNo": 2,
+      "catA": {
+        "premium": 44000,
+        "quota": 565,
+        "bids": 552
+      },
+      "catB": {
+        "premium": 56801,
+        "quota": 423,
+        "bids": 422
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2011-05",
+      "biddingNo": 1,
+      "catA": {
+        "premium": 44790,
+        "quota": 511,
+        "bids": 511
+      },
+      "catB": {
+        "premium": 56011,
+        "quota": 439,
+        "bids": 439
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2011-05",
+      "biddingNo": 2,
+      "catA": {
+        "premium": 46989,
+        "quota": 523,
+        "bids": 521
+      },
+      "catB": {
+        "premium": 56300,
+        "quota": 424,
+        "bids": 424
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2011-06",
+      "biddingNo": 1,
+      "catA": {
+        "premium": 53390,
+        "quota": 510,
+        "bids": 506
+      },
+      "catB": {
+        "premium": 63000,
+        "quota": 424,
+        "bids": 403
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2011-06",
+      "biddingNo": 2,
+      "catA": {
+        "premium": 50244,
+        "quota": 512,
+        "bids": 512
+      },
+      "catB": {
+        "premium": 67700,
+        "quota": 423,
+        "bids": 410
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2011-07",
+      "biddingNo": 1,
+      "catA": {
+        "premium": 55989,
+        "quota": 514,
+        "bids": 497
+      },
+      "catB": {
+        "premium": 68501,
+        "quota": 445,
+        "bids": 444
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2011-07",
+      "biddingNo": 2,
+      "catA": {
+        "premium": 56002,
+        "quota": 510,
+        "bids": 501
+      },
+      "catB": {
+        "premium": 72501,
+        "quota": 436,
+        "bids": 436
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2011-08",
+      "biddingNo": 1,
+      "catA": {
+        "premium": 48801,
+        "quota": 566,
+        "bids": 566
+      },
+      "catB": {
+        "premium": 70890,
+        "quota": 354,
+        "bids": 349
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2011-08",
+      "biddingNo": 2,
+      "catA": {
+        "premium": 49301,
+        "quota": 557,
+        "bids": 557
+      },
+      "catB": {
+        "premium": 65521,
+        "quota": 353,
+        "bids": 353
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2011-09",
+      "biddingNo": 1,
+      "catA": {
+        "premium": 51000,
+        "quota": 548,
+        "bids": 547
+      },
+      "catB": {
+        "premium": 63002,
+        "quota": 359,
+        "bids": 356
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2011-09",
+      "biddingNo": 2,
+      "catA": {
+        "premium": 48006,
+        "quota": 548,
+        "bids": 531
+      },
+      "catB": {
+        "premium": 64889,
+        "quota": 353,
+        "bids": 353
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2011-10",
+      "biddingNo": 1,
+      "catA": {
+        "premium": 50289,
+        "quota": 549,
+        "bids": 549
+      },
+      "catB": {
+        "premium": 63600,
+        "quota": 356,
+        "bids": 353
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2011-10",
+      "biddingNo": 2,
+      "catA": {
+        "premium": 56112,
+        "quota": 565,
+        "bids": 554
+      },
+      "catB": {
+        "premium": 75889,
+        "quota": 353,
+        "bids": 353
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2011-11",
+      "biddingNo": 1,
+      "catA": {
+        "premium": 55997,
+        "quota": 548,
+        "bids": 547
+      },
+      "catB": {
+        "premium": 77000,
+        "quota": 356,
+        "bids": 355
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2011-11",
+      "biddingNo": 2,
+      "catA": {
+        "premium": 54887,
+        "quota": 559,
+        "bids": 541
+      },
+      "catB": {
+        "premium": 77340,
+        "quota": 353,
+        "bids": 338
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2011-12",
+      "biddingNo": 1,
+      "catA": {
+        "premium": 52392,
+        "quota": 549,
+        "bids": 543
+      },
+      "catB": {
+        "premium": 72350,
+        "quota": 354,
+        "bids": 351
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2011-12",
+      "biddingNo": 2,
+      "catA": {
+        "premium": 50001,
+        "quota": 566,
+        "bids": 457
+      },
+      "catB": {
+        "premium": 70003,
+        "quota": 368,
+        "bids": 368
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2012-01",
+      "biddingNo": 1,
+      "catA": {
+        "premium": 46889,
+        "quota": 554,
+        "bids": 554
+      },
+      "catB": {
+        "premium": 65801,
+        "quota": 356,
+        "bids": 356
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2012-01",
+      "biddingNo": 2,
+      "catA": {
+        "premium": 48112,
+        "quota": 657,
+        "bids": 652
+      },
+      "catB": {
+        "premium": 67889,
+        "quota": 353,
+        "bids": 351
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2012-02",
+      "biddingNo": 1,
+      "catA": {
+        "premium": 52809,
+        "quota": 619,
+        "bids": 571
+      },
+      "catB": {
+        "premium": 73890,
+        "quota": 350,
+        "bids": 346
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2012-02",
+      "biddingNo": 2,
+      "catA": {
+        "premium": 57009,
+        "quota": 624,
+        "bids": 607
+      },
+      "catB": {
+        "premium": 78189,
+        "quota": 351,
+        "bids": 348
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2012-03",
+      "biddingNo": 1,
+      "catA": {
+        "premium": 56551,
+        "quota": 667,
+        "bids": 649
+      },
+      "catB": {
+        "premium": 79304,
+        "quota": 354,
+        "bids": 352
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2012-03",
+      "biddingNo": 2,
+      "catA": {
+        "premium": 56501,
+        "quota": 636,
+        "bids": 626
+      },
+      "catB": {
+        "premium": 82003,
+        "quota": 352,
+        "bids": 352
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2012-04",
+      "biddingNo": 1,
+      "catA": {
+        "premium": 58501,
+        "quota": 637,
+        "bids": 615
+      },
+      "catB": {
+        "premium": 83700,
+        "quota": 352,
+        "bids": 348
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2012-04",
+      "biddingNo": 2,
+      "catA": {
+        "premium": 64201,
+        "quota": 629,
+        "bids": 618
+      },
+      "catB": {
+        "premium": 91000,
+        "quota": 349,
+        "bids": 349
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2012-05",
+      "biddingNo": 1,
+      "catA": {
+        "premium": 62600,
+        "quota": 641,
+        "bids": 593
+      },
+      "catB": {
+        "premium": 92050,
+        "quota": 354,
+        "bids": 354
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2012-05",
+      "biddingNo": 2,
+      "catA": {
+        "premium": 58001,
+        "quota": 630,
+        "bids": 617
+      },
+      "catB": {
+        "premium": 85216,
+        "quota": 349,
+        "bids": 349
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2012-06",
+      "biddingNo": 1,
+      "catA": {
+        "premium": 59003,
+        "quota": 668,
+        "bids": 647
+      },
+      "catB": {
+        "premium": 83000,
+        "quota": 350,
+        "bids": 342
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2012-06",
+      "biddingNo": 2,
+      "catA": {
+        "premium": 59004,
+        "quota": 633,
+        "bids": 577
+      },
+      "catB": {
+        "premium": 85400,
+        "quota": 349,
+        "bids": 346
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2012-07",
+      "biddingNo": 1,
+      "catA": {
+        "premium": 59421,
+        "quota": 641,
+        "bids": 613
+      },
+      "catB": {
+        "premium": 82289,
+        "quota": 358,
+        "bids": 358
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2012-07",
+      "biddingNo": 2,
+      "catA": {
+        "premium": 68656,
+        "quota": 676,
+        "bids": 669
+      },
+      "catB": {
+        "premium": 90501,
+        "quota": 353,
+        "bids": 352
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2012-08",
+      "biddingNo": 1,
+      "catA": {
+        "premium": 73501,
+        "quota": 421,
+        "bids": 415
+      },
+      "catB": {
+        "premium": 94502,
+        "quota": 350,
+        "bids": 345
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2012-08",
+      "biddingNo": 2,
+      "catA": {
+        "premium": 66889,
+        "quota": 400,
+        "bids": 391
+      },
+      "catB": {
+        "premium": 88002,
+        "quota": 351,
+        "bids": 351
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2012-09",
+      "biddingNo": 1,
+      "catA": {
+        "premium": 68000,
+        "quota": 399,
+        "bids": 391
+      },
+      "catB": {
+        "premium": 80191,
+        "quota": 355,
+        "bids": 355
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2012-09",
+      "biddingNo": 2,
+      "catA": {
+        "premium": 63000,
+        "quota": 402,
+        "bids": 402
+      },
+      "catB": {
+        "premium": 88500,
+        "quota": 351,
+        "bids": 349
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2012-10",
+      "biddingNo": 1,
+      "catA": {
+        "premium": 69000,
+        "quota": 401,
+        "bids": 399
+      },
+      "catB": {
+        "premium": 80001,
+        "quota": 350,
+        "bids": 350
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2012-10",
+      "biddingNo": 2,
+      "catA": {
+        "premium": 71001,
+        "quota": 393,
+        "bids": 390
+      },
+      "catB": {
+        "premium": 85801,
+        "quota": 353,
+        "bids": 353
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2012-11",
+      "biddingNo": 1,
+      "catA": {
+        "premium": 77201,
+        "quota": 395,
+        "bids": 393
+      },
+      "catB": {
+        "premium": 92400,
+        "quota": 350,
+        "bids": 350
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2012-11",
+      "biddingNo": 2,
+      "catA": {
+        "premium": 77291,
+        "quota": 396,
+        "bids": 393
+      },
+      "catB": {
+        "premium": 93004,
+        "quota": 351,
+        "bids": 342
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2012-12",
+      "biddingNo": 1,
+      "catA": {
+        "premium": 78523,
+        "quota": 395,
+        "bids": 378
+      },
+      "catB": {
+        "premium": 90200,
+        "quota": 350,
+        "bids": 337
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2012-12",
+      "biddingNo": 2,
+      "catA": {
+        "premium": 81889,
+        "quota": 395,
+        "bids": 378
+      },
+      "catB": {
+        "premium": 93501,
+        "quota": 360,
+        "bids": 360
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2013-01",
+      "biddingNo": 1,
+      "catA": {
+        "premium": 92100,
+        "quota": 410,
+        "bids": 409
+      },
+      "catB": {
+        "premium": 96210,
+        "quota": 363,
+        "bids": 363
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2013-01",
+      "biddingNo": 2,
+      "catA": {
+        "premium": 91010,
+        "quota": 409,
+        "bids": 409
+      },
+      "catB": {
+        "premium": 95501,
+        "quota": 351,
+        "bids": 351
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2013-02",
+      "biddingNo": 1,
+      "catA": {
+        "premium": 87109,
+        "quota": 335,
+        "bids": 333
+      },
+      "catB": {
+        "premium": 92901,
+        "quota": 302,
+        "bids": 278
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2013-02",
+      "biddingNo": 2,
+      "catA": {
+        "premium": 78301,
+        "quota": 333,
+        "bids": 329
+      },
+      "catB": {
+        "premium": 92667,
+        "quota": 303,
+        "bids": 299
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2013-03",
+      "biddingNo": 1,
+      "catA": {
+        "premium": 74689,
+        "quota": 336,
+        "bids": 329
+      },
+      "catB": {
+        "premium": 58090,
+        "quota": 326,
+        "bids": 326
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2013-03",
+      "biddingNo": 2,
+      "catA": {
+        "premium": 64209,
+        "quota": 337,
+        "bids": 337
+      },
+      "catB": {
+        "premium": 73900,
+        "quota": 307,
+        "bids": 300
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2013-04",
+      "biddingNo": 1,
+      "catA": {
+        "premium": 61029,
+        "quota": 341,
+        "bids": 339
+      },
+      "catB": {
+        "premium": 67010,
+        "quota": 302,
+        "bids": 287
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2013-04",
+      "biddingNo": 2,
+      "catA": {
+        "premium": 62497,
+        "quota": 333,
+        "bids": 333
+      },
+      "catB": {
+        "premium": 62000,
+        "quota": 310,
+        "bids": 281
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2013-05",
+      "biddingNo": 1,
+      "catA": {
+        "premium": 62999,
+        "quota": 336,
+        "bids": 329
+      },
+      "catB": {
+        "premium": 61700,
+        "quota": 317,
+        "bids": 317
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2013-05",
+      "biddingNo": 2,
+      "catA": {
+        "premium": 64839,
+        "quota": 333,
+        "bids": 324
+      },
+      "catB": {
+        "premium": 67304,
+        "quota": 332,
+        "bids": 329
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2013-06",
+      "biddingNo": 1,
+      "catA": {
+        "premium": 67301,
+        "quota": 341,
+        "bids": 336
+      },
+      "catB": {
+        "premium": 75000,
+        "quota": 302,
+        "bids": 274
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2013-06",
+      "biddingNo": 2,
+      "catA": {
+        "premium": 69903,
+        "quota": 342,
+        "bids": 341
+      },
+      "catB": {
+        "premium": 81751,
+        "quota": 305,
+        "bids": 304
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2013-07",
+      "biddingNo": 1,
+      "catA": {
+        "premium": 73100,
+        "quota": 338,
+        "bids": 328
+      },
+      "catB": {
+        "premium": 77110,
+        "quota": 331,
+        "bids": 325
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2013-07",
+      "biddingNo": 2,
+      "catA": {
+        "premium": 73989,
+        "quota": 334,
+        "bids": 332
+      },
+      "catB": {
+        "premium": 76389,
+        "quota": 303,
+        "bids": 301
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2013-08",
+      "biddingNo": 1,
+      "catA": {
+        "premium": 75556,
+        "quota": 373,
+        "bids": 371
+      },
+      "catB": {
+        "premium": 77600,
+        "quota": 380,
+        "bids": 373
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2013-08",
+      "biddingNo": 2,
+      "catA": {
+        "premium": 76223,
+        "quota": 366,
+        "bids": 360
+      },
+      "catB": {
+        "premium": 76607,
+        "quota": 375,
+        "bids": 371
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2013-09",
+      "biddingNo": 1,
+      "catA": {
+        "premium": 77304,
+        "quota": 366,
+        "bids": 365
+      },
+      "catB": {
+        "premium": 77100,
+        "quota": 381,
+        "bids": 378
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2013-09",
+      "biddingNo": 2,
+      "catA": {
+        "premium": 83751,
+        "quota": 370,
+        "bids": 361
+      },
+      "catB": {
+        "premium": 86239,
+        "quota": 377,
+        "bids": 368
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2013-10",
+      "biddingNo": 1,
+      "catA": {
+        "premium": 85000,
+        "quota": 365,
+        "bids": 361
+      },
+      "catB": {
+        "premium": 93500,
+        "quota": 376,
+        "bids": 373
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2013-10",
+      "biddingNo": 2,
+      "catA": {
+        "premium": 76889,
+        "quota": 373,
+        "bids": 373
+      },
+      "catB": {
+        "premium": 87910,
+        "quota": 382,
+        "bids": 376
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2013-11",
+      "biddingNo": 1,
+      "catA": {
+        "premium": 72609,
+        "quota": 368,
+        "bids": 368
+      },
+      "catB": {
+        "premium": 84578,
+        "quota": 376,
+        "bids": 376
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2013-11",
+      "biddingNo": 2,
+      "catA": {
+        "premium": 74991,
+        "quota": 364,
+        "bids": 361
+      },
+      "catB": {
+        "premium": 79300,
+        "quota": 379,
+        "bids": 375
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2013-12",
+      "biddingNo": 1,
+      "catA": {
+        "premium": 73160,
+        "quota": 364,
+        "bids": 364
+      },
+      "catB": {
+        "premium": 73010,
+        "quota": 373,
+        "bids": 360
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2013-12",
+      "biddingNo": 2,
+      "catA": {
+        "premium": 74002,
+        "quota": 367,
+        "bids": 363
+      },
+      "catB": {
+        "premium": 75700,
+        "quota": 377,
+        "bids": 357
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2014-01",
+      "biddingNo": 1,
+      "catA": {
+        "premium": 72369,
+        "quota": 364,
+        "bids": 361
+      },
+      "catB": {
+        "premium": 78700,
+        "quota": 386,
+        "bids": 377
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2014-01",
+      "biddingNo": 2,
+      "catA": {
+        "premium": 72290,
+        "quota": 368,
+        "bids": 364
+      },
+      "catB": {
+        "premium": 79000,
+        "quota": 393,
+        "bids": 388
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2014-02",
+      "biddingNo": 1,
+      "catA": {
+        "premium": 71564,
+        "quota": 362,
+        "bids": 356
+      },
+      "catB": {
+        "premium": 75300,
+        "quota": 360,
+        "bids": 360
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2014-02",
+      "biddingNo": 2,
+      "catA": {
+        "premium": 77201,
+        "quota": 362,
+        "bids": 358
+      },
+      "catB": {
+        "premium": 78604,
+        "quota": 355,
+        "bids": 353
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2014-03",
+      "biddingNo": 1,
+      "catA": {
+        "premium": 76999,
+        "quota": 365,
+        "bids": 356
+      },
+      "catB": {
+        "premium": 80710,
+        "quota": 350,
+        "bids": 337
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2014-03",
+      "biddingNo": 2,
+      "catA": {
+        "premium": 78602,
+        "quota": 362,
+        "bids": 360
+      },
+      "catB": {
+        "premium": 82900,
+        "quota": 353,
+        "bids": 352
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2014-04",
+      "biddingNo": 1,
+      "catA": {
+        "premium": 77400,
+        "quota": 367,
+        "bids": 360
+      },
+      "catB": {
+        "premium": 84504,
+        "quota": 363,
+        "bids": 363
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2014-04",
+      "biddingNo": 2,
+      "catA": {
+        "premium": 71335,
+        "quota": 361,
+        "bids": 357
+      },
+      "catB": {
+        "premium": 75010,
+        "quota": 351,
+        "bids": 349
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2014-05",
+      "biddingNo": 1,
+      "catA": {
+        "premium": 60002,
+        "quota": 513,
+        "bids": 512
+      },
+      "catB": {
+        "premium": 70002,
+        "quota": 483,
+        "bids": 472
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2014-05",
+      "biddingNo": 2,
+      "catA": {
+        "premium": 65689,
+        "quota": 509,
+        "bids": 506
+      },
+      "catB": {
+        "premium": 68103,
+        "quota": 484,
+        "bids": 477
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2014-06",
+      "biddingNo": 1,
+      "catA": {
+        "premium": 63190,
+        "quota": 507,
+        "bids": 499
+      },
+      "catB": {
+        "premium": 67304,
+        "quota": 494,
+        "bids": 484
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2014-06",
+      "biddingNo": 2,
+      "catA": {
+        "premium": 61899,
+        "quota": 509,
+        "bids": 506
+      },
+      "catB": {
+        "premium": 65700,
+        "quota": 490,
+        "bids": 475
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2014-07",
+      "biddingNo": 1,
+      "catA": {
+        "premium": 61990,
+        "quota": 513,
+        "bids": 511
+      },
+      "catB": {
+        "premium": 64889,
+        "quota": 493,
+        "bids": 491
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2014-07",
+      "biddingNo": 2,
+      "catA": {
+        "premium": 62890,
+        "quota": 509,
+        "bids": 505
+      },
+      "catB": {
+        "premium": 65001,
+        "quota": 498,
+        "bids": 497
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2014-08",
+      "biddingNo": 1,
+      "catA": {
+        "premium": 64600,
+        "quota": 574,
+        "bids": 574
+      },
+      "catB": {
+        "premium": 68689,
+        "quota": 507,
+        "bids": 501
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2014-08",
+      "biddingNo": 2,
+      "catA": {
+        "premium": 65710,
+        "quota": 575,
+        "bids": 574
+      },
+      "catB": {
+        "premium": 72990,
+        "quota": 506,
+        "bids": 502
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2014-09",
+      "biddingNo": 1,
+      "catA": {
+        "premium": 64841,
+        "quota": 572,
+        "bids": 568
+      },
+      "catB": {
+        "premium": 73010,
+        "quota": 511,
+        "bids": 511
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2014-09",
+      "biddingNo": 2,
+      "catA": {
+        "premium": 62000,
+        "quota": 573,
+        "bids": 573
+      },
+      "catB": {
+        "premium": 71990,
+        "quota": 509,
+        "bids": 507
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2014-10",
+      "biddingNo": 1,
+      "catA": {
+        "premium": 63880,
+        "quota": 575,
+        "bids": 570
+      },
+      "catB": {
+        "premium": 72180,
+        "quota": 505,
+        "bids": 501
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2014-10",
+      "biddingNo": 2,
+      "catA": {
+        "premium": 63990,
+        "quota": 572,
+        "bids": 569
+      },
+      "catB": {
+        "premium": 72002,
+        "quota": 507,
+        "bids": 506
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2014-11",
+      "biddingNo": 1,
+      "catA": {
+        "premium": 64900,
+        "quota": 703,
+        "bids": 692
+      },
+      "catB": {
+        "premium": 70890,
+        "quota": 574,
+        "bids": 559
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2014-11",
+      "biddingNo": 2,
+      "catA": {
+        "premium": 67889,
+        "quota": 701,
+        "bids": 694
+      },
+      "catB": {
+        "premium": 72890,
+        "quota": 570,
+        "bids": 560
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2014-12",
+      "biddingNo": 1,
+      "catA": {
+        "premium": 67089,
+        "quota": 709,
+        "bids": 703
+      },
+      "catB": {
+        "premium": 74389,
+        "quota": 584,
+        "bids": 582
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2014-12",
+      "biddingNo": 2,
+      "catA": {
+        "premium": 65889,
+        "quota": 705,
+        "bids": 699
+      },
+      "catB": {
+        "premium": 74000,
+        "quota": 579,
+        "bids": 572
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2015-01",
+      "biddingNo": 1,
+      "catA": {
+        "premium": 66010,
+        "quota": 704,
+        "bids": 698
+      },
+      "catB": {
+        "premium": 75289,
+        "quota": 571,
+        "bids": 570
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2015-01",
+      "biddingNo": 2,
+      "catA": {
+        "premium": 65001,
+        "quota": 705,
+        "bids": 703
+      },
+      "catB": {
+        "premium": 76889,
+        "quota": 576,
+        "bids": 576
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2015-02",
+      "biddingNo": 1,
+      "catA": {
+        "premium": 62002,
+        "quota": 992,
+        "bids": 991
+      },
+      "catB": {
+        "premium": 70890,
+        "quota": 724,
+        "bids": 723
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2015-02",
+      "biddingNo": 2,
+      "catA": {
+        "premium": 57199,
+        "quota": 988,
+        "bids": 988
+      },
+      "catB": {
+        "premium": 66751,
+        "quota": 722,
+        "bids": 721
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2015-03",
+      "biddingNo": 1,
+      "catA": {
+        "premium": 61410,
+        "quota": 987,
+        "bids": 986
+      },
+      "catB": {
+        "premium": 68668,
+        "quota": 723,
+        "bids": 723
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2015-03",
+      "biddingNo": 2,
+      "catA": {
+        "premium": 64700,
+        "quota": 987,
+        "bids": 987
+      },
+      "catB": {
+        "premium": 71889,
+        "quota": 723,
+        "bids": 717
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2015-04",
+      "biddingNo": 1,
+      "catA": {
+        "premium": 67749,
+        "quota": 988,
+        "bids": 970
+      },
+      "catB": {
+        "premium": 76612,
+        "quota": 722,
+        "bids": 716
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2015-04",
+      "biddingNo": 2,
+      "catA": {
+        "premium": 67601,
+        "quota": 987,
+        "bids": 979
+      },
+      "catB": {
+        "premium": 78001,
+        "quota": 728,
+        "bids": 708
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2015-05",
+      "biddingNo": 1,
+      "catA": {
+        "premium": 68589,
+        "quota": 1444,
+        "bids": 1438
+      },
+      "catB": {
+        "premium": 77600,
+        "quota": 934,
+        "bids": 934
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2015-05",
+      "biddingNo": 2,
+      "catA": {
+        "premium": 66590,
+        "quota": 1434,
+        "bids": 1431
+      },
+      "catB": {
+        "premium": 75002,
+        "quota": 948,
+        "bids": 948
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2015-06",
+      "biddingNo": 1,
+      "catA": {
+        "premium": 66000,
+        "quota": 1432,
+        "bids": 1393
+      },
+      "catB": {
+        "premium": 75000,
+        "quota": 929,
+        "bids": 923
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2015-06",
+      "biddingNo": 2,
+      "catA": {
+        "premium": 61000,
+        "quota": 1429,
+        "bids": 1421
+      },
+      "catB": {
+        "premium": 71509,
+        "quota": 928,
+        "bids": 926
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2015-07",
+      "biddingNo": 1,
+      "catA": {
+        "premium": 58700,
+        "quota": 1466,
+        "bids": 1464
+      },
+      "catB": {
+        "premium": 65501,
+        "quota": 934,
+        "bids": 933
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2015-07",
+      "biddingNo": 2,
+      "catA": {
+        "premium": 55889,
+        "quota": 1435,
+        "bids": 1365
+      },
+      "catB": {
+        "premium": 58109,
+        "quota": 930,
+        "bids": 929
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2015-08",
+      "biddingNo": 1,
+      "catA": {
+        "premium": 56209,
+        "quota": 1688,
+        "bids": 1687
+      },
+      "catB": {
+        "premium": 60789,
+        "quota": 1057,
+        "bids": 1054
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2015-08",
+      "biddingNo": 2,
+      "catA": {
+        "premium": 57498,
+        "quota": 1756,
+        "bids": 1756
+      },
+      "catB": {
+        "premium": 62140,
+        "quota": 1058,
+        "bids": 1056
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2015-09",
+      "biddingNo": 1,
+      "catA": {
+        "premium": 57089,
+        "quota": 1688,
+        "bids": 1688
+      },
+      "catB": {
+        "premium": 62101,
+        "quota": 1059,
+        "bids": 1058
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2015-09",
+      "biddingNo": 2,
+      "catA": {
+        "premium": 55399,
+        "quota": 1687,
+        "bids": 1684
+      },
+      "catB": {
+        "premium": 60001,
+        "quota": 1058,
+        "bids": 1041
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2015-10",
+      "biddingNo": 1,
+      "catA": {
+        "premium": 56001,
+        "quota": 1687,
+        "bids": 1679
+      },
+      "catB": {
+        "premium": 58190,
+        "quota": 1057,
+        "bids": 1044
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2015-10",
+      "biddingNo": 2,
+      "catA": {
+        "premium": 57301,
+        "quota": 1690,
+        "bids": 1684
+      },
+      "catB": {
+        "premium": 59889,
+        "quota": 1073,
+        "bids": 1069
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2015-11",
+      "biddingNo": 1,
+      "catA": {
+        "premium": 56001,
+        "quota": 1664,
+        "bids": 1623
+      },
+      "catB": {
+        "premium": 57501,
+        "quota": 1037,
+        "bids": 1031
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2015-11",
+      "biddingNo": 2,
+      "catA": {
+        "premium": 59200,
+        "quota": 1662,
+        "bids": 1650
+      },
+      "catB": {
+        "premium": 61103,
+        "quota": 1029,
+        "bids": 1026
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2015-12",
+      "biddingNo": 1,
+      "catA": {
+        "premium": 56989,
+        "quota": 1698,
+        "bids": 1696
+      },
+      "catB": {
+        "premium": 60001,
+        "quota": 1031,
+        "bids": 1028
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2015-12",
+      "biddingNo": 2,
+      "catA": {
+        "premium": 54301,
+        "quota": 1669,
+        "bids": 1667
+      },
+      "catB": {
+        "premium": 55001,
+        "quota": 1027,
+        "bids": 1025
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2016-01",
+      "biddingNo": 1,
+      "catA": {
+        "premium": 45002,
+        "quota": 1659,
+        "bids": 1649
+      },
+      "catB": {
+        "premium": 54920,
+        "quota": 1027,
+        "bids": 1019
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2016-01",
+      "biddingNo": 2,
+      "catA": {
+        "premium": 51301,
+        "quota": 1659,
+        "bids": 1638
+      },
+      "catB": {
+        "premium": 50089,
+        "quota": 1026,
+        "bids": 1026
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2016-02",
+      "biddingNo": 1,
+      "catA": {
+        "premium": 46651,
+        "quota": 2038,
+        "bids": 2033
+      },
+      "catB": {
+        "premium": 38610,
+        "quota": 1216,
+        "bids": 1216
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2016-02",
+      "biddingNo": 2,
+      "catA": {
+        "premium": 43000,
+        "quota": 2049,
+        "bids": 2025
+      },
+      "catB": {
+        "premium": 46970,
+        "quota": 1208,
+        "bids": 1197
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2016-03",
+      "biddingNo": 1,
+      "catA": {
+        "premium": 45000,
+        "quota": 2033,
+        "bids": 1957
+      },
+      "catB": {
+        "premium": 47604,
+        "quota": 1209,
+        "bids": 1200
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2016-03",
+      "biddingNo": 2,
+      "catA": {
+        "premium": 45504,
+        "quota": 2053,
+        "bids": 2020
+      },
+      "catB": {
+        "premium": 46502,
+        "quota": 1220,
+        "bids": 1218
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2016-04",
+      "biddingNo": 1,
+      "catA": {
+        "premium": 46009,
+        "quota": 2105,
+        "bids": 2103
+      },
+      "catB": {
+        "premium": 47000,
+        "quota": 1218,
+        "bids": 1218
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2016-04",
+      "biddingNo": 2,
+      "catA": {
+        "premium": 47300,
+        "quota": 2062,
+        "bids": 2061
+      },
+      "catB": {
+        "premium": 49602,
+        "quota": 1211,
+        "bids": 1136
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2016-05",
+      "biddingNo": 1,
+      "catA": {
+        "premium": 47889,
+        "quota": 2218,
+        "bids": 2217
+      },
+      "catB": {
+        "premium": 51010,
+        "quota": 1462,
+        "bids": 1454
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2016-05",
+      "biddingNo": 2,
+      "catA": {
+        "premium": 47020,
+        "quota": 2217,
+        "bids": 2182
+      },
+      "catB": {
+        "premium": 49156,
+        "quota": 1537,
+        "bids": 1536
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2016-06",
+      "biddingNo": 1,
+      "catA": {
+        "premium": 53694,
+        "quota": 2218,
+        "bids": 2213
+      },
+      "catB": {
+        "premium": 56000,
+        "quota": 1470,
+        "bids": 1463
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2016-06",
+      "biddingNo": 2,
+      "catA": {
+        "premium": 55200,
+        "quota": 2252,
+        "bids": 2197
+      },
+      "catB": {
+        "premium": 57010,
+        "quota": 1463,
+        "bids": 1462
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2016-07",
+      "biddingNo": 1,
+      "catA": {
+        "premium": 52301,
+        "quota": 2222,
+        "bids": 2212
+      },
+      "catB": {
+        "premium": 56089,
+        "quota": 1469,
+        "bids": 1469
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2016-07",
+      "biddingNo": 2,
+      "catA": {
+        "premium": 53000,
+        "quota": 2272,
+        "bids": 2246
+      },
+      "catB": {
+        "premium": 57508,
+        "quota": 1463,
+        "bids": 1463
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2016-08",
+      "biddingNo": 1,
+      "catA": {
+        "premium": 52503,
+        "quota": 2018,
+        "bids": 1959
+      },
+      "catB": {
+        "premium": 57903,
+        "quota": 1336,
+        "bids": 1300
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2016-08",
+      "biddingNo": 2,
+      "catA": {
+        "premium": 53334,
+        "quota": 2034,
+        "bids": 2034
+      },
+      "catB": {
+        "premium": 56500,
+        "quota": 1336,
+        "bids": 1334
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2016-09",
+      "biddingNo": 1,
+      "catA": {
+        "premium": 51506,
+        "quota": 2067,
+        "bids": 2011
+      },
+      "catB": {
+        "premium": 57002,
+        "quota": 1372,
+        "bids": 1358
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2016-09",
+      "biddingNo": 2,
+      "catA": {
+        "premium": 50000,
+        "quota": 2008,
+        "bids": 1993
+      },
+      "catB": {
+        "premium": 55501,
+        "quota": 1338,
+        "bids": 1334
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2016-10",
+      "biddingNo": 1,
+      "catA": {
+        "premium": 51507,
+        "quota": 2064,
+        "bids": 1979
+      },
+      "catB": {
+        "premium": 53001,
+        "quota": 1350,
+        "bids": 1246
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2016-10",
+      "biddingNo": 2,
+      "catA": {
+        "premium": 50991,
+        "quota": 2023,
+        "bids": 2021
+      },
+      "catB": {
+        "premium": 56410,
+        "quota": 1340,
+        "bids": 1329
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2016-11",
+      "biddingNo": 1,
+      "catA": {
+        "premium": 52668,
+        "quota": 1929,
+        "bids": 1929
+      },
+      "catB": {
+        "premium": 56206,
+        "quota": 1347,
+        "bids": 1345
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2016-11",
+      "biddingNo": 2,
+      "catA": {
+        "premium": 50951,
+        "quota": 1846,
+        "bids": 1846
+      },
+      "catB": {
+        "premium": 53001,
+        "quota": 1254,
+        "bids": 1253
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2016-12",
+      "biddingNo": 1,
+      "catA": {
+        "premium": 48000,
+        "quota": 1844,
+        "bids": 1812
+      },
+      "catB": {
+        "premium": 46229,
+        "quota": 1245,
+        "bids": 1237
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2016-12",
+      "biddingNo": 2,
+      "catA": {
+        "premium": 49751,
+        "quota": 1844,
+        "bids": 1843
+      },
+      "catB": {
+        "premium": 51109,
+        "quota": 1244,
+        "bids": 1242
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2017-01",
+      "biddingNo": 1,
+      "catA": {
+        "premium": 50101,
+        "quota": 1877,
+        "bids": 1870
+      },
+      "catB": {
+        "premium": 53106,
+        "quota": 1252,
+        "bids": 1243
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2017-01",
+      "biddingNo": 2,
+      "catA": {
+        "premium": 50889,
+        "quota": 1846,
+        "bids": 1766
+      },
+      "catB": {
+        "premium": 52807,
+        "quota": 1246,
+        "bids": 1226
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2017-02",
+      "biddingNo": 1,
+      "catA": {
+        "premium": 48401,
+        "quota": 2060,
+        "bids": 2051
+      },
+      "catB": {
+        "premium": 48209,
+        "quota": 1366,
+        "bids": 1352
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2017-02",
+      "biddingNo": 2,
+      "catA": {
+        "premium": 49430,
+        "quota": 2133,
+        "bids": 2089
+      },
+      "catB": {
+        "premium": 50621,
+        "quota": 1377,
+        "bids": 1377
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2017-03",
+      "biddingNo": 1,
+      "catA": {
+        "premium": 50789,
+        "quota": 2061,
+        "bids": 2045
+      },
+      "catB": {
+        "premium": 53300,
+        "quota": 1371,
+        "bids": 1368
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2017-03",
+      "biddingNo": 2,
+      "catA": {
+        "premium": 51765,
+        "quota": 2096,
+        "bids": 2096
+      },
+      "catB": {
+        "premium": 54000,
+        "quota": 1357,
+        "bids": 1345
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2017-04",
+      "biddingNo": 1,
+      "catA": {
+        "premium": 52000,
+        "quota": 2068,
+        "bids": 2061
+      },
+      "catB": {
+        "premium": 54405,
+        "quota": 1360,
+        "bids": 1360
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2017-04",
+      "biddingNo": 2,
+      "catA": {
+        "premium": 51600,
+        "quota": 2052,
+        "bids": 2030
+      },
+      "catB": {
+        "premium": 54406,
+        "quota": 1369,
+        "bids": 1365
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2017-05",
+      "biddingNo": 1,
+      "catA": {
+        "premium": 51106,
+        "quota": 1905,
+        "bids": 1905
+      },
+      "catB": {
+        "premium": 55414,
+        "quota": 1320,
+        "bids": 1316
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2017-05",
+      "biddingNo": 2,
+      "catA": {
+        "premium": 46489,
+        "quota": 1920,
+        "bids": 1913
+      },
+      "catB": {
+        "premium": 53001,
+        "quota": 1325,
+        "bids": 1325
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2017-06",
+      "biddingNo": 1,
+      "catA": {
+        "premium": 45201,
+        "quota": 1898,
+        "bids": 1893
+      },
+      "catB": {
+        "premium": 50110,
+        "quota": 1325,
+        "bids": 1324
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2017-06",
+      "biddingNo": 2,
+      "catA": {
+        "premium": 42801,
+        "quota": 1906,
+        "bids": 1898
+      },
+      "catB": {
+        "premium": 47501,
+        "quota": 1321,
+        "bids": 1320
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2017-07",
+      "biddingNo": 1,
+      "catA": {
+        "premium": 42801,
+        "quota": 1904,
+        "bids": 1902
+      },
+      "catB": {
+        "premium": 49802,
+        "quota": 1322,
+        "bids": 1321
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2017-07",
+      "biddingNo": 2,
+      "catA": {
+        "premium": 44002,
+        "quota": 1907,
+        "bids": 1905
+      },
+      "catB": {
+        "premium": 50001,
+        "quota": 1322,
+        "bids": 1314
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2017-08",
+      "biddingNo": 1,
+      "catA": {
+        "premium": 46778,
+        "quota": 1817,
+        "bids": 1812
+      },
+      "catB": {
+        "premium": 53711,
+        "quota": 1286,
+        "bids": 1281
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2017-08",
+      "biddingNo": 2,
+      "catA": {
+        "premium": 42900,
+        "quota": 1817,
+        "bids": 1817
+      },
+      "catB": {
+        "premium": 51000,
+        "quota": 1293,
+        "bids": 1290
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2017-09",
+      "biddingNo": 1,
+      "catA": {
+        "premium": 36001,
+        "quota": 1820,
+        "bids": 1806
+      },
+      "catB": {
+        "premium": 49000,
+        "quota": 1290,
+        "bids": 1290
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2017-09",
+      "biddingNo": 2,
+      "catA": {
+        "premium": 42902,
+        "quota": 1815,
+        "bids": 1815
+      },
+      "catB": {
+        "premium": 49189,
+        "quota": 1288,
+        "bids": 1288
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2017-10",
+      "biddingNo": 1,
+      "catA": {
+        "premium": 41761,
+        "quota": 1829,
+        "bids": 1827
+      },
+      "catB": {
+        "premium": 48109,
+        "quota": 1285,
+        "bids": 1284
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2017-10",
+      "biddingNo": 2,
+      "catA": {
+        "premium": 41617,
+        "quota": 1815,
+        "bids": 1809
+      },
+      "catB": {
+        "premium": 49996,
+        "quota": 1285,
+        "bids": 1277
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2017-11",
+      "biddingNo": 1,
+      "catA": {
+        "premium": 47112,
+        "quota": 1683,
+        "bids": 1683
+      },
+      "catB": {
+        "premium": 57414,
+        "quota": 1376,
+        "bids": 1375
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2017-11",
+      "biddingNo": 2,
+      "catA": {
+        "premium": 46791,
+        "quota": 1686,
+        "bids": 1679
+      },
+      "catB": {
+        "premium": 57390,
+        "quota": 1383,
+        "bids": 1383
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2017-12",
+      "biddingNo": 1,
+      "catA": {
+        "premium": 42339,
+        "quota": 1680,
+        "bids": 1667
+      },
+      "catB": {
+        "premium": 53711,
+        "quota": 1375,
+        "bids": 1375
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2017-12",
+      "biddingNo": 2,
+      "catA": {
+        "premium": 38200,
+        "quota": 1687,
+        "bids": 1654
+      },
+      "catB": {
+        "premium": 47002,
+        "quota": 1374,
+        "bids": 1367
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2018-01",
+      "biddingNo": 1,
+      "catA": {
+        "premium": 41400,
+        "quota": 1693,
+        "bids": 1693
+      },
+      "catB": {
+        "premium": 45289,
+        "quota": 1374,
+        "bids": 1368
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2018-01",
+      "biddingNo": 2,
+      "catA": {
+        "premium": 36890,
+        "quota": 1713,
+        "bids": 1708
+      },
+      "catB": {
+        "premium": 42661,
+        "quota": 1381,
+        "bids": 1380
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2018-02",
+      "biddingNo": 1,
+      "catA": {
+        "premium": 40000,
+        "quota": 1557,
+        "bids": 1534
+      },
+      "catB": {
+        "premium": 42322,
+        "quota": 1396,
+        "bids": 1396
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2018-02",
+      "biddingNo": 2,
+      "catA": {
+        "premium": 36810,
+        "quota": 1562,
+        "bids": 1561
+      },
+      "catB": {
+        "premium": 39000,
+        "quota": 1391,
+        "bids": 1379
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2018-03",
+      "biddingNo": 1,
+      "catA": {
+        "premium": 38830,
+        "quota": 1580,
+        "bids": 1572
+      },
+      "catB": {
+        "premium": 39001,
+        "quota": 1390,
+        "bids": 1390
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2018-03",
+      "biddingNo": 2,
+      "catA": {
+        "premium": 38000,
+        "quota": 1559,
+        "bids": 1551
+      },
+      "catB": {
+        "premium": 37010,
+        "quota": 1402,
+        "bids": 1374
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2018-04",
+      "biddingNo": 1,
+      "catA": {
+        "premium": 37000,
+        "quota": 1566,
+        "bids": 1564
+      },
+      "catB": {
+        "premium": 37605,
+        "quota": 1389,
+        "bids": 1388
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2018-04",
+      "biddingNo": 2,
+      "catA": {
+        "premium": 38510,
+        "quota": 1566,
+        "bids": 1566
+      },
+      "catB": {
+        "premium": 37330,
+        "quota": 1417,
+        "bids": 1414
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2018-05",
+      "biddingNo": 1,
+      "catA": {
+        "premium": 38941,
+        "quota": 1435,
+        "bids": 1428
+      },
+      "catB": {
+        "premium": 38501,
+        "quota": 1280,
+        "bids": 1267
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2018-05",
+      "biddingNo": 2,
+      "catA": {
+        "premium": 38001,
+        "quota": 1434,
+        "bids": 1422
+      },
+      "catB": {
+        "premium": 37989,
+        "quota": 1283,
+        "bids": 1247
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2018-06",
+      "biddingNo": 1,
+      "catA": {
+        "premium": 36426,
+        "quota": 1441,
+        "bids": 1440
+      },
+      "catB": {
+        "premium": 36000,
+        "quota": 1293,
+        "bids": 1285
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2018-06",
+      "biddingNo": 2,
+      "catA": {
+        "premium": 34110,
+        "quota": 1446,
+        "bids": 1437
+      },
+      "catB": {
+        "premium": 33900,
+        "quota": 1316,
+        "bids": 1311
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2018-07",
+      "biddingNo": 1,
+      "catA": {
+        "premium": 25000,
+        "quota": 1435,
+        "bids": 1427
+      },
+      "catB": {
+        "premium": 31000,
+        "quota": 1288,
+        "bids": 1288
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2018-07",
+      "biddingNo": 2,
+      "catA": {
+        "premium": 32699,
+        "quota": 1443,
+        "bids": 1412
+      },
+      "catB": {
+        "premium": 32551,
+        "quota": 1285,
+        "bids": 1278
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2018-08",
+      "biddingNo": 1,
+      "catA": {
+        "premium": 33798,
+        "quota": 1672,
+        "bids": 1672
+      },
+      "catB": {
+        "premium": 34381,
+        "quota": 1265,
+        "bids": 1256
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2018-08",
+      "biddingNo": 2,
+      "catA": {
+        "premium": 31997,
+        "quota": 1695,
+        "bids": 1695
+      },
+      "catB": {
+        "premium": 32429,
+        "quota": 1272,
+        "bids": 1259
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2018-09",
+      "biddingNo": 1,
+      "catA": {
+        "premium": 30209,
+        "quota": 1664,
+        "bids": 1661
+      },
+      "catB": {
+        "premium": 32001,
+        "quota": 1274,
+        "bids": 1268
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2018-09",
+      "biddingNo": 2,
+      "catA": {
+        "premium": 28000,
+        "quota": 1664,
+        "bids": 1655
+      },
+      "catB": {
+        "premium": 31307,
+        "quota": 1278,
+        "bids": 1269
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2018-10",
+      "biddingNo": 1,
+      "catA": {
+        "premium": 28457,
+        "quota": 1668,
+        "bids": 1665
+      },
+      "catB": {
+        "premium": 31301,
+        "quota": 1271,
+        "bids": 1241
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2018-10",
+      "biddingNo": 2,
+      "catA": {
+        "premium": 25556,
+        "quota": 1674,
+        "bids": 1672
+      },
+      "catB": {
+        "premium": 31302,
+        "quota": 1273,
+        "bids": 1267
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2018-11",
+      "biddingNo": 1,
+      "catA": {
+        "premium": 28199,
+        "quota": 1819,
+        "bids": 1757
+      },
+      "catB": {
+        "premium": 32302,
+        "quota": 1265,
+        "bids": 1262
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2018-11",
+      "biddingNo": 2,
+      "catA": {
+        "premium": 25000,
+        "quota": 1818,
+        "bids": 1744
+      },
+      "catB": {
+        "premium": 31101,
+        "quota": 1241,
+        "bids": 1234
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2018-12",
+      "biddingNo": 1,
+      "catA": {
+        "premium": 23568,
+        "quota": 1878,
+        "bids": 1878
+      },
+      "catB": {
+        "premium": 31001,
+        "quota": 1239,
+        "bids": 1230
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2018-12",
+      "biddingNo": 2,
+      "catA": {
+        "premium": 25501,
+        "quota": 1890,
+        "bids": 1887
+      },
+      "catB": {
+        "premium": 31001,
+        "quota": 1243,
+        "bids": 1235
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2019-01",
+      "biddingNo": 1,
+      "catA": {
+        "premium": 25920,
+        "quota": 1815,
+        "bids": 1804
+      },
+      "catB": {
+        "premium": 32200,
+        "quota": 1245,
+        "bids": 1242
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2019-01",
+      "biddingNo": 2,
+      "catA": {
+        "premium": 26170,
+        "quota": 1818,
+        "bids": 1818
+      },
+      "catB": {
+        "premium": 33989,
+        "quota": 1244,
+        "bids": 1230
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2019-02",
+      "biddingNo": 1,
+      "catA": {
+        "premium": 25689,
+        "quota": 1662,
+        "bids": 1653
+      },
+      "catB": {
+        "premium": 34509,
+        "quota": 1202,
+        "bids": 1169
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2019-02",
+      "biddingNo": 2,
+      "catA": {
+        "premium": 26301,
+        "quota": 1650,
+        "bids": 1650
+      },
+      "catB": {
+        "premium": 35403,
+        "quota": 1214,
+        "bids": 1213
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2019-03",
+      "biddingNo": 1,
+      "catA": {
+        "premium": 26309,
+        "quota": 1659,
+        "bids": 1653
+      },
+      "catB": {
+        "premium": 36961,
+        "quota": 1233,
+        "bids": 1230
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2019-03",
+      "biddingNo": 2,
+      "catA": {
+        "premium": 26659,
+        "quota": 1650,
+        "bids": 1647
+      },
+      "catB": {
+        "premium": 39401,
+        "quota": 1201,
+        "bids": 1195
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2019-04",
+      "biddingNo": 1,
+      "catA": {
+        "premium": 29159,
+        "quota": 1656,
+        "bids": 1650
+      },
+      "catB": {
+        "premium": 43102,
+        "quota": 1202,
+        "bids": 1202
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2019-04",
+      "biddingNo": 2,
+      "catA": {
+        "premium": 33199,
+        "quota": 1653,
+        "bids": 1603
+      },
+      "catB": {
+        "premium": 48000,
+        "quota": 1205,
+        "bids": 1181
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2019-05",
+      "biddingNo": 1,
+      "catA": {
+        "premium": 36704,
+        "quota": 1431,
+        "bids": 1431
+      },
+      "catB": {
+        "premium": 48010,
+        "quota": 1139,
+        "bids": 1139
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2019-05",
+      "biddingNo": 2,
+      "catA": {
+        "premium": 27000,
+        "quota": 1475,
+        "bids": 1475
+      },
+      "catB": {
+        "premium": 42564,
+        "quota": 1163,
+        "bids": 1161
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2019-06",
+      "biddingNo": 1,
+      "catA": {
+        "premium": 30009,
+        "quota": 1424,
+        "bids": 1417
+      },
+      "catB": {
+        "premium": 39728,
+        "quota": 1139,
+        "bids": 1137
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2019-06",
+      "biddingNo": 2,
+      "catA": {
+        "premium": 26999,
+        "quota": 1424,
+        "bids": 1225
+      },
+      "catB": {
+        "premium": 35906,
+        "quota": 1141,
+        "bids": 1137
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2019-07",
+      "biddingNo": 1,
+      "catA": {
+        "premium": 28589,
+        "quota": 1431,
+        "bids": 1428
+      },
+      "catB": {
+        "premium": 34000,
+        "quota": 1141,
+        "bids": 1135
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2019-07",
+      "biddingNo": 2,
+      "catA": {
+        "premium": 26667,
+        "quota": 1623,
+        "bids": 1617
+      },
+      "catB": {
+        "premium": 39406,
+        "quota": 1143,
+        "bids": 1140
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2019-08",
+      "biddingNo": 1,
+      "catA": {
+        "premium": 32725,
+        "quota": 1059,
+        "bids": 1059
+      },
+      "catB": {
+        "premium": 40001,
+        "quota": 1047,
+        "bids": 1043
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2019-08",
+      "biddingNo": 2,
+      "catA": {
+        "premium": 31917,
+        "quota": 1062,
+        "bids": 1062
+      },
+      "catB": {
+        "premium": 38602,
+        "quota": 1045,
+        "bids": 1043
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2019-09",
+      "biddingNo": 1,
+      "catA": {
+        "premium": 31783,
+        "quota": 1056,
+        "bids": 1056
+      },
+      "catB": {
+        "premium": 36001,
+        "quota": 1046,
+        "bids": 1040
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2019-09",
+      "biddingNo": 2,
+      "catA": {
+        "premium": 31759,
+        "quota": 1056,
+        "bids": 1053
+      },
+      "catB": {
+        "premium": 37000,
+        "quota": 1044,
+        "bids": 1042
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2019-10",
+      "biddingNo": 1,
+      "catA": {
+        "premium": 34001,
+        "quota": 1057,
+        "bids": 1033
+      },
+      "catB": {
+        "premium": 41361,
+        "quota": 1048,
+        "bids": 1042
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2019-10",
+      "biddingNo": 2,
+      "catA": {
+        "premium": 32309,
+        "quota": 1060,
+        "bids": 1056
+      },
+      "catB": {
+        "premium": 41805,
+        "quota": 1044,
+        "bids": 1037
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2019-11",
+      "biddingNo": 1,
+      "catA": {
+        "premium": 30000,
+        "quota": 1043,
+        "bids": 1031
+      },
+      "catB": {
+        "premium": 40009,
+        "quota": 1017,
+        "bids": 1016
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2019-11",
+      "biddingNo": 2,
+      "catA": {
+        "premium": 32000,
+        "quota": 1023,
+        "bids": 1012
+      },
+      "catB": {
+        "premium": 39700,
+        "quota": 1019,
+        "bids": 1016
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2019-12",
+      "biddingNo": 1,
+      "catA": {
+        "premium": 33009,
+        "quota": 1030,
+        "bids": 1013
+      },
+      "catB": {
+        "premium": 37900,
+        "quota": 1013,
+        "bids": 1003
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2019-12",
+      "biddingNo": 2,
+      "catA": {
+        "premium": 32889,
+        "quota": 1029,
+        "bids": 1013
+      },
+      "catB": {
+        "premium": 36000,
+        "quota": 1015,
+        "bids": 1015
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2020-01",
+      "biddingNo": 1,
+      "catA": {
+        "premium": 35320,
+        "quota": 1035,
+        "bids": 1026
+      },
+      "catB": {
+        "premium": 37109,
+        "quota": 1022,
+        "bids": 1021
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2020-01",
+      "biddingNo": 2,
+      "catA": {
+        "premium": 35010,
+        "quota": 1034,
+        "bids": 1025
+      },
+      "catB": {
+        "premium": 37705,
+        "quota": 1012,
+        "bids": 1008
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2020-02",
+      "biddingNo": 1,
+      "catA": {
+        "premium": 30010,
+        "quota": 982,
+        "bids": 977
+      },
+      "catB": {
+        "premium": 30890,
+        "quota": 984,
+        "bids": 980
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2020-02",
+      "biddingNo": 2,
+      "catA": {
+        "premium": 32999,
+        "quota": 982,
+        "bids": 973
+      },
+      "catB": {
+        "premium": 32889,
+        "quota": 987,
+        "bids": 978
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2020-03",
+      "biddingNo": 1,
+      "catA": {
+        "premium": 32699,
+        "quota": 978,
+        "bids": 973
+      },
+      "catB": {
+        "premium": 32801,
+        "quota": 987,
+        "bids": 987
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2020-03",
+      "biddingNo": 2,
+      "catA": {
+        "premium": 31210,
+        "quota": 982,
+        "bids": 962
+      },
+      "catB": {
+        "premium": 30012,
+        "quota": 992,
+        "bids": 943
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2020-07",
+      "biddingNo": 1,
+      "catA": {
+        "premium": 33520,
+        "quota": 1289,
+        "bids": 1286
+      },
+      "catB": {
+        "premium": 35889,
+        "quota": 1291,
+        "bids": 1260
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2020-07",
+      "biddingNo": 2,
+      "catA": {
+        "premium": 32699,
+        "quota": 1304,
+        "bids": 1290
+      },
+      "catB": {
+        "premium": 35001,
+        "quota": 1339,
+        "bids": 1316
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2020-08",
+      "biddingNo": 1,
+      "catA": {
+        "premium": 33000,
+        "quota": 1022,
+        "bids": 1007
+      },
+      "catB": {
+        "premium": 37102,
+        "quota": 932,
+        "bids": 928
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2020-08",
+      "biddingNo": 2,
+      "catA": {
+        "premium": 35710,
+        "quota": 1034,
+        "bids": 1019
+      },
+      "catB": {
+        "premium": 38802,
+        "quota": 923,
+        "bids": 912
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2020-09",
+      "biddingNo": 1,
+      "catA": {
+        "premium": 37766,
+        "quota": 1035,
+        "bids": 1035
+      },
+      "catB": {
+        "premium": 41510,
+        "quota": 904,
+        "bids": 892
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2020-09",
+      "biddingNo": 2,
+      "catA": {
+        "premium": 38504,
+        "quota": 1034,
+        "bids": 1031
+      },
+      "catB": {
+        "premium": 40989,
+        "quota": 912,
+        "bids": 912
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2020-10",
+      "biddingNo": 1,
+      "catA": {
+        "premium": 36534,
+        "quota": 912,
+        "bids": 907
+      },
+      "catB": {
+        "premium": 40690,
+        "quota": 805,
+        "bids": 800
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2020-10",
+      "biddingNo": 2,
+      "catA": {
+        "premium": 37334,
+        "quota": 916,
+        "bids": 907
+      },
+      "catB": {
+        "premium": 40990,
+        "quota": 793,
+        "bids": 793
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2020-11",
+      "biddingNo": 1,
+      "catA": {
+        "premium": 35990,
+        "quota": 967,
+        "bids": 952
+      },
+      "catB": {
+        "premium": 39000,
+        "quota": 1013,
+        "bids": 985
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2020-11",
+      "biddingNo": 2,
+      "catA": {
+        "premium": 37690,
+        "quota": 972,
+        "bids": 966
+      },
+      "catB": {
+        "premium": 41101,
+        "quota": 1007,
+        "bids": 1006
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2020-12",
+      "biddingNo": 1,
+      "catA": {
+        "premium": 40714,
+        "quota": 978,
+        "bids": 978
+      },
+      "catB": {
+        "premium": 45012,
+        "quota": 1035,
+        "bids": 1019
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2020-12",
+      "biddingNo": 2,
+      "catA": {
+        "premium": 40556,
+        "quota": 969,
+        "bids": 966
+      },
+      "catB": {
+        "premium": 49300,
+        "quota": 1009,
+        "bids": 998
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2021-01",
+      "biddingNo": 1,
+      "catA": {
+        "premium": 40609,
+        "quota": 963,
+        "bids": 962
+      },
+      "catB": {
+        "premium": 49001,
+        "quota": 1023,
+        "bids": 1021
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2021-01",
+      "biddingNo": 2,
+      "catA": {
+        "premium": 43501,
+        "quota": 966,
+        "bids": 946
+      },
+      "catB": {
+        "premium": 50100,
+        "quota": 1018,
+        "bids": 1018
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2021-02",
+      "biddingNo": 1,
+      "catA": {
+        "premium": 42000,
+        "quota": 885,
+        "bids": 881
+      },
+      "catB": {
+        "premium": 46790,
+        "quota": 943,
+        "bids": 943
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2021-02",
+      "biddingNo": 2,
+      "catA": {
+        "premium": 41001,
+        "quota": 903,
+        "bids": 900
+      },
+      "catB": {
+        "premium": 46002,
+        "quota": 942,
+        "bids": 938
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2021-03",
+      "biddingNo": 1,
+      "catA": {
+        "premium": 41996,
+        "quota": 887,
+        "bids": 887
+      },
+      "catB": {
+        "premium": 45001,
+        "quota": 942,
+        "bids": 926
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2021-03",
+      "biddingNo": 2,
+      "catA": {
+        "premium": 44589,
+        "quota": 886,
+        "bids": 879
+      },
+      "catB": {
+        "premium": 47001,
+        "quota": 946,
+        "bids": 932
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2021-04",
+      "biddingNo": 1,
+      "catA": {
+        "premium": 45600,
+        "quota": 883,
+        "bids": 880
+      },
+      "catB": {
+        "premium": 52309,
+        "quota": 958,
+        "bids": 949
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2021-04",
+      "biddingNo": 2,
+      "catA": {
+        "premium": 49640,
+        "quota": 890,
+        "bids": 883
+      },
+      "catB": {
+        "premium": 61190,
+        "quota": 956,
+        "bids": 949
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2021-05",
+      "biddingNo": 1,
+      "catA": {
+        "premium": 48002,
+        "quota": 832,
+        "bids": 803
+      },
+      "catB": {
+        "premium": 60001,
+        "quota": 819,
+        "bids": 813
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2021-05",
+      "biddingNo": 2,
+      "catA": {
+        "premium": 41801,
+        "quota": 835,
+        "bids": 834
+      },
+      "catB": {
+        "premium": 58089,
+        "quota": 817,
+        "bids": 817
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2021-06",
+      "biddingNo": 1,
+      "catA": {
+        "premium": 48510,
+        "quota": 858,
+        "bids": 820
+      },
+      "catB": {
+        "premium": 60109,
+        "quota": 815,
+        "bids": 784
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2021-06",
+      "biddingNo": 2,
+      "catA": {
+        "premium": 47821,
+        "quota": 830,
+        "bids": 823
+      },
+      "catB": {
+        "premium": 56032,
+        "quota": 809,
+        "bids": 799
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2021-07",
+      "biddingNo": 1,
+      "catA": {
+        "premium": 45001,
+        "quota": 867,
+        "bids": 864
+      },
+      "catB": {
+        "premium": 56100,
+        "quota": 840,
+        "bids": 840
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2021-07",
+      "biddingNo": 2,
+      "catA": {
+        "premium": 47010,
+        "quota": 836,
+        "bids": 832
+      },
+      "catB": {
+        "premium": 59501,
+        "quota": 819,
+        "bids": 796
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2021-08",
+      "biddingNo": 1,
+      "catA": {
+        "premium": 45189,
+        "quota": 805,
+        "bids": 804
+      },
+      "catB": {
+        "premium": 56001,
+        "quota": 771,
+        "bids": 751
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2021-08",
+      "biddingNo": 2,
+      "catA": {
+        "premium": 46689,
+        "quota": 806,
+        "bids": 806
+      },
+      "catB": {
+        "premium": 61001,
+        "quota": 794,
+        "bids": 793
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2021-09",
+      "biddingNo": 1,
+      "catA": {
+        "premium": 47000,
+        "quota": 804,
+        "bids": 790
+      },
+      "catB": {
+        "premium": 62600,
+        "quota": 791,
+        "bids": 788
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2021-09",
+      "biddingNo": 2,
+      "catA": {
+        "premium": 48000,
+        "quota": 803,
+        "bids": 795
+      },
+      "catB": {
+        "premium": 68310,
+        "quota": 772,
+        "bids": 768
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2021-10",
+      "biddingNo": 1,
+      "catA": {
+        "premium": 47001,
+        "quota": 816,
+        "bids": 812
+      },
+      "catB": {
+        "premium": 70200,
+        "quota": 774,
+        "bids": 774
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2021-10",
+      "biddingNo": 2,
+      "catA": {
+        "premium": 52709,
+        "quota": 811,
+        "bids": 806
+      },
+      "catB": {
+        "premium": 80210,
+        "quota": 774,
+        "bids": 767
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2021-11",
+      "biddingNo": 1,
+      "catA": {
+        "premium": 53709,
+        "quota": 536,
+        "bids": 531
+      },
+      "catB": {
+        "premium": 82801,
+        "quota": 587,
+        "bids": 581
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2021-11",
+      "biddingNo": 2,
+      "catA": {
+        "premium": 55001,
+        "quota": 537,
+        "bids": 535
+      },
+      "catB": {
+        "premium": 79601,
+        "quota": 594,
+        "bids": 585
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2021-12",
+      "biddingNo": 1,
+      "catA": {
+        "premium": 57010,
+        "quota": 536,
+        "bids": 525
+      },
+      "catB": {
+        "premium": 80401,
+        "quota": 593,
+        "bids": 593
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2021-12",
+      "biddingNo": 2,
+      "catA": {
+        "premium": 58801,
+        "quota": 534,
+        "bids": 534
+      },
+      "catB": {
+        "premium": 80989,
+        "quota": 595,
+        "bids": 590
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2022-01",
+      "biddingNo": 1,
+      "catA": {
+        "premium": 57599,
+        "quota": 543,
+        "bids": 533
+      },
+      "catB": {
+        "premium": 77700,
+        "quota": 587,
+        "bids": 586
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2022-01",
+      "biddingNo": 2,
+      "catA": {
+        "premium": 57898,
+        "quota": 531,
+        "bids": 526
+      },
+      "catB": {
+        "premium": 82001,
+        "quota": 592,
+        "bids": 583
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2022-02",
+      "biddingNo": 1,
+      "catA": {
+        "premium": 60761,
+        "quota": 542,
+        "bids": 542
+      },
+      "catB": {
+        "premium": 86102,
+        "quota": 550,
+        "bids": 549
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2022-02",
+      "biddingNo": 2,
+      "catA": {
+        "premium": 63000,
+        "quota": 536,
+        "bids": 524
+      },
+      "catB": {
+        "premium": 93590,
+        "quota": 559,
+        "bids": 554
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2022-03",
+      "biddingNo": 1,
+      "catA": {
+        "premium": 68501,
+        "quota": 531,
+        "bids": 526
+      },
+      "catB": {
+        "premium": 94889,
+        "quota": 551,
+        "bids": 551
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2022-03",
+      "biddingNo": 2,
+      "catA": {
+        "premium": 71556,
+        "quota": 543,
+        "bids": 542
+      },
+      "catB": {
+        "premium": 98889,
+        "quota": 555,
+        "bids": 545
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2022-04",
+      "biddingNo": 1,
+      "catA": {
+        "premium": 72996,
+        "quota": 536,
+        "bids": 536
+      },
+      "catB": {
+        "premium": 98389,
+        "quota": 550,
+        "bids": 550
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2022-04",
+      "biddingNo": 2,
+      "catA": {
+        "premium": 68699,
+        "quota": 532,
+        "bids": 519
+      },
+      "catB": {
+        "premium": 90002,
+        "quota": 560,
+        "bids": 559
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2022-05",
+      "biddingNo": 1,
+      "catA": {
+        "premium": 70901,
+        "quota": 612,
+        "bids": 612
+      },
+      "catB": {
+        "premium": 92090,
+        "quota": 527,
+        "bids": 526
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2022-05",
+      "biddingNo": 2,
+      "catA": {
+        "premium": 68001,
+        "quota": 625,
+        "bids": 623
+      },
+      "catB": {
+        "premium": 95889,
+        "quota": 528,
+        "bids": 523
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2022-06",
+      "biddingNo": 1,
+      "catA": {
+        "premium": 73801,
+        "quota": 612,
+        "bids": 607
+      },
+      "catB": {
+        "premium": 100684,
+        "quota": 528,
+        "bids": 528
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2022-06",
+      "biddingNo": 2,
+      "catA": {
+        "premium": 74989,
+        "quota": 614,
+        "bids": 598
+      },
+      "catB": {
+        "premium": 106001,
+        "quota": 531,
+        "bids": 531
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2022-07",
+      "biddingNo": 1,
+      "catA": {
+        "premium": 78001,
+        "quota": 617,
+        "bids": 606
+      },
+      "catB": {
+        "premium": 107800,
+        "quota": 527,
+        "bids": 522
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2022-07",
+      "biddingNo": 2,
+      "catA": {
+        "premium": 78899,
+        "quota": 628,
+        "bids": 620
+      },
+      "catB": {
+        "premium": 110003,
+        "quota": 527,
+        "bids": 526
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2022-08",
+      "biddingNo": 1,
+      "catA": {
+        "premium": 80000,
+        "quota": 554,
+        "bids": 541
+      },
+      "catB": {
+        "premium": 107001,
+        "quota": 474,
+        "bids": 474
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2022-08",
+      "biddingNo": 2,
+      "catA": {
+        "premium": 87889,
+        "quota": 551,
+        "bids": 551
+      },
+      "catB": {
+        "premium": 112001,
+        "quota": 471,
+        "bids": 470
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2022-09",
+      "biddingNo": 1,
+      "catA": {
+        "premium": 86000,
+        "quota": 556,
+        "bids": 535
+      },
+      "catB": {
+        "premium": 113000,
+        "quota": 470,
+        "bids": 466
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2022-09",
+      "biddingNo": 2,
+      "catA": {
+        "premium": 84000,
+        "quota": 543,
+        "bids": 527
+      },
+      "catB": {
+        "premium": 108051,
+        "quota": 471,
+        "bids": 471
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2022-10",
+      "biddingNo": 1,
+      "catA": {
+        "premium": 80501,
+        "quota": 564,
+        "bids": 561
+      },
+      "catB": {
+        "premium": 95856,
+        "quota": 474,
+        "bids": 472
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2022-10",
+      "biddingNo": 2,
+      "catA": {
+        "premium": 81089,
+        "quota": 559,
+        "bids": 558
+      },
+      "catB": {
+        "premium": 110000,
+        "quota": 470,
+        "bids": 463
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2022-11",
+      "biddingNo": 1,
+      "catA": {
+        "premium": 87235,
+        "quota": 460,
+        "bids": 460
+      },
+      "catB": {
+        "premium": 115388,
+        "quota": 411,
+        "bids": 393
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2022-11",
+      "biddingNo": 2,
+      "catA": {
+        "premium": 90589,
+        "quota": 459,
+        "bids": 444
+      },
+      "catB": {
+        "premium": 113881,
+        "quota": 416,
+        "bids": 416
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2022-12",
+      "biddingNo": 1,
+      "catA": {
+        "premium": 88503,
+        "quota": 458,
+        "bids": 454
+      },
+      "catB": {
+        "premium": 105501,
+        "quota": 427,
+        "bids": 426
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2022-12",
+      "biddingNo": 2,
+      "catA": {
+        "premium": 88007,
+        "quota": 473,
+        "bids": 472
+      },
+      "catB": {
+        "premium": 108006,
+        "quota": 409,
+        "bids": 409
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2023-01",
+      "biddingNo": 1,
+      "catA": {
+        "premium": 80000,
+        "quota": 462,
+        "bids": 459
+      },
+      "catB": {
+        "premium": 102002,
+        "quota": 410,
+        "bids": 410
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2023-01",
+      "biddingNo": 2,
+      "catA": {
+        "premium": 86000,
+        "quota": 459,
+        "bids": 456
+      },
+      "catB": {
+        "premium": 105459,
+        "quota": 408,
+        "bids": 402
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2023-02",
+      "biddingNo": 1,
+      "catA": {
+        "premium": 86000,
+        "quota": 509,
+        "bids": 497
+      },
+      "catB": {
+        "premium": 105524,
+        "quota": 430,
+        "bids": 430
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2023-02",
+      "biddingNo": 2,
+      "catA": {
+        "premium": 86556,
+        "quota": 508,
+        "bids": 504
+      },
+      "catB": {
+        "premium": 115001,
+        "quota": 436,
+        "bids": 401
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2023-03",
+      "biddingNo": 1,
+      "catA": {
+        "premium": 88000,
+        "quota": 517,
+        "bids": 507
+      },
+      "catB": {
+        "premium": 115501,
+        "quota": 431,
+        "bids": 431
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2023-03",
+      "biddingNo": 2,
+      "catA": {
+        "premium": 93503,
+        "quota": 510,
+        "bids": 508
+      },
+      "catB": {
+        "premium": 116201,
+        "quota": 466,
+        "bids": 466
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2023-04",
+      "biddingNo": 1,
+      "catA": {
+        "premium": 96501,
+        "quota": 515,
+        "bids": 508
+      },
+      "catB": {
+        "premium": 118501,
+        "quota": 430,
+        "bids": 414
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2023-04",
+      "biddingNo": 2,
+      "catA": {
+        "premium": 103721,
+        "quota": 507,
+        "bids": 489
+      },
+      "catB": {
+        "premium": 120889,
+        "quota": 430,
+        "bids": 403
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2023-05",
+      "biddingNo": 1,
+      "catA": {
+        "premium": 101001,
+        "quota": 474,
+        "bids": 472
+      },
+      "catB": {
+        "premium": 119399,
+        "quota": 410,
+        "bids": 410
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2023-05",
+      "biddingNo": 2,
+      "catA": {
+        "premium": 92000,
+        "quota": 596,
+        "bids": 588
+      },
+      "catB": {
+        "premium": 113034,
+        "quota": 480,
+        "bids": 480
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2023-06",
+      "biddingNo": 1,
+      "catA": {
+        "premium": 98001,
+        "quota": 581,
+        "bids": 571
+      },
+      "catB": {
+        "premium": 120702,
+        "quota": 454,
+        "bids": 437
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2023-06",
+      "biddingNo": 2,
+      "catA": {
+        "premium": 96206,
+        "quota": 586,
+        "bids": 583
+      },
+      "catB": {
+        "premium": 121000,
+        "quota": 454,
+        "bids": 446
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2023-07",
+      "biddingNo": 1,
+      "catA": {
+        "premium": 97000,
+        "quota": 588,
+        "bids": 587
+      },
+      "catB": {
+        "premium": 118002,
+        "quota": 471,
+        "bids": 470
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2023-07",
+      "biddingNo": 2,
+      "catA": {
+        "premium": 95202,
+        "quota": 581,
+        "bids": 576
+      },
+      "catB": {
+        "premium": 118001,
+        "quota": 462,
+        "bids": 453
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2023-08",
+      "biddingNo": 1,
+      "catA": {
+        "premium": 99499,
+        "quota": 632,
+        "bids": 618
+      },
+      "catB": {
+        "premium": 126889,
+        "quota": 470,
+        "bids": 469
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2023-08",
+      "biddingNo": 2,
+      "catA": {
+        "premium": 100000,
+        "quota": 636,
+        "bids": 616
+      },
+      "catB": {
+        "premium": 129890,
+        "quota": 478,
+        "bids": 451
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2023-09",
+      "biddingNo": 1,
+      "catA": {
+        "premium": 101000,
+        "quota": 645,
+        "bids": 640
+      },
+      "catB": {
+        "premium": 134889,
+        "quota": 470,
+        "bids": 466
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2023-09",
+      "biddingNo": 2,
+      "catA": {
+        "premium": 105000,
+        "quota": 651,
+        "bids": 635
+      },
+      "catB": {
+        "premium": 140889,
+        "quota": 496,
+        "bids": 494
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2023-10",
+      "biddingNo": 1,
+      "catA": {
+        "premium": 104000,
+        "quota": 785,
+        "bids": 779
+      },
+      "catB": {
+        "premium": 146002,
+        "quota": 474,
+        "bids": 472
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2023-10",
+      "biddingNo": 2,
+      "catA": {
+        "premium": 106000,
+        "quota": 797,
+        "bids": 791
+      },
+      "catB": {
+        "premium": 150001,
+        "quota": 472,
+        "bids": 458
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2023-11",
+      "biddingNo": 1,
+      "catA": {
+        "premium": 95689,
+        "quota": 924,
+        "bids": 915
+      },
+      "catB": {
+        "premium": 110001,
+        "quota": 636,
+        "bids": 631
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2023-11",
+      "biddingNo": 2,
+      "catA": {
+        "premium": 85001,
+        "quota": 925,
+        "bids": 925
+      },
+      "catB": {
+        "premium": 135336,
+        "quota": 648,
+        "bids": 638
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2023-12",
+      "biddingNo": 1,
+      "catA": {
+        "premium": 88020,
+        "quota": 928,
+        "bids": 923
+      },
+      "catB": {
+        "premium": 130100,
+        "quota": 638,
+        "bids": 638
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2023-12",
+      "biddingNo": 2,
+      "catA": {
+        "premium": 85000,
+        "quota": 919,
+        "bids": 915
+      },
+      "catB": {
+        "premium": 110001,
+        "quota": 643,
+        "bids": 619
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2024-01",
+      "biddingNo": 1,
+      "catA": {
+        "premium": 65010,
+        "quota": 924,
+        "bids": 920
+      },
+      "catB": {
+        "premium": 85010,
+        "quota": 633,
+        "bids": 628
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2024-01",
+      "biddingNo": 2,
+      "catA": {
+        "premium": 81589,
+        "quota": 923,
+        "bids": 921
+      },
+      "catB": {
+        "premium": 112000,
+        "quota": 657,
+        "bids": 657
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2024-02",
+      "biddingNo": 1,
+      "catA": {
+        "premium": 79000,
+        "quota": 938,
+        "bids": 910
+      },
+      "catB": {
+        "premium": 102338,
+        "quota": 655,
+        "bids": 596
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2024-02",
+      "biddingNo": 2,
+      "catA": {
+        "premium": 76801,
+        "quota": 937,
+        "bids": 936
+      },
+      "catB": {
+        "premium": 97000,
+        "quota": 649,
+        "bids": 642
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2024-03",
+      "biddingNo": 1,
+      "catA": {
+        "premium": 83000,
+        "quota": 963,
+        "bids": 923
+      },
+      "catB": {
+        "premium": 96010,
+        "quota": 708,
+        "bids": 704
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2024-03",
+      "biddingNo": 2,
+      "catA": {
+        "premium": 85489,
+        "quota": 936,
+        "bids": 935
+      },
+      "catB": {
+        "premium": 96011,
+        "quota": 656,
+        "bids": 615
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2024-04",
+      "biddingNo": 1,
+      "catA": {
+        "premium": 89000,
+        "quota": 975,
+        "bids": 970
+      },
+      "catB": {
+        "premium": 101334,
+        "quota": 653,
+        "bids": 645
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2024-04",
+      "biddingNo": 2,
+      "catA": {
+        "premium": 94010,
+        "quota": 936,
+        "bids": 916
+      },
+      "catB": {
+        "premium": 102001,
+        "quota": 690,
+        "bids": 690
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2024-05",
+      "biddingNo": 1,
+      "catA": {
+        "premium": 93604,
+        "quota": 968,
+        "bids": 968
+      },
+      "catB": {
+        "premium": 105002,
+        "quota": 666,
+        "bids": 638
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2024-05",
+      "biddingNo": 2,
+      "catA": {
+        "premium": 92700,
+        "quota": 983,
+        "bids": 980
+      },
+      "catB": {
+        "premium": 105689,
+        "quota": 658,
+        "bids": 641
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2024-06",
+      "biddingNo": 1,
+      "catA": {
+        "premium": 88200,
+        "quota": 962,
+        "bids": 957
+      },
+      "catB": {
+        "premium": 100607,
+        "quota": 685,
+        "bids": 671
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2024-06",
+      "biddingNo": 2,
+      "catA": {
+        "premium": 90889,
+        "quota": 966,
+        "bids": 955
+      },
+      "catB": {
+        "premium": 102334,
+        "quota": 674,
+        "bids": 670
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2024-07",
+      "biddingNo": 1,
+      "catA": {
+        "premium": 91001,
+        "quota": 967,
+        "bids": 932
+      },
+      "catB": {
+        "premium": 100901,
+        "quota": 671,
+        "bids": 671
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2024-07",
+      "biddingNo": 2,
+      "catA": {
+        "premium": 91899,
+        "quota": 973,
+        "bids": 972
+      },
+      "catB": {
+        "premium": 100000,
+        "quota": 661,
+        "bids": 639
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2024-08",
+      "biddingNo": 1,
+      "catA": {
+        "premium": 94289,
+        "quota": 1013,
+        "bids": 1007
+      },
+      "catB": {
+        "premium": 106101,
+        "quota": 663,
+        "bids": 662
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2024-08",
+      "biddingNo": 2,
+      "catA": {
+        "premium": 93900,
+        "quota": 978,
+        "bids": 966
+      },
+      "catB": {
+        "premium": 105889,
+        "quota": 686,
+        "bids": 686
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2024-09",
+      "biddingNo": 1,
+      "catA": {
+        "premium": 96490,
+        "quota": 983,
+        "bids": 966
+      },
+      "catB": {
+        "premium": 106300,
+        "quota": 665,
+        "bids": 657
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2024-09",
+      "biddingNo": 2,
+      "catA": {
+        "premium": 98524,
+        "quota": 990,
+        "bids": 909
+      },
+      "catB": {
+        "premium": 110001,
+        "quota": 663,
+        "bids": 656
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2024-10",
+      "biddingNo": 1,
+      "catA": {
+        "premium": 103799,
+        "quota": 994,
+        "bids": 986
+      },
+      "catB": {
+        "premium": 116002,
+        "quota": 671,
+        "bids": 652
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2024-10",
+      "biddingNo": 2,
+      "catA": {
+        "premium": 102900,
+        "quota": 1058,
+        "bids": 1048
+      },
+      "catB": {
+        "premium": 113890,
+        "quota": 670,
+        "bids": 669
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2024-11",
+      "biddingNo": 1,
+      "catA": {
+        "premium": 99889,
+        "quota": 1040,
+        "bids": 1035
+      },
+      "catB": {
+        "premium": 108001,
+        "quota": 696,
+        "bids": 683
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2024-11",
+      "biddingNo": 2,
+      "catA": {
+        "premium": 89889,
+        "quota": 1041,
+        "bids": 1038
+      },
+      "catB": {
+        "premium": 105081,
+        "quota": 678,
+        "bids": 678
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2024-12",
+      "biddingNo": 1,
+      "catA": {
+        "premium": 94000,
+        "quota": 1037,
+        "bids": 1034
+      },
+      "catB": {
+        "premium": 103010,
+        "quota": 689,
+        "bids": 689
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2024-12",
+      "biddingNo": 2,
+      "catA": {
+        "premium": 96000,
+        "quota": 1035,
+        "bids": 998
+      },
+      "catB": {
+        "premium": 109000,
+        "quota": 676,
+        "bids": 667
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2025-01",
+      "biddingNo": 1,
+      "catA": {
+        "premium": 93699,
+        "quota": 1034,
+        "bids": 1034
+      },
+      "catB": {
+        "premium": 121501,
+        "quota": 677,
+        "bids": 674
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2025-01",
+      "biddingNo": 2,
+      "catA": {
+        "premium": 93601,
+        "quota": 1069,
+        "bids": 1058
+      },
+      "catB": {
+        "premium": 116625,
+        "quota": 686,
+        "bids": 686
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2025-02",
+      "biddingNo": 1,
+      "catA": {
+        "premium": 85000,
+        "quota": 1138,
+        "bids": 1132
+      },
+      "catB": {
+        "premium": 111104,
+        "quota": 748,
+        "bids": 727
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2025-02",
+      "biddingNo": 2,
+      "catA": {
+        "premium": 92850,
+        "quota": 1149,
+        "bids": 1149
+      },
+      "catB": {
+        "premium": 109598,
+        "quota": 744,
+        "bids": 741
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2025-03",
+      "biddingNo": 1,
+      "catA": {
+        "premium": 92730,
+        "quota": 1144,
+        "bids": 1144
+      },
+      "catB": {
+        "premium": 113000,
+        "quota": 765,
+        "bids": 749
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2025-03",
+      "biddingNo": 2,
+      "catA": {
+        "premium": 94502,
+        "quota": 1138,
+        "bids": 1137
+      },
+      "catB": {
+        "premium": 116890,
+        "quota": 747,
+        "bids": 747
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2025-04",
+      "biddingNo": 1,
+      "catA": {
+        "premium": 97724,
+        "quota": 1138,
+        "bids": 1122
+      },
+      "catB": {
+        "premium": 117899,
+        "quota": 760,
+        "bids": 729
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2025-04",
+      "biddingNo": 2,
+      "catA": {
+        "premium": 99500,
+        "quota": 1139,
+        "bids": 1124
+      },
+      "catB": {
+        "premium": 117003,
+        "quota": 744,
+        "bids": 744
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2025-05",
+      "biddingNo": 1,
+      "catA": {
+        "premium": 103009,
+        "quota": 1267,
+        "bids": 1244
+      },
+      "catB": {
+        "premium": 119890,
+        "quota": 813,
+        "bids": 800
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2025-05",
+      "biddingNo": 2,
+      "catA": {
+        "premium": 102501,
+        "quota": 1267,
+        "bids": 1265
+      },
+      "catB": {
+        "premium": 116988,
+        "quota": 782,
+        "bids": 779
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2025-06",
+      "biddingNo": 1,
+      "catA": {
+        "premium": 96999,
+        "quota": 1275,
+        "bids": 1274
+      },
+      "catB": {
+        "premium": 113000,
+        "quota": 795,
+        "bids": 795
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2025-06",
+      "biddingNo": 2,
+      "catA": {
+        "premium": 98124,
+        "quota": 1254,
+        "bids": 1253
+      },
+      "catB": {
+        "premium": 116670,
+        "quota": 784,
+        "bids": 781
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2025-07",
+      "biddingNo": 1,
+      "catA": {
+        "premium": 101102,
+        "quota": 1253,
+        "bids": 1250
+      },
+      "catB": {
+        "premium": 119600,
+        "quota": 781,
+        "bids": 781
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2025-07",
+      "biddingNo": 2,
+      "catA": {
+        "premium": 101102,
+        "quota": 1253,
+        "bids": 1253
+      },
+      "catB": {
+        "premium": 119101,
+        "quota": 784,
+        "bids": 782
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2025-08",
+      "biddingNo": 1,
+      "catA": {
+        "premium": 102009,
+        "quota": 1268,
+        "bids": 1257
+      },
+      "catB": {
+        "premium": 123498,
+        "quota": 789,
+        "bids": 789
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2025-08",
+      "biddingNo": 2,
+      "catA": {
+        "premium": 104524,
+        "quota": 1264,
+        "bids": 1257
+      },
+      "catB": {
+        "premium": 124400,
+        "quota": 792,
+        "bids": 789
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2025-09",
+      "biddingNo": 1,
+      "catA": {
+        "premium": 107889,
+        "quota": 1275,
+        "bids": 1271
+      },
+      "catB": {
+        "premium": 127501,
+        "quota": 790,
+        "bids": 750
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2025-09",
+      "biddingNo": 2,
+      "catA": {
+        "premium": 119003,
+        "quota": 1272,
+        "bids": 1266
+      },
+      "catB": {
+        "premium": 136890,
+        "quota": 792,
+        "bids": 772
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2025-10",
+      "biddingNo": 1,
+      "catA": {
+        "premium": 128105,
+        "quota": 1268,
+        "bids": 1239
+      },
+      "catB": {
+        "premium": 141000,
+        "quota": 830,
+        "bids": 828
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2025-10",
+      "biddingNo": 2,
+      "catA": {
+        "premium": 122000,
+        "quota": 1270,
+        "bids": 1262
+      },
+      "catB": {
+        "premium": 131889,
+        "quota": 809,
+        "bids": 800
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2025-11",
+      "biddingNo": 1,
+      "catA": {
+        "premium": 110002,
+        "quota": 1306,
+        "bids": 1303
+      },
+      "catB": {
+        "premium": 115001,
+        "quota": 800,
+        "bids": 795
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2025-11",
+      "biddingNo": 2,
+      "catA": {
+        "premium": 109000,
+        "quota": 1285,
+        "bids": 1279
+      },
+      "catB": {
+        "premium": 129890,
+        "quota": 806,
+        "bids": 765
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2025-12",
+      "biddingNo": 1,
+      "catA": {
+        "premium": 105413,
+        "quota": 1280,
+        "bids": 1272
+      },
+      "catB": {
+        "premium": 123900,
+        "quota": 802,
+        "bids": 775
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2025-12",
+      "biddingNo": 2,
+      "catA": {
+        "premium": 109501,
+        "quota": 1283,
+        "bids": 1259
+      },
+      "catB": {
+        "premium": 115102,
+        "quota": 838,
+        "bids": 832
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2026-01",
+      "biddingNo": 1,
+      "catA": {
+        "premium": 102009,
+        "quota": 1285,
+        "bids": 1284
+      },
+      "catB": {
+        "premium": 119100,
+        "quota": 824,
+        "bids": 821
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2026-01",
+      "biddingNo": 2,
+      "catA": {
+        "premium": 109501,
+        "quota": 1301,
+        "bids": 1277
+      },
+      "catB": {
+        "premium": 121634,
+        "quota": 803,
+        "bids": 800
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2026-02",
+      "biddingNo": 1,
+      "catA": {
+        "premium": 106320,
+        "quota": 1265,
+        "bids": 1261
+      },
+      "catB": {
+        "premium": 110890,
+        "quota": 813,
+        "bids": 809
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2026-02",
+      "biddingNo": 2,
+      "catA": {
+        "premium": 106501,
+        "quota": 1289,
+        "bids": 1289
+      },
+      "catB": {
+        "premium": 105001,
+        "quota": 813,
+        "bids": 812
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2026-03",
+      "biddingNo": 1,
+      "catA": {
+        "premium": 108220,
+        "quota": 1268,
+        "bids": 1267
+      },
+      "catB": {
+        "premium": 114002,
+        "quota": 815,
+        "bids": 815
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2026-03",
+      "biddingNo": 2,
+      "catA": {
+        "premium": 111890,
+        "quota": 1264,
+        "bids": 1263
+      },
+      "catB": {
+        "premium": 115568,
+        "quota": 812,
+        "bids": 812
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2026-04",
+      "biddingNo": 1,
+      "catA": {
+        "premium": 118000,
+        "quota": 1265,
+        "bids": 1203
+      },
+      "catB": {
+        "premium": 121000,
+        "quota": 811,
+        "bids": 796
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2026-04",
+      "biddingNo": 2,
+      "catA": {
+        "premium": 123010,
+        "quota": 1265,
+        "bids": 1265
+      },
+      "catB": {
+        "premium": 121001,
+        "quota": 811,
+        "bids": 810
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2026-05",
+      "biddingNo": 1,
+      "catA": {
+        "premium": 124790,
+        "quota": 1301,
+        "bids": 1294
+      },
+      "catB": {
+        "premium": 126236,
+        "quota": 883,
+        "bids": 861
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2026-05",
+      "biddingNo": 2,
+      "catA": {
+        "premium": 124229,
+        "quota": 1239,
+        "bids": 1227
+      },
+      "catB": {
+        "premium": 129501,
+        "quota": 869,
+        "bids": 854
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2026-06",
+      "biddingNo": 1,
+      "catA": {
+        "premium": 126009,
+        "quota": 1246,
+        "bids": 1241
+      },
+      "catB": {
+        "premium": 126989,
+        "quota": 889,
+        "bids": 889
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2026-06",
+      "biddingNo": 2,
+      "catA": {
+        "premium": 123847,
+        "quota": 1251,
+        "bids": 1245
+      },
+      "catB": {
+        "premium": 123502,
+        "quota": 883,
+        "bids": 879
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    },
+    {
+      "month": "2026-07",
+      "biddingNo": 1,
+      "catA": {
+        "premium": 129000,
+        "quota": 1244,
+        "bids": 1207
+      },
+      "catB": {
+        "premium": 130889,
+        "quota": 867,
+        "bids": 863
+      },
+      "recordedAt": "2026-07-19T09:22:53.103Z"
+    }
+  ]
+}

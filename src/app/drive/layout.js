@@ -1,0 +1,22 @@
+import '@/styles/legacy-brand.css'
+import './legacy.css'
+import { dmSans, dmSerif } from '@/lib/shared/legacy-fonts'
+
+export const metadata = {
+  title: { default: 'DriveReady', template: '%s · DriveReady · coah' },
+  description: 'Singapore car affordability calculator. Know your true monthly cost before you commit.',
+  keywords: ['Singapore car loan', 'car affordability', 'COE calculator', 'car depreciation Singapore'],
+  openGraph: {
+    title: 'DriveReady — Car Affordability Calculator',
+    description: 'Know exactly what a car will cost you every month. 100+ SG models, true depreciation, green loan rates.',
+    siteName: 'DriveReady',
+  },
+}
+
+export default function DriveLayout({ children }) {
+  return (
+    <div className={`v-drive ${dmSans.variable} ${dmSerif.variable}`}>
+      {children}
+    </div>
+  )
+}

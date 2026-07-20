@@ -1,0 +1,28 @@
+import '@/styles/legacy-brand.css'
+import './legacy.css'
+import { dmSans, dmSerif } from '@/lib/shared/legacy-fonts'
+
+const DESCRIPTION = 'Free 3-minute Insurance Score for Singaporeans. See your critical illness, life/TPD, and hospitalisation gaps in real dollars — not jargon.'
+
+export const metadata = {
+  title: { default: 'InsureCheck', template: '%s · InsureCheck · coah' },
+  description: DESCRIPTION,
+  openGraph: {
+    title: "InsureCheck — Know if you're truly covered",
+    description: DESCRIPTION,
+    siteName: 'InsureCheck',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: "InsureCheck — Know if you're truly covered",
+    description: DESCRIPTION,
+  },
+}
+
+export default function InsureLayout({ children }) {
+  return (
+    <div className={`v-insure ${dmSans.variable} ${dmSerif.variable}`}>
+      {children}
+    </div>
+  )
+}

@@ -1,0 +1,72 @@
+.page { min-height: 100vh; display: flex; flex-direction: column; background: var(--color-bg); font-family: var(--font-body); }
+.main { flex: 1; }
+.content { max-width: 920px; margin: 0 auto; padding: 40px 24px 64px; animation: fadeUp 0.3s ease both; }
+
+.title { font-family: var(--font-display); font-size: 30px; color: var(--color-primary); margin: 0 0 6px; }
+.subtitle { color: var(--color-muted); margin: 0 0 28px; line-height: 1.6; }
+
+.pickerGrid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 20px; }
+@media (max-width: 640px) {
+  .pickerGrid { grid-template-columns: 1fr; }
+}
+
+.pickerCard {
+  background: var(--color-surface); border-radius: var(--radius-lg);
+  border: 1px solid var(--color-border); box-shadow: var(--shadow-card); padding: 24px;
+}
+.pickerLabel { font-family: var(--font-display); font-size: 18px; color: var(--color-primary); margin: 0 0 16px; }
+.pickerSection { margin-bottom: 16px; }
+.pickerSectionTitle {
+  display: block; font-size: 11px; font-weight: 700; color: var(--color-muted);
+  text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 8px;
+}
+.chipRow { display: flex; flex-wrap: wrap; gap: 6px; }
+.chip {
+  padding: 7px 13px; border-radius: 100px; border: 1.5px solid var(--color-border);
+  background: var(--color-bg); color: var(--color-text); font-size: 12px; font-weight: 600;
+  font-family: var(--font-body); cursor: pointer; transition: all 0.15s ease;
+}
+.chip:hover:not(:disabled) { border-color: var(--color-accent); }
+.chip:disabled { opacity: 0.4; cursor: not-allowed; }
+.chipActive { border-color: var(--color-accent); background: var(--color-accent-bg); color: var(--color-accent); }
+
+.compareBtn {
+  display: block; width: 100%; padding: 15px; background: var(--color-accent); color: #fff;
+  border: none; border-radius: var(--radius-md); font-size: 15px; font-weight: 700;
+  cursor: pointer; font-family: var(--font-body); box-shadow: 0 4px 16px rgba(255,62,128,0.35);
+  margin-bottom: 32px;
+}
+
+.resultGrid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+@media (max-width: 640px) {
+  .resultGrid { grid-template-columns: 1fr; }
+}
+.resultCard {
+  background: var(--color-surface); border-radius: var(--radius-lg);
+  border: 1px solid var(--color-border); box-shadow: var(--shadow-card); padding: 24px;
+}
+.resultCard.winner { border-color: var(--color-accent); border-width: 1.5px; }
+.resultTitle { font-family: var(--font-display); font-size: 20px; color: var(--color-primary); margin: 0 0 4px; }
+.resultDesc { font-size: 13px; color: var(--color-muted); margin: 0 0 20px; line-height: 1.5; }
+
+.allocMini { display: flex; flex-direction: column; gap: 6px; margin-bottom: 20px; }
+.allocMiniRow { display: flex; justify-content: space-between; font-size: 13px; }
+.allocMiniTicker { font-weight: 700; color: var(--color-text); }
+.allocMiniPct { color: var(--color-muted); font-variant-numeric: tabular-nums; }
+
+.statList { display: flex; flex-direction: column; gap: 10px; }
+.statRow {
+  display: flex; justify-content: space-between; align-items: center; padding: 10px 14px;
+  background: var(--color-soft-bg); border-radius: var(--radius-sm); border: 1px solid var(--color-border);
+}
+.statLabel { font-size: 12px; color: var(--color-muted); }
+.statValue { font-size: 14px; font-weight: 700; color: var(--color-primary); font-variant-numeric: tabular-nums; }
+.statValue.negative { color: var(--color-red); }
+.statValue.positive { color: var(--color-accent); }
+
+.footnote {
+  font-size: 12px; color: var(--color-muted); margin-top: 24px; line-height: 1.6;
+  padding: 12px 16px; background: var(--color-soft-bg); border-radius: 8px; border-left: 3px solid #D1D5DB;
+}
+
+@keyframes fadeUp { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }

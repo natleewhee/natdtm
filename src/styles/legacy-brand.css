@@ -1,0 +1,48 @@
+/* Shared "existing coah brand" tokens — sginsurecheck and sgdriveready had
+   already independently converged on an identical --color-coah/navy/teal
+   token set before this merge (both were already titled "A Coah Project").
+   Scoped to .v-insure/.v-drive (rather than :root) so it can't collide with
+   the new Ledger shell tokens in app/globals.css, or with WhatETF's
+   different values for the same variable names — see app/etf/legacy.css. */
+
+.v-insure, .v-drive {
+  --color-coah: #1C2B3A;
+  --color-coah-mid: #2D3F52;
+  --color-coah-light: #3D5166;
+  --color-primary: #0F2D6B;
+  --color-accent: #1D9E75;
+  --color-accent-bg: #E1F5EE;
+  --color-bg: #F7F8FA;
+  --color-surface: #FFFFFF;
+  --color-border: #E5E7EB;
+  --color-text: #374151;
+  --color-muted: #6B7280;
+  --color-faint: #9CA3AF;
+
+  --color-red: #E24B4A;
+  --color-red-bg: #FCEBEB;
+  --color-amber: #EF9F27;
+  --color-amber-bg: #FAEEDA;
+  --color-blue: #378ADD;
+  --color-blue-bg: #E6F1FB;
+  --color-teal: #1D9E75;
+  --color-teal-bg: #E1F5EE;
+
+  --font-coah: system-ui, sans-serif;
+  --font-display: 'DM Serif Display', Georgia, serif;
+  --font-body: 'DM Sans', system-ui, sans-serif;
+  --font-mono: 'DM Mono', 'Courier New', monospace;
+
+  --radius-sm: 6px;
+  --radius-md: 12px;
+  --radius-lg: 20px;
+  --radius-xl: 32px;
+  --shadow-card: 0 1px 3px rgba(0,0,0,0.06), 0 4px 16px rgba(0,0,0,0.04);
+  --shadow-md: 0 2px 8px rgba(0,0,0,0.08), 0 8px 24px rgba(0,0,0,0.06);
+
+  font-family: var(--font-body);
+  background-color: var(--color-bg);
+  color: var(--color-text);
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}

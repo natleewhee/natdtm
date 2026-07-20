@@ -1,0 +1,26 @@
+import './globals.css'
+import Nav from '@/components/shared/Nav'
+import Footer from '@/components/shared/Footer'
+
+export const metadata = {
+  metadataBase: new URL('https://coah.vercel.app'),
+  title: { default: 'coah — Singapore financial decision calculators', template: '%s · coah' },
+  description: 'Free calculators for the big Singapore financial decisions — insurance adequacy, car affordability, ETF investing. Every number is shown, not just the verdict.',
+  openGraph: {
+    siteName: 'coah',
+    locale: 'en_SG',
+    type: 'website',
+  },
+}
+
+export default function RootLayout({ children }) {
+  return (
+    <html lang="en">
+      <body>
+        <Nav />
+        <main>{children}</main>
+        <Footer />
+      </body>
+    </html>
+  )
+}

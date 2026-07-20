@@ -1,0 +1,73 @@
+name: Refresh car data
+
+# LTA publishes the Car Cost Update PDF monthly, but COE bidding happens
+# ~2x/month, so we check weekly. The script itself is idempotent and only
+# writes when matched prices actually differ — if nothing changed, no PR
+# is opened.
+on:
+  schedule:
+    - cron: '0 4 * * 1' # every Monday, 04:00 UTC (~12:00 SGT)
+  workflow_dispatch: {}
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+
+      - name: Run car price refresh script
+        run: node scripts/refresh-cars.mjs
+
+      - name: Open PR if cars.json changed
+        uses: peter-evans/create-pull-request@v6
+        with:
+          commit-message: 'chore: refresh car prices from LTA'
+          title: 'Refresh car prices from latest LTA Car Cost Update'
+          body: |
+            Automated refresh via `.github/workflows/refresh-data.yml` and
+            `scripts/refresh-cars.mjs`. This PR only opens when the parsed
+            LTA PDF matched enough cars to pass the coverage sanity check
+            (see `isLowCoverage` in `src/lib/lta-parse.js`) and produced an
+            actual diff — review the price/OMV/VES changes below before
+            merging, since the scraper's matching is heuristic.
+          branch: auto/refresh-car-data
+          delete-branch: true
+          add-paths: public/data/cars.json
+
+      # COE history can't be backfilled — DataMall only exposes the current +
+      # previous bidding exercise, so this only grows forward from whenever
+      # the workflow starts running. Requires the LTA_API_KEY repo secret;
+      # continue-on-error so a missing secret or a DataMall hiccup here never
+      # blocks the car-price refresh above.
+      - name: Run COE history refresh script
+        id: coe_history
+        continue-on-error: true
+        env:
+          LTA_API_KEY: ${{ secrets.LTA_API_KEY }}
+        run: node scripts/refresh-coe-history.mjs
+
+      - name: Open PR if coe-history.json changed
+        if: steps.coe_history.outcome == 'success'
+        uses: peter-evans/create-pull-request@v6
+        with:
+          commit-message: 'chore: append latest COE bidding results'
+          title: 'Append latest COE bidding results to history'
+          body: |
+            Automated via `.github/workflows/refresh-data.yml` and
+            `scripts/refresh-coe-history.mjs`. Requires the `LTA_API_KEY`
+            repository secret — this step is skipped, not failed, if it's
+            missing or the DataMall call errors, so it never blocks the
+            car-price refresh above.
+          branch: auto/refresh-coe-history
+          delete-branch: true
+          add-paths: public/data/coe-history.json

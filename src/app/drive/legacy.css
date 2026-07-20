@@ -1,0 +1,59 @@
+/* DriveReady-only leftovers from its original globals.css. The shared
+   navy/teal token block now lives in src/styles/legacy-brand.css. The
+   universal box-sizing/margin/padding reset now lives once in
+   app/globals.css. The external Clash Display Fontshare @import is dropped
+   (see insure/legacy.css for the same call). */
+
+/* Slider */
+/* --slider-fill is set inline per-element (e.g. style={{'--slider-fill': ...}})
+   so the filled-track gradient can vary per slider without any DOM/style
+   mutation in JS — pseudo-elements can't be targeted via the style prop
+   directly, but they do inherit custom properties from their host element. */
+.zz-slider { -webkit-appearance:none; appearance:none; width:100%; height:4px; background:transparent; outline:none; cursor:pointer; }
+.zz-slider::-webkit-slider-runnable-track { height:4px; border-radius:4px; background:var(--slider-fill, #E5E7EB); }
+.zz-slider::-moz-range-track { height:4px; border-radius:4px; background:var(--slider-fill, #E5E7EB); }
+.zz-slider::-webkit-slider-thumb { -webkit-appearance:none; width:20px; height:20px; background:#1D9E75; border-radius:50%; margin-top:-8px; box-shadow:0 0 0 3px rgba(29,158,117,0.2); border:2px solid #fff; }
+.zz-slider::-moz-range-thumb { width:20px; height:20px; background:#1D9E75; border-radius:50%; border:2px solid #fff; cursor:pointer; }
+
+/* Scrollbar */
+.coah-scroll::-webkit-scrollbar { width:3px; }
+.coah-scroll::-webkit-scrollbar-thumb { background:#E5E7EB; border-radius:2px; }
+
+/* Animations */
+@keyframes barGrow    { from{transform:scaleX(0)} to{transform:scaleX(1)} }
+@keyframes stampIn    { 0%{opacity:0;transform:scale(1.15)} 65%{opacity:1;transform:scale(0.98)} 100%{transform:scale(1)} }
+@keyframes ringOut    { 0%{transform:scale(0.7);opacity:0.6} 100%{transform:scale(2.2);opacity:0} }
+@keyframes spinIn     { from{transform:rotate(-120deg) scale(0);opacity:0} to{transform:rotate(0) scale(1);opacity:1} }
+@keyframes fadeUp     { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
+@keyframes expandDown { from{opacity:0;transform:translateY(-4px)} to{opacity:1;transform:translateY(0)} }
+@keyframes slideIn    { from{opacity:0;transform:translateY(16px)} to{opacity:1;transform:translateY(0)} }
+@keyframes spin       { to{transform:rotate(360deg)} }
+@keyframes fadeSlideUp { from{opacity:0;transform:translateY(6px)} to{opacity:1;transform:translateY(0)} }
+
+/* Interactive states */
+.coo-row          { cursor:pointer; transition:background 0.15s; border-radius:8px; }
+.coo-row:hover    { background:rgba(15,45,107,0.03) !important; }
+.top5-btn         { transition:all 0.15s; }
+.top5-btn:hover   { border-color:rgba(29,158,117,0.4) !important; background:rgba(225,245,238,0.53) !important; }
+.top5-btn.sel     { border-color:#1D9E75 !important; background:#E1F5EE !important; }
+.search-row       { transition:background 0.12s; }
+.search-row:hover { background:rgba(15,45,107,0.03) !important; }
+.search-row.hi    { background:#E1F5EE !important; }
+.coah-btn-primary { transition:all 0.2s; }
+.coah-btn-primary:hover:not(:disabled) { filter:brightness(1.05); transform:translateY(-1px); box-shadow:0 6px 20px rgba(29,158,117,0.3) !important; }
+.coah-link { color:#1D9E75; text-decoration:none; transition:opacity 0.15s; }
+.coah-link:hover { opacity:0.75; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+@media (max-width: 640px) {
+  .coah-nav { padding-left: 16px !important; padding-right: 16px !important; }
+  .coah-nav-badge { display: none !important; }
+}
