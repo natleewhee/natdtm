@@ -10,6 +10,7 @@ import { CoeSensitivity } from './CoeSensitivity'
 import { suggestAdjustments } from '@/lib/drive/solve'
 import { calc } from '@/lib/drive/calc'
 import { calcUsed } from '@/lib/drive/used-car'
+import { encodePrefsToParams } from '@/lib/etf/logic'
 
 export function ResultPanel({ r, tenure, visible, slim=false }) {
   const [phase, setPhase] = useState(0)
@@ -62,6 +63,11 @@ export function ResultPanel({ r, tenure, visible, slim=false }) {
   const contentIn = phase >= 3
   const metricsIn = phase >= 4
   const loanReduced = canDown && extraDown > 0
+  // Stage 3 cross-tool nudge: when this car leaves real room under the 30%
+  // comfort limit, offer to carry that number straight into WhatETF's DCA
+  // planner — reuses ETF's own encodePrefsToParams so this can never drift
+  // out of sync with how /etf/preferences reads its query params.
+  const headroom = canDown && verdict === 'Affordable' ? Math.round(takeHome * 0.30 - monthly) : 0
   const verdictIcon = verdict==='Affordable' ? '✦' : verdict==='Stretch' ? '◈' : '✕'
   return (
     <div style={{flex:1,background:C.surface,border:`1.5px solid ${phase>=1?vborder:C.border}`,borderRadius:C.rL,overflow:'hidden',opacity:phase>=1?1:0,transform:phase>=1?'translateY(0) scale(1)':'translateY(16px) scale(0.98)',transition:'opacity 0.4s cubic-bezier(0.16,1,0.3,1),transform 0.4s,border-color 0.4s,box-shadow 0.5s',boxShadow:glowing?`${C.shadow},0 0 0 1px ${vc}22`:C.shadow}}>
@@ -149,6 +155,23 @@ export function ResultPanel({ r, tenure, visible, slim=false }) {
             <div>
               <div style={{fontSize:C.xs,fontWeight:700,color:C.accent,textTransform:'uppercase',letterSpacing:'0.08em',marginBottom:4}}>Green rate savings vs ICE</div>
               <p style={{fontSize:C.sm,color:C.accentText,lineHeight:1.65}}>Save <strong>{SGD(saving)}</strong> total — <strong>{SGD(saving/(tenure*12))}/mo</strong> less than a petrol loan at the same amount.</p>
+            </div>
+          </div>
+        )}
+        {headroom > 50 && (
+          <div style={{display:'flex',alignItems:'flex-start',gap:12,background:C.accentBg,border:`1px solid ${C.accent}44`,borderRadius:C.r,padding:'12px 14px',marginBottom:14,opacity:metricsIn?1:0,transition:'opacity 0.5s 0.5s'}}>
+            <span style={{fontSize:20,flexShrink:0}}>🧭</span>
+            <div>
+              <div style={{fontSize:C.xs,fontWeight:700,color:C.accent,textTransform:'uppercase',letterSpacing:'0.08em',marginBottom:4}}>coah / invest</div>
+              <p style={{fontSize:C.sm,color:C.accentText,lineHeight:1.65,margin:'0 0 8px'}}>
+                This leaves <strong>{SGD(headroom)}/mo</strong> under your 30% comfort limit — untouched by this car.
+              </p>
+              <a
+                href={`/etf/preferences?${encodePrefsToParams({ risk: 'Balanced', simplicity: '2-3 ETFs', tilts: [], monthlyInvestment: String(headroom) }).toString()}`}
+                style={{fontSize:C.sm,fontWeight:700,color:C.accent,textDecoration:'none'}}
+              >
+                See what {SGD(headroom)}/mo could grow into →
+              </a>
             </div>
           </div>
         )}

@@ -606,6 +606,20 @@ function PortfolioContent() {
                 <a href="/etf/learn" className={styles.learnMoreLink}>More investing basics →</a>
               </div>
 
+              {/* Stage 3 cross-tool nudge: insurance-before-investing is
+                  standard financial-planning sequencing — only surface it
+                  once there's a real monthly commitment, not while just
+                  browsing example allocations. */}
+              {prefs.monthlyInvestment && Number(prefs.monthlyInvestment) > 0 && (
+                <div className={`${styles.card} ${styles.sideCard}`}>
+                  <h4 className={styles.sideCardTitle}>Before You Commit</h4>
+                  <p className={styles.stepText} style={{ marginBottom: 10 }}>
+                    DCA works best once critical illness, life/TPD, and hospitalisation gaps are covered — so a health event doesn&apos;t force you to sell mid-plan.
+                  </p>
+                  <a href="/insure" className={styles.learnMoreLink}>Check your coverage first →</a>
+                </div>
+              )}
+
               {/* Next steps */}
               <div className={`${styles.card} ${styles.sideCard}`}>
                 <h4 className={styles.sideCardTitle}>Next Steps</h4>
