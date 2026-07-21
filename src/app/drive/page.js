@@ -17,6 +17,7 @@ import { ResultPanel } from '@/components/drive/ResultPanel'
 import { AffordabilityCeilingCard } from '@/components/drive/AffordabilityCeilingCard'
 import { GaragePanel } from '@/components/drive/GaragePanel'
 import SubNav from '@/components/shared/SubNav'
+import TrustBadges from '@/components/shared/TrustBadges'
 
 // Car prices come from /public/data/cars.json (edit that file to update prices)
 // COE premiums come from /api/coe (live from LTA DataMall)
@@ -295,11 +296,7 @@ export default function DriveReadyPage() {
         <div style={{fontFamily:C.fontCoah,fontSize:10,fontWeight:600,color:'rgba(255,255,255,0.35)',letterSpacing:'0.18em',textTransform:'uppercase',marginBottom:14}}>Singapore Car Loan Calculator</div>
         <h1 style={{fontFamily:C.fontDisplay,fontSize:'clamp(28px,5vw,50px)',color:'#fff',marginBottom:10,lineHeight:1.2}}>Be Ready to Drive.</h1>
         <p style={{fontFamily:C.fontDisplay,fontSize:18,color:'rgba(255,255,255,0.5)',marginBottom:24,fontStyle:'italic'}}>Your salary, your cash, your real monthly number.</p>
-        <div style={{display:'flex',justifyContent:'center',gap:10,flexWrap:'wrap'}}>
-          {['50+ SG models','True cost incl. depreciation','Zero data collected','Free, forever'].map(b => (
-            <span key={b} style={{padding:'5px 14px',borderRadius:100,border:'1px solid rgba(255,255,255,0.14)',fontSize:12,color:'rgba(255,255,255,0.45)',letterSpacing:'0.03em'}}>{b}</span>
-          ))}
-        </div>
+        <TrustBadges tone="dark" items={['50+ SG models', 'True cost incl. depreciation', 'Zero data collected', 'Free, forever']} />
       </div>
 
       {/* ── MAS disclaimer ── */}

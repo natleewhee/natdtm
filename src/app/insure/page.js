@@ -2,6 +2,7 @@
 
 import { SITE_URL } from '@/lib/shared/site'
 import SubNav from '@/components/shared/SubNav'
+import TrustBadges from '@/components/shared/TrustBadges'
 
 export default function LandingPage() {
   return (
@@ -95,28 +96,8 @@ export default function LandingPage() {
           Check my score — it&apos;s free
         </a>
 
-        <div style={{
-          marginTop: '20px',
-          display: 'flex',
-          justifyContent: 'center',
-          gap: '16px',
-          flexWrap: 'wrap',
-        }}>
-          {[
-            'No sign-up',
-            'No data stored',
-            'Not affiliated with any insurer',
-          ].map(badge => (
-            <span key={badge} style={{
-              fontSize: '12px',
-              color: 'var(--color-faint)',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '4px',
-            }}>
-              <span style={{ color: 'var(--color-accent)', fontWeight: '700' }}>✓</span> {badge}
-            </span>
-          ))}
+        <div style={{ marginTop: '20px' }}>
+          <TrustBadges items={['No sign-up', 'No data stored', 'Not affiliated with any insurer']} />
         </div>
       </section>
 

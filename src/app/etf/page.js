@@ -2,6 +2,7 @@
 
 import { generatePortfolio } from '@/lib/etf/logic'
 import SubNav from '@/components/shared/SubNav'
+import TrustBadges from '@/components/shared/TrustBadges'
 import styles from './page.module.css'
 
 // A real, deterministic example — built from the same logic every generated
@@ -26,18 +27,16 @@ export default function LandingPage() {
         <div className={styles.hero}>
           <div className={styles.heroEyebrow}>Singapore Edition</div>
           <h1 className={styles.heroTitle}>
-            Build your ETF portfolio<br/>with confidence.
+            Your ETF portfolio,<br/>worked out for you.
           </h1>
           <p className={styles.heroBody}>
-            Explore illustrative ETF allocations optimised for Singapore-based investors. Simple, educational, and privacy-first.
+            Answer three questions about risk and simplicity — get a real fund allocation with the math shown. Runs entirely in your browser.
           </p>
           <a href="/etf/preferences" className={styles.heroCta}>
             Check my portfolio — it&apos;s free
           </a>
           <div className={styles.heroBadges}>
-            {['No sign-up', 'No data stored', 'No ads', 'No commissions'].map(b => (
-              <span key={b} className={styles.heroBadge}>{b}</span>
-            ))}
+            <TrustBadges tone="dark" items={['No sign-up', 'No data stored', 'No ads', 'No commissions']} />
           </div>
         </div>
 
