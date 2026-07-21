@@ -527,10 +527,6 @@ export default function RenewOrReplacePage() {
           </div>
         )}
       </main>
-
-      <footer style={{background:C.coah,padding:'20px 32px',textAlign:'center'}}>
-        <p style={{fontSize:C.xs,color:'rgba(255,255,255,0.3)',margin:0}}>Not affiliated with any dealer or MAS-licensed entity · Educational tool only · © 2025 Coah</p>
-      </footer>
     </div>
   )
 }
