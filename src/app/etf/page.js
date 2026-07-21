@@ -1,6 +1,6 @@
 'use client'
 
-import { Nav, Footer } from '@/components/etf/shared'
+import { Nav } from '@/components/etf/shared'
 import { generatePortfolio } from '@/lib/etf/logic'
 import styles from './page.module.css'
 
@@ -92,7 +92,6 @@ export default function LandingPage() {
         </div>
       </main>
 
-      <Footer />
     </div>
   )
 }

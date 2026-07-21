@@ -2,7 +2,7 @@
 
 import { Suspense, useState, useEffect, useMemo } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
-import { Nav, Footer, OptionCard, RISK_OPTIONS, SIMPLICITY_OPTIONS, TILT_OPTIONS, savePrefs, loadPrefs, savePortfolio } from '@/components/etf/shared'
+import { Nav, OptionCard, RISK_OPTIONS, SIMPLICITY_OPTIONS, TILT_OPTIONS, savePrefs, loadPrefs, savePortfolio } from '@/components/etf/shared'
 import { generatePortfolio, encodePrefsToParams, decodePrefsFromParams } from '@/lib/etf/logic'
 import styles from './preferences.module.css'
 
@@ -166,7 +166,6 @@ function PreferencesForm() {
         </div>
       </main>
 
-      <Footer />
     </div>
   )
 }

@@ -34,7 +34,7 @@ function PillarCard({ color, emoji, title, badge, summary, expandContent }) {
     teal:  { bg: '#e4efe9', border: '#1f6f54', badgeBg: '#e4efe9', badgeText: '#145c43' },
     amber: { bg: '#f5ecd9', border: '#b8863b', badgeBg: '#f5ecd9', badgeText: '#7a5a26' },
     blue:  { bg: '#e8eef5', border: '#3d6fa8', badgeBg: '#e8eef5', badgeText: '#2c5079' },
-    gray:  { bg: '#eef0ed', border: '#8a948d', badgeBg: '#eef0ed', badgeText: '#5f6b64' },
+    gray:  { bg: '#eef0ed', border: '#647069', badgeBg: '#eef0ed', badgeText: '#5f6b64' },
   }
   const c = colors[color] || colors.gray
   return (
@@ -79,7 +79,7 @@ export default function TheMathPage() {
           <div style={{ paddingTop: 40, paddingBottom: 8 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16 }}>
               <span style={{ fontFamily: "'Fraunces', system-ui, sans-serif", fontSize: 13, fontWeight: 600, color: '#1b2320', letterSpacing: '0.08em' }}>COAH</span>
-              <span style={{ fontSize: 12, color: '#8a948d', borderLeft: '1px solid #d8ded9', paddingLeft: 8 }}>Built for Singapore</span>
+              <span style={{ fontSize: 12, color: '#647069', borderLeft: '1px solid #d8ded9', paddingLeft: 8 }}>Built for Singapore</span>
             </div>
             <h1 style={{ fontFamily: "'Fraunces', Georgia, serif", fontSize: 'clamp(26px,5vw,36px)', color: '#1b2320', margin: '0 0 12px', lineHeight: 1.2 }}>How DriveReady calculates your numbers</h1>
             <BodyText>DriveReady doesn&apos;t guess. Every figure — monthly instalment, depreciation, COE rebate, true cost — comes from Singapore&apos;s actual financing and vehicle regulations. Here&apos;s exactly what we do.</BodyText>
@@ -123,7 +123,7 @@ export default function TheMathPage() {
               <div key={row.label} style={{ padding: '12px 16px', background: '#fff', borderRadius: 10, border: '1px solid #d8ded9' }}>
                 <p style={{ margin: '0 0 4px', fontWeight: 600, fontSize: 14, color: '#1b2320' }}>{row.label}</p>
                 <p style={{ margin: '0 0 2px', fontSize: 13, color: '#1b2320' }}>{row.loan} · {row.down}</p>
-                <p style={{ margin: 0, fontSize: 12, color: '#8a948d' }}>{row.example}</p>
+                <p style={{ margin: 0, fontSize: 12, color: '#647069' }}>{row.example}</p>
               </div>
             ))}
           </div>
@@ -224,16 +224,16 @@ True effective monthly cost = instalment + monthly depreciation`}</Formula>
 
         {/* Disclaimer */}
         <div style={{ marginTop: 36, paddingTop: 24, borderTop: '1px solid #d8ded9' }}>
-          <p style={{ fontSize: 12, color: '#8a948d', lineHeight: 1.6, margin: '0 0 6px' }}>
+          <p style={{ fontSize: 12, color: '#647069', lineHeight: 1.6, margin: '0 0 6px' }}>
             DriveReady is an educational tool. It does not constitute financial advice. Car prices, COE premiums, and financing rates are indicative and subject to change. All figures should be verified with the relevant dealer, bank, and LTA before making a purchase decision.
           </p>
-          <p style={{ fontSize: 11, color: '#8a948d', margin: '0 0 20px' }}>Not affiliated with any insurer or MAS-licensed entity.</p>
+          <p style={{ fontSize: 11, color: '#647069', margin: '0 0 20px' }}>Not affiliated with any insurer or MAS-licensed entity.</p>
           <div style={{ paddingTop: 16, borderTop: '1px solid #d8ded9', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 8 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
               <span style={{ fontFamily: "'Fraunces', system-ui, sans-serif", fontSize: 14, fontWeight: 600, color: '#1b2320', letterSpacing: '0.08em' }}>COAH</span>
-              <span style={{ fontSize: 11, color: '#8a948d', borderLeft: '1px solid #d8ded9', paddingLeft: 8 }}>Modern Utilities for the Common Good</span>
+              <span style={{ fontSize: 11, color: '#647069', borderLeft: '1px solid #d8ded9', paddingLeft: 8 }}>Modern Utilities for the Common Good</span>
             </div>
-            <a href="/drive" style={{ fontSize: 11, color: '#8a948d', textDecoration: 'none' }}>coah.vercel.app/drive</a>
+            <a href="/drive" style={{ fontSize: 11, color: '#647069', textDecoration: 'none' }}>coah.vercel.app/drive</a>
           </div>
         </div>
       </div>

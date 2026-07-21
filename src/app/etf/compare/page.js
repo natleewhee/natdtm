@@ -2,7 +2,7 @@
 
 import { Suspense, useState, useEffect } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
-import { Nav, Footer, RISK_OPTIONS, SIMPLICITY_OPTIONS, TILT_OPTIONS } from '@/components/etf/shared'
+import { Nav, RISK_OPTIONS, SIMPLICITY_OPTIONS, TILT_OPTIONS } from '@/components/etf/shared'
 import { summarizePortfolio, encodeComparePrefs, decodeComparePrefs } from '@/lib/etf/logic'
 import styles from './compare.module.css'
 
@@ -161,7 +161,6 @@ function CompareContent() {
         </div>
       </main>
 
-      <Footer />
     </div>
   )
 }

@@ -89,7 +89,7 @@ export function GaugeBar({ ratio, visible }) {
       </div>
       <div style={{display:'flex',justifyContent:'space-between',marginTop:5}}>
         <span style={{fontSize:C.xs,color:C.accent,fontWeight:600}}>Safe ≤ 30%</span>
-        <span style={{fontSize:C.xs,color:C.amber,fontWeight:600}}>Stretch ≤ 45%</span>
+        <span style={{fontSize:C.xs,color:C.amberText,fontWeight:600}}>Stretch ≤ 45%</span>
         <span style={{fontSize:C.xs,color:C.red,fontWeight:600}}>Too high &gt; 45%</span>
       </div>
     </div>

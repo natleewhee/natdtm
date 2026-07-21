@@ -2,7 +2,7 @@
 
 import { Suspense, useState, useEffect } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
-import { Nav, Footer, C, loadPortfolio, savePortfolio } from '@/components/etf/shared'
+import { Nav, C, loadPortfolio, savePortfolio } from '@/components/etf/shared'
 import {
   generateIllustrativePerformance, computeLookThrough, computeBacktest,
   computeBlendedTER, decodePrefsFromParams, generatePortfolio, RETURNS_AS_OF,
@@ -657,7 +657,6 @@ function PortfolioContent() {
         </div>
       </main>
 
-      <Footer />
     </div>
   )
 }

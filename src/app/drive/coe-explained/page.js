@@ -9,7 +9,7 @@ import { CoeTimingSignal } from '@/components/drive/CoeTimingSignal'
 const C = {
   coah: '#1b2320', primary: '#1b2320', accent: '#1f6f54', accentBg: '#e4efe9', accentText: '#145c43',
   bg: '#f3f5f2', surface: '#ffffff', border: '#d8ded9',
-  text: '#1b2320', muted: '#5f6b64', faint: '#8a948d',
+  text: '#1b2320', muted: '#5f6b64', faint: '#647069',
   red: '#c1443f', redBg: '#f7e9e8',
   amber: '#b8863b', amberBg: '#f5ecd9', amberText: '#7a5a26',
   fontCoah: "'Fraunces', system-ui, sans-serif",

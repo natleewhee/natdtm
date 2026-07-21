@@ -188,7 +188,7 @@ a:focus-visible, button:focus-visible, input:focus-visible {
   --color-border: var(--l-line);
   --color-text: var(--l-ink);
   --color-muted: var(--l-sub);
-  --color-faint: #8a948d;
+  --color-faint: #647069;
 
   --color-red: #c1443f;
   --color-red-bg: #f7e9e8;

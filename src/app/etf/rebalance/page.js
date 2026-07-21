@@ -2,7 +2,7 @@
 
 import { Suspense, useState, useEffect, useMemo } from 'react'
 import { useSearchParams } from 'next/navigation'
-import { Nav, Footer, loadPortfolio } from '@/components/etf/shared'
+import { Nav, loadPortfolio } from '@/components/etf/shared'
 import { computeRebalance, decodePrefsFromParams, generatePortfolio } from '@/lib/etf/logic'
 import styles from './rebalance.module.css'
 
@@ -136,7 +136,6 @@ function RebalanceContent() {
         </div>
       </main>
 
-      <Footer />
     </div>
   )
 }

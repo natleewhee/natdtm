@@ -1,6 +1,6 @@
 'use client'
 
-import { Nav, Footer } from '@/components/etf/shared'
+import { Nav } from '@/components/etf/shared'
 import styles from './learn.module.css'
 
 function Section({ title, children, noBorder }) {
@@ -93,7 +93,6 @@ export default function LearnPage() {
         </div>
       </main>
 
-      <Footer />
     </div>
   )
 }

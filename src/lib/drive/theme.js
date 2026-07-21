@@ -14,7 +14,7 @@ export const C = {
   coah: '#1b2320', coahMid: '#1b2320', coahLight: '#33403a',
   primary: '#1b2320', accent: '#1f6f54', accentBg: '#e4efe9', accentText: '#145c43',
   bg: '#f3f5f2', surface: '#ffffff', border: '#d8ded9',
-  text: '#1b2320', muted: '#5f6b64', faint: '#8a948d',
+  text: '#1b2320', muted: '#5f6b64', faint: '#647069',
   red: '#c1443f', redBg: '#f7e9e8', redText: '#8f2f2b',
   amber: '#b8863b', amberBg: '#f5ecd9', amberText: '#7a5a26',
   blue: '#3d6fa8', blueBg: '#e8eef5', blueText: '#2c5079',

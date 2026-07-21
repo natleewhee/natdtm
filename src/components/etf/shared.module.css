@@ -37,51 +37,9 @@
 .navMathLink:hover { opacity: 1; color: var(--color-accent); }
 .navRight { display: flex; align-items: center; gap: 16px; }
 
-/* ─── FOOTER ─────────────────────────────────────────────────────────────── */
-.footer { background: var(--color-coah); padding: 40px 32px 28px; }
-.footerInner { max-width: 900px; margin: 0 auto; }
-.footerGrid { display: grid; grid-template-columns: 1fr 1fr; gap: 32px; margin-bottom: 32px; }
-@media (max-width: 560px) {
-  .footerGrid { grid-template-columns: 1fr; }
-}
-.footerBrand {
-  font-family: var(--font-coah); font-size: 20px; font-weight: 600;
-  color: #fff; letter-spacing: 0.08em; margin-bottom: 4px;
-}
-.footerTagline {
-  font-size: 11px; color: rgba(255,255,255,0.35); text-transform: uppercase;
-  letter-spacing: 0.1em; margin-bottom: 14px;
-}
-.footerBody { font-size: 12px; color: rgba(255,255,255,0.4); line-height: 1.7; margin-bottom: 14px; }
-.footerQuote { font-family: var(--font-display); font-size: 13px; color: rgba(255,255,255,0.3); font-style: italic; }
-.footerLinksTitle {
-  font-size: 11px; font-weight: 700; color: rgba(255,255,255,0.35);
-  text-transform: uppercase; letter-spacing: 0.12em; margin-bottom: 14px;
-}
-.footerLinks { display: flex; flex-direction: column; gap: 10px; }
-.footerLinkCard {
-  display: flex; align-items: center; gap: 12px; padding: 10px 14px;
-  background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.07);
-  border-radius: var(--radius-sm); text-decoration: none;
-}
-.footerLinkName { font-family: var(--font-display); font-size: 15px; color: rgba(255,255,255,0.85); margin-bottom: 2px; }
-.footerLinkDesc { font-size: 11px; color: rgba(255,255,255,0.35); }
-.footerLinkLive {
-  font-family: var(--font-mono);
-  font-size: 10px; font-weight: 700; border-radius: var(--radius-sm); padding: 3px 9px;
-  background: rgba(31,111,84,0.2); color: var(--color-accent); letter-spacing: 0.04em;
-}
-.footerDisclaimerBlock { border-top: 1px solid rgba(255,255,255,0.08); padding-top: 20px; margin-bottom: 16px; }
-.footerDisclaimerTitle {
-  font-size: 10px; font-weight: 700; color: rgba(255,255,255,0.25);
-  text-transform: uppercase; letter-spacing: 0.14em; margin-bottom: 6px;
-}
-.footerDisclaimerText { font-size: 11px; color: rgba(255,255,255,0.3); line-height: 1.7; }
-.footerBottom { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; }
-.footerBottomText { font-size: 11px; color: rgba(255,255,255,0.2); }
-.footerBottomLink { font-size: 11px; color: rgba(255,255,255,0.35); text-decoration: none; }
-.footerBottomLinks { display: flex; gap: 16px; }
-.footerVersion { margin-top: 10px; font-size: 10px; color: rgba(255,255,255,0.15); font-variant-numeric: tabular-nums; }
+/* Per-vertical footer removed — the shell footer (src/components/shared/Footer.js)
+   now carries the one disclaimer that was genuinely vertical-specific; the
+   brand wordmark and cross-links here duplicated the shell nav/footer. */
 
 /* ─── OPTION CARD ────────────────────────────────────────────────────────── */
 /* Styled like a game "loadout" slot: chunky border, presses down on click. */
@@ -102,5 +60,5 @@
   box-shadow: 3px 3px 0 var(--color-accent-deep);
 }
 .optionLabel { font-weight: 700; font-size: 14px; color: var(--color-primary); margin: 0 0 4px; }
-.optionCard.selected .optionLabel { color: var(--color-amber); }
+.optionCard.selected .optionLabel { color: var(--color-amber-text); }
 .optionDesc { font-size: 13px; color: var(--color-muted); margin: 0; line-height: 1.4; }

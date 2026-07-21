@@ -6,7 +6,7 @@ import Link from 'next/link'
 const C = {
   coah: '#1b2320', primary: '#1b2320', accent: '#1f6f54', accentBg: '#e4efe9',
   bg: '#f3f5f2', surface: '#FFFFFF', border: '#d8ded9',
-  text: '#1b2320', muted: '#5f6b64', faint: '#8a948d',
+  text: '#1b2320', muted: '#5f6b64', faint: '#647069',
   fontCoah: "'Fraunces', system-ui, sans-serif",
   fontDisplay: "'Fraunces', Georgia, serif",
   fontBody: "'IBM Plex Sans', system-ui, sans-serif",

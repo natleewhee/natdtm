@@ -470,7 +470,7 @@ export default function DriveReadyPage() {
                   ? <span style={{fontSize:C.xs,color:C.faint}}>Fetching live COE…</span>
                   : coeData
                     ? <><span style={{fontSize:C.xs,fontFamily:C.fontMono,fontWeight:700,color:C.primary}}>Cat A: {SGD(coeData.catA.premium)}</span><span style={{fontSize:C.xs,color:C.faint}}>·</span><span style={{fontSize:C.xs,fontFamily:C.fontMono,fontWeight:700,color:C.primary}}>Cat B: {SGD(coeData.catB.premium)}</span><span style={{fontSize:C.xs,color:C.faint,fontSize:'10px'}}> · {coeData.month} · Live from LTA</span></>
-                    : <><span style={{fontSize:C.xs,fontFamily:C.fontMono,fontWeight:700,color:C.amber}}>Cat A: ~{SGD(COE_FALLBACK.catA)}</span><span style={{fontSize:C.xs,color:C.faint}}>·</span><span style={{fontSize:C.xs,fontFamily:C.fontMono,fontWeight:700,color:C.amber}}>Cat B: ~{SGD(COE_FALLBACK.catB)}</span><span style={{fontSize:C.xs,color:C.amber,fontSize:'10px'}}> · {isCoeFallbackStale() ? `⚠ Stale estimate as of ${COE_FALLBACK_AS_OF}` : `Estimated as of ${COE_FALLBACK_AS_OF} — LTA unavailable`}</span></>
+                    : <><span style={{fontSize:C.xs,fontFamily:C.fontMono,fontWeight:700,color:C.amberText}}>Cat A: ~{SGD(COE_FALLBACK.catA)}</span><span style={{fontSize:C.xs,color:C.faint}}>·</span><span style={{fontSize:C.xs,fontFamily:C.fontMono,fontWeight:700,color:C.amberText}}>Cat B: ~{SGD(COE_FALLBACK.catB)}</span><span style={{fontSize:C.xs,color:C.amberText,fontSize:'10px'}}> · {isCoeFallbackStale() ? `⚠ Stale estimate as of ${COE_FALLBACK_AS_OF}` : `Estimated as of ${COE_FALLBACK_AS_OF} — LTA unavailable`}</span></>
                 }
               </div>
               <p style={{marginTop:6,textAlign:'center',fontSize:C.xs,color:C.faint}}>Prices indicative incl. COE · Figures based on latest applicable policies · Educational tool only</p>
@@ -552,49 +552,6 @@ export default function DriveReadyPage() {
         </div>
       </div>
 
-      {/* ── FOOTER ── */}
-      <footer style={{background:C.coah,padding:'40px 32px 28px'}}>
-        <div style={{maxWidth:900,margin:'0 auto'}}>
-          <div style={{display:'grid',gridTemplateColumns:'minmax(0,1fr) minmax(0,1fr)',gap:32,marginBottom:32}}>
-            <div>
-              <div style={{fontFamily:C.fontCoah,fontSize:20,fontWeight:600,color:'#fff',letterSpacing:'0.08em',marginBottom:4}}>COAH</div>
-              <div style={{fontSize:11,color:'rgba(255,255,255,0.35)',textTransform:'uppercase',letterSpacing:'0.1em',marginBottom:14}}>Modern Utilities for the Common Good</div>
-              <p style={{fontSize:12,color:'rgba(255,255,255,0.4)',lineHeight:1.7,marginBottom:14}}>
-                DriveReady is a free, no-ads, no-commission tool built by Coah. All calculations run entirely in your browser — no data ever leaves your device.
-              </p>
-              <p style={{fontFamily:C.fontDisplay,fontSize:13,color:'rgba(255,255,255,0.3)',fontStyle:'italic'}}>&quot;A Coah Project — Built for Singapore.&quot;</p>
-            </div>
-            <div>
-              <div style={{fontSize:11,fontWeight:700,color:'rgba(255,255,255,0.35)',textTransform:'uppercase',letterSpacing:'0.12em',marginBottom:14}}>More from Coah</div>
-              <div style={{display:'flex',flexDirection:'column',gap:10}}>
-                {[
-                  { name:'InsureCheck', desc:'Insurance coverage benchmarking', url:'/insure', live:true },
-                  { name:'WhatETF',     desc:'ETF portfolio examples',          url:'/etf',    live:true },
-                ].map(t => (
-                  <a key={t.name} href={t.url} target="_blank" rel="noopener noreferrer"
-                    style={{display:'flex',alignItems:'center',gap:12,padding:'10px 14px',background:'rgba(255,255,255,0.04)',border:'1px solid rgba(255,255,255,0.07)',borderRadius:C.r,textDecoration:'none'}}>
-                    <div style={{flex:1}}>
-                      <div style={{fontFamily:C.fontDisplay,fontSize:15,color:'rgba(255,255,255,0.85)',marginBottom:2}}>{t.name}</div>
-                      <div style={{fontSize:11,color:'rgba(255,255,255,0.35)'}}>{t.desc}</div>
-                    </div>
-                    <span style={{fontSize:10,fontWeight:700,borderRadius:100,padding:'3px 9px',background:'rgba(31,111,84,0.22)',color:'#8fe0c4',letterSpacing:'0.04em'}}>Live</span>
-                  </a>
-                ))}
-              </div>
-            </div>
-          </div>
-          <div style={{borderTop:'1px solid rgba(255,255,255,0.08)',paddingTop:20,marginBottom:16}}>
-            <div style={{fontSize:10,fontWeight:700,color:'rgba(255,255,255,0.25)',textTransform:'uppercase',letterSpacing:'0.14em',marginBottom:6}}>MAS Disclaimer</div>
-            <p style={{fontSize:11,color:'rgba(255,255,255,0.3)',lineHeight:1.7}}>
-              This tool is for educational and informational purposes only. It does not constitute financial advice. Car prices are sourced monthly from the LTA Car Cost Update and are indicative only — always verify with the dealer. COE premiums are sourced from LTA DataMall. Consult a licensed financial adviser before making any financial decisions.
-            </p>
-          </div>
-          <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',flexWrap:'wrap',gap:8}}>
-            <span style={{fontSize:11,color:'rgba(255,255,255,0.2)'}}>Not affiliated with any insurer or MAS-licensed entity. · © 2025 Coah</span>
-            <Link href="/drive/the-math" style={{fontSize:11,color:'rgba(255,255,255,0.35)',textDecoration:'none'}}>How we calculate → /the-math</Link>
-          </div>
-        </div>
-      </footer>
     </div>
   )
 }

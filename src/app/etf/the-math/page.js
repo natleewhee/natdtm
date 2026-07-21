@@ -1,6 +1,6 @@
 'use client'
 
-import { Nav, Footer } from '@/components/etf/shared'
+import { Nav } from '@/components/etf/shared'
 import { RETURNS_AS_OF } from '@/lib/etf/logic'
 import styles from './theMath.module.css'
 
@@ -145,7 +145,6 @@ Example (Growth, 4-5 ETFs, no tilt):
         </div>
       </main>
 
-      <Footer />
     </div>
   )
 }
