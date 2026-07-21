@@ -8,10 +8,10 @@ function TargetDelta({ label, before, after }) {
   const up = after > before
   return (
     <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px', padding: '6px 0' }}>
-      <span style={{ color: '#6B7280' }}>{label} target</span>
+      <span style={{ color: 'var(--color-muted)' }}>{label} target</span>
       <span style={{ fontWeight: '600', color: 'var(--color-primary)' }}>
-        {formatSGD(before)} <span style={{ color: '#9CA3AF' }}>→</span> {formatSGD(after)}
-        <span style={{ color: up ? '#E24B4A' : '#0F6E56', marginLeft: '6px' }}>
+        {formatSGD(before)} <span style={{ color: 'var(--color-faint)' }}>→</span> {formatSGD(after)}
+        <span style={{ color: up ? '#c1443f' : '#145c43', marginLeft: '6px' }}>
           {up ? '↑' : '↓'}
         </span>
       </span>
@@ -39,7 +39,7 @@ export default function WhatIfExplorer({ inputs }) {
       }}>
         What changes if…
       </p>
-      <p style={{ fontSize: '12px', color: '#9CA3AF', margin: '0 0 12px' }}>
+      <p style={{ fontSize: '12px', color: 'var(--color-faint)', margin: '0 0 12px' }}>
         Tap one or more life events to see how they&apos;d shift your score together — nothing here is saved.
       </p>
 
@@ -78,7 +78,7 @@ export default function WhatIfExplorer({ inputs }) {
           animation: 'fadeSlideUp 0.2s ease both',
         }}>
           {sim.presets.map(preset => (
-            <p key={preset.id} style={{ fontSize: '12px', color: '#9CA3AF', margin: '0 0 4px' }}>
+            <p key={preset.id} style={{ fontSize: '12px', color: 'var(--color-faint)', margin: '0 0 4px' }}>
               <strong style={{ color: 'var(--color-primary)' }}>{preset.label}:</strong> {preset.description}
             </p>
           ))}
@@ -92,22 +92,22 @@ export default function WhatIfExplorer({ inputs }) {
             marginBottom: '4px',
             borderBottom: '1px solid var(--color-border)',
           }}>
-            <span style={{ fontSize: '13px', color: '#6B7280' }}>Score:</span>
+            <span style={{ fontSize: '13px', color: 'var(--color-muted)' }}>Score:</span>
             <span style={{ fontSize: '20px', fontWeight: '700', color: 'var(--color-primary)' }}>
               {sim.before.finalScore}
             </span>
-            <span style={{ color: '#9CA3AF' }}>→</span>
+            <span style={{ color: 'var(--color-faint)' }}>→</span>
             <span style={{
               fontSize: '20px',
               fontWeight: '700',
-              color: sim.after.finalScore >= sim.before.finalScore ? '#0F6E56' : '#E24B4A',
+              color: sim.after.finalScore >= sim.before.finalScore ? '#145c43' : '#c1443f',
             }}>
               {sim.after.finalScore}
             </span>
             <span style={{
               fontSize: '13px',
               fontWeight: '600',
-              color: sim.after.finalScore >= sim.before.finalScore ? '#0F6E56' : '#E24B4A',
+              color: sim.after.finalScore >= sim.before.finalScore ? '#145c43' : '#c1443f',
               marginLeft: 'auto',
             }}>
               {sim.after.finalScore >= sim.before.finalScore ? '+' : ''}
@@ -126,7 +126,7 @@ export default function WhatIfExplorer({ inputs }) {
             after={sim.after.pillars.life.target}
           />
 
-          <p style={{ fontSize: '11px', color: '#9CA3AF', margin: '10px 0 0', lineHeight: 1.5 }}>
+          <p style={{ fontSize: '11px', color: 'var(--color-faint)', margin: '10px 0 0', lineHeight: 1.5 }}>
             This is a simulation based on your current inputs — it doesn&apos;t change your saved score.
             {sim.presets.length > 1 && ' Combined events apply in order, so a later one can override an earlier one on the same field (e.g. paying off loans after buying a home nets to zero debt).'}
           </p>

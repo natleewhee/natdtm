@@ -161,7 +161,7 @@ function PreferencesForm() {
 
         <div className={styles.stickyBar}>
           <button onClick={handleSubmit} className={`coah-btn ${styles.submitBtn}`}>
-            ▶ Generate My Loadout →
+            Generate My Portfolio →
           </button>
         </div>
       </main>

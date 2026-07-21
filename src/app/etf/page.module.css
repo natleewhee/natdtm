@@ -18,7 +18,7 @@
   display: inline-flex; align-items: center; gap: 10px;
   padding: 16px 40px; background: var(--color-accent); color: #fff;
   border-radius: var(--radius-md); font-size: 16px; font-weight: 600;
-  text-decoration: none; box-shadow: 0 4px 20px rgba(29,158,117,0.4);
+  text-decoration: none; box-shadow: 0 4px 20px rgba(31,111,84,0.4);
 }
 .heroBadges { display: flex; justify-content: center; gap: 12px; flex-wrap: wrap; margin-top: 24px; }
 .heroBadge {

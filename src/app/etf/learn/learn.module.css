@@ -40,7 +40,7 @@
 
 .calloutBox {
   font-size: 13px; color: var(--color-muted); line-height: 1.6; margin-top: 12px;
-  padding: 12px 16px; background: var(--color-soft-bg); border-radius: 8px; border-left: 3px solid #D1D5DB;
+  padding: 12px 16px; background: var(--color-soft-bg); border-radius: 8px; border-left: 3px solid var(--color-border);
 }
 .calloutBoxTight { margin: 0 0 8px; }
 

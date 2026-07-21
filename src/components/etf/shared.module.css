@@ -1,40 +1,41 @@
-/* ─── NAV ────────────────────────────────────────────────────────────────── */
+/* ─── NAV ─────────────────────────────────────────────────────────────────
+   Matches the plain header idiom used across Insure/Drive: white surface,
+   thin border-bottom, small uppercase "Coah" eyebrow over a serif title. */
 .nav {
-  background: var(--color-coah);
-  padding: 14px 32px;
+  background: var(--color-surface);
+  padding: 16px 32px;
   display: flex;
   align-items: center;
   justify-content: space-between;
   position: sticky;
   top: 0;
   z-index: 100;
-  border-bottom: 3px solid var(--color-accent);
+  border-bottom: 1px solid var(--color-border);
 }
 .navLeft { display: flex; align-items: center; gap: 12px; }
 .navBack {
   background: none; border: none; font-size: 18px; cursor: pointer;
-  color: #fff; padding: 4px 8px 4px 0; text-decoration: none; line-height: 1;
+  color: var(--color-primary); padding: 4px 8px 4px 0; text-decoration: none; line-height: 1;
 }
-.navSprite { width: 28px; height: 28px; image-rendering: pixelated; flex-shrink: 0; }
 .navBrandCol { display: flex; flex-direction: column; gap: 2px; }
 .navBrandLabel {
-  font-family: var(--font-mono);
-  font-size: 10px; font-weight: 600;
-  color: var(--color-amber);
-  letter-spacing: 0.1em;
+  font-family: var(--font-coah);
+  font-size: 11px; font-weight: 600;
+  color: var(--color-coah);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  opacity: 0.6;
 }
 .navTitle {
-  font-family: var(--font-display); font-weight: 800;
-  font-size: 18px; color: #fff; line-height: 1; text-decoration: none;
+  font-family: var(--font-display); font-weight: 400;
+  font-size: 20px; color: var(--color-primary); line-height: 1; text-decoration: none;
 }
 .navMathLink {
-  font-family: var(--font-mono);
-  font-size: 11px; font-weight: 700; color: var(--color-primary); text-decoration: none;
-  border: 1.5px solid var(--color-border); padding: 6px 10px; border-radius: var(--radius-sm);
+  font-size: 14px; font-weight: 400; color: var(--color-primary); text-decoration: none;
+  opacity: 0.6;
 }
-.navMathLink:hover { border-color: var(--color-accent); color: var(--color-accent); }
+.navMathLink:hover { opacity: 1; color: var(--color-accent); }
 .navRight { display: flex; align-items: center; gap: 16px; }
-.navLives { font-family: var(--font-mono); font-size: 13px; color: var(--color-accent); letter-spacing: 2px; }
 
 /* ─── FOOTER ─────────────────────────────────────────────────────────────── */
 .footer { background: var(--color-coah); padding: 40px 32px 28px; }
@@ -68,7 +69,7 @@
 .footerLinkLive {
   font-family: var(--font-mono);
   font-size: 10px; font-weight: 700; border-radius: var(--radius-sm); padding: 3px 9px;
-  background: rgba(255,62,128,0.2); color: var(--color-accent); letter-spacing: 0.04em;
+  background: rgba(31,111,84,0.2); color: var(--color-accent); letter-spacing: 0.04em;
 }
 .footerDisclaimerBlock { border-top: 1px solid rgba(255,255,255,0.08); padding-top: 20px; margin-bottom: 16px; }
 .footerDisclaimerTitle {

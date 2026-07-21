@@ -4,13 +4,13 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 
 const C = {
-  coah: '#1C2B3A', primary: '#0F2D6B', accent: '#1D9E75', accentBg: '#E1F5EE',
-  bg: '#F7F8FA', surface: '#FFFFFF', border: '#E5E7EB',
-  text: '#374151', muted: '#6B7280', faint: '#9CA3AF',
-  fontCoah: "'Clash Display', system-ui, sans-serif",
-  fontDisplay: "'DM Serif Display', Georgia, serif",
-  fontBody: "'DM Sans', system-ui, sans-serif",
-  fontMono: "'DM Mono', 'Courier New', monospace",
+  coah: '#1b2320', primary: '#1b2320', accent: '#1f6f54', accentBg: '#e4efe9',
+  bg: '#f3f5f2', surface: '#FFFFFF', border: '#d8ded9',
+  text: '#1b2320', muted: '#5f6b64', faint: '#8a948d',
+  fontCoah: "'Fraunces', system-ui, sans-serif",
+  fontDisplay: "'Fraunces', Georgia, serif",
+  fontBody: "'IBM Plex Sans', system-ui, sans-serif",
+  fontMono: "'IBM Plex Mono', 'Courier New', monospace",
   r: '8px', rL: '14px',
   shadow: '0 1px 3px rgba(0,0,0,0.06)',
   xs: '11px', sm: '13px', base: '15px',

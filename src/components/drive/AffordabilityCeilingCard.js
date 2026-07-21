@@ -24,7 +24,7 @@ export function AffordabilityCeilingCard({ salary, down, tenure, existingDebt = 
         <div>
           <div style={{fontSize:C.xs,fontWeight:700,color:'rgba(255,255,255,0.5)',textTransform:'uppercase',letterSpacing:'0.14em',marginBottom:4}}>Your affordability ceiling</div>
           <div style={{fontFamily:C.fontDisplay,fontSize:'clamp(22px,4vw,32px)',color:'#fff',lineHeight:1.1}}>
-            Up to <span style={{color:'#6EE7C4'}}>{SGD(maxCeil)}</span>
+            Up to <span style={{color:'#8fe0c4'}}>{SGD(maxCeil)}</span>
           </div>
         </div>
         <div style={{display:'flex',gap:10,flexWrap:'wrap'}}>

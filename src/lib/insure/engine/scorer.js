@@ -1041,20 +1041,20 @@ export function formatSGD(amount) {
 
 export function getBandColor(color) {
   const map = {
-    red:   { bg: '#FCEBEB', text: '#A32D2D', arc: '#E24B4A' },
-    amber: { bg: '#FAEEDA', text: '#854F0B', arc: '#EF9F27' },
-    blue:  { bg: '#E6F1FB', text: '#185FA5', arc: '#378ADD' },
-    teal:  { bg: '#E1F5EE', text: '#0F6E56', arc: '#1D9E75' },
+    red:   { bg: '#f7e9e8', text: '#8f2f2b', arc: '#c1443f' },
+    amber: { bg: '#f5ecd9', text: '#7a5a26', arc: '#b8863b' },
+    blue:  { bg: '#e8eef5', text: '#2c5079', arc: '#3d6fa8' },
+    teal:  { bg: '#e4efe9', text: '#145c43', arc: '#1f6f54' },
   };
   return map[color] ?? map.red;
 }
 
 export function getSeverityStyle(severity) {
   const map = {
-    critical: { border: '#E24B4A', bg: '#FCEBEB', pillBg: '#E24B4A', pillText: '#fff', pillLabel: 'Critical gap' },
-    warning:  { border: '#EF9F27', bg: '#FAEEDA', pillBg: '#EF9F27', pillText: '#fff', pillLabel: 'Gap found' },
-    info:     { border: '#378ADD', bg: '#E6F1FB', pillBg: '#E6F1FB', pillText: '#185FA5', pillLabel: 'Worth noting' },
-    nudge:    { border: '#1D9E75', bg: '#E1F5EE', pillBg: '#E1F5EE', pillText: '#0F6E56', pillLabel: 'Tip' },
+    critical: { border: '#c1443f', bg: '#f7e9e8', pillBg: '#c1443f', pillText: '#fff', pillLabel: 'Critical gap' },
+    warning:  { border: '#b8863b', bg: '#f5ecd9', pillBg: '#b8863b', pillText: '#fff', pillLabel: 'Gap found' },
+    info:     { border: '#3d6fa8', bg: '#e8eef5', pillBg: '#e8eef5', pillText: '#2c5079', pillLabel: 'Worth noting' },
+    nudge:    { border: '#1f6f54', bg: '#e4efe9', pillBg: '#e4efe9', pillText: '#145c43', pillLabel: 'Tip' },
   };
   return map[severity] ?? map.info;
 }

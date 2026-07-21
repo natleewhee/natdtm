@@ -11,7 +11,7 @@ import {
 } from '@/lib/etf/logic'
 import styles from './portfolio.module.css'
 
-const FUND_PALETTE = ['#FF3E80', '#FFD24C', '#4FA3FF', '#4CD97B', '#B983FF', '#FF8A3D', '#5EEAD4', '#F472B6']
+const FUND_PALETTE = ['#1f6f54', '#b8863b', '#3d6fa8', '#8a5fb0', '#c1443f', '#4a8a7a', '#a67c52', '#6b7fa3']
 
 // ─── DONUT CHART ──────────────────────────────────────────────────────────────
 function DonutChart({ allocations }) {
@@ -21,7 +21,7 @@ function DonutChart({ allocations }) {
     <div className={styles.donutWrap}>
       <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} role="img" aria-label="Portfolio allocation by fund">
         <g transform={`rotate(-90 ${size/2} ${size/2})`}>
-          <circle cx={size/2} cy={size/2} r={r} fill="none" stroke="#120A24" strokeWidth={stroke} />
+          <circle cx={size/2} cy={size/2} r={r} fill="none" stroke="#1b2320" strokeWidth={stroke} />
           {allocations.map((a, i) => {
             const dash = (a.percentage / 100) * c
             const seg = (
@@ -388,8 +388,8 @@ function LookThroughCard({ allocations }) {
   const buckets = computeLookThrough(allocations)
   const max = Math.max(...buckets.map(b => b.percentage), 1)
   const palette = {
-    'United States': '#FF3E80', 'Other Developed': '#4FA3FF', 'Japan': '#B983FF',
-    'Emerging Markets': '#4CD97B', 'China / Hong Kong': '#FF8A3D', 'Global Bonds': '#5EEAD4',
+    'United States': '#1f6f54', 'Other Developed': '#3d6fa8', 'Japan': '#8a5fb0',
+    'Emerging Markets': '#4a8a7a', 'China / Hong Kong': '#b8863b', 'Global Bonds': '#6b7fa3',
   }
   return (
     <div className={`${styles.card} ${styles.lookThroughCard}`}>
@@ -509,7 +509,7 @@ function PortfolioContent() {
               {/* Allocations */}
               <div className={`${styles.card} ${styles.allocCard}`}>
                 <div className={styles.allocEyebrowRow}>
-                  <span className={styles.allocEyebrow}>Loadout Unlocked</span>
+                  <span className={styles.allocEyebrow}>Your Portfolio</span>
                   <span className={styles.terBadge}>Blended TER: {blendedTer.toFixed(2)}%/yr</span>
                 </div>
                 <h1 className={styles.allocTitle}>{portfolio.title}</h1>

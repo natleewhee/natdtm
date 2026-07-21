@@ -36,7 +36,7 @@ export default function InsightCard({ card, index = 0 }) {
           color: style.pillText,
           fontSize: "11px",
           fontWeight: "700",
-          fontFamily: "'DM Sans', system-ui, sans-serif",
+          fontFamily: "'IBM Plex Sans', system-ui, sans-serif",
           letterSpacing: "0.04em",
           textTransform: "uppercase",
           marginTop: "2px",
@@ -46,10 +46,10 @@ export default function InsightCard({ card, index = 0 }) {
         </span>
         <p style={{
           margin: 0,
-          fontFamily: "'DM Sans', system-ui, sans-serif",
+          fontFamily: "'IBM Plex Sans', system-ui, sans-serif",
           fontSize: "15px",
           fontWeight: "600",
-          color: "#0F2D6B",
+          color: "#1b2320",
           lineHeight: 1.4,
           flex: 1,
         }}>
@@ -60,9 +60,9 @@ export default function InsightCard({ card, index = 0 }) {
       {/* Body */}
       <p style={{
         margin: 0,
-        fontFamily: "'DM Sans', system-ui, sans-serif",
+        fontFamily: "'IBM Plex Sans', system-ui, sans-serif",
         fontSize: "14px",
-        color: "#374151",
+        color: "var(--color-text)",
         lineHeight: 1.6,
       }}>
         {bodyText}
@@ -74,7 +74,7 @@ export default function InsightCard({ card, index = 0 }) {
               border: "none",
               padding: "0 0 0 4px",
               color: style.border,
-              fontFamily: "'DM Sans', system-ui, sans-serif",
+              fontFamily: "'IBM Plex Sans', system-ui, sans-serif",
               fontSize: "14px",
               fontWeight: "500",
               cursor: "pointer",
@@ -89,9 +89,9 @@ export default function InsightCard({ card, index = 0 }) {
       {card.action && (
         <p style={{
           margin: 0,
-          fontFamily: "'DM Sans', system-ui, sans-serif",
+          fontFamily: "'IBM Plex Sans', system-ui, sans-serif",
           fontSize: "13px",
-          color: "#6B7280",
+          color: "var(--color-muted)",
           lineHeight: 1.5,
         }}>
           {card.action}

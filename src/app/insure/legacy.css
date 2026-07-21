@@ -1,10 +1,12 @@
-/* InsureCheck-only leftovers from its original globals.css. The shared
-   navy/teal token block now lives in src/styles/legacy-brand.css (scoped to
-   .v-insure/.v-drive). The @tailwind directives from the original file are
-   dropped — auditing the source app found no Tailwind utility classes
-   actually used (everything is inline `style={{}}`), so they compiled to
-   nothing. The external Clash Display Fontshare @import is dropped too, in
-   favour of coah's no-third-party-font-CDN policy — it only backed
+/* InsureCheck-only leftovers from its original globals.css — the
+   fadeSlideUp keyframe and print-summary rules. The shared token set
+   (--color-*, --font-*) now lives in app/globals.css and is shared by
+   Insure, Drive, and Invest alike. The @tailwind directives from the
+   original file are dropped — auditing the source app found no Tailwind
+   utility classes actually used (everything is inline `style={{}}`), so
+   they compiled to nothing. The external Fraunces Fontshare @import
+   is dropped too, in favour of coah's no-third-party-font-CDN policy — it
+   only backed
    `--font-coah`, which already falls back to system-ui. */
 
 @keyframes fadeSlideUp {

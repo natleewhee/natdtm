@@ -4,17 +4,21 @@ import styles from './shared.module.css'
 
 // Shared design tokens, components and constants used across all WhatETF routes
 
+// Colors are `var(--color-*)` strings — those custom properties are
+// defined once in src/app/globals.css and shared with Insure and Drive.
+// Safe here (unlike src/lib/drive/theme.js) because nothing in this
+// vertical string-concatenates a hex alpha suffix onto `C.x`.
 export const C = {
-  coah: '#120A24', coahMid: '#1B1140',
-  primary: '#F7F3E8', accent: '#FF3E80', accentBg: '#3B1230', accentText: '#FFD24C',
-  bg: '#170F2B', surface: '#241748', border: '#4A3583',
-  text: '#F0EAFB', muted: '#C9BFEE', faint: '#9A8FC4',
+  coah: 'var(--color-coah)', coahMid: 'var(--color-coah-mid)',
+  primary: 'var(--color-primary)', accent: 'var(--color-accent)', accentBg: 'var(--color-accent-bg)', accentText: 'var(--color-accent-text)',
+  bg: 'var(--color-bg)', surface: 'var(--color-surface)', border: 'var(--color-border)',
+  text: 'var(--color-text)', muted: 'var(--color-muted)', faint: 'var(--color-faint)',
   fontCoah: "var(--font-coah), -apple-system, 'Segoe UI', sans-serif",
   fontDisplay: "var(--font-display), -apple-system, 'Segoe UI', sans-serif",
   fontBody: "var(--font-body), -apple-system, 'Segoe UI', sans-serif",
   fontMono: "var(--font-mono), ui-monospace, monospace",
-  r: '4px', rL: '6px', rXL: '8px',
-  shadow: '4px 4px 0 rgba(0,0,0,0.35)',
+  r: '5px', rL: '9px', rXL: '13px',
+  shadow: '0 1px 3px rgba(0,0,0,0.06), 0 4px 16px rgba(0,0,0,0.04)',
 }
 
 export const RISK_OPTIONS = [
@@ -53,8 +57,10 @@ export function loadPortfolio() {
 }
 
 // ─── NAV ──────────────────────────────────────────────────────────────────────
-// Styled as a game HUD topbar rather than a conventional site nav — the
-// pixel sprite and "lives" flourish are the arcade theme's signature.
+// Matches the plain header idiom Insure and Drive already use (COAH eyebrow
+// + serif title, white surface, border-bottom) — the "Arcade Quest" pixel
+// sprite, hearts HUD, and bordered nav-button were specific to this
+// vertical's retired dark theme and had no equivalent elsewhere.
 export function Nav({ backHref, backLabel }) {
   return (
     <nav className={styles.nav}>
@@ -62,21 +68,13 @@ export function Nav({ backHref, backLabel }) {
         {backHref && (
           <a href={backHref} aria-label={backLabel || 'Back'} className={styles.navBack}>←</a>
         )}
-        <svg className={styles.navSprite} viewBox="0 0 8 8" aria-hidden="true">
-          <g fill="var(--color-amber)"><rect x="2" y="0" width="4" height="1"/><rect x="1" y="1" width="6" height="1"/><rect x="1" y="2" width="1" height="1"/><rect x="6" y="2" width="1" height="1"/></g>
-          <g fill="var(--color-primary)"><rect x="2" y="2" width="4" height="3"/></g>
-          <g fill="var(--color-coah)"><rect x="2" y="3" width="1" height="1"/><rect x="5" y="3" width="1" height="1"/></g>
-          <g fill="var(--color-accent)"><rect x="1" y="5" width="6" height="1"/></g>
-          <g fill="var(--color-blue)"><rect x="1" y="6" width="2" height="2"/><rect x="5" y="6" width="2" height="2"/></g>
-        </svg>
         <div className={styles.navBrandCol}>
-          <span className={styles.navBrandLabel}>COAH.EXE</span>
+          <span className={styles.navBrandLabel}>Coah</span>
           <a href="/etf" className={styles.navTitle}>WhatETF</a>
         </div>
       </div>
       <div className={styles.navRight}>
-        <span className={styles.navLives} aria-hidden="true">♥ ♥ ♥</span>
-        <a href="/etf/the-math" className={styles.navMathLink}>▶ THE MATH</a>
+        <a href="/etf/the-math" className={styles.navMathLink}>The Math</a>
       </div>
     </nav>
   )
@@ -118,7 +116,7 @@ export function Footer() {
             <p className={styles.footerQuote}>&quot;No grinding, no microtransactions — just the maths, in the open.&quot;</p>
           </div>
           <div>
-            <div className={styles.footerLinksTitle}>More Quests from Coah</div>
+            <div className={styles.footerLinksTitle}>More from Coah</div>
             <div className={styles.footerLinks}>
               {[
                 { name: 'InsureCheck', desc: 'Insurance coverage benchmarking', url: '/insure' },

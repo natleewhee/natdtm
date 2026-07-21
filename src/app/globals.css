@@ -155,7 +155,61 @@ a:focus-visible, button:focus-visible, input:focus-visible {
 .shell-footer-version { font-family: var(--l-font-mono); font-size: 11.5px; margin-top: 10px; }
 
 /* ── vertical wrapper hooks ──────────────────────────────────────── */
-/* Each vertical wraps its route tree in one of these so the legacy
-   stylesheets below can scope their own tokens/resets without leaking
-   into the shell or into each other. */
 .v-insure, .v-drive, .v-etf { min-height: 60vh; }
+
+/* ── unified vertical token set ──────────────────────────────────────
+   Insure, Drive, and Invest each ported their own component library with
+   its own semantic token names (--color-primary, --color-accent, etc, or
+   the equivalent `C` JS object in src/lib/drive/theme.js and
+   src/components/etf/shared.js). Rather than three near-duplicate palettes
+   (navy/teal for Insure+Drive, dark purple/pink/gold "Arcade Quest" for
+   Invest), all three now resolve through this one set — same names,
+   mapped to the Ledger palette/type system above. `C.primary` etc in the
+   drive/etf JS theme objects are `var(--color-*)` strings, not literal
+   hex, so this block is the single place that controls every vertical's
+   look.
+
+   Deliberately no dark-mode variant for this block: none of the three
+   source apps' component libraries were ever exercised against a dark
+   background (Insure/Drive had no dark mode at all; Invest was
+   *permanently* dark, never light) — extending that now would mean
+   auditing every hardcoded transparency/shadow assumption across ~30
+   components blind. The shell (nav/footer/home, --l-* tokens above)
+   keeps its light/dark support; the three tools stay fixed-light, same
+   as their prior behavior. */
+:root {
+  --color-primary: var(--l-ink);
+  --color-primary-text: #ffffff;
+  --color-accent: var(--l-accent);
+  --color-accent-bg: var(--l-accent-bg);
+  --color-accent-text: #145c43;
+  --color-bg: var(--l-bg);
+  --color-surface: var(--l-surface);
+  --color-border: var(--l-line);
+  --color-text: var(--l-ink);
+  --color-muted: var(--l-sub);
+  --color-faint: #8a948d;
+
+  --color-red: #c1443f;
+  --color-red-bg: #f7e9e8;
+  --color-red-text: #8f2f2b;
+  --color-amber: var(--l-amber);
+  --color-amber-bg: var(--l-amber-bg);
+  --color-amber-text: #7a5a26;
+  --color-blue: #3d6fa8;
+  --color-blue-bg: #e8eef5;
+  --color-blue-text: #2c5079;
+
+  /* Flat by design where the source apps used a navy gradient hero block
+     (e.g. DriveReady's affordability-ceiling card) — Ledger doesn't do
+     decorative gradients, so coah/coah-mid/coah-light collapse to one
+     ink family instead of two stops. */
+  --color-coah: var(--l-ink);
+  --color-coah-mid: var(--l-ink);
+  --color-coah-light: #33403a;
+
+  --font-coah: var(--l-font-display);
+  --font-display: var(--l-font-display);
+  --font-body: var(--l-font-body);
+  --font-mono: var(--l-font-mono);
+}

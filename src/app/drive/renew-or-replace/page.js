@@ -10,16 +10,16 @@ import {
 import { COE_FALLBACK } from '@/lib/drive/calc'
 
 const C = {
-  coah:'#1C2B3A', primary:'#0F2D6B', accent:'#1D9E75', accentBg:'#E1F5EE', accentText:'#0F6E56',
-  bg:'#F7F8FA', surface:'#FFFFFF', border:'#E5E7EB',
-  text:'#374151', muted:'#6B7280', faint:'#9CA3AF',
-  red:'#E24B4A', redBg:'#FCEBEB', redText:'#A32D2D',
-  amber:'#EF9F27', amberBg:'#FAEEDA', amberText:'#854F0B',
-  blue:'#378ADD', blueBg:'#E6F1FB', blueText:'#185FA5',
-  fontCoah:"'Clash Display', system-ui, sans-serif",
-  fontDisplay:"'DM Serif Display', Georgia, serif",
-  fontBody:"'DM Sans', system-ui, sans-serif",
-  fontMono:"'DM Mono', 'Courier New', monospace",
+  coah:'#1b2320', primary:'#1b2320', accent:'#1f6f54', accentBg:'#e4efe9', accentText:'#145c43',
+  bg:'#f3f5f2', surface:'#ffffff', border:'#d8ded9',
+  text:'#1b2320', muted:'#5f6b64', faint:'#8a948d',
+  red:'#c1443f', redBg:'#f7e9e8', redText:'#8f2f2b',
+  amber:'#b8863b', amberBg:'#f5ecd9', amberText:'#7a5a26',
+  blue:'#3d6fa8', blueBg:'#e8eef5', blueText:'#2c5079',
+  fontCoah:"'Fraunces', system-ui, sans-serif",
+  fontDisplay:"'Fraunces', Georgia, serif",
+  fontBody:"'IBM Plex Sans', system-ui, sans-serif",
+  fontMono:"'IBM Plex Mono', ui-monospace, monospace",
   r:'8px', rL:'14px', rXL:'20px',
   shadow:'0 1px 3px rgba(0,0,0,0.06), 0 4px 16px rgba(0,0,0,0.04)',
   xs:'11px', sm:'13px', base:'15px', lg:'17px', xl:'22px',
@@ -110,7 +110,7 @@ function ResultCard({ result, isWinner }) {
       </div>
       <div style={{padding:16}}>
         {/* Annual cost — the headline */}
-        <div style={{marginBottom:14,padding:'12px 14px',background:isWinner?C.accentBg:'#F9FAFB',borderRadius:C.r}}>
+        <div style={{marginBottom:14,padding:'12px 14px',background:isWinner?C.accentBg:'#f3f5f2',borderRadius:C.r}}>
           <div style={{fontSize:C.xs,color:C.muted,marginBottom:2}}>Annual cost</div>
           <div style={{fontFamily:C.fontMono,fontSize:C.xl,fontWeight:700,color:isWinner?C.accent:C.primary}}>{SGD(result.annual)}<span style={{fontSize:C.xs,fontWeight:400,color:C.faint}}> /year</span></div>
         </div>
@@ -298,7 +298,7 @@ export default function RenewOrReplacePage() {
         <Link href="/drive/renew-or-replace/the-math" style={{fontSize:C.xs,color:'rgba(255,255,255,0.4)',textDecoration:'none',borderBottom:'1px solid rgba(255,255,255,0.15)',paddingBottom:1}}>The Math →</Link>
       </nav>
 
-      <div style={{background:'#F9FAFB',borderBottom:`1px solid ${C.border}`,padding:'8px 24px',textAlign:'center'}}>
+      <div style={{background:'#f3f5f2',borderBottom:`1px solid ${C.border}`,padding:'8px 24px',textAlign:'center'}}>
         <p style={{fontSize:11,color:C.faint,margin:0}}>Educational tool only · Not financial advice · Not affiliated with any dealer or MAS-licensed entity</p>
       </div>
 
@@ -484,7 +484,7 @@ export default function RenewOrReplacePage() {
 
         <div style={{height:24}}/>
         <button onClick={calculate}
-          style={{width:'100%',padding:'16px',background:C.primary,color:'#fff',border:'none',borderRadius:C.rL,fontSize:C.base,fontWeight:700,cursor:'pointer',fontFamily:C.fontBody,boxShadow:'0 4px 16px rgba(15,45,107,0.25)'}}>
+          style={{width:'100%',padding:'16px',background:C.primary,color:'#fff',border:'none',borderRadius:C.rL,fontSize:C.base,fontWeight:700,cursor:'pointer',fontFamily:C.fontBody,boxShadow:'0 4px 16px rgba(27,35,32,0.25)'}}>
           Compare options →
         </button>
 

@@ -7,7 +7,7 @@ import styles from './page.module.css'
 // A real, deterministic example — built from the same logic every generated
 // portfolio uses — so visitors see actual output before clicking through.
 const SAMPLE = generatePortfolio({ risk: 'Balanced', simplicity: '2-3 ETFs', tilts: ['United States'], monthlyInvestment: '' })
-const SAMPLE_COLORS = ['#FF3E80', '#FFD24C', '#4FA3FF']
+const SAMPLE_COLORS = ['#1f6f54', '#b8863b', '#3d6fa8']
 
 export default function LandingPage() {
   return (
@@ -32,7 +32,7 @@ export default function LandingPage() {
             Explore illustrative ETF allocations optimised for Singapore-based investors. Simple, educational, and privacy-first.
           </p>
           <a href="/etf/preferences" className={styles.heroCta}>
-            ▶ Start Quest →
+            Check my portfolio — it&apos;s free
           </a>
           <div className={styles.heroBadges}>
             {['No sign-up', 'No data stored', 'No ads', 'No commissions'].map(b => (
@@ -63,7 +63,7 @@ export default function LandingPage() {
                 </div>
               ))}
             </div>
-            <a href="/etf/preferences" className={styles.sampleCta}>Build my own loadout →</a>
+            <a href="/etf/preferences" className={styles.sampleCta}>Build my own portfolio →</a>
           </div>
         </div>
 

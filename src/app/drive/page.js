@@ -307,7 +307,7 @@ export default function DriveReadyPage() {
       </div>
 
       {/* ── MAS disclaimer ── */}
-      <div style={{background:'#F9FAFB',borderBottom:`1px solid ${C.border}`,padding:'8px 24px',textAlign:'center'}}>
+      <div style={{background:'#f3f5f2',borderBottom:`1px solid ${C.border}`,padding:'8px 24px',textAlign:'center'}}>
         <p style={{fontSize:11,color:C.faint,margin:0}}>
           Educational tool only · Not financial advice · Not affiliated with any insurer or MAS-licensed entity
         </p>
@@ -315,7 +315,7 @@ export default function DriveReadyPage() {
 
       {/* ── Stale data banner ── */}
       {showStaleBanner && (
-        <div style={{background:'#FFFBEB',borderBottom:`1px solid ${C.amber}55`,padding:'10px 24px',display:'flex',alignItems:'center',justifyContent:'center',gap:8}}>
+        <div style={{background:'#f5ecd9',borderBottom:`1px solid ${C.amber}55`,padding:'10px 24px',display:'flex',alignItems:'center',justifyContent:'center',gap:8}}>
           <span style={{fontSize:14}}>⚠️</span>
           <p style={{fontSize:12,color:C.amberText,margin:0}}>
             {scrapeStatus === 'fallback'
@@ -347,7 +347,7 @@ export default function DriveReadyPage() {
                 {['single','compare'].map(m => (
                   <button key={m} type="button" onClick={() => { setMode(m); setCalculated(false) }}
                     aria-pressed={mode===m}
-                    style={{padding:'7px 16px',fontSize:C.xs,fontWeight:700,letterSpacing:'0.06em',textTransform:'uppercase',cursor:'pointer',borderRadius:6,border:'none',fontFamily:C.fontBody,background:mode===m?C.primary:'transparent',color:mode===m?'#fff':C.muted,transition:'all 0.2s',boxShadow:mode===m?'0 2px 8px rgba(15,45,107,0.2)':'none'}}>
+                    style={{padding:'7px 16px',fontSize:C.xs,fontWeight:700,letterSpacing:'0.06em',textTransform:'uppercase',cursor:'pointer',borderRadius:6,border:'none',fontFamily:C.fontBody,background:mode===m?C.primary:'transparent',color:mode===m?'#fff':C.muted,transition:'all 0.2s',boxShadow:mode===m?'0 2px 8px rgba(27,35,32,0.2)':'none'}}>
                     {m==='single'?'Single Car':'Compare Two'}
                   </button>
                 ))}
@@ -453,7 +453,7 @@ export default function DriveReadyPage() {
               </div>
 
               <button className="coah-btn-primary" onClick={handleCalc} disabled={!isReady}
-                style={{width:'100%',padding:'14px 20px',background:isReady?C.primary:C.bg,border:`1.5px solid ${isReady?C.primary:C.border}`,borderRadius:C.r,color:isReady?'#fff':C.faint,fontSize:C.base,fontWeight:700,letterSpacing:'0.04em',cursor:isReady?'pointer':'not-allowed',transition:'all 0.2s',boxShadow:isReady?'0 4px 16px rgba(15,45,107,0.2)':'none',fontFamily:C.fontBody}}>
+                style={{width:'100%',padding:'14px 20px',background:isReady?C.primary:C.bg,border:`1.5px solid ${isReady?C.primary:C.border}`,borderRadius:C.r,color:isReady?'#fff':C.faint,fontSize:C.base,fontWeight:700,letterSpacing:'0.04em',cursor:isReady?'pointer':'not-allowed',transition:'all 0.2s',boxShadow:isReady?'0 4px 16px rgba(27,35,32,0.2)':'none',fontFamily:C.fontBody}}>
                 {isReady
                   ? calculated
                     ? `↻  Recalculate${mode==='compare'?' comparison':''}`
@@ -577,7 +577,7 @@ export default function DriveReadyPage() {
                       <div style={{fontFamily:C.fontDisplay,fontSize:15,color:'rgba(255,255,255,0.85)',marginBottom:2}}>{t.name}</div>
                       <div style={{fontSize:11,color:'rgba(255,255,255,0.35)'}}>{t.desc}</div>
                     </div>
-                    <span style={{fontSize:10,fontWeight:700,borderRadius:100,padding:'3px 9px',background:'rgba(29,158,117,0.25)',color:'#5DD3AE',letterSpacing:'0.04em'}}>Live</span>
+                    <span style={{fontSize:10,fontWeight:700,borderRadius:100,padding:'3px 9px',background:'rgba(31,111,84,0.22)',color:'#8fe0c4',letterSpacing:'0.04em'}}>Live</span>
                   </a>
                 ))}
               </div>

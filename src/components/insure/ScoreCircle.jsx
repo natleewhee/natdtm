@@ -66,7 +66,7 @@ export default function ScoreCircle({ score, band, isEstimated, animate = true }
           cy={SIZE / 2}
           r={RADIUS}
           fill="none"
-          stroke="#E5E7EB"
+          stroke="#d8ded9"
           strokeWidth={STROKE}
         />
         {/* Coloured arc */}
@@ -90,10 +90,10 @@ export default function ScoreCircle({ score, band, isEstimated, animate = true }
           textAnchor="middle"
           dominantBaseline="central"
           style={{
-            fontFamily: "'DM Serif Display', Georgia, serif",
+            fontFamily: "'Fraunces', Georgia, serif",
             fontSize: "48px",
             fontWeight: "400",
-            fill: "#0F2D6B",
+            fill: "#1b2320",
           }}
         >
           {isEstimated ? "~" : ""}{displayScore}
@@ -104,9 +104,9 @@ export default function ScoreCircle({ score, band, isEstimated, animate = true }
           y={SIZE / 2 + 30}
           textAnchor="middle"
           style={{
-            fontFamily: "'DM Sans', system-ui, sans-serif",
+            fontFamily: "'IBM Plex Sans', system-ui, sans-serif",
             fontSize: "13px",
-            fill: "#9CA3AF",
+            fill: "var(--color-faint)",
           }}
         >
           out of 100
@@ -132,7 +132,7 @@ export default function ScoreCircle({ score, band, isEstimated, animate = true }
             borderRadius: "100px",
             background: colors.bg,
             color: colors.text,
-            fontFamily: "'DM Sans', system-ui, sans-serif",
+            fontFamily: "'IBM Plex Sans', system-ui, sans-serif",
             fontSize: "14px",
             fontWeight: "500",
           }}
@@ -142,9 +142,9 @@ export default function ScoreCircle({ score, band, isEstimated, animate = true }
         {isEstimated && (
           <span
             style={{
-              fontFamily: "'DM Sans', system-ui, sans-serif",
+              fontFamily: "'IBM Plex Sans', system-ui, sans-serif",
               fontSize: "12px",
-              color: "#9CA3AF",
+              color: "var(--color-faint)",
             }}
           >
             estimated score

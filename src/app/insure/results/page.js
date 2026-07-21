@@ -79,7 +79,7 @@ function PillarRow({ row, index, result }) {
     return () => clearTimeout(t)
   }, [row, index])
 
-  const barColor = row.isGap ? '#E24B4A' : getBandColor(row.color).arc
+  const barColor = row.isGap ? '#c1443f' : getBandColor(row.color).arc
   const scoreLabel = row.isGate
     ? (row.score === 100 ? 'Covered' : row.score === 25 ? 'Unsure' : 'Not covered')
     : row.isGap ? 'Gap flagged'
@@ -113,7 +113,7 @@ function PillarRow({ row, index, result }) {
               {row.label}
             </span>
             {row.sublabel && (
-              <span style={{ fontSize: '12px', color: '#9CA3AF', marginLeft: '8px' }}>
+              <span style={{ fontSize: '12px', color: 'var(--color-faint)', marginLeft: '8px' }}>
                 {row.sublabel}
               </span>
             )}
@@ -121,7 +121,7 @@ function PillarRow({ row, index, result }) {
               <span style={{
                 fontSize: '11px',
                 fontWeight: '600',
-                color: '#0F6E56',
+                color: '#145c43',
                 background: 'var(--color-teal-bg)',
                 borderRadius: '100px',
                 padding: '1px 8px',
@@ -146,7 +146,7 @@ function PillarRow({ row, index, result }) {
               display: 'inline-block',
               transition: 'transform 0.2s',
               transform: expanded ? 'rotate(90deg)' : 'rotate(0deg)',
-              color: '#9CA3AF',
+              color: 'var(--color-faint)',
               fontSize: '10px',
             }}>
               ▸
@@ -155,14 +155,14 @@ function PillarRow({ row, index, result }) {
         </div>
         <div style={{
           height: '6px',
-          background: '#F3F4F6',
+          background: '#eef0ed',
           borderRadius: '3px',
           overflow: 'hidden',
         }}>
           <div style={{
             height: '100%',
             width: row.isSkipped ? '100%' : `${width}%`,
-            background: row.isSkipped ? '#F3F4F6' : row.isGap ? '#FECACA' : barColor,
+            background: row.isSkipped ? '#eef0ed' : row.isGap ? '#FECACA' : barColor,
             borderRadius: '3px',
             transition: 'width 0.7s ease-out',
             opacity: row.isSkipped ? 0.3 : 1,
@@ -174,7 +174,7 @@ function PillarRow({ row, index, result }) {
         <p style={{
           margin: '10px 0 0',
           fontSize: '13px',
-          color: '#6B7280',
+          color: 'var(--color-muted)',
           lineHeight: 1.6,
           animation: 'fadeSlideUp 0.25s ease both',
         }}>
@@ -191,7 +191,7 @@ function DisabilityIncomeCard({ result }) {
   const di = result.pillars.di
   if (di.score === null) return null // not answered — the insight card nudge covers this
 
-  const barColor = di.score >= 80 ? '#1D9E75' : di.score >= 50 ? '#378ADD' : di.score > 0 ? '#EF9F27' : '#E24B4A'
+  const barColor = di.score >= 80 ? '#1f6f54' : di.score >= 50 ? '#3d6fa8' : di.score > 0 ? '#b8863b' : '#c1443f'
 
   return (
     <div style={{
@@ -209,7 +209,7 @@ function DisabilityIncomeCard({ result }) {
           <span style={{
             display: 'block',
             fontSize: '11px',
-            color: '#9CA3AF',
+            color: 'var(--color-faint)',
             marginTop: '2px',
           }}>
             Not included in your score above
@@ -219,10 +219,10 @@ function DisabilityIncomeCard({ result }) {
           {di.score} / 100
         </span>
       </div>
-      <div style={{ height: '6px', background: '#F3F4F6', borderRadius: '3px', overflow: 'hidden', marginBottom: '10px' }}>
+      <div style={{ height: '6px', background: '#eef0ed', borderRadius: '3px', overflow: 'hidden', marginBottom: '10px' }}>
         <div style={{ height: '100%', width: `${di.score}%`, background: barColor, borderRadius: '3px' }} />
       </div>
-      <p style={{ margin: 0, fontSize: '13px', color: '#6B7280', lineHeight: 1.6 }}>
+      <p style={{ margin: 0, fontSize: '13px', color: 'var(--color-muted)', lineHeight: 1.6 }}>
         {explainPillar('di', result)}
       </p>
     </div>
@@ -232,9 +232,9 @@ function DisabilityIncomeCard({ result }) {
 // ─── Gap summary ("your gap in numbers") ────────────────────────────────────
 
 const GAP_COPY = {
-  under: { verb: 'Short by', color: '#E24B4A', bg: '#FCEBEB' },
-  over:  { verb: 'Above target by', color: '#0F6E56', bg: 'var(--color-teal-bg)' },
-  ok:    { verb: 'On target', color: '#185FA5', bg: 'var(--color-blue-bg)' },
+  under: { verb: 'Short by', color: '#c1443f', bg: '#f7e9e8' },
+  over:  { verb: 'Above target by', color: '#145c43', bg: 'var(--color-teal-bg)' },
+  ok:    { verb: 'On target', color: '#2c5079', bg: 'var(--color-blue-bg)' },
 }
 
 function GapSummary({ gaps }) {
@@ -247,7 +247,7 @@ function GapSummary({ gaps }) {
         fontSize: '11px',
         fontWeight: '700',
         letterSpacing: '0.08em',
-        color: '#9CA3AF',
+        color: 'var(--color-faint)',
         textTransform: 'uppercase',
         margin: '0 0 8px',
       }}>
@@ -318,11 +318,11 @@ function ActionPlan({ items }) {
         }}>
           Your action plan
         </p>
-        <span style={{ fontSize: '12px', color: '#9CA3AF' }}>
+        <span style={{ fontSize: '12px', color: 'var(--color-faint)' }}>
           {doneCount} / {items.length} done
         </span>
       </div>
-      <p style={{ fontSize: '12px', color: '#9CA3AF', margin: '0 0 12px' }}>
+      <p style={{ fontSize: '12px', color: 'var(--color-faint)', margin: '0 0 12px' }}>
         Check items off as you go — this list is saved on this device.
       </p>
       <div style={{
@@ -381,7 +381,7 @@ function ActionPlan({ items }) {
                 }}>
                   {item.title}
                 </p>
-                <p style={{ margin: 0, fontSize: '13px', color: '#6B7280', lineHeight: 1.5 }}>
+                <p style={{ margin: 0, fontSize: '13px', color: 'var(--color-muted)', lineHeight: 1.5 }}>
                   {item.detail}
                 </p>
                 {item.ask && (
@@ -506,11 +506,11 @@ export default function ResultsPage() {
       {/* Compliance line */}
       <div style={{
         padding: '10px 24px',
-        background: '#F9FAFB',
+        background: '#f3f5f2',
         borderBottom: '1px solid var(--color-border)',
         textAlign: 'center',
       }}>
-        <p style={{ fontSize: '11px', color: '#9CA3AF', margin: 0 }}>
+        <p style={{ fontSize: '11px', color: 'var(--color-faint)', margin: 0 }}>
           This is an educational tool. It does not constitute financial advice.
         </p>
       </div>
@@ -536,7 +536,7 @@ export default function ResultsPage() {
           marginTop: '16px',
           marginBottom: 0,
           fontSize: '15px',
-          color: '#6B7280',
+          color: 'var(--color-muted)',
           textAlign: 'center',
           lineHeight: 1.6,
           maxWidth: '360px',
@@ -559,7 +559,7 @@ export default function ResultsPage() {
             background: scoreDelta > 0 ? 'var(--color-teal-bg)' : 'var(--color-red-bg)',
             fontSize: '13px',
             fontWeight: '600',
-            color: scoreDelta > 0 ? 'var(--color-accent)' : '#E24B4A',
+            color: scoreDelta > 0 ? 'var(--color-accent)' : '#c1443f',
           }}>
             {scoreDelta > 0 ? '↑' : '↓'} {scoreDelta > 0 ? '+' : ''}{scoreDelta} pts since last check
           </div>
@@ -577,7 +577,7 @@ export default function ResultsPage() {
               fontSize: '11px',
               fontWeight: '700',
               letterSpacing: '0.08em',
-              color: '#9CA3AF',
+              color: 'var(--color-faint)',
               textTransform: 'uppercase',
               margin: '0 0 4px',
             }}>
@@ -608,7 +608,7 @@ export default function ResultsPage() {
         </p>
         <p style={{
           fontSize: '12px',
-          color: '#9CA3AF',
+          color: 'var(--color-faint)',
           margin: '0 0 12px',
         }}>
           Tap a row for why it scored that way — including if you might be over-insured.
@@ -701,13 +701,13 @@ export default function ResultsPage() {
                 style={{
                   background: 'none',
                   border: 'none',
-                  color: '#9CA3AF',
+                  color: 'var(--color-faint)',
                   fontSize: '13px',
                   cursor: 'pointer',
                   padding: '8px 0',
                   fontFamily: 'var(--font-body)',
                   textDecoration: 'underline',
-                  textDecorationColor: '#D1D5DB',
+                  textDecorationColor: '#d8ded9',
                 }}
               >
                 {link.label}
@@ -726,7 +726,7 @@ export default function ResultsPage() {
         }}>
           <p style={{
             fontSize: '12px',
-            color: '#9CA3AF',
+            color: 'var(--color-faint)',
             lineHeight: 1.6,
             margin: '0 0 6px',
           }}>
@@ -735,7 +735,7 @@ export default function ResultsPage() {
             financial planning guidelines. Please consult a MAS-licensed financial
             adviser for personal recommendations.
           </p>
-          <p style={{ fontSize: '11px', color: '#C4C9D4', margin: '0 0 8px' }}>
+          <p style={{ fontSize: '11px', color: 'var(--color-faint)', margin: '0 0 8px' }}>
             Not affiliated with any insurer or MAS-licensed entity.
           </p>
           
@@ -764,7 +764,7 @@ export default function ResultsPage() {
               </span>
               <span style={{
                 fontSize: '11px',
-                color: '#9CA3AF',
+                color: 'var(--color-faint)',
                 borderLeft: '1px solid var(--color-border)',
                 paddingLeft: '8px',
               }}>
@@ -773,7 +773,7 @@ export default function ResultsPage() {
             </div>
             <a href="#" style={{
               fontSize: '11px',
-              color: '#9CA3AF',
+              color: 'var(--color-faint)',
               textDecoration: 'none',
             }}>
               coah.sg
@@ -810,7 +810,7 @@ export default function ResultsPage() {
             <div style={{
               width: '40px',
               height: '4px',
-              background: '#E5E7EB',
+              background: '#d8ded9',
               borderRadius: '2px',
               margin: '0 auto 20px',
             }} />
@@ -819,7 +819,7 @@ export default function ResultsPage() {
               fontSize: '12px',
               fontWeight: '700',
               letterSpacing: '0.08em',
-              color: '#9CA3AF',
+              color: 'var(--color-faint)',
               textTransform: 'uppercase',
               margin: '0 0 12px',
             }}>
@@ -864,14 +864,14 @@ export default function ResultsPage() {
               </p>
               <p style={{
                 fontSize: '14px',
-                color: '#6B7280',
+                color: 'var(--color-muted)',
                 margin: '0 0 12px',
               }}>
                 {result.band.label}
               </p>
               <p style={{
                 fontSize: '13px',
-                color: '#9CA3AF',
+                color: 'var(--color-faint)',
                 margin: 0,
                 fontStyle: 'italic',
               }}>
@@ -909,7 +909,7 @@ export default function ResultsPage() {
                 width: '100%',
                 padding: '12px',
                 background: 'transparent',
-                color: '#9CA3AF',
+                color: 'var(--color-faint)',
                 border: 'none',
                 fontSize: '14px',
                 cursor: 'pointer',

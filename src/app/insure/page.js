@@ -111,7 +111,7 @@ export default function LandingPage() {
 
         <p style={{
           fontSize: '17px',
-          color: '#6B7280',
+          color: 'var(--color-muted)',
           lineHeight: 1.7,
           margin: '0 0 32px',
         }}>
@@ -146,7 +146,7 @@ export default function LandingPage() {
           ].map(badge => (
             <span key={badge} style={{
               fontSize: '12px',
-              color: '#9CA3AF',
+              color: 'var(--color-faint)',
               display: 'flex',
               alignItems: 'center',
               gap: '4px',
@@ -166,7 +166,7 @@ export default function LandingPage() {
       }}>
         <p style={{
           fontSize: '15px',
-          color: '#6B7280',
+          color: 'var(--color-muted)',
           lineHeight: 1.6,
           margin: 0,
           fontStyle: 'italic',
@@ -233,7 +233,7 @@ export default function LandingPage() {
                   <p style={{ margin: '0 0 4px', fontWeight: '600', color: 'var(--color-primary)', fontSize: '15px' }}>
                     {title}
                   </p>
-                  <p style={{ margin: 0, color: '#6B7280', fontSize: '14px', lineHeight: 1.6 }}>
+                  <p style={{ margin: 0, color: 'var(--color-muted)', fontSize: '14px', lineHeight: 1.6 }}>
                     {body}
                   </p>
                 </div>
@@ -269,7 +269,7 @@ export default function LandingPage() {
             </span>
             <span style={{
               fontSize: '11px',
-              color: '#9CA3AF',
+              color: 'var(--color-faint)',
               borderLeft: '1px solid var(--color-border)',
               paddingLeft: '10px',
               letterSpacing: '0.06em',
@@ -280,7 +280,7 @@ export default function LandingPage() {
           </div>
           <p style={{
             fontSize: '14px',
-            color: '#374151',
+            color: 'var(--color-text)',
             lineHeight: 1.7,
             margin: '0 0 14px',
           }}>
@@ -290,7 +290,7 @@ export default function LandingPage() {
           </p>
           <p style={{
             fontSize: '13px',
-            color: '#6B7280',
+            color: 'var(--color-muted)',
             lineHeight: 1.6,
             margin: '0 0 16px',
             fontStyle: 'italic',
@@ -312,7 +312,7 @@ export default function LandingPage() {
         }}>
           Know before you buy. Check before you commit.
         </p>
-        <p style={{ color: '#9CA3AF', fontSize: '14px', margin: '0 0 28px' }}>
+        <p style={{ color: 'var(--color-faint)', fontSize: '14px', margin: '0 0 28px' }}>
           Takes 3 minutes. No sign-up required.
         </p>
         <a href="/insure/check" style={{

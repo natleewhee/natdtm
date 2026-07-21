@@ -56,7 +56,7 @@ const s = {
   }),
   stepLabel: {
     fontSize: '12px',
-    color: '#9CA3AF',
+    color: 'var(--color-faint)',
     marginBottom: '6px',
   },
   card: {
@@ -80,7 +80,7 @@ const s = {
   },
   hint: {
     fontSize: '13px',
-    color: '#9CA3AF',
+    color: 'var(--color-faint)',
     marginBottom: '16px',
     lineHeight: 1.5,
   },
@@ -109,8 +109,8 @@ const s = {
   prefix: {
     padding: '13px 14px',
     fontSize: '16px',
-    color: '#9CA3AF',
-    background: '#F9FAFB',
+    color: 'var(--color-faint)',
+    background: '#f3f5f2',
     borderRight: '1.5px solid var(--color-border)',
     userSelect: 'none',
   },
@@ -165,10 +165,10 @@ const s = {
     display: 'block',
     marginTop: '10px',
     fontSize: '13px',
-    color: '#9CA3AF',
+    color: 'var(--color-faint)',
     cursor: 'pointer',
     textDecoration: 'underline',
-    textDecorationColor: '#D1D5DB',
+    textDecorationColor: '#d8ded9',
     background: 'none',
     border: 'none',
     padding: 0,
@@ -182,15 +182,15 @@ const s = {
     borderRadius: 'var(--radius-md)',
     borderLeft: '3px solid var(--color-blue)',
     fontSize: '13px',
-    color: '#374151',
+    color: 'var(--color-text)',
     lineHeight: 1.6,
   },
   nextBtn: (disabled) => ({
     marginTop: '24px',
     width: '100%',
     padding: '15px',
-    background: disabled ? '#E5E7EB' : 'var(--color-accent)',
-    color: disabled ? '#9CA3AF' : '#fff',
+    background: disabled ? '#d8ded9' : 'var(--color-accent)',
+    color: disabled ? 'var(--color-faint)' : '#fff',
     border: 'none',
     borderRadius: 'var(--radius-md)',
     fontSize: '16px',
@@ -204,19 +204,19 @@ const s = {
     textAlign: 'center',
     marginTop: '14px',
     fontSize: '13px',
-    color: '#9CA3AF',
+    color: 'var(--color-faint)',
     cursor: 'pointer',
     background: 'none',
     border: 'none',
     width: '100%',
     fontFamily: 'var(--font-body)',
     textDecoration: 'underline',
-    textDecorationColor: '#D1D5DB',
+    textDecorationColor: '#d8ded9',
   },
   privacyNote: {
     textAlign: 'center',
     fontSize: '12px',
-    color: '#9CA3AF',
+    color: 'var(--color-faint)',
     marginTop: '20px',
   },
   divider: {
@@ -228,13 +228,13 @@ const s = {
     fontSize: '11px',
     fontWeight: '700',
     letterSpacing: '0.08em',
-    color: '#9CA3AF',
+    color: 'var(--color-faint)',
     textTransform: 'uppercase',
     marginBottom: '10px',
   },
   toggle: {
     display: 'flex',
-    background: '#F3F4F6',
+    background: '#eef0ed',
     borderRadius: 'var(--radius-md)',
     padding: '4px',
     marginBottom: '16px',
@@ -246,7 +246,7 @@ const s = {
     borderRadius: '8px',
     border: 'none',
     background: active ? '#fff' : 'transparent',
-    color: active ? 'var(--color-primary)' : '#9CA3AF',
+    color: active ? 'var(--color-primary)' : 'var(--color-faint)',
     fontWeight: active ? '600' : '400',
     fontSize: '14px',
     cursor: 'pointer',
@@ -256,7 +256,7 @@ const s = {
   }),
   convertedAmount: {
     fontSize: '13px',
-    color: '#9CA3AF',
+    color: 'var(--color-faint)',
     marginTop: '8px',
   },
 }
@@ -683,7 +683,7 @@ export default function CheckPage() {
 
           <p style={{
             fontSize: '12px',
-            color: '#9CA3AF',
+            color: 'var(--color-faint)',
             margin: '8px 0 0',
             display: 'flex',
             alignItems: 'center',
@@ -722,7 +722,7 @@ export default function CheckPage() {
                     display: 'block',
                     fontSize: '12px',
                     fontWeight: '400',
-                    color: form.hasHosp === opt.value ? 'var(--color-accent)' : '#9CA3AF',
+                    color: form.hasHosp === opt.value ? 'var(--color-accent)' : 'var(--color-faint)',
                     marginTop: '4px',
                     lineHeight: 1.4,
                   }}>
@@ -782,7 +782,7 @@ export default function CheckPage() {
                   display: 'block',
                   fontSize: '12px',
                   fontWeight: '400',
-                  color: form.riskProfile === key ? 'var(--color-accent)' : '#9CA3AF',
+                  color: form.riskProfile === key ? 'var(--color-accent)' : 'var(--color-faint)',
                   marginTop: '4px',
                   lineHeight: 1.4,
                 }}>
@@ -1131,7 +1131,7 @@ export default function CheckPage() {
   </div>
   <p style={{
     fontSize: '11px',
-    color: '#9CA3AF',
+    color: 'var(--color-faint)',
     margin: '8px 0 0',
     textAlign: 'center',
   }}>
@@ -1167,10 +1167,10 @@ export default function CheckPage() {
   <p style={{ ...s.privacyNote, marginBottom: '4px' }}>
     Your answers stay on your device and are never stored.
   </p>
-  <p style={{ fontSize: '11px', color: '#C4C9D4', margin: '0 0 6px' }}>
+  <p style={{ fontSize: '11px', color: 'var(--color-faint)', margin: '0 0 6px' }}>
     Educational tool only · Not affiliated with any insurer or MAS-licensed entity
   </p>
-  <p style={{ fontSize: '11px', color: '#C4C9D4', margin: 0 }}>
+  <p style={{ fontSize: '11px', color: 'var(--color-faint)', margin: 0 }}>
     <span style={{
       fontFamily: 'var(--font-coah)',
       fontWeight: '600',

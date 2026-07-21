@@ -1,6 +1,4 @@
-import '@/styles/legacy-brand.css'
 import './legacy.css'
-import { dmSans, dmSerif } from '@/lib/shared/legacy-fonts'
 
 export const metadata = {
   title: { default: 'DriveReady', template: '%s · DriveReady · coah' },
@@ -14,9 +12,5 @@ export const metadata = {
 }
 
 export default function DriveLayout({ children }) {
-  return (
-    <div className={`v-drive ${dmSans.variable} ${dmSerif.variable}`}>
-      {children}
-    </div>
-  )
+  return <div className="v-drive">{children}</div>
 }

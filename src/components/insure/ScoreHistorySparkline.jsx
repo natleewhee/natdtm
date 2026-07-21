@@ -27,7 +27,7 @@ export default function ScoreHistorySparkline({ history }) {
   const pathD = points.map((p, i) => `${i === 0 ? 'M' : 'L'} ${p.x.toFixed(1)} ${p.y.toFixed(1)}`).join(' ')
   const last = points[points.length - 1]
   const trendUp = scores[scores.length - 1] >= scores[0]
-  const lineColor = trendUp ? '#1D9E75' : '#E24B4A'
+  const lineColor = trendUp ? '#1f6f54' : '#c1443f'
 
   return (
     <div style={{
@@ -40,10 +40,10 @@ export default function ScoreHistorySparkline({ history }) {
       maxWidth: '320px',
     }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '6px' }}>
-        <span style={{ fontSize: '11px', fontWeight: '700', letterSpacing: '0.06em', color: '#9CA3AF', textTransform: 'uppercase' }}>
+        <span style={{ fontSize: '11px', fontWeight: '700', letterSpacing: '0.06em', color: 'var(--color-faint)', textTransform: 'uppercase' }}>
           Score history
         </span>
-        <span style={{ fontSize: '11px', color: '#9CA3AF' }}>
+        <span style={{ fontSize: '11px', color: 'var(--color-faint)' }}>
           {formatShortDate(history[0].date)} – {formatShortDate(history[history.length - 1].date)}
         </span>
       </div>
@@ -55,12 +55,12 @@ export default function ScoreHistorySparkline({ history }) {
             cx={p.x}
             cy={p.y}
             r={i === points.length - 1 ? 3.5 : 2}
-            fill={i === points.length - 1 ? lineColor : '#D1D5DB'}
+            fill={i === points.length - 1 ? lineColor : '#d8ded9'}
           />
         ))}
       </svg>
       <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '4px' }}>
-        <span style={{ fontSize: '11px', color: '#9CA3AF' }}>{history.length} checks</span>
+        <span style={{ fontSize: '11px', color: 'var(--color-faint)' }}>{history.length} checks</span>
         <span style={{ fontSize: '12px', fontWeight: '700', color: lineColor }}>
           {last.score}/100 now
         </span>

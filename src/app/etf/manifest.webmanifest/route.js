@@ -11,8 +11,8 @@ export async function GET() {
       start_url: '/etf',
       scope: '/etf/',
       display: 'standalone',
-      background_color: '#170F2B',
-      theme_color: '#170F2B',
+      background_color: '#f3f5f2',
+      theme_color: '#f3f5f2',
       icons: [
         { src: '/icon.svg', sizes: 'any', type: 'image/svg+xml', purpose: 'any' },
         { src: '/icon.svg', sizes: 'any', type: 'image/svg+xml', purpose: 'maskable' },
