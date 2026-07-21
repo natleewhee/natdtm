@@ -312,10 +312,10 @@ export default function DriveReadyPage() {
           <span style={{fontSize:14}}>⚠️</span>
           <p style={{fontSize:12,color:C.amberText,margin:0}}>
             {scrapeStatus === 'fallback'
-              ? 'Could not fetch latest prices from LTA — showing last known prices from cars.json. Figures are indicative only.'
+              ? "Couldn't reach the latest LTA price update — showing our most recently saved prices instead. Figures are indicative only."
               : lowCoverage
-                ? 'LTA price matching looks broken this month (very few cars matched) — showing a mix of live and last-known prices. Figures are indicative only.'
-                : `Prices may be outdated — last updated from LTA ${staleDaysAgo === 0 ? 'today' : `${staleDaysAgo} day${staleDaysAgo !== 1 ? 's' : ''} ago`}. Figures are indicative only.`
+                ? "This month's LTA price update looks incomplete — showing a mix of fresh and recently saved prices. Figures are indicative only."
+                : `Prices may be a little out of date — last refreshed ${staleDaysAgo === 0 ? 'today' : `${staleDaysAgo} day${staleDaysAgo !== 1 ? 's' : ''} ago`}. Figures are indicative only.`
             }
           </p>
         </div>
@@ -463,7 +463,7 @@ export default function DriveReadyPage() {
                   ? <span style={{fontSize:C.xs,color:C.faint}}>Fetching live COE…</span>
                   : coeData
                     ? <><span style={{fontSize:C.xs,fontFamily:C.fontMono,fontWeight:700,color:C.primary}}>Cat A: {SGD(coeData.catA.premium)}</span><span style={{fontSize:C.xs,color:C.faint}}>·</span><span style={{fontSize:C.xs,fontFamily:C.fontMono,fontWeight:700,color:C.primary}}>Cat B: {SGD(coeData.catB.premium)}</span><span style={{fontSize:C.xs,color:C.faint,fontSize:'10px'}}> · {coeData.month} · Live from LTA</span></>
-                    : <><span style={{fontSize:C.xs,fontFamily:C.fontMono,fontWeight:700,color:C.amberText}}>Cat A: ~{SGD(COE_FALLBACK.catA)}</span><span style={{fontSize:C.xs,color:C.faint}}>·</span><span style={{fontSize:C.xs,fontFamily:C.fontMono,fontWeight:700,color:C.amberText}}>Cat B: ~{SGD(COE_FALLBACK.catB)}</span><span style={{fontSize:C.xs,color:C.amberText,fontSize:'10px'}}> · {isCoeFallbackStale() ? `⚠ Stale estimate as of ${COE_FALLBACK_AS_OF}` : `Estimated as of ${COE_FALLBACK_AS_OF} — LTA unavailable`}</span></>
+                    : <><span style={{fontSize:C.xs,fontFamily:C.fontMono,fontWeight:700,color:C.amberText}}>Cat A: ~{SGD(COE_FALLBACK.catA)}</span><span style={{fontSize:C.xs,color:C.faint}}>·</span><span style={{fontSize:C.xs,fontFamily:C.fontMono,fontWeight:700,color:C.amberText}}>Cat B: ~{SGD(COE_FALLBACK.catB)}</span><span style={{fontSize:C.xs,color:C.amberText,fontSize:'10px'}}> · {isCoeFallbackStale() ? `⚠ Estimate may be outdated, as of ${COE_FALLBACK_AS_OF}` : `Estimated as of ${COE_FALLBACK_AS_OF} — live LTA data temporarily unavailable`}</span></>
                 }
               </div>
               <p style={{marginTop:6,textAlign:'center',fontSize:C.xs,color:C.faint}}>Prices indicative incl. COE · Figures based on latest applicable policies · Educational tool only</p>
