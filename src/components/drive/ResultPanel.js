@@ -93,7 +93,7 @@ export function ResultPanel({ r, tenure, visible, slim=false }) {
             <div>
               <div style={{fontSize:C.xs,fontWeight:700,color:C.muted,textTransform:'uppercase',letterSpacing:'0.1em',marginBottom:5,opacity:contentIn?1:0}}>Your verdict</div>
               <div style={{opacity:contentIn?1:0,animation:phase>=3?'stampIn 0.4s cubic-bezier(0.34,1.56,0.64,1) forwards':undefined}}>
-                <span style={{fontFamily:C.fontDisplay,fontSize:slim?18:24,fontStyle:'italic',color:vcText,display:'inline-block',lineHeight:1.2}}>{verdict}</span>
+                <span style={{display:'inline-block',padding:'4px 14px',borderRadius:100,background:vbg,fontFamily:C.fontDisplay,fontSize:slim?16:20,fontStyle:'italic',color:vcText,lineHeight:1.2}}>{verdict}</span>
               </div>
             </div>
           </div>

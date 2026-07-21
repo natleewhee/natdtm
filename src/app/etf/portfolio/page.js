@@ -511,7 +511,10 @@ function PortfolioContent() {
               <div className={`${styles.card} ${styles.allocCard}`}>
                 <div className={styles.allocEyebrowRow}>
                   <span className={styles.allocEyebrow}>Your Portfolio</span>
-                  <span className={styles.terBadge}>Blended TER: {blendedTer.toFixed(2)}%/yr</span>
+                  <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+                    <span className={`${styles.riskBadge} ${styles[`riskBadge${prefs.risk}`] || ''}`}>{prefs.risk} risk</span>
+                    <span className={styles.terBadge}>Blended TER: {blendedTer.toFixed(2)}%/yr</span>
+                  </div>
                 </div>
                 <h1 className={styles.allocTitle}>{portfolio.title}</h1>
                 <p className={styles.allocDesc}>{portfolio.description}</p>
