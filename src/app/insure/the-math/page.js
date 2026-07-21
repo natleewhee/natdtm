@@ -3,6 +3,8 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { RISK_PROFILES, BENCHMARKS } from '@/lib/insure/engine/scorer'
+import SubNav from '@/components/shared/SubNav'
+import MathTOC from '@/components/shared/MathTOC'
 
 // ─── Expandable section component ────────────────────────────────────────────
 
@@ -144,12 +146,16 @@ function Formula({ children }) {
 
 // ─── Section wrapper ──────────────────────────────────────────────────────────
 
+function slug(title) {
+  return title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '')
+}
 function Section({ title, children, noBorder }) {
   return (
-    <div style={{
+    <div id={title ? slug(title) : undefined} style={{
       paddingTop: '36px',
       borderTop: noBorder ? 'none' : '1px solid var(--color-border)',
       marginTop: noBorder ? '0' : '8px',
+      scrollMarginTop: '80px',
     }}>
       {title && (
         <h2 style={{
@@ -209,51 +215,7 @@ export default function HowItWorksPage() {
       paddingBottom: '64px',
     }}>
 
-      {/* Header */}
-      <div style={{
-        background: 'var(--color-surface)',
-        borderBottom: '1px solid var(--color-border)',
-        padding: '16px 24px',
-        display: 'flex',
-        alignItems: 'center',
-        gap: '12px',
-      }}>
-        <button
-          style={{
-            background: 'none',
-            border: 'none',
-            fontSize: '18px',
-            cursor: 'pointer',
-            color: 'var(--color-primary)',
-            padding: '4px 8px 4px 0',
-          }}
-          onClick={() => router.back()}
-          aria-label="Go back"
-        >
-          ←
-        </button>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '1px' }}>
-          <span style={{
-            fontFamily: 'var(--font-coah)',
-            fontSize: '10px',
-            fontWeight: '600',
-            color: 'var(--color-coah)',
-            letterSpacing: '0.1em',
-            textTransform: 'uppercase',
-            opacity: 0.7,
-          }}>
-            Coah
-          </span>
-          <span style={{
-            fontFamily: 'var(--font-display)',
-            fontSize: '17px',
-            color: 'var(--color-primary)',
-            lineHeight: 1,
-          }}>
-            InsureCheck
-          </span>
-        </div>
-      </div>
+      <SubNav title="The Math" breadcrumb="InsureCheck" onBack={() => router.back()} />
 
       <div style={{ maxWidth: '640px', margin: '0 auto', padding: '0 20px' }}>
 
@@ -315,7 +277,7 @@ export default function HowItWorksPage() {
                 <span key={tag} style={{
                   fontSize: '12px',
                   color: 'var(--color-accent)',
-                  background: 'var(--color-teal-bg)',
+                  background: 'var(--color-accent-bg)',
                   padding: '4px 12px',
                   borderRadius: '100px',
                   fontWeight: '500',
@@ -326,6 +288,16 @@ export default function HowItWorksPage() {
             </div>
           </div>
         </Section>
+
+        <MathTOC items={[
+          { id: 'tl-dr-the-quick-version', label: 'TL;DR' },
+          { id: 'what-does-your-score-actually-mean', label: 'What it means' },
+          { id: 'how-the-score-is-built', label: 'How it’s built' },
+          { id: 'the-norms-and-how-to-deviate-from-them', label: 'The norms' },
+          { id: 'the-four-pillars-in-detail', label: 'The four pillars' },
+          { id: 'where-our-benchmarks-come-from', label: 'Our benchmarks' },
+          { id: 'what-this-tool-doesn-t-account-for', label: 'Limitations' },
+        ]} />
 
         {/* ── TL;DR ── */}
         <Section title="TL;DR — the quick version">

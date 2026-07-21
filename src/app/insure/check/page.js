@@ -102,7 +102,7 @@ const s = {
     padding: '14px 18px',
     borderRadius: 'var(--radius-md)',
     border: `1.5px solid ${selected ? 'var(--color-accent)' : 'var(--color-border)'}`,
-    background: selected ? 'var(--color-teal-bg)' : '#fff',
+    background: selected ? 'var(--color-accent-bg)' : '#fff',
     color: selected ? 'var(--color-accent)' : 'var(--color-primary)',
     fontSize: '15px',
     fontWeight: selected ? '600' : '400',

@@ -1,12 +1,16 @@
 'use client'
 
 import SubNav from '@/components/shared/SubNav'
+import MathTOC from '@/components/shared/MathTOC'
 import { RETURNS_AS_OF } from '@/lib/etf/logic'
 import styles from './theMath.module.css'
 
+function slug(title) {
+  return title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '')
+}
 function Section({ title, children, noBorder }) {
   return (
-    <div className={noBorder ? `${styles.section} ${styles.sectionNoBorder}` : styles.section}>
+    <div id={title ? slug(title) : undefined} className={noBorder ? `${styles.section} ${styles.sectionNoBorder}` : styles.section} style={{ scrollMarginTop: 80 }}>
       {title && <h2 className={styles.sectionTitle}>{title}</h2>}
       {children}
     </div>
@@ -47,6 +51,16 @@ export default function TheMathPage() {
               </div>
             </div>
           </Section>
+
+          <MathTOC items={[
+            { id: 'how-the-portfolio-is-built', label: 'How it’s built' },
+            { id: 'etfs-we-use-and-why', label: 'ETFs we use' },
+            { id: 'why-ucits-the-withholding-tax-argument', label: 'Why UCITS' },
+            { id: 'two-different-charts-two-different-honesty-levels', label: 'Charts explained' },
+            { id: 'fund-cost-ter', label: 'Fund cost (TER)' },
+            { id: 'goal-projector-how-the-three-scenarios-are-built', label: 'Goal Projector' },
+            { id: 'the-stress-test-rehearsing-the-bad-year', label: 'Stress test' },
+          ]} />
 
           <Section title="How the portfolio is built">
             <Body>Your preferences map directly to a pre-defined allocation strategy. Three inputs drive the output.</Body>

@@ -2,10 +2,16 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import SubNav from '@/components/shared/SubNav'
+import MathTOC from '@/components/shared/MathTOC'
+
+function slug(title) {
+  return title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '')
+}
 
 function Section({ title, children, noBorder }) {
   return (
-    <div style={{ paddingTop: 36, borderTop: noBorder ? 'none' : '1px solid #d8ded9', marginTop: noBorder ? 0 : 8 }}>
+    <div id={title ? slug(title) : undefined} style={{ paddingTop: 36, borderTop: noBorder ? 'none' : '1px solid #d8ded9', marginTop: noBorder ? 0 : 8, scrollMarginTop: 80 }}>
       {title && <h2 style={{ fontFamily: "'Fraunces', Georgia, serif", fontSize: 22, color: '#1b2320', margin: '0 0 16px', lineHeight: 1.3 }}>{title}</h2>}
       {children}
     </div>
@@ -63,14 +69,7 @@ export default function TheMathPage() {
   return (
     <div style={{ minHeight: '100vh', background: '#f3f5f2', fontFamily: "'IBM Plex Sans', system-ui, sans-serif", paddingBottom: 64 }}>
 
-      {/* Header */}
-      <div style={{ background: '#fff', borderBottom: '1px solid #d8ded9', padding: '16px 24px', display: 'flex', alignItems: 'center', gap: 12 }}>
-        <button onClick={() => router.back()} style={{ background: 'none', border: 'none', fontSize: 18, cursor: 'pointer', color: '#1b2320', padding: '4px 8px 4px 0' }}>←</button>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-          <span style={{ fontFamily: "'Fraunces', system-ui, sans-serif", fontSize: 10, fontWeight: 600, color: '#1b2320', letterSpacing: '0.1em', textTransform: 'uppercase', opacity: 0.6 }}>Coah</span>
-          <span style={{ fontFamily: "'Fraunces', Georgia, serif", fontSize: 17, color: '#1b2320', lineHeight: 1 }}>DriveReady</span>
-        </div>
-      </div>
+      <SubNav title="The Math" breadcrumb="DriveReady" onBack={() => router.back()} />
 
       <div style={{ maxWidth: 680, margin: '0 auto', padding: '0 20px' }}>
 
@@ -90,6 +89,16 @@ export default function TheMathPage() {
             </div>
           </div>
         </Section>
+
+        <MathTOC items={[
+          { id: 'what-driveready-shows-you', label: 'What we show' },
+          { id: 'loan-calculation', label: 'Loan calculation' },
+          { id: 'affordability-verdict', label: 'Affordability verdict' },
+          { id: 'arf-additional-registration-fee', label: 'ARF' },
+          { id: 'parf-preferential-additional-registration-fee-rebate', label: 'PARF rebate' },
+          { id: 'coe-certificate-of-entitlement-rebate', label: 'COE rebate' },
+          { id: 'true-depreciation', label: 'True depreciation' },
+        ]} />
 
         {/* TL;DR */}
         <Section title="What DriveReady shows you">

@@ -1,7 +1,7 @@
 'use client'
 
-import { useRouter } from 'next/navigation'
-import Link from 'next/link'
+import SubNav from '@/components/shared/SubNav'
+import MathTOC from '@/components/shared/MathTOC'
 
 const C = {
   coah: '#1b2320', primary: '#1b2320', accent: '#1f6f54', accentBg: '#e4efe9',
@@ -16,8 +16,11 @@ const C = {
   xs: '11px', sm: '13px', base: '15px',
 }
 
+function slug(title) {
+  return title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '')
+}
 function H2({ children }) {
-  return <h2 style={{ fontFamily: C.fontDisplay, fontSize: 22, color: C.primary, margin: '36px 0 12px', borderBottom: `2px solid ${C.accent}`, paddingBottom: 8 }}>{children}</h2>
+  return <h2 id={slug(children)} style={{ fontFamily: C.fontDisplay, fontSize: 22, color: C.primary, margin: '36px 0 12px', borderBottom: `2px solid ${C.accent}`, paddingBottom: 8, scrollMarginTop: 80 }}>{children}</h2>
 }
 function P({ children }) {
   return <p style={{ fontSize: C.base, color: C.text, lineHeight: 1.8, margin: '0 0 14px' }}>{children}</p>
@@ -44,23 +47,23 @@ function Table({ rows }) {
 }
 
 export default function RenewOrReplaceTheMath() {
-  const router = useRouter()
   return (
     <div style={{ minHeight: '100vh', background: C.bg, fontFamily: C.fontBody }}>
-      <nav className="coah-nav" style={{ background: C.coah, padding: '16px 32px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', position: 'sticky', top: 0, zIndex: 100, boxShadow: '0 1px 0 rgba(0,0,0,0.2)' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-          <button onClick={() => router.back()} style={{ background: 'none', border: 'none', color: '#fff', fontSize: 18, cursor: 'pointer' }}>←</button>
-          <div>
-            <span style={{ fontFamily: C.fontCoah, fontSize: 10, fontWeight: 600, color: 'rgba(255,255,255,0.5)', letterSpacing: '0.14em', textTransform: 'uppercase', display: 'block' }}>COAH</span>
-            <span style={{ fontFamily: C.fontDisplay, fontSize: 17, color: '#fff' }}>Renew or Replace — The Math</span>
-          </div>
-        </div>
-        <Link href="/drive/renew-or-replace" style={{ fontSize: C.xs, color: 'rgba(255,255,255,0.4)', textDecoration: 'none', borderBottom: '1px solid rgba(255,255,255,0.15)', paddingBottom: 1 }}>← Back to calculator</Link>
-      </nav>
+      <SubNav title="The Math" breadcrumb="Renew or Replace" backHref="/drive/renew-or-replace" />
 
       <div style={{ maxWidth: 720, margin: '0 auto', padding: '40px 24px 80px' }}>
         <h1 style={{ fontFamily: C.fontDisplay, fontSize: 32, color: C.primary, margin: '0 0 8px' }}>How We Calculate</h1>
         <p style={{ fontSize: C.base, color: C.muted, margin: '0 0 8px' }}>All assumptions behind the Renew or Replace calculator.</p>
+
+        <MathTOC items={[
+          { id: 'the-5-year-framework', label: 'The 5-Year Framework' },
+          { id: 'renew-option-cost-components', label: 'Renew costs' },
+          { id: 'parf-rebate-calculation', label: 'PARF rebate' },
+          { id: 'buy-new-option-cost-components', label: 'Buy new costs' },
+          { id: 'maintenance-estimates-by-brand', label: 'Maintenance' },
+          { id: 'the-annual-cost-formula', label: 'Annual cost formula' },
+          { id: 'limitations', label: 'Limitations' },
+        ]} />
 
         <H2>The 5-Year Framework</H2>
         <P>Both options are compared over a fixed 5-year horizon — the same period as a COE renewal. This makes the comparison apples-to-apples. All costs are in today&apos;s dollars (no inflation adjustment), which is conservative and standard for short-horizon personal finance calculations.</P>

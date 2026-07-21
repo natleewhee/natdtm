@@ -123,7 +123,7 @@ function PillarRow({ row, index, result }) {
                 fontSize: '11px',
                 fontWeight: '600',
                 color: '#145c43',
-                background: 'var(--color-teal-bg)',
+                background: 'var(--color-accent-bg)',
                 borderRadius: '100px',
                 padding: '1px 8px',
                 marginLeft: '8px',
@@ -234,7 +234,7 @@ function DisabilityIncomeCard({ result }) {
 
 const GAP_COPY = {
   under: { verb: 'Short by', color: '#c1443f', bg: '#f7e9e8' },
-  over:  { verb: 'Above target by', color: '#145c43', bg: 'var(--color-teal-bg)' },
+  over:  { verb: 'Above target by', color: '#145c43', bg: 'var(--color-accent-bg)' },
   ok:    { verb: 'On target', color: '#2c5079', bg: 'var(--color-blue-bg)' },
 }
 
@@ -392,7 +392,7 @@ function ActionPlan({ items }) {
                     color: 'var(--color-accent)',
                     lineHeight: 1.5,
                     padding: '8px 10px',
-                    background: 'var(--color-teal-bg)',
+                    background: 'var(--color-accent-bg)',
                     borderRadius: '8px',
                   }}>
                     Ask your adviser: &quot;{item.ask}&quot;
@@ -514,7 +514,7 @@ export default function ResultsPage() {
             gap: '6px',
             padding: '4px 12px',
             borderRadius: '100px',
-            background: scoreDelta > 0 ? 'var(--color-teal-bg)' : 'var(--color-red-bg)',
+            background: scoreDelta > 0 ? 'var(--color-accent-bg)' : 'var(--color-red-bg)',
             fontSize: '13px',
             fontWeight: '600',
             color: scoreDelta > 0 ? 'var(--color-accent)' : '#c1443f',
