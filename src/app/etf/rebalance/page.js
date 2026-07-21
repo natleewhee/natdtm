@@ -2,7 +2,8 @@
 
 import { Suspense, useState, useEffect, useMemo } from 'react'
 import { useSearchParams } from 'next/navigation'
-import { Nav, loadPortfolio } from '@/components/etf/shared'
+import { loadPortfolio } from '@/components/etf/shared'
+import SubNav from '@/components/shared/SubNav'
 import { computeRebalance, decodePrefsFromParams, generatePortfolio } from '@/lib/etf/logic'
 import styles from './rebalance.module.css'
 
@@ -44,7 +45,7 @@ function RebalanceContent() {
 
   return (
     <div className={styles.page}>
-      <Nav backHref="/etf/portfolio" />
+      <SubNav title="Rebalance" breadcrumb="WhatETF" backHref="/etf/portfolio" links={[{ href: '/etf/the-math', label: 'The Math' }]} />
 
       <main className={styles.main}>
         <div className={styles.content}>

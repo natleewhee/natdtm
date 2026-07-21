@@ -1,41 +1,5 @@
-/* ─── NAV ─────────────────────────────────────────────────────────────────
-   Matches the plain header idiom used across Insure/Drive: white surface,
-   thin border-bottom, small uppercase "Coah" eyebrow over a serif title. */
-.nav {
-  background: var(--color-surface);
-  padding: 16px 32px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  position: sticky;
-  top: 0;
-  z-index: 100;
-  border-bottom: 1px solid var(--color-border);
-}
-.navLeft { display: flex; align-items: center; gap: 12px; }
-.navBack {
-  background: none; border: none; font-size: 18px; cursor: pointer;
-  color: var(--color-primary); padding: 4px 8px 4px 0; text-decoration: none; line-height: 1;
-}
-.navBrandCol { display: flex; flex-direction: column; gap: 2px; }
-.navBrandLabel {
-  font-family: var(--font-coah);
-  font-size: 11px; font-weight: 600;
-  color: var(--color-coah);
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  opacity: 0.6;
-}
-.navTitle {
-  font-family: var(--font-display); font-weight: 400;
-  font-size: 20px; color: var(--color-primary); line-height: 1; text-decoration: none;
-}
-.navMathLink {
-  font-size: 14px; font-weight: 400; color: var(--color-primary); text-decoration: none;
-  opacity: 0.6;
-}
-.navMathLink:hover { opacity: 1; color: var(--color-accent); }
-.navRight { display: flex; align-items: center; gap: 16px; }
+/* Nav rules removed — every route now uses the shared .subnav-* classes
+   from app/globals.css via src/components/shared/SubNav.js. */
 
 /* Per-vertical footer removed — the shell footer (src/components/shared/Footer.js)
    now carries the one disclaimer that was genuinely vertical-specific; the

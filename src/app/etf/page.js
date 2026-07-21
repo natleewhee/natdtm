@@ -1,7 +1,7 @@
 'use client'
 
-import { Nav } from '@/components/etf/shared'
 import { generatePortfolio } from '@/lib/etf/logic'
+import SubNav from '@/components/shared/SubNav'
 import styles from './page.module.css'
 
 // A real, deterministic example — built from the same logic every generated
@@ -20,7 +20,7 @@ export default function LandingPage() {
         offers:{'@type':'Offer', price:'0', priceCurrency:'SGD'},
       }) }} />
 
-      <Nav />
+      <SubNav title="WhatETF" links={[{ href: '/etf/the-math', label: 'The Math' }]} />
 
       <main className={styles.main}>
         <div className={styles.hero}>

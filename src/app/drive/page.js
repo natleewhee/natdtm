@@ -1,7 +1,6 @@
 'use client'
 
 import { useState, useRef, useEffect } from 'react'
-import Link from 'next/link'
 import { C, SGD } from '@/lib/drive/theme'
 import { calc, calcCeiling, COE_FALLBACK, COE_FALLBACK_AS_OF, isCoeFallbackStale } from '@/lib/drive/calc'
 import { calcUsed } from '@/lib/drive/used-car'
@@ -17,6 +16,7 @@ import { UsedCarForm } from '@/components/drive/UsedCarForm'
 import { ResultPanel } from '@/components/drive/ResultPanel'
 import { AffordabilityCeilingCard } from '@/components/drive/AffordabilityCeilingCard'
 import { GaragePanel } from '@/components/drive/GaragePanel'
+import SubNav from '@/components/shared/SubNav'
 
 // Car prices come from /public/data/cars.json (edit that file to update prices)
 // COE premiums come from /api/coe (live from LTA DataMall)
@@ -269,30 +269,26 @@ export default function DriveReadyPage() {
         audience:{'@type':'Audience',geographicArea:{'@type':'Country',name:'Singapore'}}
       }) }} />
 
-      {/* ── NAV ── */}
-      <nav className="coah-nav" style={{background:C.coah,padding:'16px 32px',display:'flex',alignItems:'center',justifyContent:'space-between',position:'sticky',top:0,zIndex:100,boxShadow:'0 1px 0 rgba(0,0,0,0.2)'}}>
-        <div style={{display:'flex',flexDirection:'column',gap:2}}>
-          <span style={{fontFamily:C.fontCoah,fontSize:10,fontWeight:600,color:'rgba(255,255,255,0.5)',letterSpacing:'0.14em',textTransform:'uppercase'}}>COAH</span>
-          <span style={{fontFamily:C.fontDisplay,fontSize:18,color:'#fff',lineHeight:1}}>DriveReady</span>
-        </div>
-        <div style={{display:'flex',alignItems:'center',gap:14}}>
-          {coeLoading ? (
-            <span className="coah-nav-badge" style={{fontSize:C.xs,color:'rgba(255,255,255,0.25)'}}>Fetching COE…</span>
+      <SubNav
+        title="DriveReady"
+        links={[
+          { href: '/drive/renew-or-replace', label: 'Renew or Replace?' },
+          { href: '/drive/the-math', label: 'The Math' },
+        ]}
+        step={
+          coeLoading ? (
+            <span style={{ fontSize: C.xs, color: C.faint }}>Fetching COE…</span>
           ) : coeData ? (
-            <div className="coah-nav-badge" style={{display:'flex',alignItems:'center',gap:10}}>
-              <span style={{fontSize:C.xs,color:'rgba(255,255,255,0.35)'}}>Latest COE</span>
-              <span style={{fontSize:C.xs,background:'rgba(255,255,255,0.08)',border:'1px solid rgba(255,255,255,0.15)',borderRadius:100,padding:'2px 10px',color:'rgba(255,255,255,0.7)',fontFamily:C.fontMono,fontWeight:600}}>A: {SGD(coeData.catA.premium)}</span>
-              <span style={{fontSize:C.xs,background:'rgba(255,255,255,0.08)',border:'1px solid rgba(255,255,255,0.15)',borderRadius:100,padding:'2px 10px',color:'rgba(255,255,255,0.7)',fontFamily:C.fontMono,fontWeight:600}}>B: {SGD(coeData.catB.premium)}</span>
-            </div>
+            <span style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <span style={{ fontSize: C.xs, color: C.faint }}>Latest COE</span>
+              <span style={{ fontSize: C.xs, background: C.accentBg, border: `1px solid ${C.accent}33`, borderRadius: 100, padding: '2px 10px', color: C.accentText, fontFamily: C.fontMono, fontWeight: 600 }}>A: {SGD(coeData.catA.premium)}</span>
+              <span style={{ fontSize: C.xs, background: C.accentBg, border: `1px solid ${C.accent}33`, borderRadius: 100, padding: '2px 10px', color: C.accentText, fontFamily: C.fontMono, fontWeight: 600 }}>B: {SGD(coeData.catB.premium)}</span>
+            </span>
           ) : (
-            <span className="coah-nav-badge" style={{fontSize:C.xs,color:'rgba(255,255,255,0.25)'}}>Car prices indicative</span>
-          )}
-          <div style={{display:'flex',alignItems:'center',gap:14}}>
-          <Link href="/drive/renew-or-replace" style={{fontSize:C.xs,color:'rgba(255,255,255,0.4)',textDecoration:'none',borderBottom:'1px solid rgba(255,255,255,0.15)',paddingBottom:1}}>Renew or Replace?</Link>
-          <Link href="/drive/the-math" style={{fontSize:C.xs,color:'rgba(255,255,255,0.4)',textDecoration:'none',borderBottom:'1px solid rgba(255,255,255,0.15)',paddingBottom:1}}>The Math →</Link>
-        </div>
-        </div>
-      </nav>
+            <span style={{ fontSize: C.xs, color: C.faint }}>Car prices indicative</span>
+          )
+        }
+      />
 
       {/* ── HERO ── */}
       <div style={{background:C.coah,padding:'48px 32px 52px',textAlign:'center'}}>

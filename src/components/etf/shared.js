@@ -56,29 +56,8 @@ export function loadPortfolio() {
   } catch { return null }
 }
 
-// ─── NAV ──────────────────────────────────────────────────────────────────────
-// Matches the plain header idiom Insure and Drive already use (COAH eyebrow
-// + serif title, white surface, border-bottom) — the "Arcade Quest" pixel
-// sprite, hearts HUD, and bordered nav-button were specific to this
-// vertical's retired dark theme and had no equivalent elsewhere.
-export function Nav({ backHref, backLabel }) {
-  return (
-    <nav className={styles.nav}>
-      <div className={styles.navLeft}>
-        {backHref && (
-          <a href={backHref} aria-label={backLabel || 'Back'} className={styles.navBack}>←</a>
-        )}
-        <div className={styles.navBrandCol}>
-          <span className={styles.navBrandLabel}>Coah</span>
-          <a href="/etf" className={styles.navTitle}>WhatETF</a>
-        </div>
-      </div>
-      <div className={styles.navRight}>
-        <a href="/etf/the-math" className={styles.navMathLink}>The Math</a>
-      </div>
-    </nav>
-  )
-}
+// Nav is gone from here — every route now uses the shared SubNav component
+// (src/components/shared/SubNav.js) directly, same as Insure and Drive.
 
 // ─── OPTION CARD ─────────────────────────────────────────────────────────────
 export function OptionCard({ label, desc, selected, onClick, disabled }) {

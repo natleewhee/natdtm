@@ -2,7 +2,8 @@
 
 import { Suspense, useState, useEffect } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
-import { Nav, C, loadPortfolio, savePortfolio } from '@/components/etf/shared'
+import { C, loadPortfolio, savePortfolio } from '@/components/etf/shared'
+import SubNav from '@/components/shared/SubNav'
 import {
   generateIllustrativePerformance, computeLookThrough, computeBacktest,
   computeBlendedTER, decodePrefsFromParams, generatePortfolio, RETURNS_AS_OF,
@@ -489,7 +490,7 @@ function PortfolioContent() {
 
   return (
     <div className={styles.page}>
-      <Nav backHref="/etf/preferences" />
+      <SubNav title="Your Portfolio" breadcrumb="WhatETF" backHref="/etf/preferences" links={[{ href: '/etf/the-math', label: 'The Math' }]} />
 
       <main className={styles.main}>
         <div className={styles.content}>

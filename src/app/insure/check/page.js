@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { BENCHMARKS, RISK_PROFILES, getProfileBenchmarks } from '@/lib/insure/engine/scorer'
+import SubNav from '@/components/shared/SubNav'
 
 // ─── Shared styles ───────────────────────────────────────────────────────────
 
@@ -12,34 +13,6 @@ const s = {
     background: 'var(--color-bg)',
     fontFamily: 'var(--font-body)',
     paddingBottom: '48px',
-  },
-  header: {
-    position: 'sticky',
-    top: 0,
-    zIndex: 10,
-    background: 'var(--color-surface)',
-    borderBottom: '1px solid var(--color-border)',
-    padding: '16px 24px 12px',
-  },
-  topRow: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '12px',
-    marginBottom: '10px',
-  },
-  backBtn: {
-    background: 'none',
-    border: 'none',
-    padding: '4px 8px 4px 0',
-    cursor: 'pointer',
-    fontSize: '18px',
-    color: 'var(--color-primary)',
-    lineHeight: 1,
-  },
-  logo: {
-    fontFamily: 'var(--font-display)',
-    fontSize: '17px',
-    color: 'var(--color-primary)',
   },
   progressTrack: {
     height: '4px',
@@ -54,11 +27,6 @@ const s = {
     borderRadius: '2px',
     transition: 'width 0.35s ease-out',
   }),
-  stepLabel: {
-    fontSize: '12px',
-    color: 'var(--color-faint)',
-    marginBottom: '6px',
-  },
   card: {
     background: 'var(--color-surface)',
     borderRadius: 'var(--radius-lg)',
@@ -1105,39 +1073,26 @@ export default function CheckPage() {
   return (
     <div style={s.page}>
 
-<div style={s.header}>
-  <div style={s.topRow}>
-    <button style={s.backBtn} onClick={back} aria-label="Go back">←</button>
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '1px' }}>
-      <span style={{
-        fontFamily: 'var(--font-coah)',
-        fontSize: '9px',
-        fontWeight: '600',
-        color: 'var(--color-coah)',
-        letterSpacing: '0.1em',
-        textTransform: 'uppercase',
-        opacity: 0.6,
+<SubNav
+  title="InsureCheck"
+  onBack={back}
+  step={`${step} of ${TOTAL_STEPS}`}
+  below={(
+    <div style={{ padding: '0 24px 12px' }}>
+      <div style={s.progressTrack}>
+        <div style={s.progressFill(progress)} />
+      </div>
+      <p style={{
+        fontSize: '11px',
+        color: 'var(--color-faint)',
+        margin: '8px 0 0',
+        textAlign: 'center',
       }}>
-        Coah
-      </span>
-      <span style={s.logo}>InsureCheck</span>
+        Educational tool · No login required · No data sent to any server
+      </p>
     </div>
-    <span style={{ marginLeft: 'auto', ...s.stepLabel, marginBottom: 0 }}>
-      {step} of {TOTAL_STEPS}
-    </span>
-  </div>
-  <div style={s.progressTrack}>
-    <div style={s.progressFill(progress)} />
-  </div>
-  <p style={{
-    fontSize: '11px',
-    color: 'var(--color-faint)',
-    margin: '8px 0 0',
-    textAlign: 'center',
-  }}>
-    Educational tool · No login required · No data sent to any server
-  </p>
-</div>
+  )}
+/>
 
       <div style={{
         ...s.card,

@@ -1,6 +1,7 @@
 'use client'
 
 import { SITE_URL } from '@/lib/shared/site'
+import SubNav from '@/components/shared/SubNav'
 
 export default function LandingPage() {
   return (
@@ -38,45 +39,7 @@ export default function LandingPage() {
         }}
       />
 
-      {/* Nav */}
-      <nav style={{
-        padding: '16px 24px',
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        borderBottom: '1px solid var(--color-border)',
-        background: 'var(--color-surface)',
-      }}>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
-          <span style={{
-            fontFamily: 'var(--font-coah)',
-            fontSize: '11px',
-            fontWeight: '600',
-            color: 'var(--color-coah)',
-            letterSpacing: '0.12em',
-            textTransform: 'uppercase',
-            opacity: 0.6,
-          }}>
-            Coah
-          </span>
-          <span style={{
-            fontFamily: 'var(--font-display)',
-            fontSize: '20px',
-            color: 'var(--color-primary)',
-            lineHeight: 1,
-          }}>
-            InsureCheck
-          </span>
-        </div>
-        <a href="#how-it-works" style={{
-          fontSize: '14px',
-          color: 'var(--color-primary)',
-          textDecoration: 'none',
-          opacity: 0.6,
-        }}>
-          How it works
-        </a>
-      </nav>
+      <SubNav title="InsureCheck" links={[{ href: '#how-it-works', label: 'How it works' }]} />
 
       {/* Hero */}
       <section style={{

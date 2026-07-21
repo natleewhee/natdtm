@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { calcARF, calcPARF, COE_FALLBACK } from '@/lib/drive/calc'
 import { CoeHistoryChart } from '@/components/drive/CoeHistoryChart'
 import { CoeTimingSignal } from '@/components/drive/CoeTimingSignal'
+import SubNav from '@/components/shared/SubNav'
 
 const C = {
   coah: '#1b2320', primary: '#1b2320', accent: '#1f6f54', accentBg: '#e4efe9', accentText: '#145c43',
@@ -73,18 +74,7 @@ export default function COEExplainerPage() {
   return (
     <div style={{ minHeight: '100vh', background: C.bg, fontFamily: C.fontBody }}>
 
-      {/* Nav */}
-      <nav className="coah-nav" style={{ background: C.coah, padding: '16px 32px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', position: 'sticky', top: 0, zIndex: 100, boxShadow: '0 1px 0 rgba(0,0,0,0.2)' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-          <Link href="/drive" style={{ textDecoration: 'none' }}>
-            <div>
-              <span style={{ fontFamily: C.fontCoah, fontSize: 10, fontWeight: 600, color: 'rgba(255,255,255,0.5)', letterSpacing: '0.14em', textTransform: 'uppercase', display: 'block' }}>COAH</span>
-              <span style={{ fontFamily: C.fontDisplay, fontSize: 17, color: '#fff' }}>DriveReady</span>
-            </div>
-          </Link>
-        </div>
-        <Link href="/drive" style={{ fontSize: C.xs, color: 'rgba(255,255,255,0.4)', textDecoration: 'none', borderBottom: '1px solid rgba(255,255,255,0.15)', paddingBottom: 1 }}>← Back to calculator</Link>
-      </nav>
+      <SubNav title="COE Explained" breadcrumb="DriveReady" backHref="/drive" />
 
       <div style={{ maxWidth: 720, margin: '0 auto', padding: '48px 24px 80px' }}>
 

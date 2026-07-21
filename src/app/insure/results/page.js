@@ -11,6 +11,7 @@ import { getBandColor, explainPillar, computeGaps, generateActionPlan, formatSGD
 import { SITE_URL } from '@/lib/shared/site'
 import { loadScoreHistory } from '@/lib/insure/scoreHistory'
 import { downloadRecheckReminder } from '@/lib/insure/recheckReminder'
+import SubNav from '@/components/shared/SubNav'
 
 const PILLAR_ROWS = (result) => {
   const { hosp, resilience, life, premium } = result.pillars
@@ -458,50 +459,7 @@ export default function ResultsPage() {
       paddingBottom: '48px',
     }}>
 
-      {/* Header */}
-      <div style={{
-        background: 'var(--color-surface)',
-        borderBottom: '1px solid var(--color-border)',
-        padding: '16px 24px',
-        display: 'flex',
-        alignItems: 'center',
-        gap: '12px',
-      }}>
-        <button
-          onClick={() => router.push('/insure/check')}
-          style={{
-            background: 'none',
-            border: 'none',
-            fontSize: '18px',
-            cursor: 'pointer',
-            color: 'var(--color-primary)',
-            padding: '4px 8px 4px 0',
-          }}
-        >
-          ←
-        </button>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '1px' }}>
-          <span style={{
-            fontFamily: 'var(--font-coah)',
-            fontSize: '10px',
-            fontWeight: '600',
-            color: 'var(--color-coah)',
-            letterSpacing: '0.1em',
-            textTransform: 'uppercase',
-            opacity: 0.7,
-          }}>
-            Coah
-          </span>
-          <span style={{
-            fontFamily: 'var(--font-display)',
-            fontSize: '17px',
-            color: 'var(--color-primary)',
-            lineHeight: 1,
-          }}>
-            InsureCheck
-          </span>
-        </div>
-      </div>
+      <SubNav title="Your Score" breadcrumb="InsureCheck" onBack={() => router.push('/insure/check')} />
 
       {/* Compliance line */}
       <div style={{

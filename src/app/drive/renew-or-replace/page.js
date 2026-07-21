@@ -8,6 +8,7 @@ import {
   MAINTENANCE_BY_BRAND
 } from './renew-math'
 import { COE_FALLBACK } from '@/lib/drive/calc'
+import SubNav from '@/components/shared/SubNav'
 
 const C = {
   coah:'#1b2320', primary:'#1b2320', accent:'#1f6f54', accentBg:'#e4efe9', accentText:'#145c43',
@@ -283,20 +284,12 @@ export default function RenewOrReplacePage() {
   return (
     <div style={{minHeight:'100vh',display:'flex',flexDirection:'column',background:C.bg,fontFamily:C.fontBody}}>
 
-      {/* Nav */}
-      <nav className="coah-nav" style={{background:C.coah,padding:'16px 32px',display:'flex',alignItems:'center',justifyContent:'space-between',position:'sticky',top:0,zIndex:100,boxShadow:'0 1px 0 rgba(0,0,0,0.2)'}}>
-        <div style={{display:'flex',alignItems:'center',gap:12}}>
-          <Link href="/drive" style={{textDecoration:'none'}}>
-            <div style={{display:'flex',flexDirection:'column',gap:2}}>
-              <span style={{fontFamily:C.fontCoah,fontSize:10,fontWeight:600,color:'rgba(255,255,255,0.5)',letterSpacing:'0.14em',textTransform:'uppercase'}}>COAH</span>
-              <span style={{fontFamily:C.fontDisplay,fontSize:18,color:'#fff',lineHeight:1}}>DriveReady</span>
-            </div>
-          </Link>
-          <span style={{color:'rgba(255,255,255,0.2)',fontSize:18}}>›</span>
-          <span style={{fontFamily:C.fontDisplay,fontSize:16,color:'rgba(255,255,255,0.7)'}}>Renew or Replace?</span>
-        </div>
-        <Link href="/drive/renew-or-replace/the-math" style={{fontSize:C.xs,color:'rgba(255,255,255,0.4)',textDecoration:'none',borderBottom:'1px solid rgba(255,255,255,0.15)',paddingBottom:1}}>The Math →</Link>
-      </nav>
+      <SubNav
+        title="Renew or Replace?"
+        breadcrumb="DriveReady"
+        backHref="/drive"
+        links={[{ href: '/drive/renew-or-replace/the-math', label: 'The Math' }]}
+      />
 
       <div style={{background:'#f3f5f2',borderBottom:`1px solid ${C.border}`,padding:'8px 24px',textAlign:'center'}}>
         <p style={{fontSize:11,color:C.faint,margin:0}}>Educational tool only · Not financial advice · Not affiliated with any dealer or MAS-licensed entity</p>
