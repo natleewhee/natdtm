@@ -341,10 +341,10 @@ export default function HowItWorksPage() {
           </BodyText>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
             {[
-              { color: '#c1443f', bg: '#f7e9e8', range: '0 – 39',   label: 'At risk',           desc: 'You have critical gaps. At least one major area of protection is missing.' },
-              { color: '#b8863b', bg: '#f5ecd9', range: '40 – 59',  label: 'Partially covered', desc: "You have some coverage but meaningful gaps remain — worth addressing." },
-              { color: '#3d6fa8', bg: '#e8eef5', range: '60 – 79',  label: 'Mostly covered',    desc: "You're in reasonable shape. A few areas to tighten up." },
-              { color: '#1f6f54', bg: '#e4efe9', range: '80 – 100', label: 'Well protected',    desc: 'Your coverage meets or exceeds the key benchmarks. Well done.' },
+              { color: '#8f2f2b', bg: '#f7e9e8', range: '0 – 39',   label: 'At risk',           desc: 'You have critical gaps. At least one major area of protection is missing.' },
+              { color: '#7a5a26', bg: '#f5ecd9', range: '40 – 59',  label: 'Partially covered', desc: "You have some coverage but meaningful gaps remain — worth addressing." },
+              { color: '#2c5079', bg: '#e8eef5', range: '60 – 79',  label: 'Mostly covered',    desc: "You're in reasonable shape. A few areas to tighten up." },
+              { color: '#145c43', bg: '#e4efe9', range: '80 – 100', label: 'Well protected',    desc: 'Your coverage meets or exceeds the key benchmarks. Well done.' },
             ].map(band => (
               <div key={band.range} style={{
                 display: 'flex',
@@ -405,17 +405,17 @@ export default function HowItWorksPage() {
               The weighting
             </p>
             {[
-              { label: 'Critical illness', pct: 40, color: '#b8863b' },
-              { label: 'Life and TPD',     pct: 30, color: '#3d6fa8' },
-              { label: 'Premium efficiency', pct: 20, color: '#888780' },
+              { label: 'Critical illness', pct: 40, barColor: '#b8863b', textColor: '#7a5a26' },
+              { label: 'Life and TPD',     pct: 30, barColor: '#3d6fa8', textColor: '#2c5079' },
+              { label: 'Premium efficiency', pct: 20, barColor: '#888780', textColor: 'var(--color-muted)' },
             ].map(item => (
               <div key={item.label} style={{ marginBottom: '10px' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
                   <span style={{ fontSize: '13px', color: 'var(--color-text)' }}>{item.label}</span>
-                  <span style={{ fontSize: '13px', fontWeight: '700', color: item.color }}>{item.pct}%</span>
+                  <span style={{ fontSize: '13px', fontWeight: '700', color: item.textColor }}>{item.pct}%</span>
                 </div>
                 <div style={{ height: '6px', background: '#eef0ed', borderRadius: '3px', overflow: 'hidden' }}>
-                  <div style={{ height: '100%', width: `${item.pct}%`, background: item.color, borderRadius: '3px' }} />
+                  <div style={{ height: '100%', width: `${item.pct}%`, background: item.barColor, borderRadius: '3px' }} />
                 </div>
               </div>
             ))}

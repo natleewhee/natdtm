@@ -81,6 +81,7 @@ function PillarRow({ row, index, result }) {
   }, [row, index])
 
   const barColor = row.isGap ? '#c1443f' : getBandColor(row.color).arc
+  const textColor = row.isGap ? '#8f2f2b' : getBandColor(row.color).text
   const scoreLabel = row.isGate
     ? (row.score === 100 ? 'Covered' : row.score === 25 ? 'Unsure' : 'Not covered')
     : row.isGap ? 'Gap flagged'
@@ -135,7 +136,7 @@ function PillarRow({ row, index, result }) {
           <span style={{
             fontSize: '12px',
             fontWeight: '600',
-            color: barColor,
+            color: textColor,
             whiteSpace: 'nowrap',
             marginLeft: '8px',
             display: 'flex',
@@ -193,6 +194,7 @@ function DisabilityIncomeCard({ result }) {
   if (di.score === null) return null // not answered — the insight card nudge covers this
 
   const barColor = di.score >= 80 ? '#1f6f54' : di.score >= 50 ? '#3d6fa8' : di.score > 0 ? '#b8863b' : '#c1443f'
+  const textColor = di.score >= 80 ? '#145c43' : di.score >= 50 ? '#2c5079' : di.score > 0 ? '#7a5a26' : '#8f2f2b'
 
   return (
     <div style={{
@@ -216,7 +218,7 @@ function DisabilityIncomeCard({ result }) {
             Not included in your score above
           </span>
         </div>
-        <span style={{ fontSize: '13px', fontWeight: '700', color: barColor, whiteSpace: 'nowrap' }}>
+        <span style={{ fontSize: '13px', fontWeight: '700', color: textColor, whiteSpace: 'nowrap' }}>
           {di.score} / 100
         </span>
       </div>
@@ -233,7 +235,7 @@ function DisabilityIncomeCard({ result }) {
 // ─── Gap summary ("your gap in numbers") ────────────────────────────────────
 
 const GAP_COPY = {
-  under: { verb: 'Short by', color: '#c1443f', bg: '#f7e9e8' },
+  under: { verb: 'Short by', color: '#8f2f2b', bg: '#f7e9e8' },
   over:  { verb: 'Above target by', color: '#145c43', bg: 'var(--color-accent-bg)' },
   ok:    { verb: 'On target', color: '#2c5079', bg: 'var(--color-blue-bg)' },
 }

@@ -184,11 +184,7 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
   cursor: pointer; flex-shrink: 0;
 }
 .subnav-back:hover { background: var(--color-accent-bg); }
-.subnav-brand { display: flex; flex-direction: column; gap: 1px; min-width: 0; }
-.subnav-eyebrow {
-  font-family: var(--font-coah); font-size: 10px; font-weight: 600;
-  color: var(--color-coah); letter-spacing: 0.1em; text-transform: uppercase; opacity: 0.6;
-}
+.subnav-brand { display: flex; min-width: 0; }
 .subnav-title {
   font-family: var(--font-display); font-size: 19px; color: var(--color-primary);
   line-height: 1.2; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;

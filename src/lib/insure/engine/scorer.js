@@ -1050,11 +1050,17 @@ export function getBandColor(color) {
 }
 
 export function getSeverityStyle(severity) {
+  // `border`/`arc`-style colors are tuned for use as a saturated accent
+  // (borders, bars, pill fills paired with white text) — too light to pass
+  // WCAG AA as plain text on a light background. `text` is the darkened
+  // variant safe for that use; pills use the same light-bg/dark-text
+  // pattern as the score band pill (getBandColor) rather than white-on-
+  // saturated, which fails contrast for the red/amber pair.
   const map = {
-    critical: { border: '#c1443f', bg: '#f7e9e8', pillBg: '#c1443f', pillText: '#fff', pillLabel: 'Critical gap' },
-    warning:  { border: '#b8863b', bg: '#f5ecd9', pillBg: '#b8863b', pillText: '#fff', pillLabel: 'Gap found' },
-    info:     { border: '#3d6fa8', bg: '#e8eef5', pillBg: '#e8eef5', pillText: '#2c5079', pillLabel: 'Worth noting' },
-    nudge:    { border: '#1f6f54', bg: '#e4efe9', pillBg: '#e4efe9', pillText: '#145c43', pillLabel: 'Tip' },
+    critical: { border: '#c1443f', text: '#8f2f2b', bg: '#f7e9e8', pillBg: '#f7e9e8', pillText: '#8f2f2b', pillLabel: 'Critical gap' },
+    warning:  { border: '#b8863b', text: '#7a5a26', bg: '#f5ecd9', pillBg: '#f5ecd9', pillText: '#7a5a26', pillLabel: 'Gap found' },
+    info:     { border: '#3d6fa8', text: '#2c5079', bg: '#e8eef5', pillBg: '#e8eef5', pillText: '#2c5079', pillLabel: 'Worth noting' },
+    nudge:    { border: '#1f6f54', text: '#145c43', bg: '#e4efe9', pillBg: '#e4efe9', pillText: '#145c43', pillLabel: 'Tip' },
   };
   return map[severity] ?? map.info;
 }

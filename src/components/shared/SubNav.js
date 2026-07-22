@@ -4,7 +4,6 @@
 // made the app feel like three stitched-together tools instead of one.
 export default function SubNav({
   title,
-  eyebrow = 'Coah',
   breadcrumb,
   backHref,
   onBack,
@@ -24,7 +23,6 @@ export default function SubNav({
             )
           )}
           <div className="subnav-brand">
-            <span className="subnav-eyebrow">{eyebrow}</span>
             <span className="subnav-title">{breadcrumb ? `${breadcrumb} › ${title}` : title}</span>
           </div>
         </div>

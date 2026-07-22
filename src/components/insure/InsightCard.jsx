@@ -73,7 +73,7 @@ export default function InsightCard({ card, index = 0 }) {
               background: "none",
               border: "none",
               padding: "0 0 0 4px",
-              color: style.border,
+              color: style.text,
               fontFamily: "'IBM Plex Sans', system-ui, sans-serif",
               fontSize: "14px",
               fontWeight: "500",
