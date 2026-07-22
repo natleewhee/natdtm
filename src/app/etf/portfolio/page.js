@@ -4,6 +4,7 @@ import { Suspense, useState, useEffect } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { C, loadPortfolio, savePortfolio } from '@/components/etf/shared'
 import ShellHeader from '@/components/shared/ShellHeader'
+import VerdictBadge from '@/components/shared/VerdictBadge'
 import {
   generateIllustrativePerformance, computeLookThrough, computeBacktest,
   computeBlendedTER, decodePrefsFromParams, generatePortfolio, RETURNS_AS_OF,
@@ -13,6 +14,12 @@ import {
 import styles from './portfolio.module.css'
 
 const FUND_PALETTE = ['#1f6f54', '#b8863b', '#3d6fa8', '#8a5fb0', '#c1443f', '#4a8a7a', '#a67c52', '#6b7fa3']
+
+const RISK_BADGE_COLORS = {
+  Conservative: { bg: 'var(--color-blue-bg)', color: 'var(--color-blue-text)' },
+  Balanced: { bg: 'var(--color-accent-bg)', color: 'var(--color-accent)' },
+  Growth: { bg: 'var(--color-amber-bg)', color: 'var(--color-amber-text)' },
+}
 
 // ─── DONUT CHART ──────────────────────────────────────────────────────────────
 function DonutChart({ allocations }) {
@@ -512,7 +519,12 @@ function PortfolioContent() {
                 <div className={styles.allocEyebrowRow}>
                   <span className={styles.allocEyebrow}>Your Portfolio</span>
                   <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-                    <span className={`${styles.riskBadge} ${styles[`riskBadge${prefs.risk}`] || ''}`}>{prefs.risk} risk</span>
+                    <VerdictBadge
+                      label={`${prefs.risk} risk`}
+                      size="sm"
+                      bg={RISK_BADGE_COLORS[prefs.risk]?.bg}
+                      color={RISK_BADGE_COLORS[prefs.risk]?.color}
+                    />
                     <span className={styles.terBadge}>Blended TER: {blendedTer.toFixed(2)}%/yr</span>
                   </div>
                 </div>

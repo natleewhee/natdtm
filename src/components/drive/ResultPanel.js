@@ -8,6 +8,7 @@ import { DepreciationCard } from './DepreciationCard'
 import { RunningCostCard } from './RunningCostCard'
 import { CoeSensitivity } from './CoeSensitivity'
 import { suggestAdjustments } from '@/lib/drive/solve'
+import VerdictBadge from '@/components/shared/VerdictBadge'
 import { calc } from '@/lib/drive/calc'
 import { calcUsed } from '@/lib/drive/used-car'
 import { encodePrefsToParams } from '@/lib/etf/logic'
@@ -80,8 +81,8 @@ export function ResultPanel({ r, tenure, visible, slim=false }) {
             <span style={{color:C.faint}}>·</span>
             <span style={{fontSize:C.sm,fontFamily:C.fontMono,fontWeight:700,color:C.primary}}>{SGD(car.price)}</span>
           </div>
-          <div style={{display:'inline-flex',alignItems:'center',gap:5,background:tier.bg,border:`1px solid ${tier.color}44`,borderRadius:100,padding:'4px 12px'}}>
-            <span style={{fontSize:11}}>{tier.icon}</span>
+          <div style={{display:'inline-flex',alignItems:'center',gap:6,background:tier.bg,border:`1px solid ${tier.color}44`,borderRadius:100,padding:'4px 12px'}}>
+            <span style={{width:7,height:7,borderRadius:'50%',background:tier.color,flexShrink:0}}/>
             <span style={{fontSize:C.xs,fontWeight:700,color:tier.color}}>{tier.label} · {tier.display}</span>
           </div>
         </div>
@@ -93,7 +94,7 @@ export function ResultPanel({ r, tenure, visible, slim=false }) {
             <div>
               <div style={{fontSize:C.xs,fontWeight:700,color:C.muted,textTransform:'uppercase',letterSpacing:'0.1em',marginBottom:5,opacity:contentIn?1:0}}>Your verdict</div>
               <div style={{opacity:contentIn?1:0,animation:phase>=3?'stampIn 0.4s cubic-bezier(0.34,1.56,0.64,1) forwards':undefined}}>
-                <span style={{display:'inline-block',padding:'4px 14px',borderRadius:100,background:vbg,fontFamily:C.fontDisplay,fontSize:slim?16:20,fontStyle:'italic',color:vcText,lineHeight:1.2}}>{verdict}</span>
+                <VerdictBadge label={verdict} bg={vbg} color={vcText} size={slim?'md':'lg'} />
               </div>
             </div>
           </div>

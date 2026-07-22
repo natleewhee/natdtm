@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { getBandColor } from '@/lib/insure/engine/scorer';
+import VerdictBadge from '@/components/shared/VerdictBadge';
 
 const RADIUS = 80;
 const STROKE = 10;
@@ -125,20 +126,7 @@ export default function ScoreCircle({ score, band, isEstimated, animate = true }
           gap: "4px",
         }}
       >
-        <span
-          style={{
-            display: "inline-block",
-            padding: "4px 14px",
-            borderRadius: "100px",
-            background: colors.bg,
-            color: colors.text,
-            fontFamily: "'IBM Plex Sans', system-ui, sans-serif",
-            fontSize: "14px",
-            fontWeight: "500",
-          }}
-        >
-          {band?.label}
-        </span>
+        <VerdictBadge label={band?.label} bg={colors.bg} color={colors.text} />
         {isEstimated && (
           <span
             style={{

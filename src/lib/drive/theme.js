@@ -30,9 +30,9 @@ export const C = {
 }
 
 export const RATE_TIERS = [
-  { id:'ice',   label:'Standard ICE',       sub:'Petrol & diesel',   rate:0.0260, display:'2.60%', color:C.iceText,   bg:C.iceBg,    icon:'⛽' },
-  { id:'green', label:'Green EV / Hybrid',  sub:'Electric & hybrid', rate:0.0208, display:'2.08%', color:C.accentText,bg:C.accentBg, icon:'🌿' },
-  { id:'tesla', label:'Tesla Preferential', sub:'Tesla models only', rate:0.0168, display:'1.68%', color:'#6b5a9e',   bg:'#efedf5',  icon:'⚡' },
+  { id:'ice',   label:'Standard ICE',       sub:'Petrol & diesel',   rate:0.0260, display:'2.60%', color:C.iceText,   bg:C.iceBg },
+  { id:'green', label:'Green EV / Hybrid',  sub:'Electric & hybrid', rate:0.0208, display:'2.08%', color:C.accentText,bg:C.accentBg },
+  { id:'tesla', label:'Tesla Preferential', sub:'Tesla models only', rate:0.0168, display:'1.68%', color:'#6b5a9e',   bg:'#efedf5' },
 ]
 
 export const SGD = n => `S$${Math.round(n).toLocaleString('en-SG')}`
