@@ -1,7 +1,7 @@
 'use client'
 
 import { SITE_URL } from '@/lib/shared/site'
-import SubNav from '@/components/shared/SubNav'
+import ShellHeader from '@/components/shared/ShellHeader'
 import TrustBadges from '@/components/shared/TrustBadges'
 
 export default function LandingPage() {
@@ -40,7 +40,7 @@ export default function LandingPage() {
         }}
       />
 
-      <SubNav title="InsureCheck" links={[{ href: '#how-it-works', label: 'How it works' }]} />
+      <ShellHeader links={[{ href: '#how-it-works', label: 'How it works' }]} />
 
       {/* Hero */}
       <section style={{

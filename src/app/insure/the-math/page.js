@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { RISK_PROFILES, BENCHMARKS } from '@/lib/insure/engine/scorer'
-import SubNav from '@/components/shared/SubNav'
+import ShellHeader from '@/components/shared/ShellHeader'
 import MathTOC from '@/components/shared/MathTOC'
 
 // ─── Expandable section component ────────────────────────────────────────────
@@ -215,7 +215,7 @@ export default function HowItWorksPage() {
       paddingBottom: '64px',
     }}>
 
-      <SubNav title="The Math" breadcrumb="InsureCheck" onBack={() => router.back()} />
+      <ShellHeader title="The Math" onBack={() => router.back()} />
 
       <div style={{ maxWidth: '640px', margin: '0 auto', padding: '0 20px' }}>
 

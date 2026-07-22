@@ -3,7 +3,7 @@
 import { Suspense, useState, useEffect, useMemo } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { OptionCard, RISK_OPTIONS, SIMPLICITY_OPTIONS, TILT_OPTIONS, savePrefs, loadPrefs, savePortfolio } from '@/components/etf/shared'
-import SubNav from '@/components/shared/SubNav'
+import ShellHeader from '@/components/shared/ShellHeader'
 import { generatePortfolio, encodePrefsToParams, decodePrefsFromParams } from '@/lib/etf/logic'
 import styles from './preferences.module.css'
 
@@ -44,7 +44,7 @@ function PreferencesForm() {
 
   return (
     <div className={styles.page}>
-      <SubNav title="Your Preferences" breadcrumb="WhatETF" backHref="/etf" links={[{ href: '/etf/the-math', label: 'The Math' }]} />
+      <ShellHeader title="Your Preferences" backHref="/etf" links={[{ href: '/etf/the-math', label: 'The Math' }]} />
 
       <main className={styles.main}>
         <div className={styles.content}>

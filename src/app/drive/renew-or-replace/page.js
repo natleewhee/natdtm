@@ -8,7 +8,7 @@ import {
   MAINTENANCE_BY_BRAND
 } from './renew-math'
 import { COE_FALLBACK } from '@/lib/drive/calc'
-import SubNav from '@/components/shared/SubNav'
+import ShellHeader from '@/components/shared/ShellHeader'
 
 const C = {
   coah:'#1b2320', primary:'#1b2320', accent:'#1f6f54', accentBg:'#e4efe9', accentText:'#145c43',
@@ -284,9 +284,8 @@ export default function RenewOrReplacePage() {
   return (
     <div style={{minHeight:'100vh',display:'flex',flexDirection:'column',background:C.bg,fontFamily:C.fontBody}}>
 
-      <SubNav
+      <ShellHeader
         title="Renew or Replace?"
-        breadcrumb="DriveReady"
         backHref="/drive"
         links={[{ href: '/drive/renew-or-replace/the-math', label: 'The Math' }]}
       />

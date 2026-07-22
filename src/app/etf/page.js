@@ -1,7 +1,7 @@
 'use client'
 
 import { generatePortfolio } from '@/lib/etf/logic'
-import SubNav from '@/components/shared/SubNav'
+import ShellHeader from '@/components/shared/ShellHeader'
 import TrustBadges from '@/components/shared/TrustBadges'
 import styles from './page.module.css'
 
@@ -21,7 +21,7 @@ export default function LandingPage() {
         offers:{'@type':'Offer', price:'0', priceCurrency:'SGD'},
       }) }} />
 
-      <SubNav title="WhatETF" links={[{ href: '/etf/the-math', label: 'The Math' }]} />
+      <ShellHeader links={[{ href: '/etf/the-math', label: 'The Math' }]} />
 
       <main className={styles.main}>
         <div className={styles.hero}>

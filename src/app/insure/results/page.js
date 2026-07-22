@@ -11,7 +11,7 @@ import { getBandColor, explainPillar, computeGaps, generateActionPlan, formatSGD
 import { SITE_URL } from '@/lib/shared/site'
 import { loadScoreHistory } from '@/lib/insure/scoreHistory'
 import { downloadRecheckReminder } from '@/lib/insure/recheckReminder'
-import SubNav from '@/components/shared/SubNav'
+import ShellHeader from '@/components/shared/ShellHeader'
 
 const PILLAR_ROWS = (result) => {
   const { hosp, resilience, life, premium } = result.pillars
@@ -461,7 +461,7 @@ export default function ResultsPage() {
       paddingBottom: '48px',
     }}>
 
-      <SubNav title="Your Score" breadcrumb="InsureCheck" onBack={() => router.push('/insure/check')} />
+      <ShellHeader title="Your Score" onBack={() => router.push('/insure/check')} />
 
       {/* Compliance line */}
       <div style={{

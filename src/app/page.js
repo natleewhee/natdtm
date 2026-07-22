@@ -1,3 +1,5 @@
+import ShellHeader from '@/components/shared/ShellHeader'
+
 const TOOLS = [
   {
     href: '/insure',
@@ -21,6 +23,8 @@ const TOOLS = [
 
 export default function HomePage() {
   return (
+    <>
+    <ShellHeader />
     <div className="shell-wrap" style={{ padding: '56px 24px 80px' }}>
       <p style={{
         fontFamily: 'var(--l-font-mono)', fontSize: 12, letterSpacing: '.12em',
@@ -66,5 +70,6 @@ export default function HomePage() {
         ))}
       </div>
     </div>
+    </>
   )
 }

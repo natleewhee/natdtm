@@ -1,6 +1,6 @@
 'use client'
 
-import SubNav from '@/components/shared/SubNav'
+import ShellHeader from '@/components/shared/ShellHeader'
 import MathTOC from '@/components/shared/MathTOC'
 
 const C = {
@@ -49,7 +49,7 @@ function Table({ rows }) {
 export default function RenewOrReplaceTheMath() {
   return (
     <div style={{ minHeight: '100vh', background: C.bg, fontFamily: C.fontBody }}>
-      <SubNav title="The Math" breadcrumb="Renew or Replace" backHref="/drive/renew-or-replace" />
+      <ShellHeader title="The Math" breadcrumb="Renew or Replace" backHref="/drive/renew-or-replace" />
 
       <div style={{ maxWidth: 720, margin: '0 auto', padding: '40px 24px 80px' }}>
         <h1 style={{ fontFamily: C.fontDisplay, fontSize: 32, color: C.primary, margin: '0 0 8px' }}>How We Calculate</h1>

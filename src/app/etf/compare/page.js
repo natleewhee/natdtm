@@ -4,7 +4,7 @@ import { Suspense, useState, useEffect } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { RISK_OPTIONS, SIMPLICITY_OPTIONS, TILT_OPTIONS } from '@/components/etf/shared'
 import { summarizePortfolio, encodeComparePrefs, decodeComparePrefs } from '@/lib/etf/logic'
-import SubNav from '@/components/shared/SubNav'
+import ShellHeader from '@/components/shared/ShellHeader'
 import styles from './compare.module.css'
 
 const DEFAULT_A = { risk: 'Balanced', simplicity: '2-3 ETFs', tilts: [], monthlyInvestment: '' }
@@ -132,7 +132,7 @@ function CompareContent() {
 
   return (
     <div className={styles.page}>
-      <SubNav title="Compare" breadcrumb="WhatETF" backHref="/etf/portfolio" links={[{ href: '/etf/the-math', label: 'The Math' }]} />
+      <ShellHeader title="Compare" backHref="/etf/portfolio" links={[{ href: '/etf/the-math', label: 'The Math' }]} />
 
       <main className={styles.main}>
         <div className={styles.content}>

@@ -163,7 +163,7 @@ export function CarPicker({ value, onChange, slot, ceiling, down, allCars = [], 
           {value.priceVerified === false && (
             <div style={{display:'flex',alignItems:'center',gap:6,padding:'6px 10px',background:C.amberBg,borderRadius:C.r,marginBottom:8,border:`1px solid ${C.amber}44`}}>
               <span style={{fontSize:12}}>⚠️</span>
-              <span style={{fontSize:C.xs,color:C.amberText}}>Not in this month's LTA update — using our last saved price for this model.</span>
+              <span style={{fontSize:C.xs,color:C.amberText}}>Not in this month&apos;s LTA update — using our last saved price for this model.</span>
             </div>
           )}
           <div style={{display:'flex',gap:16,flexWrap:'wrap',marginBottom:8}}>

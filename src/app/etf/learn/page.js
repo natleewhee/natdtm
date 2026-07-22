@@ -1,6 +1,6 @@
 'use client'
 
-import SubNav from '@/components/shared/SubNav'
+import ShellHeader from '@/components/shared/ShellHeader'
 import styles from './learn.module.css'
 
 function Section({ title, children, noBorder }) {
@@ -26,7 +26,7 @@ function InfoCard({ title, body }) {
 export default function LearnPage() {
   return (
     <div className={styles.page}>
-      <SubNav title="Learn" breadcrumb="WhatETF" backHref="/etf" links={[{ href: '/etf/the-math', label: 'The Math' }]} />
+      <ShellHeader title="Learn" backHref="/etf" links={[{ href: '/etf/the-math', label: 'The Math' }]} />
 
       <main className={styles.main}>
         <div className={styles.content}>

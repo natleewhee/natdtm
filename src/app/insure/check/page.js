@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { BENCHMARKS, RISK_PROFILES, getProfileBenchmarks } from '@/lib/insure/engine/scorer'
-import SubNav from '@/components/shared/SubNav'
+import ShellHeader from '@/components/shared/ShellHeader'
 
 // ─── Shared styles ───────────────────────────────────────────────────────────
 
@@ -1073,8 +1073,7 @@ export default function CheckPage() {
   return (
     <div style={s.page}>
 
-<SubNav
-  title="InsureCheck"
+<ShellHeader
   onBack={back}
   step={`${step} of ${TOTAL_STEPS}`}
   below={(

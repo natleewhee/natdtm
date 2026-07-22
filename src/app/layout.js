@@ -1,5 +1,4 @@
 import './globals.css'
-import Nav from '@/components/shared/Nav'
 import Footer from '@/components/shared/Footer'
 
 export const metadata = {
@@ -17,7 +16,6 @@ export default function RootLayout({ children }) {
   return (
     <html lang="en">
       <body>
-        <Nav />
         <main>{children}</main>
         <Footer />
       </body>

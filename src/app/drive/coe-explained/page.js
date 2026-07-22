@@ -5,7 +5,7 @@ import Link from 'next/link'
 import { calcARF, calcPARF, COE_FALLBACK } from '@/lib/drive/calc'
 import { CoeHistoryChart } from '@/components/drive/CoeHistoryChart'
 import { CoeTimingSignal } from '@/components/drive/CoeTimingSignal'
-import SubNav from '@/components/shared/SubNav'
+import ShellHeader from '@/components/shared/ShellHeader'
 
 const C = {
   coah: '#1b2320', primary: '#1b2320', accent: '#1f6f54', accentBg: '#e4efe9', accentText: '#145c43',
@@ -74,7 +74,7 @@ export default function COEExplainerPage() {
   return (
     <div style={{ minHeight: '100vh', background: C.bg, fontFamily: C.fontBody }}>
 
-      <SubNav title="COE Explained" breadcrumb="DriveReady" backHref="/drive" />
+      <ShellHeader title="COE Explained" backHref="/drive" />
 
       <div style={{ maxWidth: 720, margin: '0 auto', padding: '48px 24px 80px' }}>
 

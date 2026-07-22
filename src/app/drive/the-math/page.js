@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import SubNav from '@/components/shared/SubNav'
+import ShellHeader from '@/components/shared/ShellHeader'
 import MathTOC from '@/components/shared/MathTOC'
 
 function slug(title) {
@@ -69,7 +69,7 @@ export default function TheMathPage() {
   return (
     <div style={{ minHeight: '100vh', background: '#f3f5f2', fontFamily: "'IBM Plex Sans', system-ui, sans-serif", paddingBottom: 64 }}>
 
-      <SubNav title="The Math" breadcrumb="DriveReady" onBack={() => router.back()} />
+      <ShellHeader title="The Math" onBack={() => router.back()} />
 
       <div style={{ maxWidth: 680, margin: '0 auto', padding: '0 20px' }}>
 

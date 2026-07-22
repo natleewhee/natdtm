@@ -1,6 +1,6 @@
 'use client'
 
-import SubNav from '@/components/shared/SubNav'
+import ShellHeader from '@/components/shared/ShellHeader'
 import MathTOC from '@/components/shared/MathTOC'
 import { RETURNS_AS_OF } from '@/lib/etf/logic'
 import styles from './theMath.module.css'
@@ -31,7 +31,7 @@ function InfoCard({ title, body }) {
 export default function TheMathPage() {
   return (
     <div className={styles.page}>
-      <SubNav title="The Math" breadcrumb="WhatETF" backHref="/etf" />
+      <ShellHeader title="The Math" backHref="/etf" />
 
       <main className={styles.main}>
         <div className={styles.content}>

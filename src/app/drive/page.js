@@ -16,7 +16,7 @@ import { UsedCarForm } from '@/components/drive/UsedCarForm'
 import { ResultPanel } from '@/components/drive/ResultPanel'
 import { AffordabilityCeilingCard } from '@/components/drive/AffordabilityCeilingCard'
 import { GaragePanel } from '@/components/drive/GaragePanel'
-import SubNav from '@/components/shared/SubNav'
+import ShellHeader from '@/components/shared/ShellHeader'
 import TrustBadges from '@/components/shared/TrustBadges'
 
 // Car prices come from /public/data/cars.json (edit that file to update prices)
@@ -270,8 +270,7 @@ export default function DriveReadyPage() {
         audience:{'@type':'Audience',geographicArea:{'@type':'Country',name:'Singapore'}}
       }) }} />
 
-      <SubNav
-        title="DriveReady"
+      <ShellHeader
         links={[
           { href: '/drive/renew-or-replace', label: 'Renew or Replace?' },
           { href: '/drive/the-math', label: 'The Math' },
