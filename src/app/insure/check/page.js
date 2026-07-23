@@ -395,7 +395,7 @@ function ECITooltip() {
 
 // ─── Main page ────────────────────────────────────────────────────────────────
 
-const TOTAL_STEPS = 9
+const TOTAL_STEPS = 8
 
 export default function CheckPage() {
   const router = useRouter()
@@ -575,7 +575,6 @@ export default function CheckPage() {
     if (step === 6) return true
     if (step === 7) return true
     if (step === 8) return true
-    if (step === 9) return true
     return false
   }
 
@@ -1036,30 +1035,6 @@ export default function CheckPage() {
         </>
       )
 
-      case 9: return (
-        <>
-          <label style={s.label}>One last thing — what&apos;s on your mind?</label>
-          <p style={s.hint}>Optional — helps us show you the most relevant insights first.</p>
-          <div style={s.optionGrid}>
-            {[
-              { value: 'overpaying',   label: 'I might be paying too much' },
-              { value: 'undercovered', label: "I might not be covered enough" },
-              { value: 'unsure',       label: "I'm not sure what I have" },
-              { value: 'curious',      label: 'Just curious' },
-            ].map(opt => (
-              <button
-                key={opt.value}
-                style={s.option(form.primaryConcern === opt.value)}
-                aria-pressed={form.primaryConcern === opt.value}
-                onClick={() => set('primaryConcern', opt.value)}
-              >
-                {opt.label}
-              </button>
-            ))}
-          </div>
-        </>
-      )
-
       default: return null
     }
   }
@@ -1067,7 +1042,7 @@ export default function CheckPage() {
   // ── Render ──────────────────────────────────────────────────────────────────
 
   const isLastStep = step === TOTAL_STEPS
-  const isOptional = step === 3 || step === 6 || step === 7 || step === 8 || step === 9
+  const isOptional = step === 3 || step === 6 || step === 7 || step === 8
   const disabled = !canProceed() && !isOptional
 
   return (

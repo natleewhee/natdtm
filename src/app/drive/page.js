@@ -530,20 +530,6 @@ export default function DriveReadyPage() {
         </div>
       </div>
 
-      {/* ── BUILT BY COAH ── */}
-      <div style={{padding:'48px 24px',maxWidth:660,margin:'0 auto',width:'100%'}}>
-        <div style={{background:C.surface,borderRadius:16,border:`1px solid ${C.border}`,padding:'28px 24px',borderTop:`3px solid ${C.coah}`}}>
-          <div style={{display:'flex',alignItems:'center',gap:10,marginBottom:14}}>
-            <span style={{fontFamily:C.fontCoah,fontSize:18,fontWeight:600,color:C.coah,letterSpacing:'0.04em'}}>COAH</span>
-            <span style={{fontSize:11,color:C.faint,borderLeft:`1px solid ${C.border}`,paddingLeft:10,letterSpacing:'0.06em',textTransform:'uppercase'}}>Modern Utilities for the Common Good</span>
-          </div>
-          <p style={{fontSize:14,color:C.text,lineHeight:1.7,marginBottom:14}}>
-            DriveReady is built by Coah — a collective dedicated to creating transparent, privacy-first tools for Singaporeans. No data is stored on any server. No sales agent will call. No commissions influence the math.
-          </p>
-          <p style={{fontSize:13,color:C.muted,lineHeight:1.6,fontStyle:'italic',fontFamily:C.fontDisplay}}>&quot;We put the logic on a hill for everyone to see.&quot;</p>
-        </div>
-      </div>
-
     </div>
   )
 }

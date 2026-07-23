@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useRef, useEffect } from 'react'
-import { C, SGD, RATE_TIERS } from '@/lib/drive/theme'
+import { C, SGD, RATE_TIERS, brandTier } from '@/lib/drive/theme'
 import { calcPriceGap } from '@/lib/drive/calc'
 
 function hlMatch(text, query) {
@@ -38,10 +38,15 @@ export function CarPicker({ value, onChange, slot, ceiling, down, allCars = [], 
     c.type.toLowerCase().includes(q) ||
     (c.coe||'').toLowerCase().includes(q)
   ).sort((a, b) => {
+    // Tagged best-sellers first (by sales rank), then a coarse brand-
+    // popularity tier, then cheapest first — so the long tail orders
+    // sensibly instead of alphabetically.
     if (a.top5 && b.top5) return a.rank - b.rank
     if (a.top5) return -1
     if (b.top5) return 1
-    return 0
+    const ta = brandTier(a.name), tb = brandTier(b.name)
+    if (ta !== tb) return ta - tb
+    return a.price - b.price
   }).slice(0, 20)
   const showDrop = focused && query.trim().length > 0
   useEffect(() => {

@@ -52,8 +52,10 @@ export default function Footer() {
         </div>
       </div>
       {disclaimer && (
-        <div className="shell-wrap" style={{ fontSize: 12, lineHeight: 1.6, color: 'var(--l-sub)', maxWidth: '72ch', marginTop: 20, paddingTop: 20, borderTop: '1px solid var(--l-line)' }}>
-          {disclaimer}
+        <div className="shell-wrap" style={{ marginTop: 20, paddingTop: 20, borderTop: '1px solid var(--l-line)' }}>
+          <p style={{ fontSize: 12, lineHeight: 1.6, color: 'var(--l-sub)', maxWidth: '80ch', margin: 0 }}>
+            {disclaimer}
+          </p>
         </div>
       )}
       <div className="shell-wrap shell-footer-version tnum">

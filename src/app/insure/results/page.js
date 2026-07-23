@@ -682,28 +682,15 @@ export default function ResultsPage() {
 
         <PrintSummary result={result} gaps={gaps} actionPlan={actionPlan} />
 
-        {/* Disclaimer */}
+        {/* The full educational/not-affiliated disclaimer lives once in the
+            shell Footer (vertical-aware). Here we keep only the link onward
+            to the methodology. */}
         <div style={{
           marginTop: '28px',
           paddingTop: '20px',
           borderTop: '1px solid var(--color-border)',
         }}>
-          <p style={{
-            fontSize: '12px',
-            color: 'var(--color-faint)',
-            lineHeight: 1.6,
-            margin: '0 0 6px',
-          }}>
-            This score is for educational purposes only and does not constitute
-            financial advice. Coverage benchmarks are based on general Singapore
-            financial planning guidelines. Please consult a MAS-licensed financial
-            adviser for personal recommendations.
-          </p>
-          <p style={{ fontSize: '11px', color: 'var(--color-faint)', margin: '0 0 8px' }}>
-            Not affiliated with any insurer or MAS-licensed entity.
-          </p>
-          
-          <a href="/insure/the-math" style={{ fontSize: '12px', color: 'var(--color-accent)', textDecoration: 'none' }}>{'How we calculate your score \u2192'}</a>
+          <a href="/insure/the-math" style={{ fontSize: '13px', color: 'var(--color-accent)', textDecoration: 'none' }}>{'How we calculate your score \u2192'}</a>
         </div>
 
       </div>

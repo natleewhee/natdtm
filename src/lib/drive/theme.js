@@ -36,3 +36,19 @@ export const RATE_TIERS = [
 ]
 
 export const SGD = n => `S$${Math.round(n).toLocaleString('en-SG')}`
+
+// Coarse Singapore-market popularity by brand — a transparent heuristic for
+// ordering the long tail of search results, NOT sourced registration/sales
+// figures (we only have real rank data for the 5 tagged best-sellers). Lower
+// number = more common on SG roads. Used only to keep search results from
+// falling back to raw/alphabetical order; the 5 ranked best-sellers still
+// lead. Revisit if per-model sales data is ever added to cars.json.
+const BRAND_TIER = {
+  Toyota: 1, Honda: 1, BYD: 1, Hyundai: 1, Kia: 1, Mazda: 1,
+  Tesla: 2, Nissan: 2, Mitsubishi: 2, Subaru: 2, Suzuki: 2,
+  Volkswagen: 2, Skoda: 2, MG: 2, MG4: 2,
+  BMW: 3, 'Mercedes-Benz': 3, Audi: 3, Volvo: 3, Lexus: 3, MINI: 3, Polestar: 3,
+}
+export function brandTier(name) {
+  return BRAND_TIER[name.split(' ')[0]] ?? 4
+}
