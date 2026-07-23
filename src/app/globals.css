@@ -115,8 +115,19 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
   border-top-color: var(--color-accent);
   animation: coah-spin 0.8s linear infinite;
 }
+/* Product-wide reduced-motion guard. Shortens rather than removes
+   durations: many reveals use `animation ... forwards` from opacity:0, so
+   `animation: none` would strand that content invisible — near-instant
+   durations still apply the forwards fill. (Drive shipped this rule in its
+   own legacy.css; promoted here so Insure and ETF honor it too.) */
 @media (prefers-reduced-motion: reduce) {
-  .coah-spinner { animation-duration: 1.6s; }
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+  .coah-spinner { animation-duration: 1.6s !important; }
 }
 
 /* ── shell shared layout ─────────────────────────────────────────── */

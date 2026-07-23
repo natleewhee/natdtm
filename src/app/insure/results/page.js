@@ -136,6 +136,7 @@ function PillarRow({ row, index, result }) {
           <span style={{
             fontSize: '12px',
             fontWeight: '600',
+            fontFamily: 'var(--font-mono)',
             color: textColor,
             whiteSpace: 'nowrap',
             marginLeft: '8px',
@@ -218,7 +219,7 @@ function DisabilityIncomeCard({ result }) {
             Not included in your score above
           </span>
         </div>
-        <span style={{ fontSize: '13px', fontWeight: '700', color: textColor, whiteSpace: 'nowrap' }}>
+        <span style={{ fontSize: '13px', fontWeight: '700', fontFamily: 'var(--font-mono)', color: textColor, whiteSpace: 'nowrap' }}>
           {di.score} / 100
         </span>
       </div>
@@ -666,7 +667,8 @@ export default function ResultsPage() {
                   color: 'var(--color-faint)',
                   fontSize: '13px',
                   cursor: 'pointer',
-                  padding: '8px 0',
+                  minHeight: '44px',
+                  padding: '8px 6px',
                   fontFamily: 'var(--font-body)',
                   textDecoration: 'underline',
                   textDecorationColor: '#d8ded9',

@@ -124,7 +124,7 @@ export function CarPicker({ value, onChange, slot, ceiling, down, allCars = [], 
             style={{width:'100%',background:C.surface,border:`1.5px solid ${focused?C.accent:C.border}`,borderRadius:C.r,padding:'10px 32px 10px 36px',color:C.text,fontSize:C.sm,outline:'none',transition:'border-color 0.2s,box-shadow 0.2s',boxShadow:focused?`0 0 0 3px ${C.accentBg}`:'none'}}/>
           {query && (
             <button type="button" onClick={() => { setQuery(''); inputRef.current?.focus() }} aria-label="Clear search"
-              style={{position:'absolute',right:10,top:'50%',transform:'translateY(-50%)',background:'none',border:'none',color:C.faint,cursor:'pointer',fontSize:16,lineHeight:1,padding:0}}>✕</button>
+              style={{position:'absolute',right:2,top:'50%',transform:'translateY(-50%)',width:40,height:40,display:'flex',alignItems:'center',justifyContent:'center',background:'none',border:'none',color:C.faint,cursor:'pointer',fontSize:16,lineHeight:1,padding:0}}>✕</button>
           )}
           {showDrop && (
             <div id={`car-listbox-${slot}`} role="listbox" className="coah-scroll" style={{position:'absolute',top:'calc(100% + 4px)',left:0,right:0,zIndex:999,background:C.surface,border:`1.5px solid ${C.accent}55`,borderRadius:C.r,boxShadow:C.shadowMd,maxHeight:'min(60vh, 420px)',overflowY:'auto',animation:'expandDown 0.18s ease forwards'}}>
