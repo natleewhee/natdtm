@@ -27,11 +27,22 @@ export function CarPicker({ value, onChange, slot, ceiling, down, allCars = [], 
   }).sort((a,b) => { if (a.top5 && !b.top5) return -1; if (!a.top5 && b.top5) return 1; if (a.top5&&b.top5) return a.rank-b.rank; return b.price-a.price }).slice(0,5) : []
   const showBudget = budgetFilter && hasCeiling
   const listCars = showBudget ? budgetCars : top5Cars
-  const filtered = query.trim().length === 0 ? [] : allCars.filter(c =>
-    c.name.toLowerCase().includes(query.toLowerCase()) ||
-    c.type.toLowerCase().includes(query.toLowerCase()) ||
-    (c.coe||'').toLowerCase().includes(query.toLowerCase())
-  ).slice(0, 8)
+  // Sort matches by popularity BEFORE slicing — previously this filtered
+  // then sliced(0,8) in raw JSON order, so a popular model past index 8
+  // (e.g. a best-selling SUV) never surfaced. Best-sellers (top5, by sales
+  // rank) lead; everything else stays in curated stored order (Array.sort
+  // is stable). The dropdown now scrolls, so the cap is higher.
+  const q = query.trim().toLowerCase()
+  const filtered = q.length === 0 ? [] : allCars.filter(c =>
+    c.name.toLowerCase().includes(q) ||
+    c.type.toLowerCase().includes(q) ||
+    (c.coe||'').toLowerCase().includes(q)
+  ).sort((a, b) => {
+    if (a.top5 && b.top5) return a.rank - b.rank
+    if (a.top5) return -1
+    if (b.top5) return 1
+    return 0
+  }).slice(0, 20)
   const showDrop = focused && query.trim().length > 0
   useEffect(() => {
     const h = e => { if (wrapRef.current && !wrapRef.current.contains(e.target)) { setFocused(false); setQuery('') } }
@@ -116,7 +127,7 @@ export function CarPicker({ value, onChange, slot, ceiling, down, allCars = [], 
               style={{position:'absolute',right:10,top:'50%',transform:'translateY(-50%)',background:'none',border:'none',color:C.faint,cursor:'pointer',fontSize:16,lineHeight:1,padding:0}}>✕</button>
           )}
           {showDrop && (
-            <div id={`car-listbox-${slot}`} role="listbox" className="coah-scroll" style={{position:'absolute',top:'calc(100% + 4px)',left:0,right:0,zIndex:999,background:C.surface,border:`1.5px solid ${C.accent}55`,borderRadius:C.r,boxShadow:C.shadowMd,overflow:'hidden',animation:'expandDown 0.18s ease forwards'}}>
+            <div id={`car-listbox-${slot}`} role="listbox" className="coah-scroll" style={{position:'absolute',top:'calc(100% + 4px)',left:0,right:0,zIndex:999,background:C.surface,border:`1.5px solid ${C.accent}55`,borderRadius:C.r,boxShadow:C.shadowMd,maxHeight:'min(60vh, 420px)',overflowY:'auto',animation:'expandDown 0.18s ease forwards'}}>
               {filtered.length === 0
                 ? <div style={{padding:'14px',fontSize:C.sm,color:C.muted,textAlign:'center'}}>No matches for &quot;{query}&quot;</div>
                 : filtered.map((car, i) => {
@@ -206,8 +217,14 @@ export function CarPicker({ value, onChange, slot, ceiling, down, allCars = [], 
             return (
               <div style={{display:'flex',alignItems:'center',gap:8}}>
                 <span style={{fontSize:C.xs,color:C.muted}}>{pg.label}:</span>
-                <span style={{fontSize:C.xs,fontFamily:C.fontMono,fontWeight:700,color:C.blue}}>{SGD(pg.gap)}</span>
-                <span style={{fontSize:C.xs,color:C.blueText,opacity:0.8}}>({pg.gapPct.toFixed(1)}% of total price)</span>
+                {pg.unreliable ? (
+                  <span style={{fontSize:C.xs,color:C.muted}}>Not estimable at current COE — enter your dealer quote above</span>
+                ) : (
+                  <>
+                    <span style={{fontSize:C.xs,fontFamily:C.fontMono,fontWeight:700,color:C.blue}}>{SGD(pg.gap)}</span>
+                    <span style={{fontSize:C.xs,color:C.blueText,opacity:0.8}}>({pg.gapPct.toFixed(1)}% of total price)</span>
+                  </>
+                )}
               </div>
             )
           })()}

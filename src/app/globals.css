@@ -65,30 +65,16 @@
   --l-font-body: 'IBM Plex Sans', -apple-system, 'Segoe UI', sans-serif;
   --l-font-mono: 'IBM Plex Mono', ui-monospace, 'SF Mono', Consolas, monospace;
 }
-@media (prefers-color-scheme: dark) {
-  :root {
-    --l-bg: #12171a;
-    --l-surface: #1a2124;
-    --l-ink: #e7ece8;
-    --l-sub: #93a09a;
-    --l-accent: #3fbe94;
-    --l-accent-bg: #1b2a24;
-    --l-amber: #d5a75f;
-    --l-amber-bg: #2b2419;
-    --l-line: #2b3438;
-  }
-}
-:root[data-theme='dark'] {
-  --l-bg: #12171a;
-  --l-surface: #1a2124;
-  --l-ink: #e7ece8;
-  --l-sub: #93a09a;
-  --l-accent: #3fbe94;
-  --l-accent-bg: #1b2a24;
-  --l-amber: #d5a75f;
-  --l-amber-bg: #2b2419;
-  --l-line: #2b3438;
-}
+/* coah ships light-only. The three tools were merged from separate apps —
+   two never had dark mode, one was permanently dark — and their internals
+   are riddled with literal-hex colors (Drive's C object, Insure's scorer
+   band/severity hexes) that don't flow through these tokens. A partial
+   dark mode therefore half-flipped: tokened surfaces inverted while their
+   literal-hex siblings stayed put, landing white-on-white heroes and
+   light-on-light cards. Rather than re-derive ~165 hex + ~61 rgba literals
+   against a dark surface, the product is pinned light: no prefers-color-
+   scheme response, and html carries data-theme="light" (see layout.js).
+   The :root base below is already the light palette. */
 :root[data-theme='light'] {
   --l-bg: #f3f5f2;
   --l-surface: #ffffff;
@@ -270,4 +256,15 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
   --font-display: var(--l-font-display);
   --font-body: var(--l-font-body);
   --font-mono: var(--l-font-mono);
+
+  /* Radius + card shadow scale. Previously defined only under .v-etf in
+     etf/legacy.css, so Insure's cards (and the shell header's switcher
+     menu) referenced these and silently fell back to square corners /
+     no shadow. Defined once here for the whole product; etf/legacy.css
+     re-declares the same values locally, which is now redundant but
+     harmless. */
+  --radius-sm: 5px;
+  --radius-md: 9px;
+  --radius-lg: 13px;
+  --shadow-card: 0 1px 3px rgba(0,0,0,0.06), 0 4px 16px rgba(0,0,0,0.04);
 }

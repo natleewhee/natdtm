@@ -71,10 +71,14 @@ export function DepreciationCard({ r, tenure, visible }) {
           <div style={{background:C.blueBg,border:`1px solid ${C.blue}33`,borderRadius:C.r,padding:'12px 14px',marginBottom:14}}>
             <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:4}}>
               <span style={{fontSize:C.xs,fontWeight:700,color:C.blueText,textTransform:'uppercase',letterSpacing:'0.08em'}}>{pg.label}</span>
-              <div style={{display:'flex',alignItems:'center',gap:8}}>
-                <span style={{fontSize:C.base,fontFamily:C.fontMono,fontWeight:700,color:C.blue}}>{SGD(pg.gap)}</span>
-                <span style={{fontSize:C.xs,fontWeight:700,color:C.blueText,background:C.blueBg,border:`1px solid ${C.blue}44`,borderRadius:100,padding:'2px 8px'}}>{pg.isSubtotal ? `${pg.gapPct.toFixed(0)}% of total price` : `${pg.gapPct.toFixed(1)}% of total price`}</span>
-              </div>
+              {pg.unreliable ? (
+                <span style={{fontSize:C.xs,fontWeight:700,color:C.muted}}>Not estimable</span>
+              ) : (
+                <div style={{display:'flex',alignItems:'center',gap:8}}>
+                  <span style={{fontSize:C.base,fontFamily:C.fontMono,fontWeight:700,color:C.blue}}>{SGD(pg.gap)}</span>
+                  <span style={{fontSize:C.xs,fontWeight:700,color:C.blueText,background:C.blueBg,border:`1px solid ${C.blue}44`,borderRadius:100,padding:'2px 8px'}}>{pg.isSubtotal ? `${pg.gapPct.toFixed(0)}% of total price` : `${pg.gapPct.toFixed(1)}% of total price`}</span>
+                </div>
+              )}
             </div>
             <p style={{fontSize:C.xs,color:C.blueText,margin:0,lineHeight:1.5,opacity:0.8}}>
               {pg.sublabel}

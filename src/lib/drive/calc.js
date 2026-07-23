@@ -127,13 +127,25 @@ export function calcPriceGap(car, liveCOEPremium = null) {
     }
   }
 
-  // Standard distributor margin calculation
-  const gap = Math.max(0, car.price - govtCosts.total)
+  // Standard distributor margin calculation.
+  //
+  // When the listed price is BELOW total known government costs, the margin
+  // can't be estimated — it would clamp to a misleading S$0. That happens
+  // because our seeded sticker prices were captured when COE was lower than
+  // the ~S$129-131k figure subtracted here, so price − govtCosts goes
+  // negative. Rather than show a false S$0, flag it as not-estimable and
+  // point the user at the price field (a real dealer quote at today's COE
+  // makes the estimate work).
+  const rawGap = car.price - govtCosts.total
+  const unreliable = rawGap <= 0
+  const gap = Math.max(0, rawGap)
   const gapPct = (gap / car.price) * 100
   return {
-    gap, gapPct, isTesla, govtCosts,
+    gap, gapPct, unreliable, isTesla, govtCosts,
     label: isTesla ? 'Est. price above govt costs' : 'Est. distributor margin',
-    sublabel: isTesla
+    sublabel: unreliable
+      ? `This car's seeded price predates the current ${SGD(govtCosts.coe)} ${car.coe} COE, so a margin can't be estimated from it — enter your actual dealer quote above to see it.`
+      : isTesla
       ? 'Tesla sells direct — no local distributor. Calculated from car price minus all known government costs.'
       : 'Estimated as car price minus OMV, ARF (net of EEAI for EVs), excise duty, GST, COE, and registration fee.',
   }
