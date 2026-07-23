@@ -80,14 +80,6 @@ export default function LandingPage() {
               </div>
             ))}
           </div>
-          <div className={styles.coahCard}>
-            <div className={styles.coahCardHeader}>
-              <span className={styles.coahCardLabel}>COAH</span>
-              <span className={styles.coahCardSub}>Modern Utilities for the Common Good</span>
-            </div>
-            <p className={styles.coahCardBody}>WhatETF is built by Coah — a collective dedicated to creating transparent, privacy-first tools for Singaporeans. No data is stored on any server. No agent will call. No commission influences the logic.</p>
-            <p className={styles.coahCardQuote}>&quot;We put the logic on a hill for everyone to see.&quot;</p>
-          </div>
         </div>
       </main>
 

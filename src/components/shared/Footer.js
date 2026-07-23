@@ -42,10 +42,13 @@ export default function Footer() {
             Every number is shown, not just the verdict.
           </p>
         </div>
-        <div className="shell-footer-links">
-          <a href="/insure/the-math">Insure — the math</a>
-          <a href="/drive/the-math">Drive — the math</a>
-          <a href="/etf/the-math">Invest — the math</a>
+        <div className="shell-footer-math">
+          <span className="shell-footer-math-label">The math:</span>
+          <div className="shell-footer-links">
+            <a href="/insure/the-math">Insure</a>
+            <a href="/drive/the-math">Drive</a>
+            <a href="/etf/the-math">Invest</a>
+          </div>
         </div>
       </div>
       {disclaimer && (

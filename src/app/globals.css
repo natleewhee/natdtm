@@ -106,6 +106,19 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
 }
 .tnum { font-variant-numeric: tabular-nums; }
 
+/* Shared loading spinner — avoids a blank white screen while a page rehydrates
+   from sessionStorage (results pages) or fetches. */
+@keyframes coah-spin { to { transform: rotate(360deg); } }
+.coah-spinner {
+  width: 32px; height: 32px; border-radius: 50%;
+  border: 3px solid var(--color-border);
+  border-top-color: var(--color-accent);
+  animation: coah-spin 0.8s linear infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .coah-spinner { animation-duration: 1.6s; }
+}
+
 /* ── shell shared layout ─────────────────────────────────────────── */
 .shell-wrap { max-width: 1080px; margin: 0 auto; padding: 0 24px; }
 
@@ -118,7 +131,9 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
   display: flex; justify-content: space-between; align-items: flex-start;
   gap: 20px; flex-wrap: wrap;
 }
-.shell-footer-links { display: flex; gap: 16px; flex-wrap: wrap; }
+.shell-footer-math { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; }
+.shell-footer-math-label { color: var(--l-sub); }
+.shell-footer-links { display: flex; gap: 14px; flex-wrap: wrap; }
 .shell-footer-links a { text-decoration: none; color: var(--l-sub); }
 .shell-footer-links a:hover { color: var(--l-accent); }
 .shell-footer-version { font-family: var(--l-font-mono); font-size: 11.5px; margin-top: 10px; }

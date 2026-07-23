@@ -446,7 +446,9 @@ export default function ResultsPage() {
       alignItems: 'center',
       justifyContent: 'center',
       background: 'var(--color-bg)',
-    }} />
+    }}>
+      <div className="coah-spinner" role="status" aria-label="Loading your score" />
+    </div>
   )
 
   const { result, insights } = data
@@ -700,45 +702,6 @@ export default function ResultsPage() {
           </p>
           
           <a href="/insure/the-math" style={{ fontSize: '12px', color: 'var(--color-accent)', textDecoration: 'none' }}>{'How we calculate your score \u2192'}</a>
-
-          {/* Coah signature */}
-          <div style={{
-            marginTop: '20px',
-            paddingTop: '16px',
-            borderTop: '1px solid var(--color-border)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            flexWrap: 'wrap',
-            gap: '8px',
-          }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <span style={{
-                fontFamily: 'var(--font-coah)',
-                fontSize: '14px',
-                fontWeight: '600',
-                color: 'var(--color-coah)',
-                letterSpacing: '0.08em',
-              }}>
-                COAH
-              </span>
-              <span style={{
-                fontSize: '11px',
-                color: 'var(--color-faint)',
-                borderLeft: '1px solid var(--color-border)',
-                paddingLeft: '8px',
-              }}>
-                Modern Utilities for the Common Good
-              </span>
-            </div>
-            <a href="#" style={{
-              fontSize: '11px',
-              color: 'var(--color-faint)',
-              textDecoration: 'none',
-            }}>
-              coah.sg
-            </a>
-          </div>
         </div>
 
       </div>

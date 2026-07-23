@@ -187,90 +187,19 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* Built by Coah */}
-      <section style={{ padding: '48px 24px', maxWidth: '520px', margin: '0 auto' }}>
-        <div style={{
-          background: 'var(--color-surface)',
-          borderRadius: '16px',
-          border: '1px solid var(--color-border)',
-          padding: '28px 24px',
-          borderTop: '3px solid var(--color-coah)',
-        }}>
-          <div style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '10px',
-            marginBottom: '14px',
-          }}>
-            <span style={{
-              fontFamily: 'var(--font-coah)',
-              fontSize: '18px',
-              fontWeight: '600',
-              color: 'var(--color-coah)',
-              letterSpacing: '0.04em',
-            }}>
-              COAH
-            </span>
-            <span style={{
-              fontSize: '11px',
-              color: 'var(--color-faint)',
-              borderLeft: '1px solid var(--color-border)',
-              paddingLeft: '10px',
-              letterSpacing: '0.06em',
-              textTransform: 'uppercase',
-            }}>
-              Modern Utilities for the Common Good
-            </span>
-          </div>
-          <p style={{
-            fontSize: '14px',
-            color: 'var(--color-text)',
-            lineHeight: 1.7,
-            margin: '0 0 14px',
-          }}>
-            InsureCheck is built by Coah — a collective dedicated to creating transparent,
-            privacy-first tools for Singaporeans. No data is stored on any server.
-            No agents will call. No commissions influence the math.
-          </p>
-          <p style={{
-            fontSize: '13px',
-            color: 'var(--color-muted)',
-            lineHeight: 1.6,
-            margin: '0 0 16px',
-            fontStyle: 'italic',
-          }}>
-            &quot;We put the logic on a hill for everyone to see.&quot;
-          </p>
-
-        </div>
-      </section>
-
-      {/* Secondary CTA */}
-      <section style={{ padding: '8px 24px 56px', textAlign: 'center' }}>
+      {/* Closing line — the brand signature + privacy claims live once in the
+          shell Footer; the home page doesn't repeat the Coah card or a second
+          CTA (the hero CTA + sticky header already carry the action). */}
+      <section style={{ padding: '48px 24px 56px', textAlign: 'center', maxWidth: '520px', margin: '0 auto' }}>
         <p style={{
           fontFamily: 'var(--font-display)',
           fontSize: '22px',
           color: 'var(--color-primary)',
-          margin: '0 0 8px',
+          margin: 0,
           lineHeight: 1.3,
         }}>
           Know before you buy. Check before you commit.
         </p>
-        <p style={{ color: 'var(--color-faint)', fontSize: '14px', margin: '0 0 28px' }}>
-          Takes 3 minutes. No sign-up required.
-        </p>
-        <a href="/insure/check" style={{
-          display: 'inline-block',
-          padding: '14px 36px',
-          border: '2px solid var(--color-primary)',
-          color: 'var(--color-primary)',
-          borderRadius: 'var(--radius-md)',
-          fontSize: '15px',
-          fontWeight: '600',
-          textDecoration: 'none',
-        }}>
-          Check my score — free
-        </a>
       </section>
 
     </main>
