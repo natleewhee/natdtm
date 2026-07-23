@@ -40,8 +40,6 @@
 .search-row       { transition:background 0.12s; }
 .search-row:hover { background:rgba(27,35,32,0.03) !important; }
 .search-row.hi    { background:#e4efe9 !important; }
-.coah-btn-primary { transition:all 0.2s; }
-.coah-btn-primary:hover:not(:disabled) { filter:brightness(1.05); transform:translateY(-1px); box-shadow:0 6px 20px rgba(31,111,84,0.3) !important; }
 .coah-link { color:#1f6f54; text-decoration:none; transition:opacity 0.15s; }
 .coah-link:hover { opacity:0.75; }
 

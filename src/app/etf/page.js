@@ -3,6 +3,7 @@
 import { generatePortfolio } from '@/lib/etf/logic'
 import ShellHeader from '@/components/shared/ShellHeader'
 import TrustBadges from '@/components/shared/TrustBadges'
+import Button from '@/components/shared/Button'
 import styles from './page.module.css'
 
 // A real, deterministic example — built from the same logic every generated
@@ -32,9 +33,9 @@ export default function LandingPage() {
           <p className={styles.heroBody}>
             Answer three questions about risk and simplicity — get a real fund allocation with the math shown. Runs entirely in your browser.
           </p>
-          <a href="/etf/preferences" className={styles.heroCta}>
+          <Button href="/etf/preferences">
             Check my portfolio — it&apos;s free
-          </a>
+          </Button>
           <div className={styles.heroBadges}>
             <TrustBadges tone="dark" items={['No sign-up', 'No data stored', 'No ads', 'No commissions']} />
           </div>

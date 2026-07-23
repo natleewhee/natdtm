@@ -3,6 +3,7 @@
 import { SITE_URL } from '@/lib/shared/site'
 import ShellHeader from '@/components/shared/ShellHeader'
 import TrustBadges from '@/components/shared/TrustBadges'
+import Button from '@/components/shared/Button'
 
 export default function LandingPage() {
   return (
@@ -65,7 +66,7 @@ export default function LandingPage() {
 
         <h2 style={{
           fontFamily: 'var(--font-display)',
-          fontSize: 'clamp(30px, 6vw, 46px)',
+          fontSize: 'clamp(30px, 5.5vw, 48px)',
           color: 'var(--color-primary)',
           lineHeight: 1.2,
           margin: '0 0 16px',
@@ -82,19 +83,9 @@ export default function LandingPage() {
           InsureCheck scores your coverage in 3 minutes — free, neutral, no agent involved.
         </p>
 
-        <a href="/insure/check" style={{
-          display: 'inline-block',
-          padding: '16px 40px',
-          background: 'var(--color-accent)',
-          color: '#fff',
-          borderRadius: 'var(--radius-md)',
-          fontSize: '16px',
-          fontWeight: '600',
-          textDecoration: 'none',
-          letterSpacing: '0.01em',
-        }}>
+        <Button href="/insure/check">
           Check my score — it&apos;s free
-        </a>
+        </Button>
 
         <div style={{ marginTop: '20px' }}>
           <TrustBadges items={['No sign-up', 'No data stored', 'Not affiliated with any insurer']} />

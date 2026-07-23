@@ -130,6 +130,25 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
   .coah-spinner { animation-duration: 1.6s !important; }
 }
 
+/* ── shared primary-action button (src/components/shared/Button.js) ──
+   One button shape across all three tools. Named .coah-button to avoid
+   colliding with the older per-vertical .coah-btn / .coah-btn-primary. */
+.coah-button {
+  display: inline-flex; align-items: center; justify-content: center; gap: 10px;
+  padding: 16px 40px; border: none; border-radius: var(--radius-md);
+  font-family: var(--font-body); font-size: 16px; font-weight: 600; letter-spacing: 0.01em;
+  text-decoration: none; cursor: pointer;
+  transition: filter 0.15s ease, transform 0.1s ease, box-shadow 0.2s ease;
+}
+.coah-button:hover:not(:disabled) { filter: brightness(1.06); transform: translateY(-1px); }
+.coah-button:active:not(:disabled) { transform: translateY(0); }
+.coah-button:disabled { cursor: not-allowed; }
+.coah-button--full { width: 100%; }
+.coah-button--accent { background: var(--color-accent); color: #fff; box-shadow: 0 4px 20px rgba(31,111,84,0.30); }
+.coah-button--dark { background: var(--color-primary); color: #fff; box-shadow: 0 4px 16px rgba(27,35,32,0.20); }
+.coah-button--dark:disabled { background: var(--color-bg); color: var(--color-faint); box-shadow: none; border: 1.5px solid var(--color-border); }
+.coah-button--outline { background: transparent; border: 2px solid var(--color-primary); color: var(--color-primary); box-shadow: none; }
+
 /* ── shell shared layout ─────────────────────────────────────────── */
 .shell-wrap { max-width: 1080px; margin: 0 auto; padding: 0 24px; }
 

@@ -18,6 +18,7 @@ import { AffordabilityCeilingCard } from '@/components/drive/AffordabilityCeilin
 import { GaragePanel } from '@/components/drive/GaragePanel'
 import ShellHeader from '@/components/shared/ShellHeader'
 import TrustBadges from '@/components/shared/TrustBadges'
+import Button from '@/components/shared/Button'
 
 // Car prices come from /public/data/cars.json (edit that file to update prices)
 // COE premiums come from /api/coe (live from LTA DataMall)
@@ -293,7 +294,7 @@ export default function DriveReadyPage() {
       {/* ── HERO ── */}
       <div style={{background:C.coah,padding:'48px 32px 52px',textAlign:'center'}}>
         <div style={{fontFamily:C.fontCoah,fontSize:10,fontWeight:600,color:'rgba(255,255,255,0.35)',letterSpacing:'0.18em',textTransform:'uppercase',marginBottom:14}}>Singapore Car Loan Calculator</div>
-        <h1 style={{fontFamily:C.fontDisplay,fontSize:'clamp(28px,5vw,50px)',color:'#fff',marginBottom:10,lineHeight:1.2}}>Be Ready to Drive.</h1>
+        <h1 style={{fontFamily:C.fontDisplay,fontSize:'clamp(30px, 5.5vw, 48px)',color:'#fff',marginBottom:10,lineHeight:1.2}}>Be Ready to Drive.</h1>
         <p style={{fontFamily:C.fontDisplay,fontSize:18,color:'rgba(255,255,255,0.5)',marginBottom:24,fontStyle:'italic'}}>Your salary, your cash, your real monthly number.</p>
         <TrustBadges tone="dark" items={['50+ SG models', 'True cost incl. depreciation', 'Zero data collected', 'Free, forever']} />
       </div>
@@ -444,8 +445,7 @@ export default function DriveReadyPage() {
                 )}
               </div>
 
-              <button className="coah-btn-primary" onClick={handleCalc} disabled={!isReady}
-                style={{width:'100%',padding:'14px 20px',background:isReady?C.primary:C.bg,border:`1.5px solid ${isReady?C.primary:C.border}`,borderRadius:C.r,color:isReady?'#fff':C.faint,fontSize:C.base,fontWeight:700,letterSpacing:'0.04em',cursor:isReady?'pointer':'not-allowed',transition:'all 0.2s',boxShadow:isReady?'0 4px 16px rgba(27,35,32,0.2)':'none',fontFamily:C.fontBody}}>
+              <Button variant="dark" fullWidth onClick={handleCalc} disabled={!isReady}>
                 {isReady
                   ? calculated
                     ? `↻  Recalculate${mode==='compare'?' comparison':''}`
@@ -453,7 +453,7 @@ export default function DriveReadyPage() {
                       ? `Compare ${effCarA?.short??effCarA?.name} vs ${effCarB?.short??effCarB?.name}  →`
                       : `Check if I can afford the ${effCarA?.short??effCarA?.name}  →`
                   : 'Fill in all fields above to continue'}
-              </button>
+              </Button>
               {calculated && <p style={{marginTop:8,textAlign:'center',fontSize:C.xs,color:C.muted}}>Results update live as you drag the tenure slider</p>}
               {/* COE used in calculation */}
               <div style={{marginTop:8,padding:'8px 12px',background:C.bg,borderRadius:C.r,border:`1px solid ${C.border}`,display:'flex',alignItems:'center',justifyContent:'center',gap:12,flexWrap:'wrap'}}>
