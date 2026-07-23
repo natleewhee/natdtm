@@ -4,6 +4,27 @@ import { useState, useRef, useEffect } from 'react'
 import { C, SGD, RATE_TIERS, brandTier } from '@/lib/drive/theme'
 import { calcPriceGap } from '@/lib/drive/calc'
 
+// Common SG car-shopping shorthand that doesn't literally appear in our
+// `type` strings (e.g. cars are tagged "Electric SUV", not "EV SUV") — map
+// it onto the word that actually matches. Scoped to whole-word matches
+// against `type` only (not `name`), since "ev" as a raw substring would
+// also match model names like Honda's "e:HEV" or Toyota's "...HEV" —
+// hybrids, not EVs.
+const TYPE_SYNONYMS = { ev: 'electric', electric: 'ev' }
+// "ev" specifically is excluded from the general name/type substring
+// fallback below — as a bare 2-letter string it's a substring of "HEV" in
+// half the hybrid model names (Honda's "e:HEV" cars, Toyota's "...HEV"
+// cars), which would wrongly surface hybrids in an EV search. Routed
+// through the type-word whole-word check only.
+function matchesQuery(car, q) {
+  const type = car.type.toLowerCase()
+  const typeWords = type.split(/[^a-z0-9]+/)
+  const synonym = TYPE_SYNONYMS[q]
+  if (synonym) return typeWords.includes(q) || typeWords.includes(synonym)
+  if (car.name.toLowerCase().includes(q) || (car.coe || '').toLowerCase().includes(q)) return true
+  return typeWords.includes(q) || type.includes(q)
+}
+
 function hlMatch(text, query) {
   if (!query) return text
   const idx = text.toLowerCase().indexOf(query.toLowerCase())
@@ -33,10 +54,13 @@ export function CarPicker({ value, onChange, slot, ceiling, down, allCars = [], 
   // rank) lead; everything else stays in curated stored order (Array.sort
   // is stable). The dropdown now scrolls, so the cap is higher.
   const q = query.trim().toLowerCase()
-  const filtered = q.length === 0 ? [] : allCars.filter(c =>
-    c.name.toLowerCase().includes(q) ||
-    c.type.toLowerCase().includes(q) ||
-    (c.coe||'').toLowerCase().includes(q)
+  // Tesla is a mainstream brand tier (2) generally — it shouldn't outrank
+  // Toyota/Honda in a bare "sedan"/"SUV" search. But for a search that's
+  // specifically about EVs, Tesla is the brand most people mean by
+  // "electric car" even though it isn't SG's highest-volume EV seller —
+  // boost it to the front of that specific search only.
+  const isEVQuery = q === 'ev' || q === 'electric'
+  const filtered = q.length === 0 ? [] : allCars.filter(c => matchesQuery(c, q)
   ).sort((a, b) => {
     // Tagged best-sellers first (by sales rank), then a coarse brand-
     // popularity tier, then cheapest first — so the long tail orders
@@ -44,6 +68,10 @@ export function CarPicker({ value, onChange, slot, ceiling, down, allCars = [], 
     if (a.top5 && b.top5) return a.rank - b.rank
     if (a.top5) return -1
     if (b.top5) return 1
+    if (isEVQuery) {
+      const aTesla = a.name.startsWith('Tesla'), bTesla = b.name.startsWith('Tesla')
+      if (aTesla !== bTesla) return aTesla ? -1 : 1
+    }
     const ta = brandTier(a.name), tb = brandTier(b.name)
     if (ta !== tb) return ta - tb
     return a.price - b.price
