@@ -136,21 +136,36 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
   margin-top: 40px; padding: 28px 0 32px;
   font-size: 12.5px; color: var(--l-sub);
 }
+/* One horizontal row of columns, not stacked bordered sections — brand+blurb,
+   math links, and the legal disclaimer+version all sit side by side,
+   separated by a vertical rule instead of a horizontal one. Only wraps to
+   stacked columns below ~640px, where three columns of text genuinely
+   can't share a row. */
 .shell-footer-inner {
-  display: flex; justify-content: space-between; align-items: flex-start;
-  gap: 20px; flex-wrap: wrap;
+  display: flex; align-items: flex-start; gap: 28px; flex-wrap: wrap;
 }
+.shell-footer-col { flex: 1 1 220px; min-width: 0; }
+.shell-footer-col-divided { padding-left: 28px; border-left: 1px solid var(--l-line); }
+.shell-footer-col-legal { flex: 1.4 1 260px; }
 .shell-footer-brand {
   margin: 0 0 6px; font-family: var(--font-display); font-weight: 600;
   font-size: 15px; color: var(--color-primary);
 }
-.shell-footer-blurb { margin: 0; max-width: 46ch; }
-.shell-footer-math { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; }
-.shell-footer-math-label { color: var(--l-sub); }
-.shell-footer-links { display: flex; gap: 14px; flex-wrap: wrap; }
+.shell-footer-blurb { margin: 0; max-width: 40ch; }
+.shell-footer-math-label {
+  display: block; margin: 0 0 8px; color: var(--l-sub);
+  font-size: 11px; text-transform: uppercase; letter-spacing: 0.06em;
+}
+.shell-footer-links { display: flex; flex-direction: column; gap: 8px; align-items: flex-start; }
 .shell-footer-links a { text-decoration: none; color: var(--l-sub); }
 .shell-footer-links a:hover { color: var(--l-accent); }
-.shell-footer-version { font-family: var(--l-font-mono); font-size: 11px; margin-top: 14px; opacity: 0.6; }
+.shell-footer-disclaimer { margin: 0; font-size: 12px; line-height: 1.6; color: var(--l-sub); }
+.shell-footer-version {
+  font-family: var(--l-font-mono); font-size: 11px; margin: 12px 0 0; opacity: 0.6;
+}
+@media (max-width: 640px) {
+  .shell-footer-col-divided { padding-left: 0; border-left: none; }
+}
 
 /* ── vertical wrapper hooks ──────────────────────────────────────── */
 .v-insure, .v-drive, .v-etf { min-height: 60vh; }
