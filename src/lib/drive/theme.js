@@ -10,29 +10,36 @@
 // `--color-*` custom properties in src/app/globals.css, which Insure and
 // Invest's own theme objects also mirror — same palette, three copies,
 // because only one of the three (this one) needs literal values.
+//
+// `accent` (caution yellow) is the BRAND/chrome color — CTAs, focus
+// rings, active states. `green` is a separate SEMANTIC color for
+// positive financial outcomes (affordable, eco rate tier, savings) —
+// keep these two apart; don't reach for `accent` when you mean "this is
+// good news."
 export const C = {
-  coah: '#1b2320', coahMid: '#1b2320', coahLight: '#33403a',
-  primary: '#1b2320', accent: '#1f6f54', accentBg: '#e4efe9', accentText: '#145c43',
-  bg: '#f3f5f2', surface: '#ffffff', border: '#d8ded9',
-  text: '#1b2320', muted: '#5f6b64', faint: '#647069',
-  red: '#c1443f', redBg: '#f7e9e8', redText: '#8f2f2b',
-  amber: '#b8863b', amberBg: '#f5ecd9', amberText: '#7a5a26',
-  blue: '#3d6fa8', blueBg: '#e8eef5', blueText: '#2c5079',
-  iceBg: '#f1f0ec', iceText: '#5f6b64',
-  fontCoah: "'Fraunces', Georgia, serif",
-  fontDisplay: "'Fraunces', Georgia, serif",
-  fontBody: "'IBM Plex Sans', -apple-system, 'Segoe UI', sans-serif",
-  fontMono: "'IBM Plex Mono', ui-monospace, 'SF Mono', Consolas, monospace",
+  coah: '#05070c', coahMid: '#05070c', coahLight: '#141b2e',
+  primary: '#f8fafc', accent: '#facc15', accentBg: '#332b0e', accentText: '#fde68a', accentInk: '#1b1400',
+  green: '#10b981', greenBg: '#0f2e23', greenText: '#6ee7b7',
+  bg: '#0b1120', surface: '#1e293b', border: '#334155',
+  text: '#f8fafc', muted: '#94a3b8', faint: '#64748b',
+  red: '#ef4444', redBg: '#3a1414', redText: '#fca5a5',
+  amber: '#ff5722', amberBg: '#3a1f12', amberText: '#fdba74',
+  blue: '#38bdf8', blueBg: '#0f2a38', blueText: '#93d9fb',
+  iceBg: '#27303f', iceText: '#94a3b8',
+  fontCoah: "'Space Grotesk', 'Inter', -apple-system, sans-serif",
+  fontDisplay: "'Space Grotesk', 'Inter', -apple-system, sans-serif",
+  fontBody: "'Inter', -apple-system, 'Segoe UI', sans-serif",
+  fontMono: "'JetBrains Mono', ui-monospace, 'SF Mono', Consolas, monospace",
   xs: '11px', sm: '13px', base: '15px', lg: '17px', xl: '22px', xxl: '28px', hero: '38px',
   r: '5px', rL: '9px', rXL: '13px',
-  shadow: '0 1px 3px rgba(0,0,0,0.06), 0 4px 16px rgba(0,0,0,0.04)',
-  shadowMd: '0 2px 8px rgba(0,0,0,0.08), 0 8px 24px rgba(0,0,0,0.06)',
+  shadow: '0 1px 3px rgba(0,0,0,0.3), 0 4px 16px rgba(0,0,0,0.25)',
+  shadowMd: '0 2px 8px rgba(0,0,0,0.35), 0 8px 24px rgba(0,0,0,0.3)',
 }
 
 export const RATE_TIERS = [
   { id:'ice',   label:'Standard ICE',       sub:'Petrol & diesel',   rate:0.0260, display:'2.60%', color:C.iceText,   bg:C.iceBg },
-  { id:'green', label:'Green EV / Hybrid',  sub:'Electric & hybrid', rate:0.0208, display:'2.08%', color:C.accentText,bg:C.accentBg },
-  { id:'tesla', label:'Tesla Preferential', sub:'Tesla models only', rate:0.0168, display:'1.68%', color:'#6b5a9e',   bg:'#efedf5' },
+  { id:'green', label:'Green EV / Hybrid',  sub:'Electric & hybrid', rate:0.0208, display:'2.08%', color:C.greenText, bg:C.greenBg },
+  { id:'tesla', label:'Tesla Preferential', sub:'Tesla models only', rate:0.0168, display:'1.68%', color:'#c4b5fd',   bg:'#241c33' },
 ]
 
 export const SGD = n => `S$${Math.round(n).toLocaleString('en-SG')}`

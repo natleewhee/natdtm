@@ -6,22 +6,7 @@ import { calcARF, calcPARF, COE_FALLBACK } from '@/lib/drive/calc'
 import { CoeHistoryChart } from '@/components/drive/CoeHistoryChart'
 import { CoeTimingSignal } from '@/components/drive/CoeTimingSignal'
 import ShellHeader from '@/components/shared/ShellHeader'
-
-const C = {
-  coah: '#1b2320', primary: '#1b2320', accent: '#1f6f54', accentBg: '#e4efe9', accentText: '#145c43',
-  bg: '#f3f5f2', surface: '#ffffff', border: '#d8ded9',
-  text: '#1b2320', muted: '#5f6b64', faint: '#647069',
-  red: '#c1443f', redBg: '#f7e9e8',
-  amber: '#b8863b', amberBg: '#f5ecd9', amberText: '#7a5a26',
-  fontCoah: "'Fraunces', system-ui, sans-serif",
-  fontDisplay: "'Fraunces', Georgia, serif",
-  fontBody: "'IBM Plex Sans', system-ui, sans-serif",
-  fontMono: "'IBM Plex Mono', ui-monospace, monospace",
-  r: '8px', rL: '14px', rXL: '20px',
-  shadow: '0 1px 3px rgba(0,0,0,0.06), 0 4px 16px rgba(0,0,0,0.04)',
-  xs: '11px', sm: '13px', base: '15px', lg: '17px',
-}
-const SGD = n => `S$${Math.round(n).toLocaleString('en-SG')}`
+import { C, SGD } from '@/lib/drive/theme'
 
 // Short car list for the interactive element
 const DEMO_CARS = [
@@ -203,7 +188,7 @@ export default function COEExplainerPage() {
         <div style={{ textAlign: 'center', padding: '32px 0 0' }}>
           <p style={{ fontSize: C.base, color: C.muted, marginBottom: 20 }}>Ready to run the full numbers for your situation?</p>
           <div style={{ display: 'flex', gap: 12, justifyContent: 'center', flexWrap: 'wrap' }}>
-            <Link href="/drive" style={{ padding: '13px 28px', background: C.primary, color: '#fff', borderRadius: C.rL, fontSize: C.sm, fontWeight: 700, textDecoration: 'none', boxShadow: '0 4px 16px rgba(27,35,32,0.2)' }}>
+            <Link href="/drive" style={{ padding: '13px 28px', background: C.coah, color: '#fff', borderRadius: C.rL, fontSize: C.sm, fontWeight: 700, textDecoration: 'none', boxShadow: '0 4px 16px rgba(0,0,0,0.35)' }}>
               Calculate affordability →
             </Link>
             <Link href="/drive/renew-or-replace" style={{ padding: '13px 28px', background: C.surface, color: C.primary, border: `2px solid ${C.primary}`, borderRadius: C.rL, fontSize: C.sm, fontWeight: 700, textDecoration: 'none' }}>

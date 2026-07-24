@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import ShellHeader from '@/components/shared/ShellHeader'
 import MathTOC from '@/components/shared/MathTOC'
+import { C } from '@/lib/drive/theme'
 
 function slug(title) {
   return title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '')
@@ -11,25 +12,25 @@ function slug(title) {
 
 function Section({ title, children, noBorder }) {
   return (
-    <div id={title ? slug(title) : undefined} style={{ paddingTop: 36, borderTop: noBorder ? 'none' : '1px solid #d8ded9', marginTop: noBorder ? 0 : 8, scrollMarginTop: 80 }}>
-      {title && <h2 style={{ fontFamily: "'Fraunces', Georgia, serif", fontSize: 22, color: '#1b2320', margin: '0 0 16px', lineHeight: 1.3 }}>{title}</h2>}
+    <div id={title ? slug(title) : undefined} style={{ paddingTop: 36, borderTop: noBorder ? 'none' : `1px solid ${C.border}`, marginTop: noBorder ? 0 : 8, scrollMarginTop: 80 }}>
+      {title && <h2 style={{ fontFamily: C.fontDisplay, fontSize: 22, color: C.primary, margin: '0 0 16px', lineHeight: 1.3 }}>{title}</h2>}
       {children}
     </div>
   )
 }
 function BodyText({ children, muted }) {
-  return <p style={{ fontSize: 15, color: muted ? '#5f6b64' : '#1b2320', lineHeight: 1.7, margin: '0 0 12px' }}>{children}</p>
+  return <p style={{ fontSize: 15, color: muted ? C.muted : C.text, lineHeight: 1.7, margin: '0 0 12px' }}>{children}</p>
 }
 function Formula({ children }) {
   return (
-    <div style={{ fontFamily: "'IBM Plex Mono', ui-monospace, monospace", fontSize: 12, color: '#1b2320', lineHeight: 1.8, margin: '10px 0', padding: '12px 14px', background: '#fff', borderRadius: 8, border: '1px solid #d8ded9', whiteSpace: 'pre-wrap' }}>
+    <div style={{ fontFamily: C.fontMono, fontSize: 12, color: C.text, lineHeight: 1.8, margin: '10px 0', padding: '12px 14px', background: C.surface, borderRadius: 8, border: `1px solid ${C.border}`, whiteSpace: 'pre-wrap' }}>
       {children}
     </div>
   )
 }
 function Caveat({ children }) {
   return (
-    <div style={{ fontSize: 13, color: '#5f6b64', lineHeight: 1.6, padding: '12px 16px', background: '#f3f5f2', borderRadius: 8, borderLeft: '3px solid #d8ded9', marginTop: 10 }}>
+    <div style={{ fontSize: 13, color: C.muted, lineHeight: 1.6, padding: '12px 16px', background: C.surface, borderRadius: 8, borderLeft: `3px solid ${C.border}`, marginTop: 10 }}>
       {children}
     </div>
   )
@@ -37,26 +38,26 @@ function Caveat({ children }) {
 function PillarCard({ color, emoji, title, badge, summary, expandContent }) {
   const [open, setOpen] = useState(false)
   const colors = {
-    teal:  { bg: '#e4efe9', border: '#1f6f54', badgeBg: '#e4efe9', badgeText: '#145c43' },
-    amber: { bg: '#f5ecd9', border: '#b8863b', badgeBg: '#f5ecd9', badgeText: '#7a5a26' },
-    blue:  { bg: '#e8eef5', border: '#3d6fa8', badgeBg: '#e8eef5', badgeText: '#2c5079' },
-    gray:  { bg: '#eef0ed', border: '#647069', badgeBg: '#eef0ed', badgeText: '#5f6b64' },
+    teal:  { bg: C.greenBg, border: C.green, badgeBg: C.greenBg, badgeText: C.greenText },
+    amber: { bg: C.amberBg, border: C.amber, badgeBg: C.amberBg, badgeText: C.amberText },
+    blue:  { bg: C.blueBg, border: C.blue, badgeBg: C.blueBg, badgeText: C.blueText },
+    gray:  { bg: C.iceBg, border: C.faint, badgeBg: C.iceBg, badgeText: C.iceText },
   }
   const c = colors[color] || colors.gray
   return (
-    <div style={{ background: '#fff', borderRadius: 14, border: '1px solid #d8ded9', borderTop: `3px solid ${c.border}`, padding: 20, boxShadow: '0 1px 3px rgba(0,0,0,0.06), 0 4px 16px rgba(0,0,0,0.04)' }}>
+    <div style={{ background: C.surface, borderRadius: 14, border: `1px solid ${C.border}`, borderTop: `3px solid ${c.border}`, padding: 20, boxShadow: C.shadow }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10 }}>
         <span style={{ fontSize: 20 }}>{emoji}</span>
-        <span style={{ fontFamily: "'Fraunces', Georgia, serif", fontSize: 17, color: '#1b2320', flex: 1 }}>{title}</span>
+        <span style={{ fontFamily: C.fontDisplay, fontSize: 17, color: C.primary, flex: 1 }}>{title}</span>
         <span style={{ padding: '2px 10px', borderRadius: 100, fontSize: 11, fontWeight: 700, background: c.badgeBg, color: c.badgeText }}>{badge}</span>
       </div>
-      <p style={{ fontSize: 14, color: '#1b2320', lineHeight: 1.6, margin: '0 0 8px' }}>{summary}</p>
-      <button onClick={() => setOpen(o => !o)} style={{ background: 'none', border: 'none', padding: '8px 0', cursor: 'pointer', fontSize: 13, fontWeight: 600, color: '#1f6f54', display: 'flex', alignItems: 'center', gap: 6 }}>
+      <p style={{ fontSize: 14, color: C.text, lineHeight: 1.6, margin: '0 0 8px' }}>{summary}</p>
+      <button onClick={() => setOpen(o => !o)} style={{ background: 'none', border: 'none', padding: '8px 0', cursor: 'pointer', fontSize: 13, fontWeight: 600, color: C.accent, display: 'flex', alignItems: 'center', gap: 6 }}>
         <span style={{ display: 'inline-block', transition: 'transform 0.2s', transform: open ? 'rotate(90deg)' : 'none', fontSize: 11 }}>▶</span>
         {open ? 'Hide details' : 'See how we calculate this'}
       </button>
       {open && (
-        <div style={{ marginTop: 8, padding: 16, background: '#f3f5f2', borderRadius: 10, borderLeft: '3px solid #1f6f54' }}>
+        <div style={{ marginTop: 8, padding: 16, background: C.bg, borderRadius: 10, borderLeft: `3px solid ${C.accent}` }}>
           {expandContent}
         </div>
       )}
@@ -67,7 +68,7 @@ function PillarCard({ color, emoji, title, badge, summary, expandContent }) {
 export default function TheMathPage() {
   const router = useRouter()
   return (
-    <div style={{ minHeight: '100vh', background: '#f3f5f2', fontFamily: "'IBM Plex Sans', system-ui, sans-serif", paddingBottom: 64 }}>
+    <div style={{ minHeight: '100vh', background: C.bg, fontFamily: C.fontBody, paddingBottom: 64 }}>
 
       <ShellHeader title="The Math" onBack={() => router.back()} />
 
@@ -76,15 +77,11 @@ export default function TheMathPage() {
         {/* Hero */}
         <Section noBorder>
           <div style={{ paddingTop: 40, paddingBottom: 8 }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16 }}>
-              <span style={{ fontFamily: "'Fraunces', system-ui, sans-serif", fontSize: 13, fontWeight: 600, color: '#1b2320', letterSpacing: '0.08em' }}>COAH</span>
-              <span style={{ fontSize: 12, color: '#647069', borderLeft: '1px solid #d8ded9', paddingLeft: 8 }}>Built for Singapore</span>
-            </div>
-            <h1 style={{ fontFamily: "'Fraunces', Georgia, serif", fontSize: 'clamp(26px,5vw,36px)', color: '#1b2320', margin: '0 0 12px', lineHeight: 1.2 }}>How DriveReady calculates your numbers</h1>
+            <h1 style={{ fontFamily: C.fontDisplay, fontSize: 'clamp(26px,5vw,36px)', color: C.primary, margin: '0 0 12px', lineHeight: 1.2 }}>How DriveReady calculates your numbers</h1>
             <BodyText>DriveReady doesn&apos;t guess. Every figure — monthly instalment, depreciation, COE rebate, true cost — comes from Singapore&apos;s actual financing and vehicle regulations. Here&apos;s exactly what we do.</BodyText>
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginTop: 16 }}>
               {['MAS loan-to-value rules', 'Budget 2026 PARF schedule', 'LTA COE framework', 'ARF tiered structure'].map(tag => (
-                <span key={tag} style={{ fontSize: 12, color: '#1f6f54', background: '#e4efe9', padding: '4px 12px', borderRadius: 100, fontWeight: 500 }}>✓ {tag}</span>
+                <span key={tag} style={{ fontSize: 12, color: C.accentText, background: C.accentBg, padding: '4px 12px', borderRadius: 100, fontWeight: 500 }}>✓ {tag}</span>
               ))}
             </div>
           </div>
@@ -110,11 +107,11 @@ export default function TheMathPage() {
               { emoji: '🏚', label: 'Depreciation',          desc: 'True annual and monthly value loss — ARF paid, PARF rebate at sale, COE rebate, and paper value at your tenure.' },
               { emoji: '💰', label: 'Cost of ownership',     desc: 'Total cash out at milestone years — downpayment plus all instalments — net of what you&apos;d recover.' },
             ].map(item => (
-              <div key={item.label} style={{ display: 'flex', gap: 12, padding: 14, background: '#fff', borderRadius: 10, border: '1px solid #d8ded9', alignItems: 'flex-start' }}>
+              <div key={item.label} style={{ display: 'flex', gap: 12, padding: 14, background: C.surface, borderRadius: 10, border: `1px solid ${C.border}`, alignItems: 'flex-start' }}>
                 <span style={{ fontSize: 20, flexShrink: 0 }}>{item.emoji}</span>
                 <div>
-                  <p style={{ margin: '0 0 3px', fontWeight: 600, fontSize: 14, color: '#1b2320' }}>{item.label}</p>
-                  <p style={{ margin: 0, fontSize: 13, color: '#5f6b64', lineHeight: 1.5 }}>{item.desc}</p>
+                  <p style={{ margin: '0 0 3px', fontWeight: 600, fontSize: 14, color: C.primary }}>{item.label}</p>
+                  <p style={{ margin: 0, fontSize: 13, color: C.muted, lineHeight: 1.5 }}>{item.desc}</p>
                 </div>
               </div>
             ))}
@@ -129,10 +126,10 @@ export default function TheMathPage() {
               { label: 'Cat A (OMV ≤ S$20,000)',  loan: '70% max loan', down: '30% min downpayment', example: 'Most sedans, MPVs, smaller SUVs' },
               { label: 'Cat B (OMV > S$20,000)',   loan: '60% max loan', down: '40% min downpayment', example: 'Larger SUVs, performance cars' },
             ].map(row => (
-              <div key={row.label} style={{ padding: '12px 16px', background: '#fff', borderRadius: 10, border: '1px solid #d8ded9' }}>
-                <p style={{ margin: '0 0 4px', fontWeight: 600, fontSize: 14, color: '#1b2320' }}>{row.label}</p>
-                <p style={{ margin: '0 0 2px', fontSize: 13, color: '#1b2320' }}>{row.loan} · {row.down}</p>
-                <p style={{ margin: 0, fontSize: 12, color: '#647069' }}>{row.example}</p>
+              <div key={row.label} style={{ padding: '12px 16px', background: C.surface, borderRadius: 10, border: `1px solid ${C.border}` }}>
+                <p style={{ margin: '0 0 4px', fontWeight: 600, fontSize: 14, color: C.primary }}>{row.label}</p>
+                <p style={{ margin: '0 0 2px', fontSize: 13, color: C.text }}>{row.loan} · {row.down}</p>
+                <p style={{ margin: 0, fontSize: 12, color: C.muted }}>{row.example}</p>
               </div>
             ))}
           </div>
@@ -221,29 +218,19 @@ True effective monthly cost = instalment + monthly depreciation`}</Formula>
         </Section>
 
         {/* Why free */}
-        <div style={{ marginTop: 36, padding: 20, background: '#1b2320', borderRadius: 14 }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 }}>
-            <span style={{ fontFamily: "'Fraunces', system-ui, sans-serif", fontSize: 14, fontWeight: 600, color: '#fff', letterSpacing: '0.08em' }}>COAH</span>
-            <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.5)', borderLeft: '1px solid rgba(255,255,255,0.2)', paddingLeft: 8, textTransform: 'uppercase', letterSpacing: '0.06em' }}>Why this is free</span>
-          </div>
+        <div style={{ marginTop: 36, padding: 20, background: C.coah, borderRadius: 14 }}>
+          <p style={{ fontSize: 11, color: 'rgba(255,255,255,0.5)', textTransform: 'uppercase', letterSpacing: '0.06em', margin: '0 0 10px' }}>Why this is free</p>
           <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.8)', lineHeight: 1.7, margin: 0 }}>
-            DriveReady has no ads, no affiliate links, and no dealer referral fees. We don&apos;t earn anything when you use it. It&apos;s free because Singaporeans deserve to know the real numbers before they sign a hire-purchase agreement. This is what Coah is built for.
+            DriveReady has no ads, no affiliate links, and no dealer referral fees. We don&apos;t earn anything when you use it. It&apos;s free because Singaporeans deserve to know the real numbers before they sign a hire-purchase agreement.
           </p>
         </div>
 
         {/* Disclaimer */}
-        <div style={{ marginTop: 36, paddingTop: 24, borderTop: '1px solid #d8ded9' }}>
-          <p style={{ fontSize: 12, color: '#647069', lineHeight: 1.6, margin: '0 0 6px' }}>
+        <div style={{ marginTop: 36, paddingTop: 24, borderTop: `1px solid ${C.border}` }}>
+          <p style={{ fontSize: 12, color: C.muted, lineHeight: 1.6, margin: '0 0 6px' }}>
             DriveReady is an educational tool. It does not constitute financial advice. Car prices, COE premiums, and financing rates are indicative and subject to change. All figures should be verified with the relevant dealer, bank, and LTA before making a purchase decision.
           </p>
-          <p style={{ fontSize: 11, color: '#647069', margin: '0 0 20px' }}>Not affiliated with any insurer or MAS-licensed entity.</p>
-          <div style={{ paddingTop: 16, borderTop: '1px solid #d8ded9', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 8 }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-              <span style={{ fontFamily: "'Fraunces', system-ui, sans-serif", fontSize: 14, fontWeight: 600, color: '#1b2320', letterSpacing: '0.08em' }}>COAH</span>
-              <span style={{ fontSize: 11, color: '#647069', borderLeft: '1px solid #d8ded9', paddingLeft: 8 }}>Modern Utilities for the Common Good</span>
-            </div>
-            <a href="/drive" style={{ fontSize: 11, color: '#647069', textDecoration: 'none' }}>coah.vercel.app/drive</a>
-          </div>
+          <p style={{ fontSize: 11, color: C.muted, margin: 0 }}>Not affiliated with any insurer or MAS-licensed entity.</p>
         </div>
       </div>
     </div>

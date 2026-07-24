@@ -80,8 +80,8 @@ function PillarRow({ row, index, result }) {
     return () => clearTimeout(t)
   }, [row, index])
 
-  const barColor = row.isGap ? '#c1443f' : getBandColor(row.color).arc
-  const textColor = row.isGap ? '#8f2f2b' : getBandColor(row.color).text
+  const barColor = row.isGap ? '#ef4444' : getBandColor(row.color).arc
+  const textColor = row.isGap ? '#fca5a5' : getBandColor(row.color).text
   const scoreLabel = row.isGate
     ? (row.score === 100 ? 'Covered' : row.score === 25 ? 'Unsure' : 'Not covered')
     : row.isGap ? 'Gap flagged'
@@ -123,8 +123,8 @@ function PillarRow({ row, index, result }) {
               <span style={{
                 fontSize: '11px',
                 fontWeight: '600',
-                color: '#145c43',
-                background: 'var(--color-accent-bg)',
+                color: 'var(--color-green-text)',
+                background: 'var(--color-green-bg)',
                 borderRadius: '100px',
                 padding: '1px 8px',
                 marginLeft: '8px',
@@ -158,14 +158,14 @@ function PillarRow({ row, index, result }) {
         </div>
         <div style={{
           height: '6px',
-          background: '#eef0ed',
+          background: 'var(--color-border)',
           borderRadius: '3px',
           overflow: 'hidden',
         }}>
           <div style={{
             height: '100%',
             width: row.isSkipped ? '100%' : `${width}%`,
-            background: row.isSkipped ? '#eef0ed' : row.isGap ? '#FECACA' : barColor,
+            background: row.isSkipped ? 'var(--color-border)' : barColor,
             borderRadius: '3px',
             transition: 'width 0.7s ease-out',
             opacity: row.isSkipped ? 0.3 : 1,
@@ -194,8 +194,8 @@ function DisabilityIncomeCard({ result }) {
   const di = result.pillars.di
   if (di.score === null) return null // not answered — the insight card nudge covers this
 
-  const barColor = di.score >= 80 ? '#1f6f54' : di.score >= 50 ? '#3d6fa8' : di.score > 0 ? '#b8863b' : '#c1443f'
-  const textColor = di.score >= 80 ? '#145c43' : di.score >= 50 ? '#2c5079' : di.score > 0 ? '#7a5a26' : '#8f2f2b'
+  const barColor = di.score >= 80 ? '#10b981' : di.score >= 50 ? '#38bdf8' : di.score > 0 ? '#ff5722' : '#ef4444'
+  const textColor = di.score >= 80 ? '#6ee7b7' : di.score >= 50 ? '#93d9fb' : di.score > 0 ? '#fdba74' : '#fca5a5'
 
   return (
     <div style={{
@@ -223,7 +223,7 @@ function DisabilityIncomeCard({ result }) {
           {di.score} / 100
         </span>
       </div>
-      <div style={{ height: '6px', background: '#eef0ed', borderRadius: '3px', overflow: 'hidden', marginBottom: '10px' }}>
+      <div style={{ height: '6px', background: 'var(--color-border)', borderRadius: '3px', overflow: 'hidden', marginBottom: '10px' }}>
         <div style={{ height: '100%', width: `${di.score}%`, background: barColor, borderRadius: '3px' }} />
       </div>
       <p style={{ margin: 0, fontSize: '13px', color: 'var(--color-muted)', lineHeight: 1.6 }}>
@@ -236,9 +236,9 @@ function DisabilityIncomeCard({ result }) {
 // ─── Gap summary ("your gap in numbers") ────────────────────────────────────
 
 const GAP_COPY = {
-  under: { verb: 'Short by', color: '#8f2f2b', bg: '#f7e9e8' },
-  over:  { verb: 'Above target by', color: '#145c43', bg: 'var(--color-accent-bg)' },
-  ok:    { verb: 'On target', color: '#2c5079', bg: 'var(--color-blue-bg)' },
+  under: { verb: 'Short by', color: 'var(--color-red-text)', bg: 'var(--color-red-bg)' },
+  over:  { verb: 'Above target by', color: 'var(--color-green-text)', bg: 'var(--color-green-bg)' },
+  ok:    { verb: 'On target', color: 'var(--color-blue-text)', bg: 'var(--color-blue-bg)' },
 }
 
 function GapSummary({ gaps }) {
@@ -373,7 +373,7 @@ function ActionPlan({ items }) {
                 justifyContent: 'center',
                 marginTop: '1px',
               }}>
-                {isChecked && <span style={{ color: '#fff', fontSize: '12px', fontWeight: '700' }}>✓</span>}
+                {isChecked && <span style={{ color: 'var(--l-accent-ink)', fontSize: '12px', fontWeight: '700' }}>✓</span>}
               </div>
               <div>
                 <p style={{
@@ -469,7 +469,7 @@ export default function ResultsPage() {
       {/* Compliance line */}
       <div style={{
         padding: '10px 24px',
-        background: '#f3f5f2',
+        background: 'var(--color-surface)',
         borderBottom: '1px solid var(--color-border)',
         textAlign: 'center',
       }}>
@@ -519,10 +519,10 @@ export default function ResultsPage() {
             gap: '6px',
             padding: '4px 12px',
             borderRadius: '100px',
-            background: scoreDelta > 0 ? 'var(--color-accent-bg)' : 'var(--color-red-bg)',
+            background: scoreDelta > 0 ? 'var(--color-green-bg)' : 'var(--color-red-bg)',
             fontSize: '13px',
             fontWeight: '600',
-            color: scoreDelta > 0 ? 'var(--color-accent)' : '#c1443f',
+            color: scoreDelta > 0 ? 'var(--color-green-text)' : 'var(--color-red-text)',
           }}>
             {scoreDelta > 0 ? '↑' : '↓'} {scoreDelta > 0 ? '+' : ''}{scoreDelta} pts since last check
           </div>
@@ -612,7 +612,7 @@ export default function ResultsPage() {
               width: '100%',
               padding: '15px',
               background: 'var(--color-accent)',
-              color: '#fff',
+              color: 'var(--l-accent-ink)',
               border: 'none',
               borderRadius: 'var(--radius-md)',
               fontSize: '16px',
@@ -671,7 +671,7 @@ export default function ResultsPage() {
                   padding: '8px 6px',
                   fontFamily: 'var(--font-body)',
                   textDecoration: 'underline',
-                  textDecorationColor: '#d8ded9',
+                  textDecorationColor: 'var(--color-border)',
                 }}
               >
                 {link.label}
@@ -722,7 +722,7 @@ export default function ResultsPage() {
             <div style={{
               width: '40px',
               height: '4px',
-              background: '#d8ded9',
+              background: 'var(--color-border)',
               borderRadius: '2px',
               margin: '0 auto 20px',
             }} />
@@ -751,7 +751,7 @@ export default function ResultsPage() {
                   fontFamily: 'var(--font-coah)',
                   fontSize: '11px',
                   fontWeight: '600',
-                  color: 'var(--color-coah)',
+                  color: 'var(--color-primary)',
                   letterSpacing: '0.1em',
                   opacity: 0.6,
                 }}>
@@ -802,7 +802,7 @@ export default function ResultsPage() {
                 width: '100%',
                 padding: '15px',
                 background: 'var(--color-accent)',
-                color: '#fff',
+                color: 'var(--l-accent-ink)',
                 border: 'none',
                 borderRadius: 'var(--radius-md)',
                 fontSize: '16px',

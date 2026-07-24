@@ -42,7 +42,7 @@ function Expandable({ label, children }) {
         <div style={{
           marginTop: '8px',
           padding: '16px',
-          background: '#f3f5f2',
+          background: 'var(--color-surface)',
           borderRadius: '10px',
           borderLeft: '3px solid var(--color-accent)',
           animation: 'fadeSlideUp 0.2s ease both',
@@ -58,10 +58,10 @@ function Expandable({ label, children }) {
 
 function PillarCard({ color, emoji, title, weight, summary, why, expandContent }) {
   const colors = {
-    red:   { bg: '#f7e9e8', border: '#c1443f', badge: '#f7e9e8', badgeText: '#8f2f2b' },
-    amber: { bg: '#f5ecd9', border: '#b8863b', badge: '#f5ecd9', badgeText: '#7a5a26' },
-    blue:  { bg: '#e8eef5', border: '#3d6fa8', badge: '#e8eef5', badgeText: '#2c5079' },
-    gray:  { bg: '#F1EFE8', border: '#888780', badge: '#F1EFE8', badgeText: '#5F5E5A' },
+    red:   { bg: '#3a1414', border: '#ef4444', badge: '#3a1414', badgeText: '#fca5a5' },
+    amber: { bg: '#3a1f12', border: '#ff5722', badge: '#3a1f12', badgeText: '#fdba74' },
+    blue:  { bg: '#0f2a38', border: '#38bdf8', badge: '#0f2a38', badgeText: '#93d9fb' },
+    gray:  { bg: '#27303f', border: '#64748b', badge: '#27303f', badgeText: '#94a3b8' },
   }
   const c = colors[color] ?? colors.gray
 
@@ -192,9 +192,9 @@ function Caveat({ children }) {
       color: 'var(--color-muted)',
       lineHeight: 1.6,
       padding: '12px 16px',
-      background: '#f3f5f2',
+      background: 'var(--color-surface)',
       borderRadius: '8px',
-      borderLeft: '3px solid #d8ded9',
+      borderLeft: '3px solid var(--color-border)',
       marginTop: '10px',
     }}>
       {children}
@@ -234,7 +234,7 @@ export default function HowItWorksPage() {
                 fontFamily: 'var(--font-coah)',
                 fontSize: '13px',
                 fontWeight: '600',
-                color: 'var(--color-coah)',
+                color: 'var(--color-primary)',
                 letterSpacing: '0.08em',
               }}>
                 COAH
@@ -341,10 +341,10 @@ export default function HowItWorksPage() {
           </BodyText>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
             {[
-              { color: '#8f2f2b', bg: '#f7e9e8', range: '0 – 39',   label: 'At risk',           desc: 'You have critical gaps. At least one major area of protection is missing.' },
-              { color: '#7a5a26', bg: '#f5ecd9', range: '40 – 59',  label: 'Partially covered', desc: "You have some coverage but meaningful gaps remain — worth addressing." },
-              { color: '#2c5079', bg: '#e8eef5', range: '60 – 79',  label: 'Mostly covered',    desc: "You're in reasonable shape. A few areas to tighten up." },
-              { color: '#145c43', bg: '#e4efe9', range: '80 – 100', label: 'Well protected',    desc: 'Your coverage meets or exceeds the key benchmarks. Well done.' },
+              { color: '#fca5a5', bg: '#3a1414', range: '0 – 39',   label: 'At risk',           desc: 'You have critical gaps. At least one major area of protection is missing.' },
+              { color: '#fdba74', bg: '#3a1f12', range: '40 – 59',  label: 'Partially covered', desc: "You have some coverage but meaningful gaps remain — worth addressing." },
+              { color: '#93d9fb', bg: '#0f2a38', range: '60 – 79',  label: 'Mostly covered',    desc: "You're in reasonable shape. A few areas to tighten up." },
+              { color: '#6ee7b7', bg: '#0f2e23', range: '80 – 100', label: 'Well protected',    desc: 'Your coverage meets or exceeds the key benchmarks. Well done.' },
             ].map(band => (
               <div key={band.range} style={{
                 display: 'flex',
@@ -405,16 +405,16 @@ export default function HowItWorksPage() {
               The weighting
             </p>
             {[
-              { label: 'Critical illness', pct: 40, barColor: '#b8863b', textColor: '#7a5a26' },
-              { label: 'Life and TPD',     pct: 30, barColor: '#3d6fa8', textColor: '#2c5079' },
-              { label: 'Premium efficiency', pct: 20, barColor: '#888780', textColor: 'var(--color-muted)' },
+              { label: 'Critical illness', pct: 40, barColor: '#ff5722', textColor: '#fdba74' },
+              { label: 'Life and TPD',     pct: 30, barColor: '#38bdf8', textColor: '#93d9fb' },
+              { label: 'Premium efficiency', pct: 20, barColor: '#64748b', textColor: 'var(--color-muted)' },
             ].map(item => (
               <div key={item.label} style={{ marginBottom: '10px' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
                   <span style={{ fontSize: '13px', color: 'var(--color-text)' }}>{item.label}</span>
                   <span style={{ fontSize: '13px', fontWeight: '700', color: item.textColor }}>{item.pct}%</span>
                 </div>
-                <div style={{ height: '6px', background: '#eef0ed', borderRadius: '3px', overflow: 'hidden' }}>
+                <div style={{ height: '6px', background: 'var(--color-border)', borderRadius: '3px', overflow: 'hidden' }}>
                   <div style={{ height: '100%', width: `${item.pct}%`, background: item.barColor, borderRadius: '3px' }} />
                 </div>
               </div>
@@ -846,7 +846,7 @@ This score is never included in finalScore.`}
                   width: '6px',
                   height: '6px',
                   borderRadius: '50%',
-                  background: '#d8ded9',
+                  background: 'var(--color-border)',
                   marginTop: '7px',
                 }} />
                 <div>
@@ -893,7 +893,7 @@ This score is never included in finalScore.`}
                 fontFamily: 'var(--font-coah)',
                 fontSize: '14px',
                 fontWeight: '600',
-                color: 'var(--color-coah)',
+                color: 'var(--color-primary)',
                 letterSpacing: '0.08em',
               }}>
                 COAH

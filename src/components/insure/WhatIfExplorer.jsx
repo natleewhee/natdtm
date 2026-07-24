@@ -11,7 +11,7 @@ function TargetDelta({ label, before, after }) {
       <span style={{ color: 'var(--color-muted)' }}>{label} target</span>
       <span style={{ fontWeight: '600', color: 'var(--color-primary)' }}>
         {formatSGD(before)} <span style={{ color: 'var(--color-faint)' }}>→</span> {formatSGD(after)}
-        <span style={{ color: up ? '#c1443f' : '#145c43', marginLeft: '6px' }}>
+        <span style={{ color: up ? 'var(--color-red-text)' : 'var(--color-green-text)', marginLeft: '6px' }}>
           {up ? '↑' : '↓'}
         </span>
       </span>
@@ -54,9 +54,9 @@ export default function WhatIfExplorer({ inputs }) {
               style={{
                 padding: '8px 14px',
                 borderRadius: '100px',
-                border: `1.5px solid ${active ? 'var(--color-primary)' : 'var(--color-border)'}`,
-                background: active ? 'var(--color-primary)' : '#fff',
-                color: active ? '#fff' : 'var(--color-primary)',
+                border: `1.5px solid ${active ? 'var(--color-accent)' : 'var(--color-border)'}`,
+                background: active ? 'var(--color-accent)' : 'var(--color-surface)',
+                color: active ? 'var(--l-accent-ink)' : 'var(--color-primary)',
                 fontSize: '13px',
                 fontWeight: '500',
                 cursor: 'pointer',
@@ -100,14 +100,14 @@ export default function WhatIfExplorer({ inputs }) {
             <span style={{
               fontSize: '20px',
               fontWeight: '700',
-              color: sim.after.finalScore >= sim.before.finalScore ? '#145c43' : '#c1443f',
+              color: sim.after.finalScore >= sim.before.finalScore ? 'var(--color-green-text)' : 'var(--color-red-text)',
             }}>
               {sim.after.finalScore}
             </span>
             <span style={{
               fontSize: '13px',
               fontWeight: '600',
-              color: sim.after.finalScore >= sim.before.finalScore ? '#145c43' : '#c1443f',
+              color: sim.after.finalScore >= sim.before.finalScore ? 'var(--color-green-text)' : 'var(--color-red-text)',
               marginLeft: 'auto',
             }}>
               {sim.after.finalScore >= sim.before.finalScore ? '+' : ''}

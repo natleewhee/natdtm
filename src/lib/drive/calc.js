@@ -213,7 +213,7 @@ export function calc(salary, down, tenure, car, liveCOE = null, existingDebt = 0
   })
   let verdict, vc, vcText, vbg, vborder
   if (!canDown)         { verdict='Insufficient Downpayment'; vc=C.red;    vcText=C.redText;   vbg=C.redBg;    vborder=C.red }
-  else if (ratio<=0.30) { verdict='Affordable';               vc=C.accent; vcText=C.accentText;vbg=C.accentBg; vborder=C.accent }
+  else if (ratio<=0.30) { verdict='Affordable';               vc=C.green;  vcText=C.greenText; vbg=C.greenBg;  vborder=C.green }
   else if (ratio<=0.45) { verdict='Stretch';                  vc=C.amber;  vcText=C.amberText; vbg=C.amberBg;  vborder=C.amber }
   else                  { verdict='Out of Range';              vc=C.red;    vcText=C.redText;   vbg=C.redBg;    vborder=C.red }
 

@@ -2,19 +2,7 @@
 
 import ShellHeader from '@/components/shared/ShellHeader'
 import MathTOC from '@/components/shared/MathTOC'
-
-const C = {
-  coah: '#1b2320', primary: '#1b2320', accent: '#1f6f54', accentBg: '#e4efe9',
-  bg: '#f3f5f2', surface: '#FFFFFF', border: '#d8ded9',
-  text: '#1b2320', muted: '#5f6b64', faint: '#647069',
-  fontCoah: "'Fraunces', system-ui, sans-serif",
-  fontDisplay: "'Fraunces', Georgia, serif",
-  fontBody: "'IBM Plex Sans', system-ui, sans-serif",
-  fontMono: "'IBM Plex Mono', 'Courier New', monospace",
-  r: '8px', rL: '14px',
-  shadow: '0 1px 3px rgba(0,0,0,0.06)',
-  xs: '11px', sm: '13px', base: '15px',
-}
+import { C } from '@/lib/drive/theme'
 
 function slug(title) {
   return title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '')
@@ -30,7 +18,7 @@ function Table({ rows }) {
     <div style={{ overflowX: 'auto', marginBottom: 20 }}>
       <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: C.sm }}>
         <thead>
-          <tr style={{ background: C.primary }}>
+          <tr style={{ background: C.coah }}>
             {rows[0].map((h, i) => <th key={i} style={{ padding: '10px 14px', color: '#fff', textAlign: 'left', fontWeight: 700 }}>{h}</th>)}
           </tr>
         </thead>

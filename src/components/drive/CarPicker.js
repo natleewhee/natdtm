@@ -39,7 +39,7 @@ export function CarPicker({ value, onChange, slot, ceiling, down, allCars = [], 
   const [budgetFilter, setBudgetFilter] = useState(false)
   const inputRef = useRef(null)
   const wrapRef = useRef(null)
-  const slotCol = slot === 'A' ? C.primary : C.blue
+  const slotCol = slot === 'A' ? C.coah : C.blue
   const hasCeiling = ceiling && (ceiling.catA > 0 || ceiling.catB > 0)
   const budgetCars = hasCeiling ? allCars.filter(car => {
     const cap = car.coe === 'Cat A' ? ceiling.catA : ceiling.catB

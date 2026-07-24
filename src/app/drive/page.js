@@ -300,7 +300,7 @@ export default function DriveReadyPage() {
       </div>
 
       {/* ── MAS disclaimer ── */}
-      <div style={{background:'#f3f5f2',borderBottom:`1px solid ${C.border}`,padding:'8px 24px',textAlign:'center'}}>
+      <div style={{background:C.surface,borderBottom:`1px solid ${C.border}`,padding:'8px 24px',textAlign:'center'}}>
         <p style={{fontSize:11,color:C.faint,margin:0}}>
           Educational tool only · Not financial advice · Not affiliated with any insurer or MAS-licensed entity
         </p>
@@ -308,7 +308,7 @@ export default function DriveReadyPage() {
 
       {/* ── Stale data banner ── */}
       {showStaleBanner && (
-        <div style={{background:'#f5ecd9',borderBottom:`1px solid ${C.amber}55`,padding:'10px 24px',display:'flex',alignItems:'center',justifyContent:'center',gap:8}}>
+        <div style={{background:C.amberBg,borderBottom:`1px solid ${C.amber}55`,padding:'10px 24px',display:'flex',alignItems:'center',justifyContent:'center',gap:8}}>
           <span style={{fontSize:14}}>⚠️</span>
           <p style={{fontSize:12,color:C.amberText,margin:0}}>
             {scrapeStatus === 'fallback'
@@ -340,7 +340,7 @@ export default function DriveReadyPage() {
                 {['single','compare'].map(m => (
                   <button key={m} type="button" onClick={() => { setMode(m); setCalculated(false) }}
                     aria-pressed={mode===m}
-                    style={{padding:'7px 16px',fontSize:C.xs,fontWeight:700,letterSpacing:'0.06em',textTransform:'uppercase',cursor:'pointer',borderRadius:6,border:'none',fontFamily:C.fontBody,background:mode===m?C.primary:'transparent',color:mode===m?'#fff':C.muted,transition:'all 0.2s',boxShadow:mode===m?'0 2px 8px rgba(27,35,32,0.2)':'none'}}>
+                    style={{padding:'7px 16px',fontSize:C.xs,fontWeight:700,letterSpacing:'0.06em',textTransform:'uppercase',cursor:'pointer',borderRadius:6,border:'none',fontFamily:C.fontBody,background:mode===m?C.coah:'transparent',color:mode===m?'#fff':C.muted,transition:'all 0.2s',boxShadow:mode===m?'0 2px 8px rgba(0,0,0,0.35)':'none'}}>
                     {m==='single'?'Single Car':'Compare Two'}
                   </button>
                 ))}
@@ -495,7 +495,7 @@ export default function DriveReadyPage() {
                     <div style={{marginTop:12,background:C.surface,border:`1.5px solid ${C.border}`,borderRadius:C.rL,padding:'20px 24px',boxShadow:C.shadowMd}}>
                       <div style={{fontFamily:C.fontDisplay,fontSize:20,color:C.primary,marginBottom:4}}>Total cost over {dTenure} years</div>
                       <p style={{fontSize:C.sm,color:C.muted,marginBottom:18}}>Downpayment + all monthly instalments combined</p>
-                      {[{r:rA,slot:'A',color:C.primary},{r:rB,slot:'B',color:C.blue}].map(({r,slot,color}) => {
+                      {[{r:rA,slot:'A',color:C.coah},{r:rB,slot:'B',color:C.blue}].map(({r,slot,color}) => {
                         const maxTco = Math.max(rA.totalCoo, rB.totalCoo)
                         const pct = (r.totalCoo/maxTco)*100
                         const cheaper = r.totalCoo <= Math.min(rA.totalCoo,rB.totalCoo)

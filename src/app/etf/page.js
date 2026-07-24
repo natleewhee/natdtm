@@ -9,7 +9,7 @@ import styles from './page.module.css'
 // A real, deterministic example — built from the same logic every generated
 // portfolio uses — so visitors see actual output before clicking through.
 const SAMPLE = generatePortfolio({ risk: 'Balanced', simplicity: '2-3 ETFs', tilts: ['United States'], monthlyInvestment: '' })
-const SAMPLE_COLORS = ['#1f6f54', '#b8863b', '#3d6fa8']
+const SAMPLE_COLORS = ['#facc15', '#ff5722', '#38bdf8']
 
 export default function LandingPage() {
   return (

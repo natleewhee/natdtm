@@ -1041,10 +1041,10 @@ export function formatSGD(amount) {
 
 export function getBandColor(color) {
   const map = {
-    red:   { bg: '#f7e9e8', text: '#8f2f2b', arc: '#c1443f' },
-    amber: { bg: '#f5ecd9', text: '#7a5a26', arc: '#b8863b' },
-    blue:  { bg: '#e8eef5', text: '#2c5079', arc: '#3d6fa8' },
-    teal:  { bg: '#e4efe9', text: '#145c43', arc: '#1f6f54' },
+    red:   { bg: '#3a1414', text: '#fca5a5', arc: '#ef4444' },
+    amber: { bg: '#3a1f12', text: '#fdba74', arc: '#ff5722' },
+    blue:  { bg: '#0f2a38', text: '#93d9fb', arc: '#38bdf8' },
+    teal:  { bg: '#0f2e23', text: '#6ee7b7', arc: '#10b981' },
   };
   return map[color] ?? map.red;
 }
@@ -1052,15 +1052,14 @@ export function getBandColor(color) {
 export function getSeverityStyle(severity) {
   // `border`/`arc`-style colors are tuned for use as a saturated accent
   // (borders, bars, pill fills paired with white text) — too light to pass
-  // WCAG AA as plain text on a light background. `text` is the darkened
-  // variant safe for that use; pills use the same light-bg/dark-text
-  // pattern as the score band pill (getBandColor) rather than white-on-
-  // saturated, which fails contrast for the red/amber pair.
+  // WCAG AA as plain text on a dark background. `text` is the lightened
+  // variant safe for that use; pills use the same dark-bg/light-text
+  // pattern as the score band pill (getBandColor).
   const map = {
-    critical: { border: '#c1443f', text: '#8f2f2b', bg: '#f7e9e8', pillBg: '#f7e9e8', pillText: '#8f2f2b', pillLabel: 'Critical gap' },
-    warning:  { border: '#b8863b', text: '#7a5a26', bg: '#f5ecd9', pillBg: '#f5ecd9', pillText: '#7a5a26', pillLabel: 'Gap found' },
-    info:     { border: '#3d6fa8', text: '#2c5079', bg: '#e8eef5', pillBg: '#e8eef5', pillText: '#2c5079', pillLabel: 'Worth noting' },
-    nudge:    { border: '#1f6f54', text: '#145c43', bg: '#e4efe9', pillBg: '#e4efe9', pillText: '#145c43', pillLabel: 'Tip' },
+    critical: { border: '#ef4444', text: '#fca5a5', bg: '#3a1414', pillBg: '#3a1414', pillText: '#fca5a5', pillLabel: 'Critical gap' },
+    warning:  { border: '#ff5722', text: '#fdba74', bg: '#3a1f12', pillBg: '#3a1f12', pillText: '#fdba74', pillLabel: 'Gap found' },
+    info:     { border: '#38bdf8', text: '#93d9fb', bg: '#0f2a38', pillBg: '#0f2a38', pillText: '#93d9fb', pillLabel: 'Worth noting' },
+    nudge:    { border: '#10b981', text: '#6ee7b7', bg: '#0f2e23', pillBg: '#0f2e23', pillText: '#6ee7b7', pillLabel: 'Tip' },
   };
   return map[severity] ?? map.info;
 }

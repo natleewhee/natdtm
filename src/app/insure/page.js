@@ -155,7 +155,7 @@ export default function LandingPage() {
                   height: '36px',
                   borderRadius: '50%',
                   background: 'var(--color-accent)',
-                  color: '#fff',
+                  color: 'var(--l-accent-ink)',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',

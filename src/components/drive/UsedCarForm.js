@@ -56,7 +56,7 @@ export function UsedCarForm({ slot, onChange }) {
 
   const ageAtExpiry = ageNow + monthsRemaining / 12
   const canGetPARF = ageAtExpiry <= 10
-  const slotCol = slot === 'A' ? C.primary : C.blue
+  const slotCol = slot === 'A' ? C.coah : C.blue
 
   return (
     <div>

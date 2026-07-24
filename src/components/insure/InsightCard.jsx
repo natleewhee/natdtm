@@ -36,20 +36,20 @@ export default function InsightCard({ card, index = 0 }) {
           color: style.pillText,
           fontSize: "11px",
           fontWeight: "700",
-          fontFamily: "'IBM Plex Sans', system-ui, sans-serif",
+          fontFamily: "'Inter', -apple-system, 'Segoe UI', sans-serif",
           letterSpacing: "0.04em",
           textTransform: "uppercase",
           marginTop: "2px",
-          border: style.pillText === "#fff" ? "none" : `1px solid ${style.border}`,
+          border: `1px solid ${style.border}`,
         }}>
           {style.pillLabel}
         </span>
         <p style={{
           margin: 0,
-          fontFamily: "'IBM Plex Sans', system-ui, sans-serif",
+          fontFamily: "'Inter', -apple-system, 'Segoe UI', sans-serif",
           fontSize: "15px",
           fontWeight: "600",
-          color: "#1b2320",
+          color: "var(--color-primary)",
           lineHeight: 1.4,
           flex: 1,
         }}>
@@ -60,7 +60,7 @@ export default function InsightCard({ card, index = 0 }) {
       {/* Body */}
       <p style={{
         margin: 0,
-        fontFamily: "'IBM Plex Sans', system-ui, sans-serif",
+        fontFamily: "'Inter', -apple-system, 'Segoe UI', sans-serif",
         fontSize: "14px",
         color: "var(--color-text)",
         lineHeight: 1.6,
@@ -74,7 +74,7 @@ export default function InsightCard({ card, index = 0 }) {
               border: "none",
               padding: "0 0 0 4px",
               color: style.text,
-              fontFamily: "'IBM Plex Sans', system-ui, sans-serif",
+              fontFamily: "'Inter', -apple-system, 'Segoe UI', sans-serif",
               fontSize: "14px",
               fontWeight: "500",
               cursor: "pointer",
@@ -89,7 +89,7 @@ export default function InsightCard({ card, index = 0 }) {
       {card.action && (
         <p style={{
           margin: 0,
-          fontFamily: "'IBM Plex Sans', system-ui, sans-serif",
+          fontFamily: "'Inter', -apple-system, 'Segoe UI', sans-serif",
           fontSize: "13px",
           color: "var(--color-muted)",
           lineHeight: 1.5,

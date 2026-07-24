@@ -107,8 +107,8 @@ Example (Growth, 4-5 ETFs, no tilt):
             <Body>Singapore investors pay withholding tax on dividends from overseas ETFs. The difference between US-domiciled and Ireland-domiciled funds is significant:</Body>
             <div className={styles.whtGrid}>
               {[
-                { label:'US-domiciled (e.g. VOO, SPY)', rate:'30% WHT', color:'#c1443f', bg:'rgba(193,68,63,0.1)', border:'rgba(193,68,63,0.3)' },
-                { label:'Ireland-domiciled UCITS (e.g. CSPX)', rate:'15% WHT', color:'#1f6f54', bg:'rgba(31,111,84,0.1)', border:'rgba(31,111,84,0.3)' },
+                { label:'US-domiciled (e.g. VOO, SPY)', rate:'30% WHT', color:'#fca5a5', bg:'rgba(239,68,68,0.12)', border:'rgba(239,68,68,0.35)' },
+                { label:'Ireland-domiciled UCITS (e.g. CSPX)', rate:'15% WHT', color:'#6ee7b7', bg:'rgba(16,185,129,0.12)', border:'rgba(16,185,129,0.35)' },
               ].map(item => (
                 <div key={item.label} className={styles.whtCard} style={{ '--wht-color': item.color, '--wht-bg': item.bg, '--wht-border': item.border }}>
                   <p className={styles.whtLabel}>{item.label}</p>

@@ -13,7 +13,7 @@ import {
 } from '@/lib/etf/logic'
 import styles from './portfolio.module.css'
 
-const FUND_PALETTE = ['#1f6f54', '#b8863b', '#3d6fa8', '#8a5fb0', '#c1443f', '#4a8a7a', '#a67c52', '#6b7fa3']
+const FUND_PALETTE = ['#facc15', '#ff5722', '#38bdf8', '#c4b5fd', '#ef4444', '#10b981', '#fdba74', '#94a3b8']
 
 const RISK_BADGE_COLORS = {
   Conservative: { bg: 'var(--color-blue-bg)', color: 'var(--color-blue-text)' },
@@ -29,7 +29,7 @@ function DonutChart({ allocations }) {
     <div className={styles.donutWrap}>
       <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} role="img" aria-label="Portfolio allocation by fund">
         <g transform={`rotate(-90 ${size/2} ${size/2})`}>
-          <circle cx={size/2} cy={size/2} r={r} fill="none" stroke="#1b2320" strokeWidth={stroke} />
+          <circle cx={size/2} cy={size/2} r={r} fill="none" stroke="#334155" strokeWidth={stroke} />
           {allocations.map((a, i) => {
             const dash = (a.percentage / 100) * c
             const seg = (
@@ -396,8 +396,8 @@ function LookThroughCard({ allocations }) {
   const buckets = computeLookThrough(allocations)
   const max = Math.max(...buckets.map(b => b.percentage), 1)
   const palette = {
-    'United States': '#1f6f54', 'Other Developed': '#3d6fa8', 'Japan': '#8a5fb0',
-    'Emerging Markets': '#4a8a7a', 'China / Hong Kong': '#b8863b', 'Global Bonds': '#6b7fa3',
+    'United States': '#facc15', 'Other Developed': '#38bdf8', 'Japan': '#c4b5fd',
+    'Emerging Markets': '#10b981', 'China / Hong Kong': '#ff5722', 'Global Bonds': '#94a3b8',
   }
   return (
     <div className={`${styles.card} ${styles.lookThroughCard}`}>

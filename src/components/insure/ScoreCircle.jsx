@@ -67,7 +67,7 @@ export default function ScoreCircle({ score, band, isEstimated, animate = true }
           cy={SIZE / 2}
           r={RADIUS}
           fill="none"
-          stroke="#d8ded9"
+          stroke="var(--color-border)"
           strokeWidth={STROKE}
         />
         {/* Coloured arc */}
@@ -91,10 +91,10 @@ export default function ScoreCircle({ score, band, isEstimated, animate = true }
           textAnchor="middle"
           dominantBaseline="central"
           style={{
-            fontFamily: "'Fraunces', Georgia, serif",
+            fontFamily: "var(--font-display)",
             fontSize: "48px",
             fontWeight: "400",
-            fill: "#1b2320",
+            fill: "var(--color-primary)",
           }}
         >
           {isEstimated ? "~" : ""}{displayScore}
@@ -105,7 +105,7 @@ export default function ScoreCircle({ score, band, isEstimated, animate = true }
           y={SIZE / 2 + 30}
           textAnchor="middle"
           style={{
-            fontFamily: "'IBM Plex Sans', system-ui, sans-serif",
+            fontFamily: "'Inter', -apple-system, 'Segoe UI', sans-serif",
             fontSize: "13px",
             fill: "var(--color-faint)",
           }}
@@ -130,7 +130,7 @@ export default function ScoreCircle({ score, band, isEstimated, animate = true }
         {isEstimated && (
           <span
             style={{
-              fontFamily: "'IBM Plex Sans', system-ui, sans-serif",
+              fontFamily: "'Inter', -apple-system, 'Segoe UI', sans-serif",
               fontSize: "12px",
               color: "var(--color-faint)",
             }}

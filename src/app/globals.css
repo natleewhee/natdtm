@@ -1,90 +1,61 @@
-/* coah shell — "Ledger" design system.
-   This file governs the shared shell only: root layout, nav, footer, the
-   coah home page. Each vertical (insure/drive/etf) still loads its own
-   legacy stylesheet for its internal pages — see src/app/insure/legacy.css,
-   src/app/drive/legacy.css, src/app/etf/legacy.css. Reconciling those into
-   one system is later-stage work; this file must not leak selectors that
-   would collide with them (see comments in etf/legacy.css for the one real
-   conflict that exists today). */
+/* Nat Does The Math — "Digital Workbench" design system.
+   One theme, permanently dark (see design.md). Governs the shared shell
+   (root layout, header, footer, home page); the three tools' own literal-
+   hex copies of this palette (src/lib/drive/theme.js and its per-page
+   duplicates, src/lib/insure/engine/scorer.js's band/severity maps) are
+   kept in sync by hand — see the comment in theme.js for why those can't
+   just be var() references. */
 
 @font-face {
-  font-family: 'Fraunces';
+  font-family: 'Space Grotesk';
   font-style: normal;
-  font-weight: 500;
+  font-weight: 400 700;
   font-display: swap;
-  src: url('/fonts/fraunces-500.woff2') format('woff2');
+  src: url('/fonts/space-grotesk-variable.woff2') format('woff2');
 }
 @font-face {
-  font-family: 'Fraunces';
+  font-family: 'Inter';
   font-style: normal;
-  font-weight: 600;
+  font-weight: 400 700;
   font-display: swap;
-  src: url('/fonts/fraunces-600.woff2') format('woff2');
+  src: url('/fonts/inter-variable.woff2') format('woff2');
 }
 @font-face {
-  font-family: 'IBM Plex Sans';
+  font-family: 'JetBrains Mono';
   font-style: normal;
-  font-weight: 400;
+  font-weight: 400 700;
   font-display: swap;
-  src: url('/fonts/ibm-plex-sans-400.woff2') format('woff2');
-}
-@font-face {
-  font-family: 'IBM Plex Sans';
-  font-style: normal;
-  font-weight: 600;
-  font-display: swap;
-  src: url('/fonts/ibm-plex-sans-600.woff2') format('woff2');
-}
-@font-face {
-  font-family: 'IBM Plex Mono';
-  font-style: normal;
-  font-weight: 400;
-  font-display: swap;
-  src: url('/fonts/ibm-plex-mono-400.woff2') format('woff2');
-}
-@font-face {
-  font-family: 'IBM Plex Mono';
-  font-style: normal;
-  font-weight: 500;
-  font-display: swap;
-  src: url('/fonts/ibm-plex-mono-500.woff2') format('woff2');
+  src: url('/fonts/jetbrains-mono-variable.woff2') format('woff2');
 }
 
 :root {
-  --l-bg: #f3f5f2;
-  --l-surface: #ffffff;
-  --l-ink: #1b2320;
-  --l-sub: #5f6b64;
-  --l-accent: #1f6f54;
-  --l-accent-bg: #e4efe9;
-  --l-amber: #b8863b;
-  --l-amber-bg: #f5ecd9;
-  --l-line: #d8ded9;
+  /* Workbench & Blueprint palette */
+  --l-bg: #0b1120;
+  --l-surface: #1e293b;
+  --l-ink: #f8fafc;
+  --l-sub: #94a3b8;
+  --l-accent: #facc15;
+  --l-accent-ink: #1b1400;
+  --l-accent-bg: #332b0e;
+  --l-amber: #ff5722;
+  --l-amber-bg: #3a1f12;
+  --l-line: #334155;
 
-  --l-font-display: 'Fraunces', Georgia, serif;
-  --l-font-body: 'IBM Plex Sans', -apple-system, 'Segoe UI', sans-serif;
-  --l-font-mono: 'IBM Plex Mono', ui-monospace, 'SF Mono', Consolas, monospace;
+  --l-font-display: 'Space Grotesk', 'Inter', -apple-system, sans-serif;
+  --l-font-body: 'Inter', -apple-system, 'Segoe UI', sans-serif;
+  --l-font-mono: 'JetBrains Mono', ui-monospace, 'SF Mono', Consolas, monospace;
 }
-/* coah ships light-only. The three tools were merged from separate apps —
-   two never had dark mode, one was permanently dark — and their internals
-   are riddled with literal-hex colors (Drive's C object, Insure's scorer
-   band/severity hexes) that don't flow through these tokens. A partial
-   dark mode therefore half-flipped: tokened surfaces inverted while their
-   literal-hex siblings stayed put, landing white-on-white heroes and
-   light-on-light cards. Rather than re-derive ~165 hex + ~61 rgba literals
-   against a dark surface, the product is pinned light: no prefers-color-
-   scheme response, and html carries data-theme="light" (see layout.js).
-   The :root base below is already the light palette. */
 :root[data-theme='light'] {
-  --l-bg: #f3f5f2;
-  --l-surface: #ffffff;
-  --l-ink: #1b2320;
-  --l-sub: #5f6b64;
-  --l-accent: #1f6f54;
-  --l-accent-bg: #e4efe9;
-  --l-amber: #b8863b;
-  --l-amber-bg: #f5ecd9;
-  --l-line: #d8ded9;
+  --l-bg: #0b1120;
+  --l-surface: #1e293b;
+  --l-ink: #f8fafc;
+  --l-sub: #94a3b8;
+  --l-accent: #facc15;
+  --l-accent-ink: #1b1400;
+  --l-accent-bg: #332b0e;
+  --l-amber: #ff5722;
+  --l-amber-bg: #3a1f12;
+  --l-line: #334155;
 }
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -144,8 +115,8 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
 .coah-button:active:not(:disabled) { transform: translateY(0); }
 .coah-button:disabled { cursor: not-allowed; }
 .coah-button--full { width: 100%; }
-.coah-button--accent { background: var(--color-accent); color: #fff; box-shadow: 0 4px 20px rgba(31,111,84,0.30); }
-.coah-button--dark { background: var(--color-primary); color: #fff; box-shadow: 0 4px 16px rgba(27,35,32,0.20); }
+.coah-button--accent { background: var(--color-accent); color: var(--l-accent-ink); box-shadow: 0 4px 20px rgba(250,204,21,0.30); }
+.coah-button--dark { background: var(--color-coah); color: var(--color-primary); border: 1.5px solid var(--color-border); box-shadow: 0 4px 16px rgba(0,0,0,0.35); }
 .coah-button--dark:disabled { background: var(--color-bg); color: var(--color-faint); box-shadow: none; border: 1.5px solid var(--color-border); }
 .coah-button--outline { background: transparent; border: 2px solid var(--color-primary); color: var(--color-primary); box-shadow: none; }
 
@@ -250,52 +221,46 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
    Insure, Drive, and Invest each ported their own component library with
    its own semantic token names (--color-primary, --color-accent, etc, or
    the equivalent `C` JS object in src/lib/drive/theme.js and
-   src/components/etf/shared.js). Rather than three near-duplicate palettes
-   (navy/teal for Insure+Drive, dark purple/pink/gold "Arcade Quest" for
-   Invest), all three now resolve through this one set — same names,
-   mapped to the Ledger palette/type system above. `C.primary` etc in the
-   drive/etf JS theme objects are `var(--color-*)` strings, not literal
-   hex, so this block is the single place that controls every vertical's
-   look.
+   src/components/etf/shared.js). This block is the single source of
+   truth for the palette; the JS theme objects mirror it (drive/theme.js
+   as literal hex — see the comment there for why it can't use var()).
 
-   Deliberately no dark-mode variant for this block: none of the three
-   source apps' component libraries were ever exercised against a dark
-   background (Insure/Drive had no dark mode at all; Invest was
-   *permanently* dark, never light) — extending that now would mean
-   auditing every hardcoded transparency/shadow assumption across ~30
-   components blind. The shell (nav/footer/home, --l-* tokens above)
-   keeps its light/dark support; the three tools stay fixed-light, same
-   as their prior behavior. */
+   --color-coah/-mid/-light are deliberately their OWN dark tone, not
+   reused from --color-primary/--color-text: those two used to coincide
+   by coincidence in the old light palette (both just "the ink color"),
+   but --color-text now needs to be light-on-dark for body copy while
+   --color-coah still needs to read as a deep, distinct panel behind
+   white hero text — keeping them separate avoids re-deriving every call
+   site that pairs `background: C.coah` with literal white text. */
 :root {
   --color-primary: var(--l-ink);
-  --color-primary-text: #ffffff;
+  --color-primary-text: var(--l-accent-ink);
   --color-accent: var(--l-accent);
   --color-accent-bg: var(--l-accent-bg);
-  --color-accent-text: #145c43;
+  --color-accent-text: #fde68a;
   --color-bg: var(--l-bg);
   --color-surface: var(--l-surface);
   --color-border: var(--l-line);
   --color-text: var(--l-ink);
   --color-muted: var(--l-sub);
-  --color-faint: #647069;
+  --color-faint: #64748b;
 
-  --color-red: #c1443f;
-  --color-red-bg: #f7e9e8;
-  --color-red-text: #8f2f2b;
+  --color-red: #ef4444;
+  --color-red-bg: #3a1414;
+  --color-red-text: #fca5a5;
   --color-amber: var(--l-amber);
   --color-amber-bg: var(--l-amber-bg);
-  --color-amber-text: #7a5a26;
-  --color-blue: #3d6fa8;
-  --color-blue-bg: #e8eef5;
-  --color-blue-text: #2c5079;
+  --color-amber-text: #fdba74;
+  --color-blue: #38bdf8;
+  --color-blue-bg: #0f2a38;
+  --color-blue-text: #93d9fb;
+  --color-green: #10b981;
+  --color-green-bg: #0f2e23;
+  --color-green-text: #6ee7b7;
 
-  /* Flat by design where the source apps used a navy gradient hero block
-     (e.g. DriveReady's affordability-ceiling card) — Ledger doesn't do
-     decorative gradients, so coah/coah-mid/coah-light collapse to one
-     ink family instead of two stops. */
-  --color-coah: var(--l-ink);
-  --color-coah-mid: var(--l-ink);
-  --color-coah-light: #33403a;
+  --color-coah: #05070c;
+  --color-coah-mid: #05070c;
+  --color-coah-light: #141b2e;
 
   --font-coah: var(--l-font-display);
   --font-display: var(--l-font-display);
