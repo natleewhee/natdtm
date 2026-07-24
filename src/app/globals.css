@@ -179,6 +179,11 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
   background: var(--color-surface);
   border-bottom: 1px solid var(--color-border);
   position: sticky; top: 0; z-index: 10;
+  transition: box-shadow 0.2s ease, border-color 0.2s ease;
+}
+.shell-header--scrolled {
+  border-bottom-color: rgba(255,255,255,0.14);
+  box-shadow: 0 4px 16px rgba(0,0,0,0.35);
 }
 .shell-header-row {
   padding: 12px 24px;
@@ -197,7 +202,7 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
   display: inline-flex; align-items: center; gap: 4px;
   font-family: var(--font-mono); font-size: 12.5px; font-weight: 600; letter-spacing: .02em;
   background: var(--color-accent-bg); color: var(--color-accent);
-  border: none; border-radius: 999px; padding: 8px 12px; min-height: 36px;
+  border: none; border-radius: 999px; padding: 8px 12px; min-height: 44px;
   cursor: pointer;
 }
 .shell-switcher-caret { font-size: 9px; opacity: 0.8; }
@@ -209,16 +214,16 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
   display: flex; flex-direction: column; gap: 2px;
 }
 .shell-switcher-item {
-  display: block; padding: 9px 12px; min-height: 38px;
+  display: flex; align-items: center; padding: 9px 12px; min-height: 44px;
   font-family: var(--font-mono); font-size: 12.5px; color: var(--color-primary);
-  text-decoration: none; border-radius: 6px;
+  text-decoration: none; border-radius: 6px; box-sizing: border-box;
 }
 .shell-switcher-item:hover { background: var(--color-accent-bg); color: var(--color-accent); }
 
 .shell-header-right { display: flex; align-items: center; gap: 4px; flex-shrink: 0; }
 .shell-header-back {
   display: flex; align-items: center; justify-content: center;
-  width: 40px; height: 40px; margin-right: -4px;
+  width: 44px; height: 44px; margin-right: -4px;
   background: none; border: none; border-radius: 999px;
   font-size: 18px; color: var(--color-primary); text-decoration: none;
   cursor: pointer; flex-shrink: 0;
@@ -234,7 +239,7 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
   white-space: nowrap; margin-right: 4px;
 }
 .shell-header-link {
-  display: inline-flex; align-items: center; min-height: 40px; padding: 8px 12px;
+  display: inline-flex; align-items: center; min-height: 44px; padding: 8px 12px;
   font-size: 13.5px; color: var(--color-primary); opacity: 0.65;
   text-decoration: none; border-radius: 999px; white-space: nowrap;
 }

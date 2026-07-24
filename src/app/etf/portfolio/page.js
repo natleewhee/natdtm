@@ -134,7 +134,7 @@ function PerformanceChart({ allocations }) {
         {labeledDates.map((d, i) => {
           const idx = data.findIndex(p => p === d)
           const x = padL + (idx / (data.length - 1)) * chartW
-          return <text key={i} x={x} y={H - 4} textAnchor="middle" fontSize="9" fill={C.faint}>{d.date}</text>
+          return <text key={i} x={x} y={H - 4} textAnchor="middle" fontSize="9" fill={C.muted}>{d.date}</text>
         })}
       </svg>
       <div className={styles.chartFootnote}>
@@ -187,7 +187,7 @@ function BacktestCard({ allocations }) {
           <circle key={i} cx={p.x} cy={p.y} r="2.5" fill={i === coords.length - 1 ? C.primary : 'transparent'} />
         ))}
         {points.map((pt, i) => (
-          i % 2 === 0 ? <text key={i} x={coords[i].x} y={H - 2} textAnchor="middle" fontSize="9" fill={C.faint}>{pt.year}</text> : null
+          i % 2 === 0 ? <text key={i} x={coords[i].x} y={H - 2} textAnchor="middle" fontSize="9" fill={C.muted}>{pt.year}</text> : null
         ))}
       </svg>
       <div className={styles.chartFootnote}>

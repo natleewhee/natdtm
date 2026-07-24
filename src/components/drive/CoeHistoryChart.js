@@ -97,7 +97,7 @@ export function CoeHistoryChart() {
         <polyline points={catBPts} fill="none" stroke={C.blue} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
         {history.filter((_, i) => i === 0 || i === history.length - 1 || i % Math.ceil(history.length / 5) === 0).map(e => {
           const i = history.indexOf(e)
-          return <text key={i} x={toX(i)} y={H-6} textAnchor="middle" fontSize="9" fill={C.faint}>{monthLabel(e.month)}</text>
+          return <text key={i} x={toX(i)} y={H-6} textAnchor="middle" fontSize="9" fill={C.muted}>{monthLabel(e.month)}</text>
         })}
       </svg>
       <div style={{display:'flex',gap:16,marginTop:8}}>

@@ -37,7 +37,7 @@ export function RunningCostCard({ r, visible }) {
             <div key={k} style={{background:C.bg,borderRadius:C.r,padding:'10px 10px',border:`1px solid ${C.border}`}}>
               <div style={{fontSize:'10px',color:C.muted,marginBottom:4}}>{k}</div>
               <div style={{fontSize:C.sm,fontFamily:C.fontMono,fontWeight:700,color:C.primary}}>{v}</div>
-              <div style={{fontSize:'9px',color:C.faint,marginTop:1}}>/yr</div>
+              <div style={{fontSize:'9px',color:C.muted,marginTop:1}}>/yr</div>
             </div>
           ))}
         </div>

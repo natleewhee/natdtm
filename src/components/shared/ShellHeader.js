@@ -26,6 +26,7 @@ export default function ShellHeader({
 }) {
   const pathname = usePathname()
   const [open, setOpen] = useState(false)
+  const [scrolled, setScrolled] = useState(false)
   const menuRef = useRef(null)
 
   const active = TOOLS.find(t => pathname === t.href || pathname?.startsWith(t.href + '/'))
@@ -39,10 +40,23 @@ export default function ShellHeader({
     return () => document.removeEventListener('mousedown', onDocClick)
   }, [open])
 
+  useEffect(() => {
+    // The header sits on top of sections that are the same surface color
+    // as the header itself, so it can blend in until content is scrolled
+    // under it — a shadow/border boost once that's happening makes it
+    // read as floating above the page instead.
+    function onScroll() {
+      setScrolled(window.scrollY > 4)
+    }
+    onScroll()
+    window.addEventListener('scroll', onScroll, { passive: true })
+    return () => window.removeEventListener('scroll', onScroll)
+  }, [])
+
   const hasContext = !!(backHref || onBack || title || step || links.length > 0)
 
   return (
-    <div className="shell-header">
+    <div className={`shell-header${scrolled ? ' shell-header--scrolled' : ''}`}>
       <div className="shell-header-row">
         <div className="shell-header-left">
           <Link href="/" className="shell-header-brand">ndtm</Link>

@@ -109,7 +109,7 @@ export function OwnershipCurve({ coo, tenure, visible }) {
           {/* Year labels */}
           {coo.filter((_, i) => i === 0 || (i+1) % Math.ceil(tenure/4) === 0 || i === coo.length-1).map(d => {
             const i = d.year - 1
-            return <text key={i} x={toX(i)} y={H-4} textAnchor="middle" fontSize="9" fill={C.faint}>Yr {d.year}</text>
+            return <text key={i} x={toX(i)} y={H-4} textAnchor="middle" fontSize="9" fill={C.muted}>Yr {d.year}</text>
           })}
         </svg>
 
