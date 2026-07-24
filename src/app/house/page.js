@@ -39,6 +39,7 @@ export default function HouseMuchPage() {
 
   // Overrides (raw strings; empty = use computed default)
   const [outstandingOverride, setOutstandingOverride] = useState('')
+  const [cpfPrincipalOverride, setCpfPrincipalOverride] = useState('')
   const [cpfInterestOverride, setCpfInterestOverride] = useState('')
   const [ssdOverride, setSsdOverride] = useState('')
 
@@ -67,6 +68,7 @@ export default function HouseMuchPage() {
     salePrice: num(salePrice), saleDate,
     agentCommission, legalFeesAtSale: num(legalFeesAtSale),
     outstandingBalanceOverride: outstandingOverride !== '' ? num(outstandingOverride) : null,
+    cpfPrincipalOverride: cpfPrincipalOverride !== '' ? num(cpfPrincipalOverride) : null,
     cpfAccruedInterestOverride: cpfInterestOverride !== '' ? num(cpfInterestOverride) : null,
     ssdOverride: ssdOverride !== '' ? num(ssdOverride) : null,
   }) : null
@@ -119,7 +121,7 @@ export default function HouseMuchPage() {
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 16 }}>
             <MoneyInput id="purchase-price" label="Purchase price" value={purchasePrice} onChange={e => setPurchasePrice(e.target.value)} />
             <DateInput id="purchase-date" label="Purchase date" value={purchaseDate} onChange={e => setPurchaseDate(e.target.value)} />
-            <MoneyInput id="cpf-outlay" label="Total CPF used" hint="From your CPF statement — principal only" value={cpfOutlay} onChange={e => setCpfOutlay(e.target.value)} />
+            <MoneyInput id="cpf-outlay" label="CPF used at purchase" hint="The down payment portion only — not your current CPF principal, which is entered separately below if you're servicing your mortgage via CPF" value={cpfOutlay} onChange={e => setCpfOutlay(e.target.value)} />
             <MoneyInput
               id="cpf-interest-known" label="CPF accrued interest" hint="Optional — if you already checked your CPF portal. Leave blank to estimate."
               value={cpfInterestOverride} onChange={e => setCpfInterestOverride(e.target.value)}
@@ -197,6 +199,7 @@ export default function HouseMuchPage() {
             <SaleResults
               result={result}
               outstandingOverride={outstandingOverride} onOutstandingOverride={e => setOutstandingOverride(e.target.value)}
+              cpfPrincipalOverride={cpfPrincipalOverride} onCpfPrincipalOverride={e => setCpfPrincipalOverride(e.target.value)}
               cpfInterestOverride={cpfInterestOverride} onCpfInterestOverride={e => setCpfInterestOverride(e.target.value)}
               ssdOverride={ssdOverride} onSsdOverride={e => setSsdOverride(e.target.value)}
             />

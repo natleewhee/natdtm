@@ -75,6 +75,7 @@ export function calcSale(inputs) {
     salePrice = 0, saleDate,
     agentCommission = 0, legalFeesAtSale = 0,
     outstandingBalanceOverride = null,
+    cpfPrincipalOverride = null,
     cpfAccruedInterestOverride = null,
     ssdOverride = null,
   } = inputs
@@ -96,7 +97,15 @@ export function calcSale(inputs) {
   const totalPaidToDate = monthlyInstalment * monthsHeld
   const totalInterestPaid = Math.max(0, totalPaidToDate - principalRepaid)
 
-  const cpfPrincipalTotal = (Number(cpfOutlay) || 0) + (Number(housingGrant) || 0)
+  // CPF used at purchase (down payment) and CPF principal owed back on sale
+  // are only the same number if all your CPF went in as a single lump sum
+  // at purchase. If you service your monthly mortgage instalment via CPF
+  // OA — the common case — the refundable principal keeps growing every
+  // month after purchase, so it needs its own override rather than being
+  // assumed equal to the at-purchase figure.
+  const cpfPrincipalAtPurchase = (Number(cpfOutlay) || 0) + (Number(housingGrant) || 0)
+  const cpfPrincipalComputed = cpfPrincipalAtPurchase
+  const cpfPrincipalTotal = cpfPrincipalOverride ?? cpfPrincipalComputed
   const cpfAccruedInterestComputed = calcCPFAccruedInterest(cpfPrincipalTotal, yearsHeld)
   const cpfAccruedInterest = cpfAccruedInterestOverride ?? cpfAccruedInterestComputed
   const totalCPFRefund = cpfPrincipalTotal + cpfAccruedInterest
@@ -149,7 +158,8 @@ export function calcSale(inputs) {
     cashOutlay, cashOutlayUnclear,
     salePrice: Number(salePrice) || 0, agentCommission: Number(agentCommission) || 0, legalFeesAtSale: Number(legalFeesAtSale) || 0,
     monthlyInstalment, outstandingBalanceComputed, outstandingBalance, totalInterestPaid,
-    cpfPrincipalTotal, cpfAccruedInterestComputed, cpfAccruedInterest, totalCPFRefund,
+    cpfPrincipalAtPurchase, cpfPrincipalComputed, cpfPrincipalTotal,
+    cpfAccruedInterestComputed, cpfAccruedInterest, totalCPFRefund,
     ssdComputed, ssd, sellingCosts,
     cashProceeds,
     trueCostBasis, netSale, trueProfitLoss, isProfit: trueProfitLoss >= 0,

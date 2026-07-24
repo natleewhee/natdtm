@@ -169,6 +169,37 @@ assert('Outstanding balance override is respected', overridden.outstandingBalanc
 assert('CPF accrued interest override is respected', overridden.cpfAccruedInterest === 12_345)
 assert('SSD override is respected', overridden.ssd === 0)
 
+// CPF principal-to-refund override — decoupled from CPF used at purchase,
+// for anyone servicing their monthly instalment via CPF OA so their
+// refundable principal grows beyond what they put in at purchase.
+const cpfServiced = calcSale({
+  propertyType: 'private',
+  purchasePrice: 480_000, purchaseDate: '2021-08-31',
+  legalFeesAtPurchase: 3_000, agentFeesAtPurchase: 4_800,
+  cpfOutlay: 130_000,
+  loanTaken: 365_000, mortgageRate: 1.4, loanTenure: 30,
+  salePrice: 700_000, saleDate: '2026-01-09',
+  agentCommission: 14_000, legalFeesAtSale: 0,
+  outstandingBalanceOverride: 293_000,
+  cpfPrincipalOverride: 219_400,
+  cpfAccruedInterestOverride: 22_400,
+})
+assert('cpfPrincipalAtPurchase reflects CPF used at purchase, unaffected by the refund override', cpfServiced.cpfPrincipalAtPurchase === 130_000)
+assert('cpfPrincipalTotal (refund) uses the override, not CPF used at purchase', cpfServiced.cpfPrincipalTotal === 219_400)
+assert('totalCPFRefund = overridden principal + overridden accrued interest', cpfServiced.totalCPFRefund === 219_400 + 22_400)
+assert('cashOutlay still derives from CPF used at purchase, not the refund override', cpfServiced.cashOutlay === 480_000 + cpfServiced.purchaseFees - 365_000 - 130_000)
+assert('totalOutlay (for ROI) still uses CPF used at purchase, not the refund override', cpfServiced.totalOutlay === Math.max(0, cpfServiced.cashOutlay) + 130_000)
+
+// Without the override, cpfPrincipalTotal falls back to CPF used at purchase (old behavior)
+const cpfNoOverride = calcSale({
+  propertyType: 'private',
+  purchasePrice: 480_000, purchaseDate: '2021-08-31',
+  cpfOutlay: 130_000,
+  loanTaken: 365_000, mortgageRate: 1.4, loanTenure: 30,
+  salePrice: 700_000, saleDate: '2026-01-09',
+})
+assert('cpfPrincipalTotal defaults to cpfPrincipalAtPurchase when no override given', cpfNoOverride.cpfPrincipalTotal === cpfNoOverride.cpfPrincipalAtPurchase)
+
 // HDB MOP gate
 const beforeMop = calcSale({
   propertyType: 'hdb',

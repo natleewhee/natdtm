@@ -19,6 +19,7 @@ function Row({ label, value, tone, bold, indent }) {
 export default function SaleResults({
   result,
   outstandingOverride, onOutstandingOverride,
+  cpfPrincipalOverride, onCpfPrincipalOverride,
   cpfInterestOverride, onCpfInterestOverride,
   ssdOverride, onSsdOverride,
 }) {
@@ -28,7 +29,8 @@ export default function SaleResults({
     purchasePrice, bsdAtPurchase, legalFeesAtPurchase, agentFeesAtPurchase, purchaseFees, sunkCost,
     loanTaken, cpfOutlay, cashOutlay, cashOutlayUnclear,
     outstandingBalance, outstandingBalanceComputed, totalInterestPaid,
-    cpfPrincipalTotal, cpfAccruedInterest, cpfAccruedInterestComputed, totalCPFRefund,
+    cpfPrincipalAtPurchase, cpfPrincipalComputed, cpfPrincipalTotal,
+    cpfAccruedInterest, cpfAccruedInterestComputed, totalCPFRefund,
     ssd, ssdComputed, sellingCosts, cashProceeds,
     trueCostBasis, netSale, trueProfitLoss, isProfit,
     cashOnCashReturn, totalOutlay, roiOnPrice, roiOnOutlay,
@@ -126,6 +128,13 @@ export default function SaleResults({
             formatValue={SGD}
           />
           <OverrideField
+            id="ov-cpf-principal" label="CPF principal to refund"
+            computedValue={cpfPrincipalComputed}
+            computedHint="Defaults to your CPF used at purchase (+ any grant). If you've been servicing your mortgage via CPF OA since then, your refundable principal has grown beyond that — check your CPF portal for the real figure and enter it here."
+            overrideValue={cpfPrincipalOverride} onOverrideChange={onCpfPrincipalOverride}
+            formatValue={SGD}
+          />
+          <OverrideField
             id="ov-cpf" label="CPF accrued interest owed"
             computedValue={cpfAccruedInterestComputed}
             computedHint="Estimated at a flat 2.5% p.a. compounded over your full holding period. CPF Board computes this per-withdrawal from each withdrawal's own date — log into your CPF account for the exact figure."
@@ -164,7 +173,10 @@ export default function SaleResults({
             </p>
           )}
           <div style={{ height: 10 }} />
-          <Row label="CPF principal used (incl. any grant)" value={SGD(cpfPrincipalTotal)} />
+          <Row label="CPF used at purchase (incl. any grant)" value={SGD(cpfPrincipalAtPurchase)} />
+          {cpfPrincipalTotal !== cpfPrincipalAtPurchase && (
+            <Row label="CPF principal to refund (your override)" value={SGD(cpfPrincipalTotal)} indent />
+          )}
           <Row label="+ Accrued interest" value={`+${SGD(cpfAccruedInterest)}`} indent />
           <Row label="Total CPF refund due" value={SGD(totalCPFRefund)} bold />
         </div>
