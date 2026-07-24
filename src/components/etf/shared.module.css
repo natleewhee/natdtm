@@ -20,9 +20,9 @@
 .optionCard:active:not(:disabled) { transform: translate(2px,2px); box-shadow: 1px 1px 0 rgba(0,0,0,0.3); }
 .optionCard:disabled { cursor: not-allowed; opacity: 0.45; box-shadow: none; }
 .optionCard.selected {
-  border-color: var(--color-amber); background: var(--color-accent-bg);
+  border-color: var(--color-accent); background: var(--color-accent-bg);
   box-shadow: 3px 3px 0 var(--color-accent-deep);
 }
 .optionLabel { font-weight: 700; font-size: 14px; color: var(--color-primary); margin: 0 0 4px; }
-.optionCard.selected .optionLabel { color: var(--color-amber-text); }
+.optionCard.selected .optionLabel { color: var(--color-accent-text); }
 .optionDesc { font-size: 13px; color: var(--color-muted); margin: 0; line-height: 1.4; }

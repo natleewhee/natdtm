@@ -249,6 +249,10 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
   --color-primary-text: var(--l-accent-ink);
   --color-accent: var(--l-accent);
   --color-accent-bg: var(--l-accent-bg);
+  /* Hand-picked to match --l-accent's hue (~45°), not derived from it —
+     if --l-accent's hue ever moves, re-check this still reads as "the
+     same yellow, lighter" rather than a mismatched tint. Currently
+     11.3:1 against --color-accent-bg. */
   --color-accent-text: #fde68a;
   --color-bg: var(--l-bg);
   --color-surface: var(--l-surface);
