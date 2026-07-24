@@ -1,4 +1,4 @@
-/* Nat Does The Math — "Digital Workbench" design system.
+/* nat does the math — "Digital Workbench" design system.
    One theme, permanently dark (see design.md). Governs the shared shell
    (root layout, header, footer, home page); the three tools' own literal-
    hex copies of this palette (src/lib/drive/theme.js and its per-page
@@ -34,7 +34,7 @@
   --l-surface: #1e293b;
   --l-ink: #f8fafc;
   --l-sub: #94a3b8;
-  --l-accent: #facc15;
+  --l-accent: #eab308;
   --l-accent-ink: #1b1400;
   --l-accent-bg: #332b0e;
   --l-amber: #ff5722;
@@ -50,7 +50,7 @@
   --l-surface: #1e293b;
   --l-ink: #f8fafc;
   --l-sub: #94a3b8;
-  --l-accent: #facc15;
+  --l-accent: #eab308;
   --l-accent-ink: #1b1400;
   --l-accent-bg: #332b0e;
   --l-amber: #ff5722;
@@ -122,7 +122,7 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
 }
 .coah-button:disabled { cursor: not-allowed; }
 .coah-button--full { width: 100%; }
-.coah-button--accent { background: var(--color-accent); color: var(--l-accent-ink); box-shadow: 0 4px 20px rgba(250,204,21,0.30); }
+.coah-button--accent { background: var(--color-accent); color: var(--l-accent-ink); box-shadow: 0 4px 16px rgba(234,179,8,0.16); }
 .coah-button--dark { background: var(--color-coah); color: var(--color-primary); border: 1.5px solid var(--color-border); box-shadow: 0 4px 16px rgba(0,0,0,0.35); }
 .coah-button--dark:disabled { background: var(--color-bg); color: var(--color-faint); box-shadow: none; border: 1.5px solid var(--color-border); }
 .coah-button--outline { background: transparent; border: 2px solid var(--color-primary); color: var(--color-primary); box-shadow: none; }
@@ -136,10 +136,11 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
   font-size: 12.5px; color: var(--l-sub);
 }
 .shell-footer-inner {
-  display: flex; flex-direction: column; align-items: flex-start; gap: 10px;
+  display: flex; justify-content: space-between; align-items: flex-start;
+  gap: 20px; flex-wrap: wrap;
 }
 .shell-footer-brand {
-  margin: 0; font-family: var(--font-display); font-weight: 600;
+  margin: 0 0 6px; font-family: var(--font-display); font-weight: 600;
   font-size: 15px; color: var(--color-primary);
 }
 .shell-footer-blurb { margin: 0; max-width: 46ch; }
@@ -155,7 +156,7 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
 
 /* ── shared header (src/components/shared/ShellHeader.js) ──────────
    One header, not a shell-nav bar stacked on a per-page sub-nav bar.
-   The Nat wordmark and "which tool am I in" (the switcher) render once;
+   The ndtm wordmark and "which tool am I in" (the switcher) render once;
    a page's own context — back button, title, step, links — sits in the
    same row instead of a second one underneath. */
 .shell-header {

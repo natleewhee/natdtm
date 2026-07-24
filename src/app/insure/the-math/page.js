@@ -554,7 +554,7 @@ Band inputs → band midpoint used as proxy → score shown as "estimated"`}
   InsureCheck has no ads, no affiliate links, and no advisor referral fees.
   We don&apos;t earn anything when you use it. It&apos;s free because we believe
   Singaporeans deserve access to honest financial tools without a sales
-  agenda attached. This is what Nat Does The Math is built for.
+  agenda attached. This is what nat does the math is built for.
 </p>
         </div>
 

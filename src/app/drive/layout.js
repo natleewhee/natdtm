@@ -1,7 +1,7 @@
 import './legacy.css'
 
 export const metadata = {
-  title: { default: 'DriveReady', template: '%s · DriveReady · Nat Does The Math' },
+  title: { default: 'DriveReady', template: '%s · DriveReady · nat does the math' },
   description: 'Singapore car affordability calculator. Know your true monthly cost before you commit.',
   keywords: ['Singapore car loan', 'car affordability', 'COE calculator', 'car depreciation Singapore'],
   openGraph: {

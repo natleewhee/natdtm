@@ -13,7 +13,7 @@ import {
 } from '@/lib/etf/logic'
 import styles from './portfolio.module.css'
 
-const FUND_PALETTE = ['#facc15', '#ff5722', '#38bdf8', '#c4b5fd', '#ef4444', '#10b981', '#fdba74', '#94a3b8']
+const FUND_PALETTE = ['#eab308', '#ff5722', '#38bdf8', '#c4b5fd', '#ef4444', '#10b981', '#fdba74', '#94a3b8']
 
 const RISK_BADGE_COLORS = {
   Conservative: { bg: 'var(--color-blue-bg)', color: 'var(--color-blue-text)' },
@@ -396,7 +396,7 @@ function LookThroughCard({ allocations }) {
   const buckets = computeLookThrough(allocations)
   const max = Math.max(...buckets.map(b => b.percentage), 1)
   const palette = {
-    'United States': '#facc15', 'Other Developed': '#38bdf8', 'Japan': '#c4b5fd',
+    'United States': '#eab308', 'Other Developed': '#38bdf8', 'Japan': '#c4b5fd',
     'Emerging Markets': '#10b981', 'China / Hong Kong': '#ff5722', 'Global Bonds': '#94a3b8',
   }
   return (

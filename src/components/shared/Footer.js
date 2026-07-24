@@ -33,11 +33,13 @@ export default function Footer() {
   return (
     <footer className="shell-footer">
       <div className="shell-wrap shell-footer-inner">
-        <p className="shell-footer-brand">ndtm</p>
-        <p className="shell-footer-blurb">
-          Free calculators I built for the big Singapore financial decisions — insurance, cars, ETFs.
-          Every number is shown, not just the verdict.
-        </p>
+        <div>
+          <p className="shell-footer-brand">ndtm</p>
+          <p className="shell-footer-blurb">
+            Free calculators I built for the big Singapore financial decisions — insurance, cars, ETFs.
+            Every number is shown, not just the verdict.
+          </p>
+        </div>
         <div className="shell-footer-math">
           <span className="shell-footer-math-label">The math:</span>
           <div className="shell-footer-links">

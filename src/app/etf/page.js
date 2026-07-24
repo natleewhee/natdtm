@@ -9,14 +9,14 @@ import styles from './page.module.css'
 // A real, deterministic example — built from the same logic every generated
 // portfolio uses — so visitors see actual output before clicking through.
 const SAMPLE = generatePortfolio({ risk: 'Balanced', simplicity: '2-3 ETFs', tilts: ['United States'], monthlyInvestment: '' })
-const SAMPLE_COLORS = ['#facc15', '#ff5722', '#38bdf8']
+const SAMPLE_COLORS = ['#eab308', '#ff5722', '#38bdf8']
 
 export default function LandingPage() {
   return (
     <div className={styles.page}>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify({
         '@context':'https://schema.org','@type':'WebApplication',
-        name:'WhatETF — Nat Does The Math', url:'https://coah.vercel.app/etf',
+        name:'WhatETF — nat does the math', url:'https://coah.vercel.app/etf',
         description:'Illustrative ETF portfolio allocations for Singapore investors.',
         applicationCategory:'FinanceApplication', operatingSystem:'Web',
         offers:{'@type':'Offer', price:'0', priceCurrency:'SGD'},

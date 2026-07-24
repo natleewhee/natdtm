@@ -20,7 +20,7 @@ export default function LandingPage() {
           __html: JSON.stringify({
             "@context": "https://schema.org",
             "@type": "WebApplication",
-            "name": "InsureCheck — Nat Does The Math",
+            "name": "InsureCheck — nat does the math",
             "url": SITE_URL,
             "description": "Free insurance coverage checker for Singaporeans. Get your Insurance Score in 3 minutes.",
             "applicationCategory": "FinanceApplication",
@@ -61,7 +61,7 @@ export default function LandingPage() {
           whiteSpace: 'nowrap',
           borderWidth: 0,
         }}>
-          Free Insurance Coverage Checker Singapore — InsureCheck — Nat Does The Math
+          Free Insurance Coverage Checker Singapore — InsureCheck — nat does the math
         </h1>
 
         <h2 style={{

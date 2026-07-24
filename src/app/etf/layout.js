@@ -2,7 +2,7 @@ import './legacy.css'
 import SWRegister from '@/components/etf/SWRegister'
 
 export const metadata = {
-  title: { default: 'WhatETF', template: '%s · WhatETF · Nat Does The Math' },
+  title: { default: 'WhatETF', template: '%s · WhatETF · nat does the math' },
   description: 'Build your ETF portfolio with confidence. Illustrative allocations for Singapore-based investors. UCITS, tax-efficient, DCA-ready.',
   keywords: ['ETF Singapore', 'UCITS ETF', 'VWRA', 'DCA Singapore', 'portfolio allocation'],
   openGraph: {

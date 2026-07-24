@@ -5,7 +5,7 @@
 export async function GET() {
   return Response.json(
     {
-      name: 'WhatETF — Nat Does The Math',
+      name: 'WhatETF — nat does the math',
       short_name: 'WhatETF',
       description: 'Illustrative ETF portfolio allocations for Singapore investors. Runs entirely in your browser.',
       start_url: '/etf',

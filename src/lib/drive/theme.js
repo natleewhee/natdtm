@@ -18,7 +18,7 @@
 // good news."
 export const C = {
   coah: '#05070c', coahMid: '#05070c', coahLight: '#141b2e',
-  primary: '#f8fafc', accent: '#facc15', accentBg: '#332b0e', accentText: '#fde68a', accentInk: '#1b1400',
+  primary: '#f8fafc', accent: '#eab308', accentBg: '#332b0e', accentText: '#fde68a', accentInk: '#1b1400',
   green: '#10b981', greenBg: '#0f2e23', greenText: '#6ee7b7',
   bg: '#0b1120', surface: '#1e293b', border: '#334155',
   text: '#f8fafc', muted: '#94a3b8', faint: '#64748b',
