@@ -19,6 +19,12 @@ const TOOLS = [
     title: 'WhatETF',
     desc: 'Build an illustrative ETF portfolio for Singapore investors. UCITS-aware, tax-efficient, DCA-ready — runs entirely in your browser.',
   },
+  {
+    href: '/house',
+    eyebrow: 'House',
+    title: 'HouseMuch',
+    desc: 'What did your house really make you? True profit/loss after CPF refund, mortgage interest, and stamp duties — not just sale minus purchase.',
+  },
 ]
 
 export default function HomePage() {
@@ -30,7 +36,7 @@ export default function HomePage() {
         fontFamily: 'var(--l-font-mono)', fontSize: 12, letterSpacing: '.12em',
         textTransform: 'uppercase', color: 'var(--l-sub)', margin: '0 0 14px',
       }}>
-        Three calculators, one household
+        Four calculators, one household
       </p>
       <h1 style={{
         fontFamily: 'var(--l-font-display)', fontWeight: 600, fontSize: 'clamp(28px,4vw,42px)',

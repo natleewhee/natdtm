@@ -16,6 +16,8 @@ const ROUTES = [
   { path: '/etf/rebalance', priority: 0.6 },
   { path: '/etf/learn', priority: 0.7 },
   { path: '/etf/the-math', priority: 0.8 },
+  { path: '/house', priority: 0.9 },
+  { path: '/house/the-math', priority: 0.8 },
 ]
 
 export default function sitemap() {
