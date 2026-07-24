@@ -34,7 +34,7 @@ export default function NotFound() {
         color: 'var(--color-primary)',
         margin: 0,
       }}>
-        That page doesn't add up.
+        That page doesn&apos;t add up.
       </h1>
       <p style={{
         fontSize: '15px',
@@ -43,7 +43,7 @@ export default function NotFound() {
         margin: '0 0 8px',
         lineHeight: 1.6,
       }}>
-        Whatever you were looking for isn't here — the link might be old, or the page moved.
+        Whatever you were looking for isn&apos;t here — the link might be old, or the page moved.
       </p>
       <Button href="/">Back to ndtm</Button>
       <div style={{ display: 'flex', gap: '16px', marginTop: '8px', fontSize: '13px' }}>

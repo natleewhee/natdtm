@@ -31,7 +31,7 @@ export default function LandingPage() {
             Your ETF portfolio,<br/>worked out for you.
           </h1>
           <p className={styles.heroBody}>
-            Answer three questions about risk and simplicity — I'll hand you a real fund allocation with the math shown, right there. Runs entirely in your browser.
+            Answer three questions about risk and simplicity — I&apos;ll hand you a real fund allocation with the math shown, right there. Runs entirely in your browser.
           </p>
           <Button href="/etf/preferences">
             Check my portfolio — it&apos;s free

@@ -31,7 +31,7 @@ export default function Error({ reset }) {
         color: 'var(--color-primary)',
         margin: 0,
       }}>
-        The math didn't work out.
+        The math didn&apos;t work out.
       </h1>
       <p style={{
         fontSize: '15px',
@@ -40,7 +40,7 @@ export default function Error({ reset }) {
         margin: '0 0 8px',
         lineHeight: 1.6,
       }}>
-        Something went wrong loading this page. Your inputs weren't sent anywhere — try again, or head back home.
+        Something went wrong loading this page. Your inputs weren&apos;t sent anywhere — try again, or head back home.
       </p>
       <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap', justifyContent: 'center' }}>
         <Button variant="dark" onClick={() => reset()}>Try again</Button>

@@ -71,7 +71,7 @@ export default function LandingPage() {
           lineHeight: 1.2,
           margin: '0 0 16px',
         }}>
-          You've probably got insurance. But do you know what it actually covers?
+          You&apos;ve probably got insurance. But do you know what it actually covers?
         </h2>
 
         <p style={{
@@ -80,7 +80,7 @@ export default function LandingPage() {
           lineHeight: 1.7,
           margin: '0 0 32px',
         }}>
-          I'll score your coverage in 3 minutes flat — free, neutral, no agent calling you after.
+          I&apos;ll score your coverage in 3 minutes flat — free, neutral, no agent calling you after.
         </p>
 
         <Button href="/insure/check">
