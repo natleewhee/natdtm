@@ -92,6 +92,11 @@ export default function HouseTheMathPage() {
           <P>This is the property&apos;s own economic return — deliberately independent of how you financed it:</P>
           <Formula>{`True profit/loss = (Sale price − selling costs) − (Purchase price + purchase fees + sunk costs + total mortgage interest paid)`}</Formula>
           <P>Notice CPF principal doesn&apos;t appear anywhere in that formula. It isn&apos;t a cost — it comes back to you, just into CPF instead of cash. Whether you paid cash, CPF, or a bank loan doesn&apos;t change whether the <em>property</em> made or lost money; it only changes how much of that gain is spendable today versus locked back in CPF. That&apos;s why the results page always shows both true profit/loss <em>and</em> cash proceeds side by side, never collapsed into one number.</P>
+          <P>The results page also shows two ROI figures on top of the dollar amount — the same profit, divided two different ways:</P>
+          <Formula>{`ROI on purchase price = True profit/loss ÷ Purchase price
+
+ROI on cash + CPF put in = True profit/loss ÷ (Cash outlay + CPF used)`}</Formula>
+          <P>The second is usually the bigger number. If you took a loan, your own money (cash + CPF) was smaller than the full purchase price — the same dollar profit spread over that smaller base is a leveraging effect, not a calculation error. Neither figure accounts for the time value of money (a 20% return over 2 years isn&apos;t the same as 20% over 10) — see <em>Limitations</em> below.</P>
         </Section>
 
         <Section title="Buyer's Stamp Duty (BSD)">
@@ -140,7 +145,7 @@ Gap ≤ 0  → surplus (money left over)`}</Formula>
         </Section>
 
         <Section title="Limitations">
-          <P>This calculator doesn&apos;t account for: resale levies (if applicable to your HDB situation), rental income if the property was ever tenanted, changes in property tax during your holding period, or agent commission on the purchase side if you used one to buy. The mortgage-rate assumption is a single constant rate for the whole holding period — refinancing isn&apos;t modelled, which is exactly what the outstanding-balance override field on the results page is for.</P>
+          <P>This calculator doesn&apos;t account for: resale levies (if applicable to your HDB situation), rental income if the property was ever tenanted, changes in property tax during your holding period, or agent commission on the purchase side if you used one to buy. The mortgage-rate assumption is a single constant rate for the whole holding period — refinancing isn&apos;t modelled, which is exactly what the outstanding-balance override field on the results page is for. Both ROI figures are simple total returns, not annualized — they don&apos;t account for how long you held the property, so a 20% return over 2 years and a 20% return over 10 years show identically even though the first is a much better outcome per year.</P>
         </Section>
 
         <div style={{ marginTop: 40, padding: 20, background: C.surface, borderRadius: C.rL, border: `1px solid ${C.border}`, fontSize: C.xs, color: C.faint, lineHeight: 1.7 }}>

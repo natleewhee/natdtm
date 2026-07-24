@@ -30,7 +30,7 @@ export default function SaleResults({
     cpfPrincipalTotal, cpfAccruedInterest, cpfAccruedInterestComputed, totalCPFRefund,
     ssd, ssdComputed, sellingCosts, cashProceeds,
     trueCostBasis, netSale, trueProfitLoss, isProfit,
-    cashOnCashReturn,
+    cashOnCashReturn, totalOutlay, roiOnPrice, roiOnOutlay,
   } = result
 
   return (
@@ -65,6 +65,32 @@ export default function SaleResults({
           <InsightPill label="Return on your cash" value={`${cashOnCashReturn >= 0 ? '+' : ''}${(cashOnCashReturn * 100).toFixed(0)}%`} tone={cashOnCashReturn >= 0 ? 'accent' : 'red'} />
         )}
       </div>
+
+      {(roiOnPrice != null || roiOnOutlay != null) && (
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, margin: '16px 0' }}>
+          {roiOnPrice != null && (
+            <div style={{ background: C.surface, border: `1px solid ${C.border}`, borderRadius: C.rL, padding: '14px 16px', textAlign: 'center' }}>
+              <div style={{ fontSize: C.xs, fontWeight: 700, color: C.muted, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 6 }}>ROI on purchase price</div>
+              <div style={{ fontFamily: C.fontMono, fontSize: 22, fontWeight: 600, color: roiOnPrice >= 0 ? C.greenText : C.redText }}>
+                {roiOnPrice >= 0 ? '+' : ''}{(roiOnPrice * 100).toFixed(1)}%
+              </div>
+            </div>
+          )}
+          {roiOnOutlay != null && (
+            <div style={{ background: C.surface, border: `1px solid ${C.border}`, borderRadius: C.rL, padding: '14px 16px', textAlign: 'center' }}>
+              <div style={{ fontSize: C.xs, fontWeight: 700, color: C.muted, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 6 }}>ROI on cash + CPF put in</div>
+              <div style={{ fontFamily: C.fontMono, fontSize: 22, fontWeight: 600, color: roiOnOutlay >= 0 ? C.greenText : C.redText }}>
+                {roiOnOutlay >= 0 ? '+' : ''}{(roiOnOutlay * 100).toFixed(1)}%
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+      {roiOnOutlay != null && roiOnPrice != null && (
+        <p style={{ fontSize: C.xs, color: C.faint, lineHeight: 1.6, textAlign: 'center', margin: '0 0 8px' }}>
+          The second number is usually bigger — your loan meant the profit above was earned on a smaller amount of your own money ({SGD(totalOutlay)}), not the full purchase price.
+        </p>
+      )}
 
       <div style={{ background: C.blueBg, border: `1px solid ${C.blue}44`, borderRadius: C.rL, padding: '16px 18px', margin: '20px 0' }}>
         <div style={{ fontSize: C.sm, fontWeight: 700, color: C.blueText, marginBottom: 4 }}>

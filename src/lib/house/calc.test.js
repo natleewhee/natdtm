@@ -75,6 +75,33 @@ assert('Clean sale: SSD is 0 after 3+ years held', cleanSale.ssd === 0)
 assert('Clean sale: true profit ≈ S$157,000', approx(cleanSale.trueProfitLoss, 157_000, 500))
 assert('Clean sale: flagged as a profit', cleanSale.isProfit === true)
 assert('Clean sale: CPF refund ≥ CPF principal (accrued interest added)', cleanSale.totalCPFRefund > cleanSale.cpfPrincipalTotal)
+// No loan here, so cash+CPF outlay equals the full purchase price — both
+// ROI lenses land on the same figure.
+assert('Clean sale (no loan): ROI on price ≈ ROI on outlay', approx(cleanSale.roiOnPrice, cleanSale.roiOnOutlay, 0.001))
+assert('Clean sale: ROI on price ≈ 19.6%', approx(cleanSale.roiOnPrice * 100, 19.6, 0.5))
+
+// ─── ROI with leverage ───────────────────────────────────────────────────
+// Same purchase/sale prices as the clean sale, but now only $200k of the
+// $800k purchase was the buyer's own cash+CPF (the rest was a loan) — the
+// same dollar profit should show a much bigger ROI on outlay than on price.
+const leveragedSale = calcSale({
+  propertyType: 'private',
+  purchasePrice: 800_000, purchaseDate: '2019-01-01', purchaseFees: 20_000,
+  cashOutlay: 100_000, cpfOutlay: 100_000,
+  loanTaken: 600_000, mortgageRate: 0, loanTenure: 25,
+  salePrice: 1_000_000, saleDate: '2024-01-01',
+  agentCommission: 20_000, legalFeesAtSale: 3_000,
+})
+assert('Leveraged sale: ROI on outlay is bigger than ROI on price', leveragedSale.roiOnOutlay > leveragedSale.roiOnPrice)
+assert('Leveraged sale: ROI on outlay ≈ 4x ROI on price (200k outlay vs 800k price)', approx(leveragedSale.roiOnOutlay / leveragedSale.roiOnPrice, 4, 0.1))
+
+// Edge cases: no purchase price / no outlay should not throw or divide by zero into Infinity
+const noOutlaySale = calcSale({
+  propertyType: 'private', purchasePrice: 800_000, purchaseDate: '2019-01-01',
+  salePrice: 1_000_000, saleDate: '2024-01-01',
+})
+assert('No cash/CPF outlay: ROI on outlay is null, not Infinity/NaN', noOutlaySale.roiOnOutlay === null)
+assert('Purchase price present: ROI on price is still a number', typeof noOutlaySale.roiOnPrice === 'number')
 
 // A loss scenario: bought high, sold low, with real mortgage interest cost
 const lossSale = calcSale({

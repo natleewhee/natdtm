@@ -108,6 +108,16 @@ export function calcSale(inputs) {
   const cashInvested = (Number(cashOutlay) || 0) + (Number(sunkCost) || 0)
   const cashOnCashReturn = cashInvested > 0 ? (cashProceeds - cashInvested) / cashInvested : null
 
+  // Two different ROI lenses on the same true profit/loss figure:
+  // - against the purchase price, the classic "how much did the property
+  //   itself appreciate" number
+  // - against what you actually put in (cash + CPF), which is usually a
+  //   much bigger % because the loan portion means your own capital was
+  //   leveraged — the same profit spread over a smaller base
+  const totalOutlay = (Number(cashOutlay) || 0) + (Number(cpfOutlay) || 0)
+  const roiOnPrice = purchasePrice > 0 ? trueProfitLoss / purchasePrice : null
+  const roiOnOutlay = totalOutlay > 0 ? trueProfitLoss / totalOutlay : null
+
   const mopOk = propertyType !== 'hdb' || yearsHeld >= HDB_MOP_YEARS
 
   return {
@@ -120,6 +130,7 @@ export function calcSale(inputs) {
     cashProceeds,
     trueCostBasis, netSale, trueProfitLoss, isProfit: trueProfitLoss >= 0,
     cashInvested, cashOnCashReturn,
+    totalOutlay, roiOnPrice, roiOnOutlay,
     mopOk,
   }
 }
