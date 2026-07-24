@@ -20,7 +20,7 @@ export default function LandingPage() {
           __html: JSON.stringify({
             "@context": "https://schema.org",
             "@type": "WebApplication",
-            "name": "InsureCheck by Coah",
+            "name": "InsureCheck — Nat Does The Math",
             "url": SITE_URL,
             "description": "Free insurance coverage checker for Singaporeans. Get your Insurance Score in 3 minutes.",
             "applicationCategory": "FinanceApplication",
@@ -61,7 +61,7 @@ export default function LandingPage() {
           whiteSpace: 'nowrap',
           borderWidth: 0,
         }}>
-          Free Insurance Coverage Checker Singapore — InsureCheck by Coah
+          Free Insurance Coverage Checker Singapore — InsureCheck — Nat Does The Math
         </h1>
 
         <h2 style={{
@@ -181,7 +181,7 @@ export default function LandingPage() {
       {/* Closing line — the brand signature + privacy claims live once in the
           shell Footer; the home page doesn't repeat the Coah card or a second
           CTA (the hero CTA + sticky header already carry the action). */}
-      <section style={{ padding: '48px 24px 56px', textAlign: 'center', maxWidth: '520px', margin: '0 auto' }}>
+      <section style={{ padding: '40px 24px 8px', textAlign: 'center', maxWidth: '520px', margin: '0 auto' }}>
         <p style={{
           fontFamily: 'var(--font-display)',
           fontSize: '22px',

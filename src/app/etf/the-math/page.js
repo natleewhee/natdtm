@@ -39,7 +39,7 @@ export default function TheMathPage() {
           <Section noBorder>
             <div className={styles.hero}>
               <div className={styles.heroHeader}>
-                <span className={styles.heroLabel}>COAH</span>
+                <span className={styles.heroLabel}>NAT</span>
                 <span className={styles.heroSub}>Built for Singapore</span>
               </div>
               <h1 className={styles.heroTitle}>How we generate your allocations</h1>

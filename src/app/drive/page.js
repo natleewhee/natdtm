@@ -264,7 +264,7 @@ export default function DriveReadyPage() {
       {/* ── STRUCTURED DATA ─── */}
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify({
         '@context':'https://schema.org','@type':'WebApplication',
-        name:'DriveReady by Coah',url:'https://coah.vercel.app/drive',
+        name:'DriveReady — Nat Does The Math',url:'https://coah.vercel.app/drive',
         description:'Singapore car affordability calculator. Know your true monthly cost before you commit.',
         applicationCategory:'FinanceApplication',operatingSystem:'Web',
         offers:{'@type':'Offer',price:'0',priceCurrency:'SGD'},

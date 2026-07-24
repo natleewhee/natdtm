@@ -64,7 +64,7 @@ export default function COEExplainerPage() {
       <div style={{ maxWidth: 720, margin: '0 auto', padding: '48px 24px 80px' }}>
 
         <div style={{ marginBottom: 40 }}>
-          <div style={{ fontFamily: C.fontCoah, fontSize: 10, fontWeight: 600, color: C.accent, letterSpacing: '0.18em', textTransform: 'uppercase', marginBottom: 10 }}>Coah Explainer</div>
+          <div style={{ fontFamily: C.fontCoah, fontSize: 10, fontWeight: 600, color: C.accent, letterSpacing: '0.18em', textTransform: 'uppercase', marginBottom: 10 }}>Nat Explains</div>
           <h1 style={{ fontFamily: C.fontDisplay, fontSize: 'clamp(28px,5vw,44px)', color: C.primary, margin: '0 0 16px', lineHeight: 1.2 }}>COE, PARF, and ARF — demystified</h1>
           <p style={{ fontSize: C.lg, color: C.muted, margin: 0, lineHeight: 1.7 }}>You know what a COE is. But do you know what PARF means, why the COE rebate exists, and how it all affects what you actually pay and recover over 10 years?</p>
         </div>

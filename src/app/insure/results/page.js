@@ -755,7 +755,7 @@ export default function ResultsPage() {
                   letterSpacing: '0.1em',
                   opacity: 0.6,
                 }}>
-                  COAH
+                  NAT
                 </span>
                 <span style={{
                   fontFamily: 'var(--font-display)',
@@ -793,7 +793,7 @@ export default function ResultsPage() {
 
             <button
               onClick={() => {
-                const text = `My Insurance Score: ${result.finalScore}/100 — ${result.band.label}. How covered are you? Check yours free at InsureCheck — a Coah project. ${SITE_URL}`
+                const text = `My Insurance Score: ${result.finalScore}/100 — ${result.band.label}. How covered are you? Check yours free at InsureCheck — a Nat Does The Math project. ${SITE_URL}`
                 if (navigator.share) navigator.share({ text })
                 else navigator.clipboard.writeText(text)
                 setShareModal(false)

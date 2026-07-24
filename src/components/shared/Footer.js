@@ -33,15 +33,11 @@ export default function Footer() {
   return (
     <footer className="shell-footer">
       <div className="shell-wrap shell-footer-inner">
-        <div>
-          <p style={{ margin: '0 0 6px', fontFamily: 'var(--l-font-body)', fontWeight: 600, color: 'var(--l-ink)' }}>
-            coah
-          </p>
-          <p style={{ margin: 0, maxWidth: '46ch' }}>
-            Free calculators for the big Singapore financial decisions — insurance, cars, ETFs.
-            Every number is shown, not just the verdict.
-          </p>
-        </div>
+        <p className="shell-footer-brand">Nat</p>
+        <p className="shell-footer-blurb">
+          Free calculators for the big Singapore financial decisions — insurance, cars, ETFs.
+          Every number is shown, not just the verdict.
+        </p>
         <div className="shell-footer-math">
           <span className="shell-footer-math-label">The math:</span>
           <div className="shell-footer-links">
@@ -52,7 +48,7 @@ export default function Footer() {
         </div>
       </div>
       {disclaimer && (
-        <div className="shell-wrap" style={{ marginTop: 20, paddingTop: 20, borderTop: '1px solid var(--l-line)' }}>
+        <div className="shell-wrap" style={{ marginTop: 16, paddingTop: 16, borderTop: '1px solid var(--l-line)' }}>
           <p style={{ fontSize: 12, lineHeight: 1.6, color: 'var(--l-sub)', maxWidth: '80ch', margin: 0 }}>
             {disclaimer}
           </p>

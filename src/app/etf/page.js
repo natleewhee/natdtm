@@ -16,7 +16,7 @@ export default function LandingPage() {
     <div className={styles.page}>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify({
         '@context':'https://schema.org','@type':'WebApplication',
-        name:'WhatETF by Coah', url:'https://coah.vercel.app/etf',
+        name:'WhatETF — Nat Does The Math', url:'https://coah.vercel.app/etf',
         description:'Illustrative ETF portfolio allocations for Singapore investors.',
         applicationCategory:'FinanceApplication', operatingSystem:'Web',
         offers:{'@type':'Offer', price:'0', priceCurrency:'SGD'},

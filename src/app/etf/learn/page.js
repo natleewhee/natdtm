@@ -34,7 +34,7 @@ export default function LearnPage() {
           <Section noBorder>
             <div className={styles.hero}>
               <div className={styles.heroHeader}>
-                <span className={styles.heroLabel}>COAH</span>
+                <span className={styles.heroLabel}>NAT</span>
                 <span className={styles.heroSub}>Learn</span>
               </div>
               <h1 className={styles.heroTitle}>Investing basics for Singapore</h1>

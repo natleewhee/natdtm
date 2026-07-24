@@ -125,26 +125,30 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
 
 .shell-footer {
   border-top: 1px solid var(--l-line);
-  margin-top: 64px; padding: 28px 0 36px;
+  margin-top: 40px; padding: 28px 0 32px;
   font-size: 12.5px; color: var(--l-sub);
 }
 .shell-footer-inner {
-  display: flex; justify-content: space-between; align-items: flex-start;
-  gap: 20px; flex-wrap: wrap;
+  display: flex; flex-direction: column; align-items: flex-start; gap: 10px;
 }
+.shell-footer-brand {
+  margin: 0; font-family: var(--font-display); font-weight: 600;
+  font-size: 15px; color: var(--color-primary);
+}
+.shell-footer-blurb { margin: 0; max-width: 46ch; }
 .shell-footer-math { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; }
 .shell-footer-math-label { color: var(--l-sub); }
 .shell-footer-links { display: flex; gap: 14px; flex-wrap: wrap; }
 .shell-footer-links a { text-decoration: none; color: var(--l-sub); }
 .shell-footer-links a:hover { color: var(--l-accent); }
-.shell-footer-version { font-family: var(--l-font-mono); font-size: 11.5px; margin-top: 10px; }
+.shell-footer-version { font-family: var(--l-font-mono); font-size: 11px; margin-top: 14px; opacity: 0.6; }
 
 /* ── vertical wrapper hooks ──────────────────────────────────────── */
 .v-insure, .v-drive, .v-etf { min-height: 60vh; }
 
 /* ── shared header (src/components/shared/ShellHeader.js) ──────────
    One header, not a shell-nav bar stacked on a per-page sub-nav bar.
-   The coah wordmark and "which tool am I in" (the switcher) render once;
+   The Nat wordmark and "which tool am I in" (the switcher) render once;
    a page's own context — back button, title, step, links — sits in the
    same row instead of a second one underneath. */
 .shell-header {

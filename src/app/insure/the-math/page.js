@@ -237,7 +237,7 @@ export default function HowItWorksPage() {
                 color: 'var(--color-primary)',
                 letterSpacing: '0.08em',
               }}>
-                COAH
+                NAT
               </span>
               <span style={{
                 fontSize: '12px',
@@ -532,7 +532,7 @@ Band inputs → band midpoint used as proxy → score shown as "estimated"`}
               color: '#fff',
               letterSpacing: '0.08em',
             }}>
-              COAH
+              NAT
             </span>
             <span style={{
   fontSize: '11px',
@@ -554,7 +554,7 @@ Band inputs → band midpoint used as proxy → score shown as "estimated"`}
   InsureCheck has no ads, no affiliate links, and no advisor referral fees.
   We don&apos;t earn anything when you use it. It&apos;s free because we believe
   Singaporeans deserve access to honest financial tools without a sales
-  agenda attached. This is what Coah is built for.
+  agenda attached. This is what Nat Does The Math is built for.
 </p>
         </div>
 
@@ -896,7 +896,7 @@ This score is never included in finalScore.`}
                 color: 'var(--color-primary)',
                 letterSpacing: '0.08em',
               }}>
-                COAH
+                NAT
               </span>
               <span style={{
                 fontSize: '11px',

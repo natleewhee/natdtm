@@ -1105,7 +1105,7 @@ export default function CheckPage() {
       fontWeight: '600',
       letterSpacing: '0.06em',
     }}>
-      COAH
+      NAT
     </span>
     {' '}· Built for Singapore
   </p>

@@ -3,10 +3,10 @@ import Footer from '@/components/shared/Footer'
 
 export const metadata = {
   metadataBase: new URL('https://coah.vercel.app'),
-  title: { default: 'coah — Singapore financial decision calculators', template: '%s · coah' },
+  title: { default: 'Nat Does The Math — Singapore financial decision calculators', template: '%s · Nat Does The Math' },
   description: 'Free calculators for the big Singapore financial decisions — insurance adequacy, car affordability, ETF investing. Every number is shown, not just the verdict.',
   openGraph: {
-    siteName: 'coah',
+    siteName: 'Nat Does The Math',
     locale: 'en_SG',
     type: 'website',
   },

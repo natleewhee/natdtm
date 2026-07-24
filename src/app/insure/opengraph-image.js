@@ -27,7 +27,7 @@ export default async function Image() {
           textTransform: 'uppercase',
           marginBottom: 16,
         }}>
-          Coah
+          Nat Does The Math
         </div>
         <div style={{ display: 'flex', fontSize: 104, fontWeight: 700 }}>
           InsureCheck

@@ -10,7 +10,7 @@ const TOOLS = [
   { key: 'etf', href: '/etf', label: 'Invest' },
 ]
 
-// One header, not two stacked bars. The coah wordmark and "which tool am I
+// One header, not two stacked bars. The Nat wordmark and "which tool am I
 // in" are said exactly once — the tool switcher — so a page's own context
 // (back button, page title, step count, links) never has to repeat the
 // tool's name back to itself. Pages pass only the context that's actually
@@ -45,7 +45,7 @@ export default function ShellHeader({
     <div className="shell-header">
       <div className="shell-header-row">
         <div className="shell-header-left">
-          <Link href="/" className="shell-header-brand">coah</Link>
+          <Link href="/" className="shell-header-brand">Nat</Link>
           {active && (
             <div className="shell-switcher" ref={menuRef}>
               <button
