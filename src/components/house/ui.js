@@ -131,13 +131,70 @@ export function Segmented({ options, value, onChange }) {
   )
 }
 
+// A fee field that can be entered as a flat dollar amount or a percentage
+// of some base (purchase price, sale price) — agent commissions are
+// commonly quoted as a %, but the calculator needs a dollar figure, so
+// this resolves it and shows the $ equivalent as you type in percent mode.
+export function FeeInput({ id, label, hint, base, mode, onModeChange, value, onChange }) {
+  const [focused, setFocused] = useState(false)
+  const num = parseFloat(String(value ?? '').replace(/,/g, ''))
+  const resolved = Number.isFinite(num) ? num : 0
+  const preview = mode === 'percent' && base > 0 && value
+    ? `≈ S$${Math.round(base * resolved / 100).toLocaleString('en-SG')}`
+    : null
+
+  return (
+    <div>
+      <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', marginBottom: 7 }}>
+        <label htmlFor={id} style={{ fontSize: C.sm, fontWeight: 600, color: C.primary }}>{label}</label>
+        <div style={{ display: 'inline-flex', background: C.bg, border: `1px solid ${C.border}`, borderRadius: 100, padding: 2, gap: 1 }}>
+          {[{ v: 'amount', l: 'S$' }, { v: 'percent', l: '%' }].map(opt => (
+            <button
+              key={opt.v} type="button" onClick={() => onModeChange(opt.v)} aria-pressed={mode === opt.v}
+              style={{
+                padding: '3px 9px', fontSize: 10, fontWeight: 700, borderRadius: 100, border: 'none',
+                fontFamily: C.fontMono, cursor: 'pointer', transition: 'all 0.15s',
+                background: mode === opt.v ? C.accent : 'transparent',
+                color: mode === opt.v ? C.accentInk : C.faint,
+              }}
+            >
+              {opt.l}
+            </button>
+          ))}
+        </div>
+      </div>
+      <div style={{ position: 'relative' }}>
+        <span aria-hidden="true" style={{ position: 'absolute', left: 13, top: '50%', transform: 'translateY(-50%)', fontSize: C.sm, fontWeight: 600, color: focused || value ? C.accent : C.faint, pointerEvents: 'none', transition: 'color 0.2s' }}>
+          {mode === 'percent' ? '' : 'S$'}
+        </span>
+        <input
+          id={id} type="text" inputMode="decimal" value={value ?? ''} onChange={onChange}
+          placeholder={mode === 'percent' ? '0.00' : '0'}
+          onFocus={() => setFocused(true)} onBlur={() => setFocused(false)}
+          style={{
+            width: '100%', boxSizing: 'border-box', background: C.surface,
+            border: `1.5px solid ${focused ? C.accent : C.border}`, borderRadius: C.r,
+            padding: mode === 'percent' ? '11px 32px 11px 12px' : '11px 12px 11px 36px',
+            color: C.primary, fontSize: C.lg, fontFamily: C.fontMono, fontWeight: 500, outline: 'none',
+            boxShadow: focused ? `0 0 0 3px ${C.accentBg}` : 'none',
+            transition: 'border-color 0.2s, box-shadow 0.2s',
+          }}
+        />
+        {mode === 'percent' && <span aria-hidden="true" style={{ position: 'absolute', right: 13, top: '50%', transform: 'translateY(-50%)', fontSize: C.sm, fontWeight: 600, color: C.faint, pointerEvents: 'none' }}>%</span>}
+      </div>
+      {preview && <p style={{ marginTop: 5, fontSize: C.xs, color: C.accent, fontWeight: 600 }}>{preview}</p>}
+      {hint && <p style={{ marginTop: 5, fontSize: C.xs, color: C.muted, lineHeight: 1.5 }}>{hint}</p>}
+    </div>
+  )
+}
+
 // A field that shows a computed value by default, with a small "override"
 // link that swaps it for an editable input — used for outstanding loan
 // balance, CPF accrued interest, and SSD, all of which have a computed
 // default the calculator can produce but a real number you may already
 // know is always better.
 export function OverrideField({ id, label, computedValue, computedHint, overrideValue, onOverrideChange, formatValue }) {
-  const [editing, setEditing] = useState(overrideValue != null)
+  const [editing, setEditing] = useState(overrideValue != null && overrideValue !== '')
   const display = formatValue ? formatValue(computedValue) : computedValue
 
   if (!editing) {

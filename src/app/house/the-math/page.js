@@ -50,6 +50,7 @@ export default function HouseTheMathPage() {
 
         <MathTOC items={[
           { id: 'why-not-just-sale-minus-purchase', label: 'Why not just sale − purchase' },
+          { id: 'cash-outlay-derived-not-asked-for', label: 'Cash outlay' },
           { id: 'mortgage-amortization', label: 'Mortgage amortization' },
           { id: 'cpf-accrued-interest', label: 'CPF accrued interest' },
           { id: 'true-profitloss', label: 'True profit/loss' },
@@ -66,6 +67,15 @@ export default function HouseTheMathPage() {
           <P>Most people compute their house &quot;profit&quot; as sale price minus purchase price and stop there. Two things that math misses, both of which change the real number a lot:</P>
           <P><strong>Money you paid along the way that never comes back</strong> — mortgage interest, stamp duties, renovation, selling costs. These are real cash out the door that a naive sale-minus-purchase number ignores entirely.</P>
           <P><strong>CPF isn&apos;t cash.</strong> Any CPF used on the property — for the downpayment or the monthly instalments — has to be refunded to your CPF account when you sell, plus the interest it would have earned had it stayed there. That refund is still your money, but it lands back in CPF, not your bank account. A lot of people mentally count it as spendable profit and are surprised when it isn&apos;t.</P>
+        </Section>
+
+        <Section title="Cash outlay (derived, not asked for)">
+          <P>Cash outlay at purchase isn&apos;t a field you fill in — it&apos;s worked out from numbers you can look up exactly: your purchase price, your loan amount, and your CPF principal used (from your CPF statement). Whatever wasn&apos;t covered by the loan or CPF must have been cash:</P>
+          <Formula>{`Cash outlay = (Purchase price + Purchase fees) − Loan taken − CPF used
+
+Purchase fees = BSD (auto-computed) + Legal fees + Agent fees`}</Formula>
+          <P>BSD at purchase is computed the same way as BSD on a new purchase in the &quot;buying next&quot; section below — see the BSD formula further down this page. Legal and agent fees are self-reported since they aren&apos;t government-set.</P>
+          <Caveat>If your loan + CPF add up to more than the price + fees, cash outlay comes out negative — that&apos;s not a valid real-world result, it&apos;s a signal one of those figures was mistyped. The results page flags this rather than silently showing a wrong number.</Caveat>
         </Section>
 
         <Section title="Mortgage amortization">
@@ -100,7 +110,7 @@ ROI on cash + CPF put in = True profit/loss ÷ (Cash outlay + CPF used)`}</Formu
         </Section>
 
         <Section title="Buyer's Stamp Duty (BSD)">
-          <P>Tiered on purchase price or market value, whichever is higher — same schedule for HDB and private property:</P>
+          <P>Tiered on purchase price or market value, whichever is higher — same schedule for HDB and private property. Used twice on this page: auto-computed into your original purchase fees above, and auto-computed again on the new price if you use the &quot;buying next&quot; section:</P>
           <Formula>{`First S$180,000    → 1%
 Next S$180,000     → 2%
 Next S$640,000     → 3%

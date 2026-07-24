@@ -59,11 +59,14 @@ assert('SSD is 0% for private held over 3 years', calcSSD(1_000_000, 3.5, 'priva
 // ─── Full sale waterfall ─────────────────────────────────────────────────
 // A private property bought for $800k, sold for $1,000k five years later,
 // no loan (paid in full cash+CPF) — should show a clean profit with no
-// mortgage-interest cost dragging it down.
+// mortgage-interest cost dragging it down. Purchase fees are now BSD
+// (auto-computed) + legal + agent, not a self-reported lump sum, and cash
+// outlay is derived rather than given directly.
 const cleanSale = calcSale({
   propertyType: 'private',
-  purchasePrice: 800_000, purchaseDate: '2019-01-01', purchaseFees: 20_000,
-  cashOutlay: 400_000, cpfOutlay: 400_000,
+  purchasePrice: 800_000, purchaseDate: '2019-01-01',
+  legalFeesAtPurchase: 1_000, agentFeesAtPurchase: 400, // + auto BSD(800k)=18,600 → 20,000 total, same as the old flat fixture
+  cpfOutlay: 400_000,
   loanTaken: 0, mortgageRate: 0, loanTenure: 0,
   sunkCost: 0,
   salePrice: 1_000_000, saleDate: '2024-01-01',
@@ -72,42 +75,73 @@ const cleanSale = calcSale({
 // trueProfitLoss = (1,000,000 - 20,000 - 3,000 - ssd) - (800,000 + 20,000)
 // yearsHeld = 5 exactly -> SSD tier is >3yr -> 0
 assert('Clean sale: SSD is 0 after 3+ years held', cleanSale.ssd === 0)
+assert('Clean sale: BSD auto-computed on $800k ≈ S$18,600', approx(cleanSale.bsdAtPurchase, 18_600, 1))
+assert('Clean sale: purchase fees = BSD + legal + agent ≈ S$20,000', approx(cleanSale.purchaseFees, 20_000, 1))
 assert('Clean sale: true profit ≈ S$157,000', approx(cleanSale.trueProfitLoss, 157_000, 500))
 assert('Clean sale: flagged as a profit', cleanSale.isProfit === true)
 assert('Clean sale: CPF refund ≥ CPF principal (accrued interest added)', cleanSale.totalCPFRefund > cleanSale.cpfPrincipalTotal)
-// No loan here, so cash+CPF outlay equals the full purchase price — both
-// ROI lenses land on the same figure.
-assert('Clean sale (no loan): ROI on price ≈ ROI on outlay', approx(cleanSale.roiOnPrice, cleanSale.roiOnOutlay, 0.001))
+// No loan and no cash/CPF given directly — cash outlay is derived as
+// whatever wasn't covered by CPF: price + fees − loan − CPF.
+assert('Clean sale: cash outlay derived ≈ price + fees − CPF', approx(cleanSale.cashOutlay, 800_000 + 20_000 - 400_000, 1))
+assert('Clean sale (no loan): total outlay = purchase price + purchase fees', approx(cleanSale.totalOutlay, 820_000, 1))
 assert('Clean sale: ROI on price ≈ 19.6%', approx(cleanSale.roiOnPrice * 100, 19.6, 0.5))
 
 // ─── ROI with leverage ───────────────────────────────────────────────────
-// Same purchase/sale prices as the clean sale, but now only $200k of the
-// $800k purchase was the buyer's own cash+CPF (the rest was a loan) — the
-// same dollar profit should show a much bigger ROI on outlay than on price.
+// Same purchase/sale prices and fees as the clean sale, but now $600k of
+// the $800k purchase was a loan instead of cash+CPF — the same dollar
+// profit should show a much bigger ROI on outlay than on price, since it's
+// spread over a much smaller base of the buyer's own money.
 const leveragedSale = calcSale({
   propertyType: 'private',
-  purchasePrice: 800_000, purchaseDate: '2019-01-01', purchaseFees: 20_000,
-  cashOutlay: 100_000, cpfOutlay: 100_000,
+  purchasePrice: 800_000, purchaseDate: '2019-01-01',
+  legalFeesAtPurchase: 1_000, agentFeesAtPurchase: 400,
+  cpfOutlay: 100_000,
   loanTaken: 600_000, mortgageRate: 0, loanTenure: 25,
   salePrice: 1_000_000, saleDate: '2024-01-01',
   agentCommission: 20_000, legalFeesAtSale: 3_000,
 })
+assert('Leveraged sale: cash outlay derived ≈ price + fees − loan − CPF', approx(leveragedSale.cashOutlay, 800_000 + 20_000 - 600_000 - 100_000, 1))
 assert('Leveraged sale: ROI on outlay is bigger than ROI on price', leveragedSale.roiOnOutlay > leveragedSale.roiOnPrice)
-assert('Leveraged sale: ROI on outlay ≈ 4x ROI on price (200k outlay vs 800k price)', approx(leveragedSale.roiOnOutlay / leveragedSale.roiOnPrice, 4, 0.1))
+// Structural check independent of the exact fee numbers: the ratio between
+// the two ROI figures is exactly the ratio between their two bases.
+assert(
+  'Leveraged sale: ROI ratio matches the inverse of the outlay/price ratio',
+  approx(leveragedSale.roiOnOutlay / leveragedSale.roiOnPrice, leveragedSale.purchasePrice / leveragedSale.totalOutlay, 0.01),
+)
 
-// Edge cases: no purchase price / no outlay should not throw or divide by zero into Infinity
-const noOutlaySale = calcSale({
+// Edge cases: no purchase price → both ROI figures null, not NaN/Infinity.
+const zeroPriceSale = calcSale({
+  propertyType: 'private', purchaseDate: '2019-01-01',
+  salePrice: 1_000_000, saleDate: '2024-01-01',
+})
+assert('No purchase price: ROI on price is null', zeroPriceSale.roiOnPrice === null)
+assert('No purchase price: ROI on outlay is null (no fees, no loan/CPF → zero outlay)', zeroPriceSale.roiOnOutlay === null)
+
+// If a purchase price is given but no loan/CPF, the full price + BSD is
+// assumed to have come from cash — nothing else could explain it.
+const allCashImplied = calcSale({
   propertyType: 'private', purchasePrice: 800_000, purchaseDate: '2019-01-01',
   salePrice: 1_000_000, saleDate: '2024-01-01',
 })
-assert('No cash/CPF outlay: ROI on outlay is null, not Infinity/NaN', noOutlaySale.roiOnOutlay === null)
-assert('Purchase price present: ROI on price is still a number', typeof noOutlaySale.roiOnPrice === 'number')
+assert('No loan/CPF given: cash outlay assumed to cover price + auto BSD', approx(allCashImplied.cashOutlay, 800_000 + 18_600, 1))
+assert('cashOutlayUnclear is false for a sensible scenario', allCashImplied.cashOutlayUnclear === false)
+
+// If loan + CPF entered add up to MORE than price + fees, the derived cash
+// outlay goes negative — a signal the inputs don't add up, not a crash.
+const impossibleSale = calcSale({
+  propertyType: 'private', purchasePrice: 500_000, purchaseDate: '2019-01-01',
+  loanTaken: 400_000, cpfOutlay: 200_000, // 600k > 500k price
+  salePrice: 600_000, saleDate: '2024-01-01',
+})
+assert('Loan + CPF exceeding price + fees flags cashOutlayUnclear', impossibleSale.cashOutlayUnclear === true)
+assert('cashInvested floors at 0 rather than going negative', impossibleSale.cashInvested === 0)
 
 // A loss scenario: bought high, sold low, with real mortgage interest cost
 const lossSale = calcSale({
   propertyType: 'private',
-  purchasePrice: 1_200_000, purchaseDate: '2022-01-01', purchaseFees: 30_000,
-  cashOutlay: 300_000, cpfOutlay: 300_000,
+  purchasePrice: 1_200_000, purchaseDate: '2022-01-01',
+  legalFeesAtPurchase: 2_000, agentFeesAtPurchase: 1_000,
+  cpfOutlay: 300_000,
   loanTaken: 900_000, mortgageRate: 3.5, loanTenure: 25,
   sunkCost: 50_000,
   salePrice: 1_100_000, saleDate: '2024-01-01',
@@ -121,8 +155,9 @@ assert('Loss sale: outstanding balance is less than loan taken', lossSale.outsta
 // Overrides win over computed defaults
 const overridden = calcSale({
   propertyType: 'private',
-  purchasePrice: 800_000, purchaseDate: '2019-01-01', purchaseFees: 20_000,
-  cashOutlay: 400_000, cpfOutlay: 400_000,
+  purchasePrice: 800_000, purchaseDate: '2019-01-01',
+  legalFeesAtPurchase: 1_000, agentFeesAtPurchase: 400,
+  cpfOutlay: 400_000,
   loanTaken: 400_000, mortgageRate: 2.6, loanTenure: 25,
   salePrice: 1_000_000, saleDate: '2024-01-01',
   agentCommission: 20_000, legalFeesAtSale: 3_000,
@@ -137,8 +172,8 @@ assert('SSD override is respected', overridden.ssd === 0)
 // HDB MOP gate
 const beforeMop = calcSale({
   propertyType: 'hdb',
-  purchasePrice: 500_000, purchaseDate: '2022-01-01', purchaseFees: 5_000,
-  cashOutlay: 100_000, cpfOutlay: 100_000,
+  purchasePrice: 500_000, purchaseDate: '2022-01-01', legalFeesAtPurchase: 500,
+  cpfOutlay: 100_000,
   loanTaken: 300_000, mortgageRate: 2.6, loanTenure: 25,
   salePrice: 600_000, saleDate: '2024-01-01', // only 2 years held
   agentCommission: 0, legalFeesAtSale: 3_000,
@@ -146,8 +181,8 @@ const beforeMop = calcSale({
 assert('HDB sold before 5yr MOP is flagged not-ok', beforeMop.mopOk === false)
 const afterMop = calcSale({
   propertyType: 'hdb',
-  purchasePrice: 500_000, purchaseDate: '2018-01-01', purchaseFees: 5_000,
-  cashOutlay: 100_000, cpfOutlay: 100_000,
+  purchasePrice: 500_000, purchaseDate: '2018-01-01', legalFeesAtPurchase: 500,
+  cpfOutlay: 100_000,
   loanTaken: 300_000, mortgageRate: 2.6, loanTenure: 25,
   salePrice: 600_000, saleDate: '2024-01-01', // 6 years held
   agentCommission: 0, legalFeesAtSale: 3_000,

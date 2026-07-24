@@ -25,7 +25,8 @@ export default function SaleResults({
   if (!result) return null
   const {
     propertyType, yearsHeld, mopOk,
-    purchasePrice, purchaseFees, sunkCost,
+    purchasePrice, bsdAtPurchase, legalFeesAtPurchase, agentFeesAtPurchase, purchaseFees, sunkCost,
+    loanTaken, cpfOutlay, cashOutlay, cashOutlayUnclear,
     outstandingBalance, outstandingBalanceComputed, totalInterestPaid,
     cpfPrincipalTotal, cpfAccruedInterest, cpfAccruedInterestComputed, totalCPFRefund,
     ssd, ssdComputed, sellingCosts, cashProceeds,
@@ -146,10 +147,22 @@ export default function SaleResults({
       <ExploreSection title="Show the math" defaultOpen={false}>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
           <Row label="Purchase price" value={SGD(purchasePrice)} />
-          <Row label="+ Purchase fees (BSD, legal, agent)" value={`+${SGD(purchaseFees)}`} indent />
+          <Row label="+ BSD (auto-computed)" value={`+${SGD(bsdAtPurchase)}`} indent />
+          {legalFeesAtPurchase > 0 && <Row label="+ Legal fees at purchase" value={`+${SGD(legalFeesAtPurchase)}`} indent />}
+          {agentFeesAtPurchase > 0 && <Row label="+ Agent fees at purchase" value={`+${SGD(agentFeesAtPurchase)}`} indent />}
           {sunkCost > 0 && <Row label="+ Renovation / sunk costs" value={`+${SGD(sunkCost)}`} indent />}
           <Row label="+ Total mortgage interest paid" value={`+${SGD(totalInterestPaid)}`} indent />
           <Row label="True cost basis" value={SGD(trueCostBasis)} bold />
+          <div style={{ height: 10 }} />
+          <Row label="Purchase price + fees" value={SGD(purchasePrice + purchaseFees)} />
+          {loanTaken > 0 && <Row label="− Loan taken" value={`−${SGD(loanTaken)}`} indent />}
+          {cpfOutlay > 0 && <Row label="− CPF used" value={`−${SGD(cpfOutlay)}`} indent />}
+          <Row label="= Cash outlay (derived)" value={SGD(cashOutlay)} bold tone={cashOutlayUnclear ? 'red' : undefined} />
+          {cashOutlayUnclear && (
+            <p style={{ fontSize: C.xs, color: C.redText, lineHeight: 1.6, margin: '4px 0 0' }}>
+              This came out negative — your loan + CPF add up to more than the price and fees combined. Double-check those figures above.
+            </p>
+          )}
           <div style={{ height: 10 }} />
           <Row label="CPF principal used (incl. any grant)" value={SGD(cpfPrincipalTotal)} />
           <Row label="+ Accrued interest" value={`+${SGD(cpfAccruedInterest)}`} indent />

@@ -55,11 +55,21 @@ export function calcCPFAccruedInterest(cpfPrincipal, yearsHeld, rate = CPF_OA_RA
 
 // ─── Part A: selling the current house ──────────────────────────────────
 // propertyType: 'hdb' | 'private'
+//
+// Cash outlay at purchase is NOT taken as an input — it's derived. If you
+// know your purchase price, loan taken, and CPF principal used (all
+// things you can look up exactly, e.g. from your CPF statement and loan
+// offer letter), your cash outlay is whatever made up the rest:
+//   cash outlay = (purchase price + purchase fees) − loan taken − CPF used
+// This also means BSD at purchase is computed from the public schedule
+// rather than asked for — only legal and agent fees (which aren't
+// government-set) are self-reported.
 export function calcSale(inputs) {
   const {
     propertyType,
-    purchasePrice = 0, purchaseDate, purchaseFees = 0,
-    cashOutlay = 0, cpfOutlay = 0, housingGrant = 0,
+    purchasePrice = 0, purchaseDate,
+    legalFeesAtPurchase = 0, agentFeesAtPurchase = 0,
+    cpfOutlay = 0, housingGrant = 0,
     loanTaken = 0, mortgageRate = 0, loanTenure = 0,
     sunkCost = 0,
     salePrice = 0, saleDate,
@@ -71,6 +81,9 @@ export function calcSale(inputs) {
 
   const yearsHeld = yearsBetween(purchaseDate, saleDate)
   const monthsHeld = yearsHeld * 12
+
+  const bsdAtPurchase = calcBSD(purchasePrice)
+  const purchaseFees = bsdAtPurchase + (Number(legalFeesAtPurchase) || 0) + (Number(agentFeesAtPurchase) || 0)
 
   const monthlyInstalment = calcMonthlyInstalment(loanTaken, mortgageRate, loanTenure)
   const outstandingBalanceComputed = calcOutstandingBalance(loanTaken, mortgageRate, loanTenure, monthsHeld)
@@ -95,17 +108,24 @@ export function calcSale(inputs) {
 
   const cashProceeds = (Number(salePrice) || 0) - outstandingBalance - sellingCosts - totalCPFRefund
 
+  // Derived, not asked for — whatever wasn't covered by the loan or CPF
+  // must have been cash. Can go negative if the loan + CPF you entered
+  // add up to more than the price + fees, which usually means one of
+  // those figures was mistyped — surfaced to the UI via cashOutlayUnclear.
+  const cashOutlay = (Number(purchasePrice) || 0) + purchaseFees - (Number(loanTaken) || 0) - (Number(cpfOutlay) || 0)
+  const cashOutlayUnclear = cashOutlay < 0
+
   // True profit/loss is a property-economics number, independent of how
   // the purchase was financed. CPF principal isn't a cost here — it comes
   // back to you, just into CPF instead of your bank account. Financing
   // choice only changes how much of the gain is spendable cash vs locked
   // back in CPF, which is exactly why this number and cashProceeds below
   // are shown side by side rather than collapsed into one figure.
-  const trueCostBasis = (Number(purchasePrice) || 0) + (Number(purchaseFees) || 0) + (Number(sunkCost) || 0) + totalInterestPaid
+  const trueCostBasis = (Number(purchasePrice) || 0) + purchaseFees + (Number(sunkCost) || 0) + totalInterestPaid
   const netSale = (Number(salePrice) || 0) - sellingCosts
   const trueProfitLoss = netSale - trueCostBasis
 
-  const cashInvested = (Number(cashOutlay) || 0) + (Number(sunkCost) || 0)
+  const cashInvested = Math.max(0, cashOutlay) + (Number(sunkCost) || 0)
   const cashOnCashReturn = cashInvested > 0 ? (cashProceeds - cashInvested) / cashInvested : null
 
   // Two different ROI lenses on the same true profit/loss figure:
@@ -114,7 +134,7 @@ export function calcSale(inputs) {
   // - against what you actually put in (cash + CPF), which is usually a
   //   much bigger % because the loan portion means your own capital was
   //   leveraged — the same profit spread over a smaller base
-  const totalOutlay = (Number(cashOutlay) || 0) + (Number(cpfOutlay) || 0)
+  const totalOutlay = Math.max(0, cashOutlay) + (Number(cpfOutlay) || 0)
   const roiOnPrice = purchasePrice > 0 ? trueProfitLoss / purchasePrice : null
   const roiOnOutlay = totalOutlay > 0 ? trueProfitLoss / totalOutlay : null
 
@@ -122,7 +142,11 @@ export function calcSale(inputs) {
 
   return {
     propertyType, yearsHeld, monthsHeld,
-    purchasePrice: Number(purchasePrice) || 0, purchaseFees: Number(purchaseFees) || 0, sunkCost: Number(sunkCost) || 0,
+    purchasePrice: Number(purchasePrice) || 0,
+    bsdAtPurchase, legalFeesAtPurchase: Number(legalFeesAtPurchase) || 0, agentFeesAtPurchase: Number(agentFeesAtPurchase) || 0,
+    purchaseFees, sunkCost: Number(sunkCost) || 0,
+    loanTaken: Number(loanTaken) || 0, cpfOutlay: Number(cpfOutlay) || 0,
+    cashOutlay, cashOutlayUnclear,
     salePrice: Number(salePrice) || 0, agentCommission: Number(agentCommission) || 0, legalFeesAtSale: Number(legalFeesAtSale) || 0,
     monthlyInstalment, outstandingBalanceComputed, outstandingBalance, totalInterestPaid,
     cpfPrincipalTotal, cpfAccruedInterestComputed, cpfAccruedInterest, totalCPFRefund,

@@ -1,9 +1,9 @@
 'use client'
 
 import { useState } from 'react'
-import { C } from '@/lib/house/theme'
-import { calcSale } from '@/lib/house/calc'
-import { MoneyInput, PercentInput, NumberInput, DateInput, Segmented, SectionDivider } from '@/components/house/ui'
+import { C, SGD } from '@/lib/house/theme'
+import { calcSale, calcBSD } from '@/lib/house/calc'
+import { MoneyInput, PercentInput, NumberInput, DateInput, Segmented, SectionDivider, FeeInput } from '@/components/house/ui'
 import SaleResults from '@/components/house/SaleResults'
 import NextPurchase from '@/components/house/NextPurchase'
 import ShellHeader from '@/components/shared/ShellHeader'
@@ -22,12 +22,13 @@ export default function HouseMuchPage() {
   // Purchase
   const [purchasePrice, setPurchasePrice] = useState('')
   const [purchaseDate, setPurchaseDate] = useState('')
-  const [cashOutlay, setCashOutlay] = useState('')
   const [cpfOutlay, setCpfOutlay] = useState('')
   const [loanTaken, setLoanTaken] = useState('')
   const [mortgageRate, setMortgageRate] = useState('2.60')
   const [loanTenure, setLoanTenure] = useState('25')
-  const [purchaseFees, setPurchaseFees] = useState('')
+  const [legalFeesAtPurchase, setLegalFeesAtPurchase] = useState('')
+  const [agentFeeAtPurchaseMode, setAgentFeeAtPurchaseMode] = useState('amount')
+  const [agentFeeAtPurchaseRaw, setAgentFeeAtPurchaseRaw] = useState('')
   const [sunkCost, setSunkCost] = useState('')
   const [hasGrant, setHasGrant] = useState(false)
   const [housingGrant, setHousingGrant] = useState('')
@@ -35,7 +36,8 @@ export default function HouseMuchPage() {
   // Sale
   const [salePrice, setSalePrice] = useState('')
   const [saleDate, setSaleDate] = useState('')
-  const [agentCommission, setAgentCommission] = useState('')
+  const [agentFeeAtSaleMode, setAgentFeeAtSaleMode] = useState('percent')
+  const [agentFeeAtSaleRaw, setAgentFeeAtSaleRaw] = useState('')
   const [legalFeesAtSale, setLegalFeesAtSale] = useState('')
 
   // Overrides (raw strings; empty = use computed default)
@@ -47,15 +49,26 @@ export default function HouseMuchPage() {
 
   const isReady = num(purchasePrice) > 0 && purchaseDate && num(salePrice) > 0 && saleDate
 
+  const resolveFee = (mode, raw, base) => mode === 'percent' ? base * (num(raw) / 100) : num(raw)
+  const agentFeesAtPurchase = resolveFee(agentFeeAtPurchaseMode, agentFeeAtPurchaseRaw, num(purchasePrice))
+  const agentCommission = resolveFee(agentFeeAtSaleMode, agentFeeAtSaleRaw, num(salePrice))
+
+  // Live preview, updates as you type — shown before you even hit Calculate,
+  // since this is now derived rather than something you enter directly.
+  const bsdAtPurchasePreview = calcBSD(num(purchasePrice))
+  const cashOutlayPreview = num(purchasePrice) + bsdAtPurchasePreview + num(legalFeesAtPurchase) + agentFeesAtPurchase
+    - num(loanTaken) - num(cpfOutlay)
+
   const result = calculated && isReady ? calcSale({
     propertyType,
-    purchasePrice: num(purchasePrice), purchaseDate, purchaseFees: num(purchaseFees),
-    cashOutlay: num(cashOutlay), cpfOutlay: num(cpfOutlay),
+    purchasePrice: num(purchasePrice), purchaseDate,
+    legalFeesAtPurchase: num(legalFeesAtPurchase), agentFeesAtPurchase,
+    cpfOutlay: num(cpfOutlay),
     housingGrant: hasGrant ? num(housingGrant) : 0,
     loanTaken: num(loanTaken), mortgageRate: num(mortgageRate), loanTenure: num(loanTenure),
     sunkCost: num(sunkCost),
     salePrice: num(salePrice), saleDate,
-    agentCommission: num(agentCommission), legalFeesAtSale: num(legalFeesAtSale),
+    agentCommission, legalFeesAtSale: num(legalFeesAtSale),
     outstandingBalanceOverride: outstandingOverride !== '' ? num(outstandingOverride) : null,
     cpfAccruedInterestOverride: cpfInterestOverride !== '' ? num(cpfInterestOverride) : null,
     ssdOverride: ssdOverride !== '' ? num(ssdOverride) : null,
@@ -109,14 +122,38 @@ export default function HouseMuchPage() {
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 16 }}>
             <MoneyInput id="purchase-price" label="Purchase price" value={purchasePrice} onChange={e => setPurchasePrice(e.target.value)} />
             <DateInput id="purchase-date" label="Purchase date" value={purchaseDate} onChange={e => setPurchaseDate(e.target.value)} />
-            <MoneyInput id="cash-outlay" label="Cash outlay at purchase" hint="Downpayment cash + fees paid in cash" value={cashOutlay} onChange={e => setCashOutlay(e.target.value)} />
             <MoneyInput id="cpf-outlay" label="Total CPF used" hint="From your CPF statement — principal only" value={cpfOutlay} onChange={e => setCpfOutlay(e.target.value)} />
+            <MoneyInput
+              id="cpf-interest-known" label="CPF accrued interest" hint="Optional — if you already checked your CPF portal. Leave blank to estimate."
+              value={cpfInterestOverride} onChange={e => setCpfInterestOverride(e.target.value)}
+            />
             <MoneyInput id="loan-taken" label="Loan taken" value={loanTaken} onChange={e => setLoanTaken(e.target.value)} />
             <PercentInput id="mortgage-rate" label="Mortgage rate (p.a.)" value={mortgageRate} onChange={e => setMortgageRate(e.target.value)} />
             <NumberInput id="loan-tenure" label="Loan tenure" value={loanTenure} onChange={e => setLoanTenure(e.target.value)} suffix="years" />
-            <MoneyInput id="purchase-fees" label="Purchase fees" hint="BSD, legal, agent — total" value={purchaseFees} onChange={e => setPurchaseFees(e.target.value)} />
+            <MoneyInput id="legal-fees-purchase" label="Legal fees at purchase" value={legalFeesAtPurchase} onChange={e => setLegalFeesAtPurchase(e.target.value)} />
+            <FeeInput
+              id="agent-fees-purchase" label="Agent fees at purchase" hint="Often S$0 — buyers don't usually pay an agent in SG"
+              base={num(purchasePrice)} mode={agentFeeAtPurchaseMode} onModeChange={setAgentFeeAtPurchaseMode}
+              value={agentFeeAtPurchaseRaw} onChange={e => setAgentFeeAtPurchaseRaw(e.target.value)}
+            />
             <MoneyInput id="sunk-cost" label="Renovation / sunk costs" hint="Optional" value={sunkCost} onChange={e => setSunkCost(e.target.value)} />
           </div>
+
+          {(num(purchasePrice) > 0 && (num(loanTaken) > 0 || num(cpfOutlay) > 0)) && (
+            <div style={{ marginTop: 14, padding: '11px 14px', background: C.bg, border: `1px dashed ${C.border}`, borderRadius: C.r, display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 6 }}>
+              <span style={{ fontSize: C.xs, color: C.muted }}>
+                Cash outlay, worked out from the above (incl. auto-computed BSD of {SGD(bsdAtPurchasePreview)})
+              </span>
+              <span style={{ fontFamily: C.fontMono, fontSize: C.base, fontWeight: 600, color: cashOutlayPreview < 0 ? C.redText : C.text }}>
+                {SGD(cashOutlayPreview)}
+              </span>
+            </div>
+          )}
+          {num(purchasePrice) > 0 && num(loanTaken) + num(cpfOutlay) > 0 && cashOutlayPreview < 0 && (
+            <p style={{ marginTop: 6, fontSize: C.xs, color: C.redText, lineHeight: 1.5 }}>
+              That&apos;s negative — your loan + CPF add up to more than the price and fees combined. Double check those figures.
+            </p>
+          )}
 
           {propertyType === 'hdb' && (
             <div style={{ marginTop: 16 }}>
@@ -143,7 +180,11 @@ export default function HouseMuchPage() {
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 16 }}>
             <MoneyInput id="sale-price" label="Sale price" value={salePrice} onChange={e => setSalePrice(e.target.value)} />
             <DateInput id="sale-date" label="Sale date" hint="Or your expected date" value={saleDate} onChange={e => setSaleDate(e.target.value)} />
-            <MoneyInput id="agent-commission" label="Selling agent commission" hint="Typically 1–2% of sale price" value={agentCommission} onChange={e => setAgentCommission(e.target.value)} />
+            <FeeInput
+              id="agent-commission" label="Selling agent commission" hint="Typically 1–2% of sale price"
+              base={num(salePrice)} mode={agentFeeAtSaleMode} onModeChange={setAgentFeeAtSaleMode}
+              value={agentFeeAtSaleRaw} onChange={e => setAgentFeeAtSaleRaw(e.target.value)}
+            />
             <MoneyInput id="legal-fees-sale" label="Legal fees at sale" value={legalFeesAtSale} onChange={e => setLegalFeesAtSale(e.target.value)} />
           </div>
 
