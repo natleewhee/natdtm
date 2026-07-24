@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { C, SGD } from '@/lib/house/theme'
+import { C, SGD, parseMoney } from '@/lib/house/theme'
 import { calcSale, calcBSD } from '@/lib/house/calc'
 import { MoneyInput, PercentInput, NumberInput, DateInput, Segmented, SectionDivider, FeeInput } from '@/components/house/ui'
 import SaleResults from '@/components/house/SaleResults'
@@ -11,10 +11,7 @@ import TrustBadges from '@/components/shared/TrustBadges'
 import Button from '@/components/shared/Button'
 import ExploreSection from '@/components/shared/ExploreSection'
 
-const num = raw => {
-  const n = parseFloat(String(raw ?? '').replace(/,/g, ''))
-  return Number.isFinite(n) ? n : 0
-}
+const num = parseMoney
 
 export default function HouseMuchPage() {
   const [propertyType, setPropertyType] = useState('private')
@@ -27,7 +24,7 @@ export default function HouseMuchPage() {
   const [mortgageRate, setMortgageRate] = useState('2.60')
   const [loanTenure, setLoanTenure] = useState('25')
   const [legalFeesAtPurchase, setLegalFeesAtPurchase] = useState('')
-  const [agentFeeAtPurchaseMode, setAgentFeeAtPurchaseMode] = useState('amount')
+  const [agentFeeAtPurchaseMode, setAgentFeeAtPurchaseMode] = useState('manual')
   const [agentFeeAtPurchaseRaw, setAgentFeeAtPurchaseRaw] = useState('')
   const [sunkCost, setSunkCost] = useState('')
   const [hasGrant, setHasGrant] = useState(false)
@@ -36,7 +33,7 @@ export default function HouseMuchPage() {
   // Sale
   const [salePrice, setSalePrice] = useState('')
   const [saleDate, setSaleDate] = useState('')
-  const [agentFeeAtSaleMode, setAgentFeeAtSaleMode] = useState('percent')
+  const [agentFeeAtSaleMode, setAgentFeeAtSaleMode] = useState('1pct')
   const [agentFeeAtSaleRaw, setAgentFeeAtSaleRaw] = useState('')
   const [legalFeesAtSale, setLegalFeesAtSale] = useState('')
 
@@ -49,7 +46,7 @@ export default function HouseMuchPage() {
 
   const isReady = num(purchasePrice) > 0 && purchaseDate && num(salePrice) > 0 && saleDate
 
-  const resolveFee = (mode, raw, base) => mode === 'percent' ? base * (num(raw) / 100) : num(raw)
+  const resolveFee = (mode, raw, base) => mode === '1pct' ? base * 0.01 : mode === '2pct' ? base * 0.02 : num(raw)
   const agentFeesAtPurchase = resolveFee(agentFeeAtPurchaseMode, agentFeeAtPurchaseRaw, num(purchasePrice))
   const agentCommission = resolveFee(agentFeeAtSaleMode, agentFeeAtSaleRaw, num(salePrice))
 

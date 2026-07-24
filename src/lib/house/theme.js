@@ -24,3 +24,16 @@ export const C = {
 }
 
 export const SGD = n => `S$${Math.round(n || 0).toLocaleString('en-SG')}`
+
+// Money input parser that understands "k" (thousand) and "m" (million)
+// suffixes on top of plain numbers — e.g. "800k" → 800000, "1.2m" → 1200000.
+export function parseMoney(raw) {
+  if (raw == null) return 0
+  let s = String(raw).trim().toLowerCase().replace(/,/g, '')
+  if (!s) return 0
+  let mult = 1
+  if (s.endsWith('k')) { mult = 1_000; s = s.slice(0, -1) }
+  else if (s.endsWith('m')) { mult = 1_000_000; s = s.slice(0, -1) }
+  const n = parseFloat(s)
+  return Number.isFinite(n) ? n * mult : 0
+}

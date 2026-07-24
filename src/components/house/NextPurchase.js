@@ -1,17 +1,14 @@
 'use client'
 
 import { useState } from 'react'
-import { C, SGD } from '@/lib/house/theme'
+import { C, SGD, parseMoney } from '@/lib/house/theme'
 import { calcNextPurchase } from '@/lib/house/calc'
 import { ABSD_REFERENCE, ABSD_AS_OF } from '@/lib/house/stampDuty'
 import { MoneyInput, PercentInput, NumberInput } from './ui'
 import Button from '@/components/shared/Button'
 import ExploreSection from '@/components/shared/ExploreSection'
 
-const num = raw => {
-  const n = parseFloat(String(raw ?? '').replace(/,/g, ''))
-  return Number.isFinite(n) ? n : 0
-}
+const num = parseMoney
 
 export default function NextPurchase({ saleResult }) {
   const [newPrice, setNewPrice] = useState('')

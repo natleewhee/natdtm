@@ -21,7 +21,7 @@ export function MoneyInput({ id, label, hint, value, onChange, placeholder = '0'
       <div style={{ position: 'relative' }}>
         <span aria-hidden="true" style={{ position: 'absolute', left: 13, top: '50%', transform: 'translateY(-50%)', fontSize: C.sm, fontWeight: 600, color: focused || value ? C.accent : C.faint, pointerEvents: 'none', transition: 'color 0.2s' }}>S$</span>
         <input
-          id={id} type="text" inputMode="numeric" value={value ?? ''} onChange={onChange}
+          id={id} type="text" inputMode="text" value={value ?? ''} onChange={onChange}
           placeholder={placeholder} aria-describedby={hintId}
           onFocus={() => setFocused(true)} onBlur={() => setFocused(false)}
           style={{
@@ -131,24 +131,21 @@ export function Segmented({ options, value, onChange }) {
   )
 }
 
-// A fee field that can be entered as a flat dollar amount or a percentage
-// of some base (purchase price, sale price) — agent commissions are
-// commonly quoted as a %, but the calculator needs a dollar figure, so
-// this resolves it and shows the $ equivalent as you type in percent mode.
+// An agent-fee field: a 1% / 2% / Manual toggle. At 1% or 2%, the dollar
+// amount is auto-computed against a base (purchase price, sale price) and
+// shown read-only. In Manual mode, a free-form dollar input appears
+// instead — for anything that doesn't fit the two standard rates.
 export function FeeInput({ id, label, hint, base, mode, onModeChange, value, onChange }) {
   const [focused, setFocused] = useState(false)
-  const num = parseFloat(String(value ?? '').replace(/,/g, ''))
-  const resolved = Number.isFinite(num) ? num : 0
-  const preview = mode === 'percent' && base > 0 && value
-    ? `≈ S$${Math.round(base * resolved / 100).toLocaleString('en-SG')}`
-    : null
+  const pct = mode === '1pct' ? 1 : mode === '2pct' ? 2 : null
+  const computed = pct != null ? Math.round((Number(base) || 0) * pct / 100) : null
 
   return (
     <div>
-      <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', marginBottom: 7 }}>
+      <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', marginBottom: 7, flexWrap: 'wrap', gap: 6 }}>
         <label htmlFor={id} style={{ fontSize: C.sm, fontWeight: 600, color: C.primary }}>{label}</label>
         <div style={{ display: 'inline-flex', background: C.bg, border: `1px solid ${C.border}`, borderRadius: 100, padding: 2, gap: 1 }}>
-          {[{ v: 'amount', l: 'S$' }, { v: 'percent', l: '%' }].map(opt => (
+          {[{ v: '1pct', l: '1%' }, { v: '2pct', l: '2%' }, { v: 'manual', l: 'Manual' }].map(opt => (
             <button
               key={opt.v} type="button" onClick={() => onModeChange(opt.v)} aria-pressed={mode === opt.v}
               style={{
@@ -163,26 +160,29 @@ export function FeeInput({ id, label, hint, base, mode, onModeChange, value, onC
           ))}
         </div>
       </div>
-      <div style={{ position: 'relative' }}>
-        <span aria-hidden="true" style={{ position: 'absolute', left: 13, top: '50%', transform: 'translateY(-50%)', fontSize: C.sm, fontWeight: 600, color: focused || value ? C.accent : C.faint, pointerEvents: 'none', transition: 'color 0.2s' }}>
-          {mode === 'percent' ? '' : 'S$'}
-        </span>
-        <input
-          id={id} type="text" inputMode="decimal" value={value ?? ''} onChange={onChange}
-          placeholder={mode === 'percent' ? '0.00' : '0'}
-          onFocus={() => setFocused(true)} onBlur={() => setFocused(false)}
-          style={{
-            width: '100%', boxSizing: 'border-box', background: C.surface,
-            border: `1.5px solid ${focused ? C.accent : C.border}`, borderRadius: C.r,
-            padding: mode === 'percent' ? '11px 32px 11px 12px' : '11px 12px 11px 36px',
-            color: C.primary, fontSize: C.lg, fontFamily: C.fontMono, fontWeight: 500, outline: 'none',
-            boxShadow: focused ? `0 0 0 3px ${C.accentBg}` : 'none',
-            transition: 'border-color 0.2s, box-shadow 0.2s',
-          }}
-        />
-        {mode === 'percent' && <span aria-hidden="true" style={{ position: 'absolute', right: 13, top: '50%', transform: 'translateY(-50%)', fontSize: C.sm, fontWeight: 600, color: C.faint, pointerEvents: 'none' }}>%</span>}
-      </div>
-      {preview && <p style={{ marginTop: 5, fontSize: C.xs, color: C.accent, fontWeight: 600 }}>{preview}</p>}
+      {mode === 'manual' ? (
+        <div style={{ position: 'relative' }}>
+          <span aria-hidden="true" style={{ position: 'absolute', left: 13, top: '50%', transform: 'translateY(-50%)', fontSize: C.sm, fontWeight: 600, color: focused || value ? C.accent : C.faint, pointerEvents: 'none', transition: 'color 0.2s' }}>S$</span>
+          <input
+            id={id} type="text" inputMode="text" value={value ?? ''} onChange={onChange}
+            placeholder="0"
+            onFocus={() => setFocused(true)} onBlur={() => setFocused(false)}
+            style={{
+              width: '100%', boxSizing: 'border-box', background: C.surface,
+              border: `1.5px solid ${focused ? C.accent : C.border}`, borderRadius: C.r,
+              padding: '11px 12px 11px 36px',
+              color: C.primary, fontSize: C.lg, fontFamily: C.fontMono, fontWeight: 500, outline: 'none',
+              boxShadow: focused ? `0 0 0 3px ${C.accentBg}` : 'none',
+              transition: 'border-color 0.2s, box-shadow 0.2s',
+            }}
+          />
+        </div>
+      ) : (
+        <div style={{ padding: '11px 12px', background: C.bg, border: `1.5px dashed ${C.border}`, borderRadius: C.r, fontFamily: C.fontMono, fontSize: C.lg, color: C.text }}>
+          S${computed.toLocaleString('en-SG')}
+          <span style={{ fontSize: C.xs, color: C.faint, fontWeight: 500, marginLeft: 8 }}>({pct}% of {base > 0 ? `S$${Math.round(base).toLocaleString('en-SG')}` : '—'})</span>
+        </div>
+      )}
       {hint && <p style={{ marginTop: 5, fontSize: C.xs, color: C.muted, lineHeight: 1.5 }}>{hint}</p>}
     </div>
   )
