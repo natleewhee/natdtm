@@ -71,7 +71,7 @@ export default function LandingPage() {
           lineHeight: 1.2,
           margin: '0 0 16px',
         }}>
-          You probably have insurance. But do you actually know what it covers?
+          You've probably got insurance. But do you know what it actually covers?
         </h2>
 
         <p style={{
@@ -80,7 +80,7 @@ export default function LandingPage() {
           lineHeight: 1.7,
           margin: '0 0 32px',
         }}>
-          InsureCheck scores your coverage in 3 minutes — free, neutral, no agent involved.
+          I'll score your coverage in 3 minutes flat — free, neutral, no agent calling you after.
         </p>
 
         <Button href="/insure/check">
@@ -134,18 +134,18 @@ export default function LandingPage() {
             {[
               {
                 step: '1',
-                title: 'Tell us what you have',
+                title: "Tell me what you've got",
                 body: '5 quick questions about your policies. Takes under 3 minutes.',
               },
               {
                 step: '2',
-                title: 'We run the numbers',
-                body: 'Your coverage is benchmarked against Singapore financial planning standards — not a generic template.',
+                title: 'I run the numbers',
+                body: 'Your coverage gets checked against real Singapore financial planning benchmarks — not a generic template.',
               },
               {
                 step: '3',
                 title: 'See exactly where you stand',
-                body: 'Gaps, overpayment, and what to do next — laid out clearly, without the sales pitch.',
+                body: 'Gaps, overpayment, what to fix next — laid out plainly, no sales pitch.',
               },
             ].map(({ step, title, body }) => (
               <div key={step} style={{ display: 'flex', gap: '16px', alignItems: 'flex-start' }}>

@@ -237,7 +237,7 @@ export default function HowItWorksPage() {
                 color: 'var(--color-primary)',
                 letterSpacing: '0.08em',
               }}>
-                NAT
+                NDTM
               </span>
               <span style={{
                 fontSize: '12px',
@@ -532,7 +532,7 @@ Band inputs → band midpoint used as proxy → score shown as "estimated"`}
               color: '#fff',
               letterSpacing: '0.08em',
             }}>
-              NAT
+              NDTM
             </span>
             <span style={{
   fontSize: '11px',
@@ -896,7 +896,7 @@ This score is never included in finalScore.`}
                 color: 'var(--color-primary)',
                 letterSpacing: '0.08em',
               }}>
-                NAT
+                NDTM
               </span>
               <span style={{
                 fontSize: '11px',

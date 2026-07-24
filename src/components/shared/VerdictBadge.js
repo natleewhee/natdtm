@@ -18,8 +18,10 @@ export default function VerdictBadge({ label, bg, color, size = 'md' }) {
         borderRadius: 100,
         background: bg,
         color,
-        fontFamily: 'var(--font-body)',
+        fontFamily: 'var(--font-mono)',
         fontWeight: 600,
+        letterSpacing: '0.03em',
+        textTransform: 'uppercase',
         lineHeight: 1.3,
         ...s,
       }}

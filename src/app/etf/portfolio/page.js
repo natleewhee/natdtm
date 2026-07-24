@@ -603,7 +603,7 @@ function PortfolioContent() {
               {/* Why free */}
               <div className={styles.whyFreeCard}>
                 <div className={styles.whyFreeHeader}>
-                  <span className={styles.whyFreeLabel}>NAT</span>
+                  <span className={styles.whyFreeLabel}>NDTM</span>
                   <span className={styles.whyFreeSub}>No Pay-to-Win</span>
                 </div>
                 <p className={styles.whyFreeBody}>

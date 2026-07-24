@@ -112,7 +112,14 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
   transition: filter 0.15s ease, transform 0.1s ease, box-shadow 0.2s ease;
 }
 .coah-button:hover:not(:disabled) { filter: brightness(1.06); transform: translateY(-1px); }
-.coah-button:active:not(:disabled) { transform: translateY(0); }
+.coah-button:active:not(:disabled) {
+  /* Tactile press — a physical button gets shoved in and its shadow
+     flattens with it, not just cancels its hover lift. */
+  transform: translateY(1px) scale(0.98);
+  filter: brightness(0.94);
+  box-shadow: 0 1px 4px rgba(0,0,0,0.25) !important;
+  transition: filter 0.05s ease, transform 0.05s ease, box-shadow 0.05s ease;
+}
 .coah-button:disabled { cursor: not-allowed; }
 .coah-button--full { width: 100%; }
 .coah-button--accent { background: var(--color-accent); color: var(--l-accent-ink); box-shadow: 0 4px 20px rgba(250,204,21,0.30); }

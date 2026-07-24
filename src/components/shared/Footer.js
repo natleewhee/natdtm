@@ -12,7 +12,7 @@ function formatBuildDate(iso) {
 }
 
 // Each vertical's own regulatory disclaimer — these used to be duplicated
-// in a full second footer on every page of every vertical (own "COAH"
+// in a full second footer on every page of every vertical (own "ndtm"
 // wordmark, own cross-links to the other two tools, own copy of this
 // text). The cross-links and wordmark were pure duplication of this one
 // shell footer; only the disclaimer text itself is genuinely different
@@ -33,9 +33,9 @@ export default function Footer() {
   return (
     <footer className="shell-footer">
       <div className="shell-wrap shell-footer-inner">
-        <p className="shell-footer-brand">Nat</p>
+        <p className="shell-footer-brand">ndtm</p>
         <p className="shell-footer-blurb">
-          Free calculators for the big Singapore financial decisions — insurance, cars, ETFs.
+          Free calculators I built for the big Singapore financial decisions — insurance, cars, ETFs.
           Every number is shown, not just the verdict.
         </p>
         <div className="shell-footer-math">

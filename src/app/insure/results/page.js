@@ -755,7 +755,7 @@ export default function ResultsPage() {
                   letterSpacing: '0.1em',
                   opacity: 0.6,
                 }}>
-                  NAT
+                  NDTM
                 </span>
                 <span style={{
                   fontFamily: 'var(--font-display)',

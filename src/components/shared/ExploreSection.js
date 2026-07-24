@@ -7,6 +7,9 @@ import { useState } from 'react'
 // at once. Each tool's own Explore modules (Insure's what-if explorer,
 // Drive's COE sensitivity, ETF's backtest/stress test) render inside one
 // of these instead of each tool inventing its own expand/collapse chrome.
+// Styled as a "show the math" terminal toggle — mono label, bracket
+// caret, monospace-tinted panel when open — per the Digital Workbench
+// design language.
 export default function ExploreSection({ title, defaultOpen = false, children }) {
   const [open, setOpen] = useState(defaultOpen)
   return (
@@ -26,27 +29,40 @@ export default function ExploreSection({ title, defaultOpen = false, children })
           border: 'none',
           cursor: 'pointer',
           textAlign: 'left',
-          fontFamily: 'var(--font-body)',
-          fontSize: 15,
+          fontFamily: 'var(--font-mono)',
+          fontSize: 13,
           fontWeight: 600,
-          color: 'var(--color-primary)',
+          letterSpacing: '0.04em',
+          textTransform: 'uppercase',
+          color: open ? 'var(--color-accent)' : 'var(--color-primary)',
         }}
       >
         {title}
         <span
           aria-hidden="true"
           style={{
-            fontSize: 12,
-            color: 'var(--color-faint)',
-            transition: 'transform 0.2s',
-            transform: open ? 'rotate(180deg)' : 'none',
+            fontFamily: 'var(--font-mono)',
+            fontSize: 13,
+            color: open ? 'var(--color-accent)' : 'var(--color-faint)',
             flexShrink: 0,
           }}
         >
-          ▾
+          {open ? '[ − ]' : '[ + ]'}
         </span>
       </button>
-      {open && <div style={{ paddingBottom: 20 }}>{children}</div>}
+      {open && (
+        <div
+          style={{
+            paddingBottom: 20,
+            paddingTop: 4,
+            borderLeft: '2px solid var(--color-accent)',
+            paddingLeft: 16,
+            marginLeft: 2,
+          }}
+        >
+          {children}
+        </div>
+      )}
     </div>
   )
 }
