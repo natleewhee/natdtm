@@ -27,8 +27,6 @@ export default function HouseMuchPage() {
   const [agentFeeAtPurchaseMode, setAgentFeeAtPurchaseMode] = useState('manual')
   const [agentFeeAtPurchaseRaw, setAgentFeeAtPurchaseRaw] = useState('')
   const [sunkCost, setSunkCost] = useState('')
-  const [hasGrant, setHasGrant] = useState(false)
-  const [housingGrant, setHousingGrant] = useState('')
 
   // Sale
   const [salePrice, setSalePrice] = useState('')
@@ -63,7 +61,6 @@ export default function HouseMuchPage() {
     purchasePrice: num(purchasePrice), purchaseDate,
     legalFeesAtPurchase: num(legalFeesAtPurchase), agentFeesAtPurchase,
     cpfOutlay: num(cpfOutlay),
-    housingGrant: hasGrant ? num(housingGrant) : 0,
     loanTaken: num(loanTaken), mortgageRate: num(mortgageRate), loanTenure: num(loanTenure),
     sunkCost: num(sunkCost),
     salePrice: num(salePrice), saleDate,
@@ -114,7 +111,7 @@ export default function HouseMuchPage() {
             />
             <p style={{ marginTop: 8, fontSize: C.xs, color: C.muted, lineHeight: 1.5 }}>
               {propertyType === 'hdb'
-                ? 'HDB flats have a 5-year Minimum Occupation Period before you can sell, and may need a CPF Housing Grant refund. No Seller\'s Stamp Duty applies.'
+                ? 'HDB flats have a 5-year Minimum Occupation Period before you can sell. No Seller\'s Stamp Duty applies. If you received a CPF Housing Grant, fold it into "CPF used at purchase" below — it\'s refunded the same way as any other CPF principal.'
                 : 'Private property may owe Seller\'s Stamp Duty if sold within 3 years of purchase.'}
             </p>
           </div>
@@ -154,27 +151,6 @@ export default function HouseMuchPage() {
             <p style={{ marginTop: 6, fontSize: C.xs, color: C.redText, lineHeight: 1.5 }}>
               That&apos;s negative — your loan + CPF add up to more than the price and fees combined. Double check those figures.
             </p>
-          )}
-
-          {propertyType === 'hdb' && (
-            <div style={{ marginTop: 16 }}>
-              <button
-                type="button" onClick={() => setHasGrant(h => !h)} aria-pressed={hasGrant}
-                style={{
-                  display: 'flex', alignItems: 'center', gap: 8, padding: '9px 14px',
-                  background: hasGrant ? C.accentBg : C.bg, border: `1.5px solid ${hasGrant ? C.accent : C.border}`,
-                  borderRadius: 100, cursor: 'pointer', fontSize: C.xs, fontWeight: 700,
-                  color: hasGrant ? C.accent : C.muted, fontFamily: C.fontBody,
-                }}
-              >
-                {hasGrant ? '✓ ' : ''} I received a CPF Housing Grant
-              </button>
-              {hasGrant && (
-                <div style={{ marginTop: 12, maxWidth: 260 }}>
-                  <MoneyInput id="housing-grant" label="Grant amount" hint="Also refunded to CPF with accrued interest on sale" value={housingGrant} onChange={e => setHousingGrant(e.target.value)} />
-                </div>
-              )}
-            </div>
           )}
 
           <SectionDivider label="Selling it" />

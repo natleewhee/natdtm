@@ -69,7 +69,7 @@ export function calcSale(inputs) {
     propertyType,
     purchasePrice = 0, purchaseDate,
     legalFeesAtPurchase = 0, agentFeesAtPurchase = 0,
-    cpfOutlay = 0, housingGrant = 0,
+    cpfOutlay = 0,
     loanTaken = 0, mortgageRate = 0, loanTenure = 0,
     sunkCost = 0,
     salePrice = 0, saleDate,
@@ -138,7 +138,7 @@ export function calcSale(inputs) {
   // further CPF top-ups modeled) — only its accrued interest keeps
   // compounding — so check back closer to your actual sale for a tighter
   // number if you're still servicing via CPF.
-  const cpfPrincipalAtPurchase = (Number(cpfOutlay) || 0) + (Number(housingGrant) || 0)
+  const cpfPrincipalAtPurchase = Number(cpfOutlay) || 0
   const cpfPrincipalAsOfComputed = cpfPrincipalAtPurchase
   const cpfPrincipalComputed = cpfPrincipalAsOfComputed
   const cpfPrincipalAsOf = cpfPrincipalOverride ?? cpfPrincipalAsOfComputed

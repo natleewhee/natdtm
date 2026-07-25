@@ -95,7 +95,7 @@ Purchase fees = BSD (auto-computed) + Legal fees + Agent fees`}</Formula>
         <Section title="CPF accrued interest">
           <P>By law, CPF used for a property (principal used for the downpayment and/or monthly instalments) must be refunded to your CPF Ordinary Account when you sell — plus the interest that money would have earned had it never left CPF. I approximate that as:</P>
           <Formula>{`CPF accrued interest = CPF principal used × [(1 + ${CPF_OA_RATE * 100}%)^(years held) − 1]`}</Formula>
-          <P>Any CPF Housing Grant you received (HDB only) is added to the CPF principal for this calculation, since grants are refunded with accrued interest the same way.</P>
+          <P>If you received a CPF Housing Grant (HDB only), fold it into &quot;CPF used at purchase&quot; — grants are refunded to CPF with accrued interest the same way as any other CPF principal, so there&apos;s no separate field for it.</P>
           <Caveat>This is a flat-rate approximation. CPF Board actually compounds each individual withdrawal from its own withdrawal date (not from your purchase date as a lump sum), and the Ordinary Account rate has occasionally differed from {CPF_OA_RATE * 100}% historically. Log into your CPF account for the exact figure and use the override field once you have it.</Caveat>
         </Section>
 
