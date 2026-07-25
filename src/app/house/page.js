@@ -123,7 +123,7 @@ export default function HouseMuchPage() {
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 16 }}>
             <MoneyInput id="purchase-price" label="Purchase price" value={purchasePrice} onChange={e => setPurchasePrice(e.target.value)} />
             <DateInput id="purchase-date" label="Purchase date" value={purchaseDate} onChange={e => setPurchaseDate(e.target.value)} />
-            <MoneyInput id="cpf-outlay" label="CPF used at purchase" hint="The down payment portion only — not your current CPF principal, which is entered separately below if you're servicing your mortgage via CPF" value={cpfOutlay} onChange={e => setCpfOutlay(e.target.value)} />
+            <MoneyInput id="cpf-outlay" label="CPF used at purchase" hint="The full amount withdrawn at the time of purchase — down payment plus any fees paid via CPF (stamp duty, legal, valuation). Not your current CPF principal, which is entered separately below if you're servicing your mortgage via CPF" value={cpfOutlay} onChange={e => setCpfOutlay(e.target.value)} />
             <MoneyInput
               id="cpf-interest-known" label="CPF accrued interest" hint="Optional — if you already checked your CPF portal. Leave blank to estimate."
               value={cpfInterestOverride} onChange={e => setCpfInterestOverride(e.target.value)}
