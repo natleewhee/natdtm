@@ -53,6 +53,7 @@ export default function HouseTheMathPage() {
           { id: 'cash-outlay-derived-not-asked-for', label: 'Cash outlay' },
           { id: 'mortgage-amortization', label: 'Mortgage amortization' },
           { id: 'cpf-accrued-interest', label: 'CPF accrued interest' },
+          { id: 'projecting-a-future-sale', label: 'Projecting a future sale' },
           { id: 'true-profitloss', label: 'True profit/loss' },
           { id: 'buyers-stamp-duty-bsd', label: 'BSD' },
           { id: 'sellers-stamp-duty-ssd', label: 'SSD' },
@@ -96,6 +97,30 @@ Purchase fees = BSD (auto-computed) + Legal fees + Agent fees`}</Formula>
           <Formula>{`CPF accrued interest = CPF principal used × [(1 + ${CPF_OA_RATE * 100}%)^(years held) − 1]`}</Formula>
           <P>Any CPF Housing Grant you received (HDB only) is added to the CPF principal for this calculation, since grants are refunded with accrued interest the same way.</P>
           <Caveat>This is a flat-rate approximation. CPF Board actually compounds each individual withdrawal from its own withdrawal date (not from your purchase date as a lump sum), and the Ordinary Account rate has occasionally differed from {CPF_OA_RATE * 100}% historically. Log into your CPF account for the exact figure and use the override field once you have it.</Caveat>
+        </Section>
+
+        <Section title="Projecting a future sale">
+          <P>If your sale date is in the future, the override fields above (outstanding loan balance, interest paid, CPF principal, CPF accrued interest) don&apos;t ask for their value <em>at sale</em> — that&apos;s a fact that doesn&apos;t exist yet. They ask for their value <strong>today</strong>, which you can always check (banking app, CPF portal), no matter how long ago you bought or how far off your sale is.</P>
+          <P>The calculation then runs in two stages instead of one long purchase-to-sale estimate:</P>
+          <Formula>{`Stage 1 (purchase → today): the formulas above, evaluated up to today.
+  Use your override here if you have it — otherwise the computed
+  estimate is used, same as always.
+
+Stage 2 (today → sale): the same formulas continue forward from
+  today's real (or estimated) balance/principal, for the remaining
+  months until your sale date.
+
+  Loan balance at sale = Outstanding balance formula, restarted with
+    P = today's balance, n = remaining tenure, t = months from today to sale
+
+  CPF accrued interest at sale = today's accrued interest
+    + (today's CPF principal × [(1 + ${CPF_OA_RATE * 100}%)^(years from today to sale) − 1])
+
+  Interest paid at sale = today's interest paid + interest paid
+    during stage 2, using the same instalment-minus-principal-repaid
+    logic as the amortization section above, scoped to stage 2 only`}</Formula>
+          <P>If your sale date is today or already in the past, stage 2 simply doesn&apos;t run — today&apos;s figures already <em>are</em> your at-sale figures, and nothing is projected.</P>
+          <Caveat>Stage 2 assumes you keep paying the same instalment on the same schedule, and that your CPF principal doesn&apos;t grow further between today and your sale date (i.e. no new CPF top-ups). If your circumstances change — a repricing, a prepayment, more CPF servicing — the further out your sale date is, the more this projection will drift. Check back closer to your actual sale for a tighter number.</Caveat>
         </Section>
 
         <Section title="True profit/loss">

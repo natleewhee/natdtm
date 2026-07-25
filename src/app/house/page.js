@@ -125,7 +125,7 @@ export default function HouseMuchPage() {
             <DateInput id="purchase-date" label="Purchase date" value={purchaseDate} onChange={e => setPurchaseDate(e.target.value)} />
             <MoneyInput id="cpf-outlay" label="CPF used at purchase" hint="The full amount withdrawn at the time of purchase — down payment plus any fees paid via CPF (stamp duty, legal, valuation). Not your current CPF principal, which is entered separately below if you're servicing your mortgage via CPF" value={cpfOutlay} onChange={e => setCpfOutlay(e.target.value)} />
             <MoneyInput
-              id="cpf-interest-known" label="CPF accrued interest" hint="Optional — if you already checked your CPF portal. Leave blank to estimate."
+              id="cpf-interest-known" label="CPF accrued interest today" hint="Optional — your CPF portal's Property panel shows this live, right now, regardless of when you bought. Leave blank to estimate."
               value={cpfInterestOverride} onChange={e => setCpfInterestOverride(e.target.value)}
             />
             <MoneyInput id="loan-taken" label="Loan taken" value={loanTaken} onChange={e => setLoanTaken(e.target.value)} />

@@ -79,6 +79,7 @@ export function calcSale(inputs) {
     cpfPrincipalOverride = null,
     cpfAccruedInterestOverride = null,
     ssdOverride = null,
+    today = new Date().toISOString().slice(0, 10),
   } = inputs
 
   const yearsHeld = yearsBetween(purchaseDate, saleDate)
@@ -87,34 +88,66 @@ export function calcSale(inputs) {
   const bsdAtPurchase = calcBSD(purchasePrice)
   const purchaseFees = bsdAtPurchase + (Number(legalFeesAtPurchase) || 0) + (Number(agentFeesAtPurchase) || 0)
 
+  // Every override below is anchored at "today" (or at sale, if the sale
+  // already happened) rather than at some hypothetical future sale date —
+  // because "today" is the one point in the loan's life you can actually
+  // check (banking app, CPF portal), no matter how long ago you bought.
+  // If you're selling later than today, the calculator projects forward
+  // from your real today's-numbers to your sale date — a short, clean
+  // window — instead of reconstructing the entire purchase-to-sale
+  // history synthetically, which is exactly what breaks whenever reality
+  // (a lump-sum repayment, CPF top-ups) deviated from a plain schedule.
+  const saleIsInFuture = !!(saleDate && today < saleDate)
+  const asOfDate = saleIsInFuture ? today : saleDate
+  const monthsPurchaseToAsOf = yearsBetween(purchaseDate, asOfDate) * 12
+  const monthsAsOfToSale = saleIsInFuture ? yearsBetween(asOfDate, saleDate) * 12 : 0
+  const remainingTenureYears = Math.max(0, (Number(loanTenure) || 0) - yearsBetween(purchaseDate, asOfDate))
+
   const monthlyInstalment = calcMonthlyInstalment(loanTaken, mortgageRate, loanTenure)
-  const outstandingBalanceComputed = calcOutstandingBalance(loanTaken, mortgageRate, loanTenure, monthsHeld)
-  const outstandingBalance = outstandingBalanceOverride ?? outstandingBalanceComputed
+  const outstandingBalanceAsOfComputed = calcOutstandingBalance(loanTaken, mortgageRate, loanTenure, monthsPurchaseToAsOf)
+  const outstandingBalanceAsOf = outstandingBalanceOverride ?? outstandingBalanceAsOfComputed
+  const outstandingBalanceComputed = outstandingBalanceAsOfComputed
+  const outstandingBalance = monthsAsOfToSale > 0
+    ? calcOutstandingBalance(outstandingBalanceAsOf, mortgageRate, remainingTenureYears, monthsAsOfToSale)
+    : outstandingBalanceAsOf
 
-  // Total interest paid to date = total instalments paid so far (at the
-  // computed rate) minus principal actually repaid — using whichever
-  // balance we're working with (computed, or your real one if overridden).
-  // This only holds if every dollar of principal came out of the regular
-  // monthly instalment. Any lump-sum prepayment breaks it: the overridden
-  // balance drops faster than the modeled schedule accounts for, so this
-  // subtraction silently absorbs the lump sum into "interest," crushing
-  // the computed figure toward zero — hence the override below.
-  const principalRepaid = Math.max(0, (Number(loanTaken) || 0) - outstandingBalance)
-  const totalPaidToDate = monthlyInstalment * monthsHeld
-  const totalInterestPaidComputed = Math.max(0, totalPaidToDate - principalRepaid)
-  const totalInterestPaid = totalInterestPaidOverride ?? totalInterestPaidComputed
+  // Interest paid so far (up to today, or up to sale if already sold) plus
+  // — only when selling later — a clean forward-projected slice for the
+  // remaining months. Same "every dollar of principal came from the
+  // regular instalment" assumption as before, but now scoped to a much
+  // shorter window on each side of the override, so a historical
+  // prepayment (baked into your real "as of today" balance) no longer
+  // corrupts a projection that only has to cover the future.
+  const principalRepaidToAsOf = Math.max(0, (Number(loanTaken) || 0) - outstandingBalanceAsOf)
+  const totalPaidToAsOf = monthlyInstalment * monthsPurchaseToAsOf
+  const totalInterestPaidAsOfComputed = Math.max(0, totalPaidToAsOf - principalRepaidToAsOf)
+  const totalInterestPaidComputed = totalInterestPaidAsOfComputed
+  const totalInterestPaidAsOf = totalInterestPaidOverride ?? totalInterestPaidAsOfComputed
+  const principalRepaidRemaining = Math.max(0, outstandingBalanceAsOf - outstandingBalance)
+  const totalPaidRemaining = monthlyInstalment * monthsAsOfToSale
+  const interestPaidRemaining = Math.max(0, totalPaidRemaining - principalRepaidRemaining)
+  const totalInterestPaid = totalInterestPaidAsOf + interestPaidRemaining
 
-  // CPF used at purchase (down payment) and CPF principal owed back on sale
-  // are only the same number if all your CPF went in as a single lump sum
-  // at purchase. If you service your monthly mortgage instalment via CPF
-  // OA — the common case — the refundable principal keeps growing every
-  // month after purchase, so it needs its own override rather than being
-  // assumed equal to the at-purchase figure.
+  // CPF used at purchase (down payment) and CPF principal owed back on
+  // sale are only the same number if all your CPF went in as a single
+  // lump sum at purchase. If you service your monthly mortgage instalment
+  // via CPF OA — the common case — the refundable principal keeps growing
+  // every month after purchase, so it needs its own override anchored at
+  // today, same reasoning as the loan balance above. Forward from today
+  // to a future sale date, the principal is assumed to stay flat (no
+  // further CPF top-ups modeled) — only its accrued interest keeps
+  // compounding — so check back closer to your actual sale for a tighter
+  // number if you're still servicing via CPF.
   const cpfPrincipalAtPurchase = (Number(cpfOutlay) || 0) + (Number(housingGrant) || 0)
-  const cpfPrincipalComputed = cpfPrincipalAtPurchase
-  const cpfPrincipalTotal = cpfPrincipalOverride ?? cpfPrincipalComputed
-  const cpfAccruedInterestComputed = calcCPFAccruedInterest(cpfPrincipalTotal, yearsHeld)
-  const cpfAccruedInterest = cpfAccruedInterestOverride ?? cpfAccruedInterestComputed
+  const cpfPrincipalAsOfComputed = cpfPrincipalAtPurchase
+  const cpfPrincipalComputed = cpfPrincipalAsOfComputed
+  const cpfPrincipalAsOf = cpfPrincipalOverride ?? cpfPrincipalAsOfComputed
+  const cpfPrincipalTotal = cpfPrincipalAsOf
+  const cpfAccruedInterestAsOfComputed = calcCPFAccruedInterest(cpfPrincipalAsOf, monthsPurchaseToAsOf / 12)
+  const cpfAccruedInterestComputed = cpfAccruedInterestAsOfComputed
+  const cpfAccruedInterestAsOf = cpfAccruedInterestOverride ?? cpfAccruedInterestAsOfComputed
+  const cpfAccruedInterestRemaining = calcCPFAccruedInterest(cpfPrincipalAsOf, monthsAsOfToSale / 12)
+  const cpfAccruedInterest = cpfAccruedInterestAsOf + cpfAccruedInterestRemaining
   const totalCPFRefund = cpfPrincipalTotal + cpfAccruedInterest
 
   const ssdComputed = propertyType === 'private' ? calcSSD(salePrice, yearsHeld, propertyType).amount : 0
@@ -173,6 +206,7 @@ export function calcSale(inputs) {
     loanTaken: Number(loanTaken) || 0, cpfOutlay: Number(cpfOutlay) || 0,
     cashOutlay, cashOutlayUnclear,
     salePrice: Number(salePrice) || 0, agentCommission: Number(agentCommission) || 0, legalFeesAtSale: Number(legalFeesAtSale) || 0,
+    saleIsInFuture, asOfDate, monthsAsOfToSale,
     monthlyInstalment, outstandingBalanceComputed, outstandingBalance,
     totalInterestPaidComputed, totalInterestPaid,
     cpfPrincipalAtPurchase, cpfPrincipalComputed, cpfPrincipalTotal,

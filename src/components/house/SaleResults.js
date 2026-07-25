@@ -36,6 +36,7 @@ export default function SaleResults({
     ssd, ssdComputed, sellingCosts, cashProceeds,
     trueCostBasis, netSale, trueProfitLoss, isProfit,
     cashOnCashReturn, totalOutlay, roiOnPrice, roiOnOutlay, annualizedRoiOnPrice, annualizedRoiOnOutlay,
+    saleIsInFuture,
   } = result
 
   return (
@@ -131,32 +132,37 @@ export default function SaleResults({
         <div style={{ fontSize: C.xs, fontWeight: 700, color: C.muted, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 10 }}>
           These are estimates — swap in your real numbers if you have them
         </div>
+        {saleIsInFuture && (
+          <p style={{ fontSize: C.xs, color: C.muted, lineHeight: 1.6, margin: '0 0 14px' }}>
+            Your sale date is in the future, so the four figures below ask for what&apos;s true <strong style={{ color: C.text }}>today</strong> — check your banking app and CPF portal now, not what you expect at sale. I&apos;ll project them forward to your sale date automatically.
+          </p>
+        )}
         <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
           <OverrideField
-            id="ov-balance" label="Outstanding loan balance at sale"
+            id="ov-balance" label="Outstanding loan balance today"
             computedValue={outstandingBalanceComputed}
-            computedHint="Estimated from your loan amount, rate, and tenure — assumes the rate never changed. If you refinanced or made lump-sum repayments, your bank statement will have the real figure."
+            computedHint="Estimated from your loan amount, rate, and tenure — assumes the rate never changed and no lump-sum repayments. Your banking app has the real figure as of right now, no matter how long ago you bought."
             overrideValue={outstandingOverride} onOverrideChange={onOutstandingOverride}
             formatValue={SGD}
           />
           <OverrideField
             id="ov-interest" label="Total mortgage interest paid to date"
             computedValue={totalInterestPaidComputed}
-            computedHint="Estimated by assuming every dollar of principal came from your regular monthly instalment. If you've ever made a lump-sum repayment, this will read too low — check your bank's mortgage interest statement, or estimate roughly as your monthly interest portion × months held."
+            computedHint="Estimated by assuming every dollar of principal came from your regular monthly instalment. If you've ever made a lump-sum repayment, this will read too low — check your bank's mortgage interest statement, or estimate roughly as your monthly interest portion × months held so far."
             overrideValue={totalInterestOverride} onOverrideChange={onTotalInterestOverride}
             formatValue={SGD}
           />
           <OverrideField
-            id="ov-cpf-principal" label="CPF principal to refund"
+            id="ov-cpf-principal" label="CPF principal today"
             computedValue={cpfPrincipalComputed}
-            computedHint="Defaults to your CPF used at purchase (+ any grant). If you've been servicing your mortgage via CPF OA since then, your refundable principal has grown beyond that — check your CPF portal for the real figure and enter it here."
+            computedHint="Defaults to your CPF used at purchase (+ any grant), assuming it hasn't grown since. If you've been servicing your mortgage via CPF OA, your CPF portal's Property panel shows today's real refundable principal — enter it here."
             overrideValue={cpfPrincipalOverride} onOverrideChange={onCpfPrincipalOverride}
             formatValue={SGD}
           />
           <OverrideField
-            id="ov-cpf" label="CPF accrued interest owed"
+            id="ov-cpf" label="CPF accrued interest today"
             computedValue={cpfAccruedInterestComputed}
-            computedHint="Estimated at a flat 2.5% p.a. compounded over your full holding period. CPF Board computes this per-withdrawal from each withdrawal's own date — log into your CPF account for the exact figure."
+            computedHint="Estimated at a flat 2.5% p.a. compounded since purchase. CPF Board computes this per-withdrawal from each withdrawal's own date — your CPF portal's Property panel has today's exact figure."
             overrideValue={cpfInterestOverride} onOverrideChange={onCpfInterestOverride}
             formatValue={SGD}
           />
@@ -181,6 +187,11 @@ export default function SaleResults({
           {sunkCost > 0 && <Row label="+ Renovation / sunk costs" value={`+${SGD(sunkCost)}`} indent />}
           <Row label="+ Total mortgage interest paid" value={`+${SGD(totalInterestPaid)}`} indent />
           <Row label="True cost basis" value={SGD(trueCostBasis)} bold />
+          {saleIsInFuture && (
+            <p style={{ fontSize: C.xs, color: C.faint, lineHeight: 1.6, margin: '2px 0 0' }}>
+              Since your sale date is in the future, interest paid = your today&apos;s-figure above + a clean forward projection to your sale date, not one long estimate spanning your whole ownership.
+            </p>
+          )}
           <div style={{ height: 10 }} />
           <Row label="Purchase price + fees" value={SGD(purchasePrice + purchaseFees)} />
           {loanTaken > 0 && <Row label="− Loan taken" value={`−${SGD(loanTaken)}`} indent />}

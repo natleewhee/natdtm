@@ -245,6 +245,88 @@ assert('annualizedRoiOnOutlay matches the CAGR identity', approx(
 assert('Annualized ROI is smaller than total ROI when held > 1 year and profitable', multiYearSale.annualizedRoiOnPrice < multiYearSale.roiOnPrice)
 assert('annualizedRoiOnPrice is null when there is no purchase price', calcSale({ propertyType: 'private', salePrice: 100 }).annualizedRoiOnPrice === null)
 
+// ─── Forward projection when the sale date is in the future ────────────
+// Overrides are anchored at "today" (or the sale date, if it's already
+// happened), not at some hypothetical future point you can't look up.
+// When selling later than today, the calculator projects forward from
+// your real today's-numbers to the sale date instead of reconstructing
+// the whole purchase-to-sale history synthetically.
+const projPurchaseDate = '2020-01-01'
+const projToday = '2024-01-01'    // 4 years after purchase
+const projSaleDate = '2026-01-01' // 2 years after "today" — a planned future sale
+const projLoanTaken = 400_000, projRate = 2.0, projTenure = 25
+const projOutstandingAsOf = 350_000 // real bank figure, checked today
+const projCpfPrincipalAsOf = 200_000 // real CPF portal figure, checked today
+const projCpfInterestAsOf = 15_000 // real CPF portal figure, checked today
+const projInterestPaidAsOf = 50_000 // real bank interest statement, as of today
+
+const projected = calcSale({
+  propertyType: 'private',
+  purchasePrice: 600_000, purchaseDate: projPurchaseDate,
+  loanTaken: projLoanTaken, mortgageRate: projRate, loanTenure: projTenure,
+  cpfOutlay: 150_000,
+  salePrice: 750_000, saleDate: projSaleDate,
+  outstandingBalanceOverride: projOutstandingAsOf,
+  cpfPrincipalOverride: projCpfPrincipalAsOf,
+  cpfAccruedInterestOverride: projCpfInterestAsOf,
+  totalInterestPaidOverride: projInterestPaidAsOf,
+  today: projToday,
+})
+
+assert('Future sale is detected as such', projected.saleIsInFuture === true)
+assert('asOfDate is today, not the future sale date', projected.asOfDate === projToday)
+
+const projMonthlyInstalment = calcMonthlyInstalment(projLoanTaken, projRate, projTenure)
+const projRemainingTenure = projTenure - yearsBetween(projPurchaseDate, projToday)
+const projMonthsAsOfToSale = yearsBetween(projToday, projSaleDate) * 12
+const expectedBalanceAtSale = calcOutstandingBalance(projOutstandingAsOf, projRate, projRemainingTenure, projMonthsAsOfToSale)
+
+assert('Outstanding balance at sale is projected forward from the as-of-today override, not used as-is', approx(projected.outstandingBalance, expectedBalanceAtSale, 1))
+assert('Projected balance at a future sale is lower than the as-of-today figure (still amortizing)', projected.outstandingBalance < projOutstandingAsOf)
+
+const expectedPrincipalRepaidRemaining = Math.max(0, projOutstandingAsOf - expectedBalanceAtSale)
+const expectedInterestRemaining = Math.max(0, projMonthlyInstalment * projMonthsAsOfToSale - expectedPrincipalRepaidRemaining)
+assert('Total interest paid = as-of-today override + projected remaining interest', approx(projected.totalInterestPaid, projInterestPaidAsOf + expectedInterestRemaining, 1))
+assert('Total interest paid at a future sale exceeds the as-of-today figure', projected.totalInterestPaid > projInterestPaidAsOf)
+
+const expectedCpfInterestRemaining = calcCPFAccruedInterest(projCpfPrincipalAsOf, projMonthsAsOfToSale / 12)
+assert('CPF accrued interest = as-of-today override + projected remaining compounding', approx(projected.cpfAccruedInterest, projCpfInterestAsOf + expectedCpfInterestRemaining, 1))
+assert('CPF principal stays flat from today to a future sale (no further top-ups modeled)', projected.cpfPrincipalTotal === projCpfPrincipalAsOf)
+
+// If the sale date is today (or in the past), overrides apply directly —
+// no forward projection, "as of" collapses to the sale date itself.
+const sellingNow = calcSale({
+  propertyType: 'private',
+  purchasePrice: 600_000, purchaseDate: projPurchaseDate,
+  loanTaken: projLoanTaken, mortgageRate: projRate, loanTenure: projTenure,
+  cpfOutlay: 150_000,
+  salePrice: 750_000, saleDate: projToday,
+  outstandingBalanceOverride: projOutstandingAsOf,
+  cpfPrincipalOverride: projCpfPrincipalAsOf,
+  cpfAccruedInterestOverride: projCpfInterestAsOf,
+  totalInterestPaidOverride: projInterestPaidAsOf,
+  today: projToday,
+})
+assert('Selling on/before today is not treated as a future sale', sellingNow.saleIsInFuture === false)
+assert('No projection: outstanding balance equals the as-of override exactly', sellingNow.outstandingBalance === projOutstandingAsOf)
+assert('No projection: total interest paid equals the as-of override exactly', sellingNow.totalInterestPaid === projInterestPaidAsOf)
+assert('No projection: CPF accrued interest equals the as-of override exactly', sellingNow.cpfAccruedInterest === projCpfInterestAsOf)
+
+// Without any overrides, a future sale still resolves to the same number
+// as computing the full purchase-to-sale span in one shot — the
+// two-stage split shouldn't change the *unoverridden* estimate, only
+// enable a better one when real as-of-today numbers are supplied.
+const projNoOverride = calcSale({
+  propertyType: 'private',
+  purchasePrice: 600_000, purchaseDate: projPurchaseDate,
+  loanTaken: projLoanTaken, mortgageRate: projRate, loanTenure: projTenure,
+  cpfOutlay: 150_000,
+  salePrice: 750_000, saleDate: projSaleDate,
+  today: projToday,
+})
+const directFullSpan = calcOutstandingBalance(projLoanTaken, projRate, projTenure, yearsBetween(projPurchaseDate, projSaleDate) * 12)
+assert('Unoverridden two-stage balance matches a direct full-span computation', approx(projNoOverride.outstandingBalance, directFullSpan, 1))
+
 // HDB MOP gate
 const beforeMop = calcSale({
   propertyType: 'hdb',
