@@ -39,6 +39,7 @@ export default function HouseMuchPage() {
 
   // Overrides (raw strings; empty = use computed default)
   const [outstandingOverride, setOutstandingOverride] = useState('')
+  const [totalInterestOverride, setTotalInterestOverride] = useState('')
   const [cpfPrincipalOverride, setCpfPrincipalOverride] = useState('')
   const [cpfInterestOverride, setCpfInterestOverride] = useState('')
   const [ssdOverride, setSsdOverride] = useState('')
@@ -68,6 +69,7 @@ export default function HouseMuchPage() {
     salePrice: num(salePrice), saleDate,
     agentCommission, legalFeesAtSale: num(legalFeesAtSale),
     outstandingBalanceOverride: outstandingOverride !== '' ? num(outstandingOverride) : null,
+    totalInterestPaidOverride: totalInterestOverride !== '' ? num(totalInterestOverride) : null,
     cpfPrincipalOverride: cpfPrincipalOverride !== '' ? num(cpfPrincipalOverride) : null,
     cpfAccruedInterestOverride: cpfInterestOverride !== '' ? num(cpfInterestOverride) : null,
     ssdOverride: ssdOverride !== '' ? num(ssdOverride) : null,
@@ -199,6 +201,7 @@ export default function HouseMuchPage() {
             <SaleResults
               result={result}
               outstandingOverride={outstandingOverride} onOutstandingOverride={e => setOutstandingOverride(e.target.value)}
+              totalInterestOverride={totalInterestOverride} onTotalInterestOverride={e => setTotalInterestOverride(e.target.value)}
               cpfPrincipalOverride={cpfPrincipalOverride} onCpfPrincipalOverride={e => setCpfPrincipalOverride(e.target.value)}
               cpfInterestOverride={cpfInterestOverride} onCpfInterestOverride={e => setCpfInterestOverride(e.target.value)}
               ssdOverride={ssdOverride} onSsdOverride={e => setSsdOverride(e.target.value)}

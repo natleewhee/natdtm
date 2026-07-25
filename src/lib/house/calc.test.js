@@ -200,6 +200,51 @@ const cpfNoOverride = calcSale({
 })
 assert('cpfPrincipalTotal defaults to cpfPrincipalAtPurchase when no override given', cpfNoOverride.cpfPrincipalTotal === cpfNoOverride.cpfPrincipalAtPurchase)
 
+// Total-interest-paid override — a lump-sum prepayment (reflected via the
+// outstanding-balance override) drags the computed interest figure toward
+// zero, since the formula assumes all principal came from the modeled
+// monthly instalment; the override lets the real figure win instead.
+const lumpSumPrepaid = calcSale({
+  propertyType: 'private',
+  purchasePrice: 480_000, purchaseDate: '2021-08-31',
+  cpfOutlay: 130_000,
+  loanTaken: 365_000, mortgageRate: 1.4, loanTenure: 30,
+  salePrice: 700_000, saleDate: '2026-01-09',
+  outstandingBalanceOverride: 293_000, // well below the ~321k pure-amortization estimate
+})
+assert('A real balance far below the amortization schedule crushes computed interest paid toward 0', lumpSumPrepaid.totalInterestPaidComputed < 1000)
+const lumpSumWithOverride = calcSale({
+  propertyType: 'private',
+  purchasePrice: 480_000, purchaseDate: '2021-08-31',
+  cpfOutlay: 130_000,
+  loanTaken: 365_000, mortgageRate: 1.4, loanTenure: 30,
+  salePrice: 700_000, saleDate: '2026-01-09',
+  outstandingBalanceOverride: 293_000,
+  totalInterestPaidOverride: 15_600,
+})
+assert('Total-interest-paid override is respected', lumpSumWithOverride.totalInterestPaid === 15_600)
+assert('Overriding interest paid changes trueCostBasis and true profit/loss', lumpSumWithOverride.trueProfitLoss !== lumpSumPrepaid.trueProfitLoss)
+
+// Annualized ROI — should equal the CAGR identity, and be smaller in
+// magnitude than the raw total ROI whenever held for more than a year.
+const multiYearSale = calcSale({
+  propertyType: 'private',
+  purchasePrice: 500_000, purchaseDate: '2020-01-01',
+  loanTaken: 350_000, mortgageRate: 2.0, loanTenure: 25,
+  cpfOutlay: 100_000,
+  salePrice: 700_000, saleDate: '2024-01-01', // 4 years held, clean profit
+})
+assert('annualizedRoiOnPrice matches the CAGR identity', approx(
+  Math.pow(1 + multiYearSale.annualizedRoiOnPrice, multiYearSale.yearsHeld) - 1,
+  multiYearSale.roiOnPrice, 0.001,
+))
+assert('annualizedRoiOnOutlay matches the CAGR identity', approx(
+  Math.pow(1 + multiYearSale.annualizedRoiOnOutlay, multiYearSale.yearsHeld) - 1,
+  multiYearSale.roiOnOutlay, 0.001,
+))
+assert('Annualized ROI is smaller than total ROI when held > 1 year and profitable', multiYearSale.annualizedRoiOnPrice < multiYearSale.roiOnPrice)
+assert('annualizedRoiOnPrice is null when there is no purchase price', calcSale({ propertyType: 'private', salePrice: 100 }).annualizedRoiOnPrice === null)
+
 // HDB MOP gate
 const beforeMop = calcSale({
   propertyType: 'hdb',

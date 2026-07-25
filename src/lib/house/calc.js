@@ -75,6 +75,7 @@ export function calcSale(inputs) {
     salePrice = 0, saleDate,
     agentCommission = 0, legalFeesAtSale = 0,
     outstandingBalanceOverride = null,
+    totalInterestPaidOverride = null,
     cpfPrincipalOverride = null,
     cpfAccruedInterestOverride = null,
     ssdOverride = null,
@@ -93,9 +94,15 @@ export function calcSale(inputs) {
   // Total interest paid to date = total instalments paid so far (at the
   // computed rate) minus principal actually repaid — using whichever
   // balance we're working with (computed, or your real one if overridden).
+  // This only holds if every dollar of principal came out of the regular
+  // monthly instalment. Any lump-sum prepayment breaks it: the overridden
+  // balance drops faster than the modeled schedule accounts for, so this
+  // subtraction silently absorbs the lump sum into "interest," crushing
+  // the computed figure toward zero — hence the override below.
   const principalRepaid = Math.max(0, (Number(loanTaken) || 0) - outstandingBalance)
   const totalPaidToDate = monthlyInstalment * monthsHeld
-  const totalInterestPaid = Math.max(0, totalPaidToDate - principalRepaid)
+  const totalInterestPaidComputed = Math.max(0, totalPaidToDate - principalRepaid)
+  const totalInterestPaid = totalInterestPaidOverride ?? totalInterestPaidComputed
 
   // CPF used at purchase (down payment) and CPF principal owed back on sale
   // are only the same number if all your CPF went in as a single lump sum
@@ -147,6 +154,15 @@ export function calcSale(inputs) {
   const roiOnPrice = purchasePrice > 0 ? trueProfitLoss / purchasePrice : null
   const roiOnOutlay = totalOutlay > 0 ? trueProfitLoss / totalOutlay : null
 
+  // Annualized (CAGR-style): (1 + total ROI)^(1/years held) − 1. Only
+  // defined when held for a positive stretch of time and the total return
+  // isn't a wipeout beyond −100% (which has no real-valued root here).
+  const annualize = roi => (roi != null && yearsHeld > 0 && 1 + roi > 0)
+    ? Math.pow(1 + roi, 1 / yearsHeld) - 1
+    : null
+  const annualizedRoiOnPrice = annualize(roiOnPrice)
+  const annualizedRoiOnOutlay = annualize(roiOnOutlay)
+
   const mopOk = propertyType !== 'hdb' || yearsHeld >= HDB_MOP_YEARS
 
   return {
@@ -157,14 +173,15 @@ export function calcSale(inputs) {
     loanTaken: Number(loanTaken) || 0, cpfOutlay: Number(cpfOutlay) || 0,
     cashOutlay, cashOutlayUnclear,
     salePrice: Number(salePrice) || 0, agentCommission: Number(agentCommission) || 0, legalFeesAtSale: Number(legalFeesAtSale) || 0,
-    monthlyInstalment, outstandingBalanceComputed, outstandingBalance, totalInterestPaid,
+    monthlyInstalment, outstandingBalanceComputed, outstandingBalance,
+    totalInterestPaidComputed, totalInterestPaid,
     cpfPrincipalAtPurchase, cpfPrincipalComputed, cpfPrincipalTotal,
     cpfAccruedInterestComputed, cpfAccruedInterest, totalCPFRefund,
     ssdComputed, ssd, sellingCosts,
     cashProceeds,
     trueCostBasis, netSale, trueProfitLoss, isProfit: trueProfitLoss >= 0,
     cashInvested, cashOnCashReturn,
-    totalOutlay, roiOnPrice, roiOnOutlay,
+    totalOutlay, roiOnPrice, roiOnOutlay, annualizedRoiOnPrice, annualizedRoiOnOutlay,
     mopOk,
   }
 }

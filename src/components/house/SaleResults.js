@@ -19,6 +19,7 @@ function Row({ label, value, tone, bold, indent }) {
 export default function SaleResults({
   result,
   outstandingOverride, onOutstandingOverride,
+  totalInterestOverride, onTotalInterestOverride,
   cpfPrincipalOverride, onCpfPrincipalOverride,
   cpfInterestOverride, onCpfInterestOverride,
   ssdOverride, onSsdOverride,
@@ -28,12 +29,13 @@ export default function SaleResults({
     propertyType, yearsHeld, mopOk,
     purchasePrice, bsdAtPurchase, legalFeesAtPurchase, agentFeesAtPurchase, purchaseFees, sunkCost,
     loanTaken, cpfOutlay, cashOutlay, cashOutlayUnclear,
-    outstandingBalance, outstandingBalanceComputed, totalInterestPaid,
+    outstandingBalance, outstandingBalanceComputed,
+    totalInterestPaidComputed, totalInterestPaid,
     cpfPrincipalAtPurchase, cpfPrincipalComputed, cpfPrincipalTotal,
     cpfAccruedInterest, cpfAccruedInterestComputed, totalCPFRefund,
     ssd, ssdComputed, sellingCosts, cashProceeds,
     trueCostBasis, netSale, trueProfitLoss, isProfit,
-    cashOnCashReturn, totalOutlay, roiOnPrice, roiOnOutlay,
+    cashOnCashReturn, totalOutlay, roiOnPrice, roiOnOutlay, annualizedRoiOnPrice, annualizedRoiOnOutlay,
   } = result
 
   return (
@@ -77,6 +79,11 @@ export default function SaleResults({
               <div style={{ fontFamily: C.fontMono, fontSize: 22, fontWeight: 600, color: roiOnPrice >= 0 ? C.greenText : C.redText }}>
                 {roiOnPrice >= 0 ? '+' : ''}{(roiOnPrice * 100).toFixed(1)}%
               </div>
+              {annualizedRoiOnPrice != null && (
+                <div style={{ fontSize: C.xs, color: C.faint, marginTop: 4 }}>
+                  ≈ {annualizedRoiOnPrice >= 0 ? '+' : ''}{(annualizedRoiOnPrice * 100).toFixed(1)}%/yr
+                </div>
+              )}
             </div>
           )}
           {roiOnOutlay != null && (
@@ -85,6 +92,11 @@ export default function SaleResults({
               <div style={{ fontFamily: C.fontMono, fontSize: 22, fontWeight: 600, color: roiOnOutlay >= 0 ? C.greenText : C.redText }}>
                 {roiOnOutlay >= 0 ? '+' : ''}{(roiOnOutlay * 100).toFixed(1)}%
               </div>
+              {annualizedRoiOnOutlay != null && (
+                <div style={{ fontSize: C.xs, color: C.faint, marginTop: 4 }}>
+                  ≈ {annualizedRoiOnOutlay >= 0 ? '+' : ''}{(annualizedRoiOnOutlay * 100).toFixed(1)}%/yr
+                </div>
+              )}
             </div>
           )}
         </div>
@@ -117,7 +129,7 @@ export default function SaleResults({
 
       <div style={{ marginTop: 28 }}>
         <div style={{ fontSize: C.xs, fontWeight: 700, color: C.muted, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 10 }}>
-          These three are estimates — swap in your real numbers if you have them
+          These are estimates — swap in your real numbers if you have them
         </div>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
           <OverrideField
@@ -125,6 +137,13 @@ export default function SaleResults({
             computedValue={outstandingBalanceComputed}
             computedHint="Estimated from your loan amount, rate, and tenure — assumes the rate never changed. If you refinanced or made lump-sum repayments, your bank statement will have the real figure."
             overrideValue={outstandingOverride} onOverrideChange={onOutstandingOverride}
+            formatValue={SGD}
+          />
+          <OverrideField
+            id="ov-interest" label="Total mortgage interest paid to date"
+            computedValue={totalInterestPaidComputed}
+            computedHint="Estimated by assuming every dollar of principal came from your regular monthly instalment. If you've ever made a lump-sum repayment, this will read too low — check your bank's mortgage interest statement, or estimate roughly as your monthly interest portion × months held."
+            overrideValue={totalInterestOverride} onOverrideChange={onTotalInterestOverride}
             formatValue={SGD}
           />
           <OverrideField
