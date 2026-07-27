@@ -1,8 +1,9 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { C, SGD, parseMoney } from '@/lib/house/theme'
 import { calcSale, calcBSD } from '@/lib/house/calc'
+import { saveHouseNumbers } from '@/lib/shared/profile'
 import { MoneyInput, PercentInput, NumberInput, DateInput, Segmented, SectionDivider, FeeInput } from '@/components/house/ui'
 import SaleResults from '@/components/house/SaleResults'
 import NextPurchase from '@/components/house/NextPurchase'
@@ -73,6 +74,19 @@ export default function HouseMuchPage() {
   }) : null
 
   const handleCalc = () => setCalculated(true)
+
+  // Hand off this sale's cash proceeds and CPF refund so RetireWell can
+  // offer them as a prefill — stored locally only, same "no server"
+  // guarantee as the rest of this tool. See src/lib/shared/profile.js.
+  useEffect(() => {
+    if (!result) return
+    saveHouseNumbers({
+      cashProceeds: result.cashProceeds,
+      totalCPFRefund: result.totalCPFRefund,
+      salePrice: result.salePrice,
+      saleDate,
+    })
+  }, [result, saleDate])
 
   return (
     <div style={{ minHeight: '100vh', background: C.bg, fontFamily: C.fontBody }}>

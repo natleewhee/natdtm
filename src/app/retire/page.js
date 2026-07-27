@@ -1,9 +1,10 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { C, SGD, parseMoney } from '@/lib/retire/theme'
 import { calcRetirement } from '@/lib/retire/calc'
 import { monthlyCpfContribution, CPF_OW_CEILING } from '@/lib/retire/cpf'
+import { loadMyNumbers } from '@/lib/shared/profile'
 import { MoneyInput, PercentInput, NumberInput, SectionDivider, Segmented } from '@/components/retire/ui'
 import RetireResults from '@/components/retire/Results'
 import ShellHeader from '@/components/shared/ShellHeader'
@@ -41,6 +42,31 @@ export default function RetireWellPage() {
   const [swr, setSwr] = useState('3')
 
   const [calculated, setCalculated] = useState(false)
+
+  const [houseNumbers, setHouseNumbers] = useState(null)
+  const [driveNumbers, setDriveNumbers] = useState(null)
+  const [houseApplied, setHouseApplied] = useState(false)
+  const [houseDismissed, setHouseDismissed] = useState(false)
+
+  // Pull in whatever HouseMuch/DriveReady last saved locally (nothing is
+  // sent anywhere) so this page can offer them as an editable starting
+  // point instead of asking for the same numbers twice.
+  useEffect(() => {
+    /* eslint-disable react-hooks/set-state-in-effect -- one-time read from
+       localStorage on mount; unavailable during SSR so can't happen during
+       render without a hydration mismatch */
+    const { house, drive } = loadMyNumbers()
+    setHouseNumbers(house)
+    setDriveNumbers(drive)
+    /* eslint-enable react-hooks/set-state-in-effect */
+  }, [])
+
+  const applyHouseNumbers = () => {
+    if (!houseNumbers) return
+    setInvestmentStart(String(Math.round(houseNumbers.cashProceeds)))
+    setStartingOA(String(Math.round(houseNumbers.totalCPFRefund)))
+    setHouseApplied(true)
+  }
 
   const isReady = num(currentAge) > 0 && num(retirementAge) > num(currentAge) && num(desiredMonthlyWithdrawal) > 0
 
@@ -88,6 +114,28 @@ export default function RetireWellPage() {
       </div>
 
       <div style={{ maxWidth: 720, margin: '0 auto', padding: '40px 20px 80px' }}>
+        {houseNumbers && !houseApplied && !houseDismissed && (
+          <div style={{ background: C.accentBg, border: `1px solid ${C.accent}55`, borderRadius: C.rL, padding: '14px 18px', marginBottom: 20, display: 'flex', gap: 14, alignItems: 'center', flexWrap: 'wrap', justifyContent: 'space-between' }}>
+            <div>
+              <div style={{ fontSize: C.sm, fontWeight: 700, color: C.accent }}>
+                Found numbers from your HouseMuch sale{houseNumbers.saleDate ? ` on ${houseNumbers.saleDate}` : ''}
+              </div>
+              <div style={{ fontSize: C.xs, color: C.muted, marginTop: 3, lineHeight: 1.5 }}>
+                {SGD(houseNumbers.cashProceeds)} cash proceeds → starting portfolio, {SGD(houseNumbers.totalCPFRefund)} CPF refund → Ordinary Account. Nothing is applied until you say so, and you can edit any field afterward.
+              </div>
+            </div>
+            <div style={{ display: 'flex', gap: 8, flexShrink: 0 }}>
+              <Button variant="accent" onClick={applyHouseNumbers}>Use these numbers</Button>
+              <Button variant="outline" onClick={() => setHouseDismissed(true)}>Dismiss</Button>
+            </div>
+          </div>
+        )}
+        {houseApplied && (
+          <div style={{ fontSize: C.xs, color: C.muted, marginBottom: 12 }}>
+            Prefilled from your HouseMuch sale — <button type="button" onClick={() => setHouseApplied(false)} style={{ background: 'none', border: 'none', padding: 0, color: C.accent, fontWeight: 600, cursor: 'pointer', fontSize: C.xs, fontFamily: C.fontBody }}>show that banner again</button>.
+          </div>
+        )}
+
         <div style={{ background: C.surface, border: `1px solid ${C.border}`, borderRadius: C.rXL, padding: '28px 24px', boxShadow: C.shadow }}>
 
           <SectionDivider label="You" />
@@ -179,6 +227,13 @@ export default function RetireWellPage() {
             <MoneyInput id="investment-monthly" label="Monthly contribution" value={investmentMonthly} onChange={e => setInvestmentMonthly(e.target.value)} />
             <PercentInput id="investment-return" label="Assumed annual return" hint="Money market funds typically track short-term rates" value={investmentReturn} onChange={e => setInvestmentReturn(e.target.value)} />
           </div>
+
+          {driveNumbers && (
+            <p style={{ marginTop: 10, fontSize: C.xs, color: C.muted, lineHeight: 1.5 }}>
+              From DriveReady{driveNumbers.carLabel ? `, your ${driveNumbers.carLabel}` : ''}: you&apos;re committing {SGD(driveNumbers.monthlyCost)}/month to a car loan.
+              {num(investmentMonthly) > 0 && ` That's ${(driveNumbers.monthlyCost / (num(investmentMonthly) || 1)).toFixed(1)}× your planned monthly investment — worth weighing against each other.`}
+            </p>
+          )}
 
           <SectionDivider label="Retirement target" />
           <p style={{ marginTop: -8, marginBottom: 16, fontSize: C.xs, color: C.muted, lineHeight: 1.5 }}>

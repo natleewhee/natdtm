@@ -10,6 +10,7 @@ import {
   serializeToJSON, deserializeFromJSON, mergeRestoredState,
 } from '@/lib/drive/persist'
 import { loadGarage, saveGarage, makeGarageEntry, addEntry, removeEntry, renameEntry, defaultEntryName } from '@/lib/drive/garage'
+import { saveDriveNumbers } from '@/lib/shared/profile'
 import { SectionDivider, MoneyInput } from '@/components/drive/ui'
 import { CarPicker } from '@/components/drive/CarPicker'
 import { UsedCarForm } from '@/components/drive/UsedCarForm'
@@ -206,6 +207,17 @@ export default function DriveReadyPage() {
   const calcForSlot = (condition, ...args) => condition === 'used' ? calcUsed(...args) : calc(...args)
   const rA = (calculated && effCarA)                      ? calcForSlot(conditionA, dSalary, dDown, dTenure, effCarA, liveCOE, dExistingDebt) : null
   const rB = (calculated && effCarB && mode==='compare')   ? calcForSlot(conditionB, dSalary, dDown, dTenure, effCarB, liveCOE, dExistingDebt) : null
+
+  // Hand off this car's true committed monthly cost so RetireWell can nudge
+  // against it — stored locally only. See src/lib/shared/profile.js.
+  useEffect(() => {
+    if (!rA) return
+    saveDriveNumbers({
+      monthlyCost: rA.monthly,
+      carLabel: rA.car?.short || rA.car?.name || null,
+      salary: rA.salary,
+    })
+  }, [rA])
 
   const handleSalary = e => { const r=e.target.value.replace(/\D/g,''); setSalaryRaw(r); setSalary(r?Number(r).toLocaleString('en-SG'):'') }
   const handleDown   = e => { const r=e.target.value.replace(/\D/g,''); setDownRaw(r);   setDown(r?Number(r).toLocaleString('en-SG'):'') }
