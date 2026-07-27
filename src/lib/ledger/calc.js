@@ -10,7 +10,7 @@
 
 import { calcRetirement } from '../retire/calc.js'
 import { TDSR_LIMIT } from '../drive/calc.js'
-import { calcMonthlyInstalment, calcBSD } from '../house/calc.js'
+import { calcMonthlyInstalment, calcBSD, calcNextPurchase } from '../house/calc.js'
 
 export { TDSR_LIMIT }
 
@@ -33,8 +33,12 @@ export const TAKE_HOME_RATE = 0.80
 // Builds a baseline ledger state from the shared "My Numbers" store
 // (see src/lib/shared/profile.js) — whatever HouseMuch/DriveReady/
 // RetireWell last saved, filled to zero/null where a module is empty.
-// Cash savings has no source tool to sync from, so it always starts at
-// zero here and is manual-entry only.
+// cashProceeds/totalCPFRefund are carried through even though the
+// resolved shape below doesn't use them directly — they're there so an
+// "upgrading" scenario can default its sale figures from the last
+// HouseMuch sale calculation instead of asking for them again. Cash
+// savings has no source tool to sync from, so it always starts at zero
+// and is manual-entry only.
 export function buildBaselineState(myNumbers) {
   const { house, drive, retire } = myNumbers || {}
   return {
@@ -43,11 +47,15 @@ export function buildBaselineState(myNumbers) {
       outstandingBalance: house.outstandingBalance || 0,
       monthlyInstalment: house.monthlyInstalment || 0,
       propertyValue: house.propertyValue || 0,
+      cashProceeds: house.cashProceeds || 0,
+      totalCPFRefund: house.totalCPFRefund || 0,
+      source: house.source || 'auto',
     } : null,
     car: drive ? {
       loanOutstanding: drive.loanOutstanding || 0,
       monthlyInstalment: drive.monthlyInstalment || 0,
       carValue: drive.carValue || 0,
+      source: drive.source || 'auto',
     } : null,
     cpf: {
       oa: retire?.oaBalance || 0,
@@ -75,29 +83,70 @@ export function calcHousePurchase({ price = 0, downpaymentPct = 25, rate = 0, te
   return { price: p, downpaymentAmount, loanAmount, monthlyInstalment, bsd, otherFees: fees, cashNeeded }
 }
 
-// Resolves a scenario's house input (either a plain existing-mortgage
-// shape, or a { mode: 'purchase', ...calcHousePurchase inputs } shape)
-// into the { outstandingBalance, monthlyInstalment, propertyValue } shape
-// every other function here expects, plus how much cash buying it would
-// draw down.
+// "Upgrading" — sell the current house, then use the sale proceeds plus
+// CPF refund toward a new house — reusing HouseMuch's own NextPurchase
+// engine (calcNextPurchase) rather than re-deriving the funds-required-
+// vs-funds-available math. cashProceeds/totalCPFRefund are the outputs
+// of a HouseMuch sale calculation (synced automatically if you've run
+// one, editable either way). Cash and CPF are pooled together as "funds
+// available" here, same simplification NextPurchase itself documents.
+export function calcHouseUpgrade({
+  cashProceeds = 0, totalCPFRefund = 0,
+  price = 0, downpaymentPct = 25, rate = 0, tenureYears = 25, otherFees = 0, absd = 0,
+}) {
+  const p = Math.max(0, Number(price) || 0)
+  const downPct = Math.max(0, Math.min(100, Number(downpaymentPct) || 0))
+  const loanAmount = Math.max(0, p - p * (downPct / 100))
+  const next = calcNextPurchase(
+    { newPrice: p, newLoanAmount: loanAmount, newLoanTenure: tenureYears, newMortgageRate: rate, absd, otherFees },
+    { cashProceeds: Number(cashProceeds) || 0, totalCPFRefund: Number(totalCPFRefund) || 0 },
+  )
+  return {
+    price: p, loanAmount, monthlyInstalment: next.newMonthlyInstalment,
+    bsd: next.bsd, downpayment: next.downpayment,
+    cashProceeds: Number(cashProceeds) || 0, totalCPFRefund: Number(totalCPFRefund) || 0,
+    fundsRequired: next.fundsRequired, fundsAvailable: next.fundsAvailable,
+    gap: next.gap, surplus: next.surplus,
+  }
+}
+
+// Resolves a scenario's house input — a plain existing-mortgage shape,
+// a { mode: 'purchase', ... } shape, or a { mode: 'upgrade', ... } shape
+// — into the { outstandingBalance, monthlyInstalment, propertyValue }
+// shape every other function here expects, plus cashImpact: how much
+// the choice adds to (positive) or draws from (negative) cash savings.
+// A plain purchase only ever draws down cash; an upgrade can go either
+// way depending on whether the old house's sale proceeds cover the new
+// one.
 export function resolveHouseModule(house) {
-  if (!house) return { resolved: null, cashNeeded: 0, purchase: null }
+  if (!house) return { resolved: null, cashImpact: 0, detail: null }
+
   if (house.mode === 'purchase') {
     const purchase = calcHousePurchase(house)
     return {
       resolved: { outstandingBalance: purchase.loanAmount, monthlyInstalment: purchase.monthlyInstalment, propertyValue: purchase.price },
-      cashNeeded: purchase.cashNeeded,
-      purchase,
+      cashImpact: -purchase.cashNeeded,
+      detail: purchase,
     }
   }
+
+  if (house.mode === 'upgrade') {
+    const upgrade = calcHouseUpgrade(house)
+    return {
+      resolved: { outstandingBalance: upgrade.loanAmount, monthlyInstalment: upgrade.monthlyInstalment, propertyValue: upgrade.price },
+      cashImpact: -upgrade.gap, // gap > 0: shortfall draws cash; gap < 0: leftover proceeds top it up
+      detail: upgrade,
+    }
+  }
+
   return {
     resolved: {
       outstandingBalance: house.outstandingBalance || 0,
       monthlyInstalment: house.monthlyInstalment || 0,
       propertyValue: house.propertyValue || 0,
     },
-    cashNeeded: 0,
-    purchase: null,
+    cashImpact: 0,
+    detail: null,
   }
 }
 

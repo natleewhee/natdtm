@@ -4,9 +4,9 @@ import assert from 'node:assert/strict'
 import {
   buildBaselineState, calcNetWorth, calcMonthlyObligations, calcTDSR,
   calcInvestmentCapacity, calcScenarioRetirement, compareScenarios, TDSR_LIMIT,
-  calcHousePurchase, resolveHouseModule,
+  calcHousePurchase, calcHouseUpgrade, resolveHouseModule,
 } from './calc.js'
-import { calcMonthlyInstalment, calcBSD } from '../house/calc.js'
+import { calcMonthlyInstalment, calcBSD, calcNextPurchase } from '../house/calc.js'
 
 function approx(a, b, eps = 0.01) {
   assert.ok(Math.abs(a - b) <= eps, `expected ${a} ≈ ${b}`)
@@ -20,6 +20,7 @@ test('buildBaselineState fills from a full My Numbers snapshot', () => {
   })
   assert.equal(state.salary, 7000) // retire salary wins over drive salary
   assert.equal(state.house.outstandingBalance, 400000)
+  assert.equal(state.house.source, 'auto')
   assert.equal(state.car.loanOutstanding, 60000)
   assert.equal(state.cpf.oa, 80000)
   assert.equal(state.investmentBalance, 150000)
@@ -76,26 +77,62 @@ test('calcHousePurchase defaults to a 75% loan (25% down)', () => {
 })
 
 test('resolveHouseModule passes through an existing-mortgage shape unchanged', () => {
-  const { resolved, cashNeeded, purchase } = resolveHouseModule({ outstandingBalance: 400000, monthlyInstalment: 2500, propertyValue: 1200000 })
+  const { resolved, cashImpact, detail } = resolveHouseModule({ outstandingBalance: 400000, monthlyInstalment: 2500, propertyValue: 1200000 })
   assert.equal(resolved.outstandingBalance, 400000)
-  assert.equal(cashNeeded, 0)
-  assert.equal(purchase, null)
+  assert.equal(cashImpact, 0)
+  assert.equal(detail, null)
 })
 
 test('resolveHouseModule computes a purchase-mode house into the resolved shape', () => {
-  const { resolved, cashNeeded, purchase } = resolveHouseModule({ mode: 'purchase', price: 1000000, downpaymentPct: 25, rate: 2.6, tenureYears: 25 })
+  const { resolved, cashImpact, detail } = resolveHouseModule({ mode: 'purchase', price: 1000000, downpaymentPct: 25, rate: 2.6, tenureYears: 25 })
   assert.equal(resolved.propertyValue, 1000000)
   approx(resolved.outstandingBalance, 750000)
   approx(resolved.monthlyInstalment, calcMonthlyInstalment(750000, 2.6, 25))
-  assert.ok(cashNeeded > 0)
-  assert.ok(purchase != null)
+  assert.ok(cashImpact < 0) // a plain purchase only ever draws down cash
+  assert.ok(detail != null)
 })
 
 test('resolveHouseModule handles a null house', () => {
-  const { resolved, cashNeeded, purchase } = resolveHouseModule(null)
+  const { resolved, cashImpact, detail } = resolveHouseModule(null)
   assert.equal(resolved, null)
-  assert.equal(cashNeeded, 0)
-  assert.equal(purchase, null)
+  assert.equal(cashImpact, 0)
+  assert.equal(detail, null)
+})
+
+test('calcHouseUpgrade matches HouseMuch\'s own calcNextPurchase math', () => {
+  const u = calcHouseUpgrade({
+    cashProceeds: 500000, totalCPFRefund: 150000,
+    price: 1500000, downpaymentPct: 25, rate: 2.6, tenureYears: 25, otherFees: 5000,
+  })
+  const loanAmount = 1500000 * 0.75
+  const expected = calcNextPurchase(
+    { newPrice: 1500000, newLoanAmount: loanAmount, newLoanTenure: 25, newMortgageRate: 2.6, absd: 0, otherFees: 5000 },
+    { cashProceeds: 500000, totalCPFRefund: 150000 },
+  )
+  approx(u.loanAmount, loanAmount)
+  approx(u.monthlyInstalment, expected.newMonthlyInstalment)
+  approx(u.bsd, expected.bsd)
+  approx(u.gap, expected.gap)
+  assert.equal(u.surplus, expected.surplus)
+})
+
+test('resolveHouseModule on an upgrade with enough proceeds returns a positive cashImpact (surplus)', () => {
+  const { resolved, cashImpact, detail } = resolveHouseModule({
+    mode: 'upgrade', cashProceeds: 2000000, totalCPFRefund: 200000,
+    price: 1000000, downpaymentPct: 25, rate: 2.6, tenureYears: 25,
+  })
+  assert.equal(resolved.propertyValue, 1000000)
+  assert.ok(detail.surplus)
+  assert.ok(cashImpact > 0) // leftover proceeds top up cash savings
+})
+
+test('resolveHouseModule on an upgrade with insufficient proceeds returns a negative cashImpact (shortfall)', () => {
+  const { cashImpact, detail } = resolveHouseModule({
+    mode: 'upgrade', cashProceeds: 100000, totalCPFRefund: 50000,
+    price: 2000000, downpaymentPct: 25, rate: 2.6, tenureYears: 25,
+  })
+  assert.ok(!detail.surplus)
+  assert.ok(cashImpact < 0) // shortfall draws from cash savings
 })
 
 test('calcMonthlyObligations sums mortgage + car instalments', () => {

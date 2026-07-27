@@ -29,7 +29,9 @@ function stateToScenario(state, id, label) {
       propertyValue: state.house ? String(Math.round(state.house.propertyValue || 0)) : '',
       outstandingBalance: state.house ? String(Math.round(state.house.outstandingBalance || 0)) : '',
       monthlyInstalment: state.house ? String(Math.round(state.house.monthlyInstalment || 0)) : '',
-      price: '', downpaymentPct: '25', rate: '2.60', tenureYears: '25', otherFees: '',
+      price: '', downpaymentPct: '25', rate: '2.60', tenureYears: '25', otherFees: '', absd: '',
+      cashProceeds: state.house?.cashProceeds ? String(Math.round(state.house.cashProceeds)) : '',
+      totalCPFRefund: state.house?.totalCPFRefund ? String(Math.round(state.house.totalCPFRefund)) : '',
       source: state.house?.source || 'manual',
     },
     hasCar: !!state.car,
@@ -49,10 +51,11 @@ function stateToScenario(state, id, label) {
 
 // Converts a scenario's string fields back into the numeric state shape
 // the ledger engine (src/lib/ledger/calc.js) computes against. A
-// "buying a new house" module gets resolved into loan/instalment/BSD via
-// resolveHouseModule, and the cash it requires is drawn down from cash
-// savings (floored at zero — a shortfall just means savings alone don't
-// cover it, which the ComparisonTable/ScenarioCard surface separately).
+// "buying a new house" or "upgrading" module gets resolved into loan/
+// instalment/BSD via resolveHouseModule, and its cashImpact (negative =
+// draws down, positive = tops up, e.g. leftover sale proceeds) is
+// applied to cash savings, floored at zero — a shortfall just means
+// savings alone don't cover it, which ScenarioCard surfaces separately.
 function scenarioToState(scenario) {
   const houseInput = scenario.hasHouse ? (
     scenario.house.mode === 'purchase'
@@ -62,6 +65,14 @@ function scenarioToState(scenario) {
           rate: num(scenario.house.rate), tenureYears: num(scenario.house.tenureYears) || 25,
           otherFees: num(scenario.house.otherFees),
         }
+      : scenario.house.mode === 'upgrade'
+      ? {
+          mode: 'upgrade',
+          cashProceeds: num(scenario.house.cashProceeds), totalCPFRefund: num(scenario.house.totalCPFRefund),
+          price: num(scenario.house.price), downpaymentPct: num(scenario.house.downpaymentPct) || 25,
+          rate: num(scenario.house.rate), tenureYears: num(scenario.house.tenureYears) || 25,
+          otherFees: num(scenario.house.otherFees), absd: num(scenario.house.absd),
+        }
       : {
           propertyValue: num(scenario.house.propertyValue),
           outstandingBalance: num(scenario.house.outstandingBalance),
@@ -69,8 +80,8 @@ function scenarioToState(scenario) {
         }
   ) : null
 
-  const { resolved: house, cashNeeded } = resolveHouseModule(houseInput)
-  const cashSavings = Math.max(0, num(scenario.cashSavings) - cashNeeded)
+  const { resolved: house, cashImpact } = resolveHouseModule(houseInput)
+  const cashSavings = Math.max(0, num(scenario.cashSavings) + cashImpact)
 
   return {
     salary: num(scenario.salary),
