@@ -18,6 +18,8 @@ const ROUTES = [
   { path: '/etf/the-math', priority: 0.8 },
   { path: '/house', priority: 0.9 },
   { path: '/house/the-math', priority: 0.8 },
+  { path: '/retire', priority: 0.9 },
+  { path: '/retire/the-math', priority: 0.8 },
 ]
 
 export default function sitemap() {

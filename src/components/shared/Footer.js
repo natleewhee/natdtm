@@ -22,6 +22,7 @@ const DISCLAIMERS = {
   '/drive': 'DriveReady: educational tool only, not financial advice. Car prices are sourced monthly from the LTA Car Cost Update and are indicative only — always verify with the dealer. COE premiums are sourced from LTA DataMall. Not affiliated with any insurer or MAS-licensed entity.',
   '/etf': 'WhatETF: educational tool only, not financial advice. Portfolios shown are illustrative examples — consult a MAS-licensed financial adviser before making investment decisions. Not affiliated with any broker or MAS-licensed entity.',
   '/house': 'HouseMuch: educational tool only, not financial or legal advice. Stamp duty and CPF accrued interest figures are estimates based on public formulas and may not reflect the latest rates — verify with IRAS, CPF Board, and a conveyancing lawyer before making any property decision. Not affiliated with HDB, CPF Board, or IRAS.',
+  '/retire': 'RetireWell: educational tool only, not financial advice. CPF contribution/interest figures are estimates based on public formulas and may not reflect the latest rates. Safe withdrawal rate and investment return assumptions are not guaranteed. Consult a MAS-licensed financial adviser before making any retirement decision. Not affiliated with CPF Board or MAS.',
 }
 
 export default function Footer() {
@@ -37,7 +38,7 @@ export default function Footer() {
         <div className="shell-footer-col">
           <p className="shell-footer-brand">ndtm</p>
           <p className="shell-footer-blurb">
-            Free calculators I built for the big Singapore financial decisions — insurance, cars, ETFs, property.
+            Free calculators I built for the big Singapore financial decisions — insurance, cars, ETFs, property, retirement.
             Every number is shown, not just the verdict.
           </p>
         </div>
@@ -49,6 +50,7 @@ export default function Footer() {
             <a href="/drive/the-math">Drive</a>
             <a href="/etf/the-math">Invest</a>
             <a href="/house/the-math">House</a>
+            <a href="/retire/the-math">Retire</a>
           </div>
         </div>
 

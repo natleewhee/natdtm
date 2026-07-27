@@ -25,6 +25,12 @@ const TOOLS = [
     title: 'HouseMuch',
     desc: 'What did your house really make you? True profit/loss after CPF refund, mortgage interest, and stamp duties — not just sale minus purchase.',
   },
+  {
+    href: '/retire',
+    eyebrow: 'Retire',
+    title: 'RetireWell',
+    desc: 'Will you actually have enough? CPF contributions projected properly, your investments stress-tested against a safe withdrawal rate — not a rule of thumb.',
+  },
 ]
 
 export default function HomePage() {
@@ -36,7 +42,7 @@ export default function HomePage() {
         fontFamily: 'var(--l-font-mono)', fontSize: 12, letterSpacing: '.12em',
         textTransform: 'uppercase', color: 'var(--l-sub)', margin: '0 0 14px',
       }}>
-        Four calculators, one household
+        Five calculators, one household
       </p>
       <h1 style={{
         fontFamily: 'var(--l-font-display)', fontWeight: 600, fontSize: 'clamp(28px,4vw,42px)',
