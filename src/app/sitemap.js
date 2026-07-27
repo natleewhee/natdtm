@@ -20,6 +20,10 @@ const ROUTES = [
   { path: '/house/the-math', priority: 0.8 },
   { path: '/retire', priority: 0.9 },
   { path: '/retire/the-math', priority: 0.8 },
+  { path: '/ledger', priority: 0.9 },
+  { path: '/ledger/the-math', priority: 0.8 },
+  { path: '/tax', priority: 0.9 },
+  { path: '/tax/the-math', priority: 0.8 },
 ]
 
 export default function sitemap() {

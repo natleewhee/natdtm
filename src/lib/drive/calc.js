@@ -75,10 +75,21 @@ export function calcCOERebate(coePaid, monthsRemaining) {
   return Math.max(0, (monthsRemaining / 120) * coePaid)
 }
 
+// Type labels that contain "Electric" but describe a car that does NOT
+// qualify for EEAI. A bare `type.includes('Electric')` would wrongly
+// grant a hybrid up to $7,500 of rebate — today's dataset happens to
+// label hybrids "SUV · Hybrid" so nothing misfires, but a single entry
+// typed "Petrol-Electric Hybrid" (a common phrasing) would silently
+// understate that car's ARF and its true cost.
+const NON_EV_MARKERS = /hybrid|phev|e-power|plug-?in|mild/i
+
 export function isPureEV(car) {
   // EEAI applies to fully electric vehicles only — NOT hybrids, PHEVs, or e-Power
   // Tesla is always pure EV. Otherwise check the type field.
-  return car.rateTier === 'tesla' || (car.type?.includes('Electric') ?? false)
+  if (car.rateTier === 'tesla') return true
+  const type = car.type ?? ''
+  if (NON_EV_MARKERS.test(type)) return false
+  return type.includes('Electric')
 }
 
 export function calcNetARF(omv, ves, pureEV) {
@@ -182,8 +193,15 @@ export function calc(salary, down, tenure, car, liveCOE = null, existingDebt = 0
 
   const tier = RATE_TIERS.find(t => t.id === car.rateTier) ?? RATE_TIERS[0]
   const maxLoan = car.price * (car.loanCap / 100)
-  const minDown = car.price * (1 - car.loanCap / 100)
-  const canDown = down >= minDown
+  // Derived by subtraction and rounded to cents, NOT as
+  // price × (1 − cap/100): that form evaluates to 60000.00000000001 for a
+  // $200k car at 70%, so someone entering exactly the minimum
+  // downpayment was told it was insufficient and shown a $0 shortfall.
+  const minDown = Math.round((car.price - maxLoan) * 100) / 100
+  // Half-a-cent tolerance: nobody can be short by less than a cent, and
+  // without it a downpayment derived by float arithmetic upstream can
+  // land a fraction below the minimum and read as insufficient.
+  const canDown = down >= minDown - 0.005
   const loan = canDown ? Math.min(Math.max(0, car.price - down), maxLoan) : maxLoan
   const reqDown = minDown
   const months = tenure * 12

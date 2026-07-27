@@ -2,7 +2,7 @@
 
 import { useRouter } from 'next/navigation'
 import { C } from '@/lib/ledger/theme'
-import { TDSR_LIMIT, TAKE_HOME_RATE } from '@/lib/ledger/calc'
+import { TDSR_LIMIT, TAKE_HOME_RATE, MSR_LIMIT } from '@/lib/ledger/calc'
 import ShellHeader from '@/components/shared/ShellHeader'
 import MathTOC from '@/components/shared/MathTOC'
 
@@ -50,8 +50,8 @@ export default function LedgerTheMathPage() {
         <MathTOC items={[
           { id: 'where-the-numbers-come-from', label: 'Where the numbers come from' },
           { id: 'net-worth', label: 'Net worth' },
-          { id: 'monthly-obligations-and-tdsr', label: 'Obligations & TDSR' },
-          { id: 'investment-capacity', label: 'Investment capacity' },
+          { id: 'monthly-commitments-tdsr-and-msr', label: 'Commitments, TDSR & MSR' },
+          { id: 'investment-capacity-and-why-it-rises', label: 'Investment capacity' },
           { id: 'retirement-projection', label: 'Retirement projection' },
           { id: 'scenarios', label: 'Scenarios' },
           { id: 'limitations', label: 'Limitations' },
@@ -67,30 +67,53 @@ export default function LedgerTheMathPage() {
           <Formula>{`Net worth = (home value − mortgage outstanding)
           + (car value − car loan outstanding)
           + CPF Ordinary + CPF Special + CPF MediSave
-          + investment portfolio value`}</Formula>
+          + investment portfolio value
+          + cash savings`}</Formula>
           <P>A module left empty (no mortgage, no car) simply contributes zero — it&apos;s never treated as a missing/unknown value.</P>
         </Section>
 
-        <Section title="Monthly obligations and TDSR">
-          <P>Every module&apos;s monthly instalment is summed and checked against gross income — a Total Debt Servicing Ratio across everything you&apos;ve entered, not just one loan in isolation the way each individual tool checks it:</P>
-          <Formula>{`Monthly obligations = mortgage instalment + car instalment
+        <Section title="Monthly commitments, TDSR and MSR">
+          <P>Two different numbers matter here, and conflating them is a good way to get a loan rejected. <strong>What actually leaves your account</strong> each month includes insurance premiums. <strong>What a bank counts</strong> against you does not — premiums aren&apos;t debt:</P>
+          <Formula>{`Total commitments = mortgage + car instalment + insurance premiums
+Debt obligations  = mortgage + car instalment          (banks count this)
 
-TDSR = monthly obligations ÷ gross monthly salary
+TDSR = debt obligations ÷ gross monthly salary
+Flagged when TDSR > ${(TDSR_LIMIT * 100).toFixed(0)}%`}</Formula>
+          <P>For HDB flats (and ECs bought from a developer) a second, tighter limit applies — the <strong>Mortgage Servicing Ratio</strong>, which counts only the property loan:</P>
+          <Formula>{`MSR = mortgage instalment ÷ gross monthly salary
+Flagged when MSR > ${(MSR_LIMIT * 100).toFixed(0)}%
 
-Flagged over the limit when TDSR > ${(TDSR_LIMIT * 100).toFixed(0)}%`}</Formula>
-          <Caveat>This mirrors the {(TDSR_LIMIT * 100).toFixed(0)}% MAS Total Debt Servicing Ratio limit already used in DriveReady&apos;s own affordability check — but a real bank&apos;s TDSR calculation also counts other credit facilities (credit cards, other loans) this tool has no way to know about, and may weight income sources differently. Treat this as a directional check, not a substitute for what your bank will actually compute.</Caveat>
+Applies to HDB only. Does not apply to private property.`}</Formula>
+          <P>Because MSR is {(MSR_LIMIT * 100).toFixed(0)}% against TDSR&apos;s {(TDSR_LIMIT * 100).toFixed(0)}% and counts fewer debts, it is very often the binding constraint on an HDB purchase — an HDB loan can fail MSR while passing TDSR comfortably.</P>
+          <Caveat>A real bank&apos;s calculation also counts credit facilities this tool has no way to know about (credit cards, personal loans, guarantor obligations), applies haircuts to variable income, and stress-tests the mortgage at a floor rate above what you&apos;re actually paying. Treat both ratios as directional checks, not a substitute for what your bank will compute.</Caveat>
         </Section>
 
-        <Section title="Investment capacity">
-          <P>What&apos;s realistically left to invest each month, after take-home pay covers every obligation entered above — this replaces the guessed monthly-contribution figure RetireWell would otherwise ask for directly:</P>
-          <Formula>{`Take-home pay = gross salary × ${(TAKE_HOME_RATE * 100).toFixed(0)}%
-
-Investment capacity = max(0, take-home pay − monthly obligations)`}</Formula>
-          <Caveat>The {(TAKE_HOME_RATE * 100).toFixed(0)}% take-home assumption is the same rough CPF-deduction estimate DriveReady uses — your actual take-home depends on your specific CPF contribution rate (see RetireWell&apos;s own math for the exact age-banded split).</Caveat>
+        <Section title="Investment capacity, and why it rises">
+          <P>What&apos;s realistically left to invest each month, after take-home pay covers every commitment — this replaces the guessed monthly-contribution figure RetireWell would otherwise ask for:</P>
+          <Formula>{`Investment capacity = max(0, take-home pay − total commitments)`}</Formula>
+          <P>Take-home comes from TaxWise when you&apos;ve run it, which nets off both your age-banded CPF employee share and income tax. Without it, a flat approximation is used:</P>
+          <Formula>{`Exact (TaxWise):  gross − employee CPF − income tax
+Fallback:         gross × ${(TAKE_HOME_RATE * 100).toFixed(0)}%`}</Formula>
+          <P><strong>Crucially, capacity is not constant.</strong> Loans end. A seven-year car loan does not keep draining a thirty-year projection, so each commitment drops out of the schedule once its remaining tenure is up and capacity steps up accordingly:</P>
+          <Formula>{`For each month m until retirement:
+  capacity(m) = take-home
+              − (mortgage, if m < months left on the mortgage)
+              − (car instalment, if m < months left on the car loan)
+              − insurance premiums   (no tenure — assumed ongoing)`}</Formula>
+          <Caveat>Leaving a &quot;years left&quot; field blank means that loan is assumed to run all the way to retirement — the conservative reading. Insurance premiums are assumed to continue indefinitely, which is right for whole-life and hospitalisation cover but overstates the cost of a term policy that expires.</Caveat>
         </Section>
 
         <Section title="Retirement projection">
-          <P>Each scenario&apos;s CPF balances, investment balance, and salary feed straight into RetireWell&apos;s own accumulation and depletion engine — the exact same projection RetireWell itself would produce, just with investment capacity (above) used as the monthly contribution instead of a number you&apos;d otherwise have to guess.</P>
+          <P>Each scenario&apos;s CPF balances, investment balance, and salary feed straight into RetireWell&apos;s own accumulation and depletion engine — the exact same projection RetireWell itself would produce.</P>
+          <P>That engine takes a single flat monthly contribution, but real capacity steps up as loans end. Rather than average the schedule (which would misprice the compounding — early contributions have decades longer to grow), this solves for the <strong>level contribution whose future value at retirement exactly equals</strong> that of the real, time-varying schedule:</P>
+          <Formula>{`FV of the real schedule = Σ capacity(m) × (1 + r)^(n − m − 1)
+
+annuity factor          = ((1 + r)^n − 1) ÷ r
+
+level contribution      = FV of the real schedule ÷ annuity factor
+
+where r = monthly return, n = months to retirement`}</Formula>
+          <P>The flat figure handed to RetireWell therefore produces exactly the answer the varying schedule would — it is a reformulation, not an approximation.</P>
           <P>See RetireWell&apos;s <a href="/retire/the-math" style={{ color: C.accent }}>the math</a> page for the full CPF contribution, interest, and depletion-simulation formulas — nothing about that engine changes here.</P>
         </Section>
 

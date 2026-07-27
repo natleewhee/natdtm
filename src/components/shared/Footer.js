@@ -23,6 +23,7 @@ const DISCLAIMERS = {
   '/etf': 'WhatETF: educational tool only, not financial advice. Portfolios shown are illustrative examples — consult a MAS-licensed financial adviser before making investment decisions. Not affiliated with any broker or MAS-licensed entity.',
   '/house': 'HouseMuch: educational tool only, not financial or legal advice. Stamp duty and CPF accrued interest figures are estimates based on public formulas and may not reflect the latest rates — verify with IRAS, CPF Board, and a conveyancing lawyer before making any property decision. Not affiliated with HDB, CPF Board, or IRAS.',
   '/retire': 'RetireWell: educational tool only, not financial advice. CPF contribution/interest figures are estimates based on public formulas and may not reflect the latest rates. Safe withdrawal rate and investment return assumptions are not guaranteed. Consult a MAS-licensed financial adviser before making any retirement decision. Not affiliated with CPF Board or MAS.',
+  '/tax': 'TaxWise: educational tool only, not tax advice. Rates and relief caps are entered by hand from public IRAS schedules and may not reflect the latest Budget changes or any Personal Income Tax Rebate. Non-residents are not modeled. Verify at iras.gov.sg or consult a tax adviser before filing. Not affiliated with IRAS or CPF Board.',
   '/ledger': 'MyLedger: educational tool only, not financial advice. Net worth, TDSR, and retirement projections are estimates built from figures you enter or sync from the other tools, and may not reflect your actual financial position. Consult a MAS-licensed financial adviser before making any financial decision.',
 }
 
@@ -39,7 +40,7 @@ export default function Footer() {
         <div className="shell-footer-col">
           <p className="shell-footer-brand">ndtm</p>
           <p className="shell-footer-blurb">
-            Free calculators I built for the big Singapore financial decisions — insurance, cars, ETFs, property, retirement.
+            Free calculators I built for the big Singapore financial decisions — insurance, cars, ETFs, property, retirement, tax.
             Every number is shown, not just the verdict.
           </p>
         </div>
@@ -52,6 +53,7 @@ export default function Footer() {
             <a href="/etf/the-math">Invest</a>
             <a href="/house/the-math">House</a>
             <a href="/retire/the-math">Retire</a>
+            <a href="/tax/the-math">Tax</a>
             <a href="/ledger/the-math">MyLedger</a>
           </div>
         </div>

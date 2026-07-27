@@ -31,6 +31,18 @@ const TOOLS = [
     title: 'RetireWell',
     desc: 'Will you actually have enough? CPF contributions projected properly, your investments stress-tested against a safe withdrawal rate — not a rule of thumb.',
   },
+  {
+    href: '/tax',
+    eyebrow: 'Tax',
+    title: 'TaxWise',
+    desc: 'What you actually owe IRAS, and what each relief is really worth. CPF, SRS and CPF top-up relief priced in dollars saved — not percentages.',
+  },
+  {
+    href: '/ledger',
+    eyebrow: 'Everything',
+    title: 'MyLedger',
+    desc: 'Your whole picture at once — net worth, debt servicing across every loan, and what buying a car or upgrading your house does to your retirement.',
+  },
 ]
 
 export default function HomePage() {
@@ -42,7 +54,7 @@ export default function HomePage() {
         fontFamily: 'var(--l-font-mono)', fontSize: 12, letterSpacing: '.12em',
         textTransform: 'uppercase', color: 'var(--l-sub)', margin: '0 0 14px',
       }}>
-        Five calculators, one household
+        Seven calculators, one household
       </p>
       <h1 style={{
         fontFamily: 'var(--l-font-display)', fontWeight: 600, fontSize: 'clamp(28px,4vw,42px)',

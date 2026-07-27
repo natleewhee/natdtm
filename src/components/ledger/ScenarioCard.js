@@ -69,6 +69,25 @@ export default function ScenarioCard({ scenario, onChange, onRemove, onLabelChan
   // Only a gap beyond what the sale itself covers draws on cash savings.
   const upgradeShortfall = upgradePreview && upgradePreview.gap > 0 ? upgradePreview.gap - num(scenario.cashSavings) : 0
 
+  // HDB purchases are additionally bound by the 30% Mortgage Servicing
+  // Ratio, which is usually tighter than TDSR — so the tool needs to know
+  // which kind of property this is.
+  const propertyTypeToggle = (
+    <div>
+      <div style={{ fontSize: C.sm, fontWeight: 600, color: C.primary, marginBottom: 7 }}>Property type</div>
+      <Segmented
+        value={scenario.house.propertyType || 'private'}
+        onChange={v => setHouse({ propertyType: v })}
+        options={[{ value: 'hdb', label: 'HDB' }, { value: 'private', label: 'Private' }]}
+      />
+      {(scenario.house.propertyType || 'private') === 'hdb' && (
+        <p style={{ marginTop: 7, fontSize: C.xs, color: C.muted, lineHeight: 1.5 }}>
+          HDB loans are also capped by the 30% Mortgage Servicing Ratio, which usually binds before TDSR does.
+        </p>
+      )}
+    </div>
+  )
+
   const downpaymentToggle = (
     <div style={{ marginTop: 12 }}>
       <div style={{ fontSize: C.sm, fontWeight: 600, color: C.primary, marginBottom: 7 }}>Downpayment</div>
@@ -136,10 +155,12 @@ export default function ScenarioCard({ scenario, onChange, onRemove, onLabelChan
 
           {houseMode === 'existing' && (
             <>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 14 }}>
+              {propertyTypeToggle}
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 14, marginTop: 14 }}>
                 <MoneyInput id={`${scenario.id}-house-value`} label="Current home value" value={scenario.house.propertyValue} onChange={e => setHouse({ propertyValue: e.target.value })} />
                 <MoneyInput id={`${scenario.id}-house-balance`} label="Outstanding balance" value={scenario.house.outstandingBalance} onChange={e => setHouse({ outstandingBalance: e.target.value })} />
                 <MoneyInput id={`${scenario.id}-house-instalment`} label="Monthly instalment" value={scenario.house.monthlyInstalment} onChange={e => setHouse({ monthlyInstalment: e.target.value })} />
+                <NumberInput id={`${scenario.id}-house-years-left`} label="Years left on the loan" hint="Leave blank if you're not sure — it'll be assumed to run to retirement" value={scenario.house.tenureRemaining} onChange={e => setHouse({ tenureRemaining: e.target.value })} suffix="years" />
               </div>
               {scenario.house?.source === 'auto' && (
                 <p style={{ marginTop: 8, fontSize: C.xs, color: C.faint }}>Synced from HouseMuch — edit freely, this won&apos;t change what&apos;s saved there.</p>
@@ -149,6 +170,8 @@ export default function ScenarioCard({ scenario, onChange, onRemove, onLabelChan
 
           {houseMode === 'purchase' && (
             <>
+              {propertyTypeToggle}
+              <div style={{ height: 14 }} />
               {purchaseFields}
               {downpaymentToggle}
               {purchasePreview && num(scenario.house.price) > 0 && (
@@ -180,6 +203,8 @@ export default function ScenarioCard({ scenario, onChange, onRemove, onLabelChan
               {scenario.house?.source === 'auto' && (num(scenario.house.cashProceeds) > 0 || num(scenario.house.totalCPFRefund) > 0) && (
                 <p style={{ marginTop: -8, marginBottom: 14, fontSize: C.xs, color: C.faint }}>Synced from your last HouseMuch sale calculation — edit freely.</p>
               )}
+              {propertyTypeToggle}
+              <div style={{ height: 14 }} />
               {purchaseFields}
               {downpaymentToggle}
               {upgradePreview && num(scenario.house.price) > 0 && (
@@ -221,10 +246,17 @@ export default function ScenarioCard({ scenario, onChange, onRemove, onLabelChan
           <MoneyInput id={`${scenario.id}-car-value`} label="Current car value" value={scenario.car.carValue} onChange={e => setCar({ carValue: e.target.value })} />
           <MoneyInput id={`${scenario.id}-car-balance`} label="Loan outstanding" value={scenario.car.loanOutstanding} onChange={e => setCar({ loanOutstanding: e.target.value })} />
           <MoneyInput id={`${scenario.id}-car-instalment`} label="Monthly instalment" value={scenario.car.monthlyInstalment} onChange={e => setCar({ monthlyInstalment: e.target.value })} />
+          <NumberInput id={`${scenario.id}-car-years-left`} label="Years left on the loan" hint="Car loans end — this stops the projection charging you for it forever" value={scenario.car.tenureRemaining} onChange={e => setCar({ tenureRemaining: e.target.value })} suffix="years" />
         </div>
       )}
       {scenario.car?.source === 'auto' && scenario.hasCar && (
         <p style={{ marginTop: 8, fontSize: C.xs, color: C.faint }}>Synced from DriveReady — edit freely, this won&apos;t change what&apos;s saved there.</p>
+      )}
+
+      <SectionDivider label="Insurance" />
+      <MoneyInput id={`${scenario.id}-insurance`} label="Monthly insurance premiums" hint="Reduces what you can invest, but banks don't count it toward TDSR — so it's excluded there" value={scenario.insurancePremium} onChange={e => set({ insurancePremium: e.target.value })} />
+      {scenario.insuranceSource === 'auto' && num(scenario.insurancePremium) > 0 && (
+        <p style={{ marginTop: 8, fontSize: C.xs, color: C.faint }}>Synced from InsureCheck — edit freely.</p>
       )}
 
       <SectionDivider label="Cash & investments" />

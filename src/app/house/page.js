@@ -91,8 +91,9 @@ export default function HouseMuchPage() {
       tenureRemaining: Math.max(0, num(loanTenure) - result.yearsHeld),
       monthlyInstalment: result.monthlyInstalment,
       propertyValue: result.salePrice,
+      propertyType,
     })
-  }, [result, saleDate, mortgageRate, loanTenure])
+  }, [result, saleDate, mortgageRate, loanTenure, propertyType])
 
   return (
     <div style={{ minHeight: '100vh', background: C.bg, fontFamily: C.fontBody }}>

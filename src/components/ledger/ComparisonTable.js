@@ -37,18 +37,39 @@ export default function ComparisonTable({ rows }) {
             {rows.map(r => <Cell key={r.label} value={SGD(r.netWorth.netWorth)} bold />)}
           </tr>
           <tr style={{ borderBottom: `1px solid ${C.border}` }}>
-            <RowLabel>Monthly obligations (mortgage + car)</RowLabel>
+            <RowLabel>Monthly commitments (loans + insurance)</RowLabel>
             {rows.map(r => <Cell key={r.label} value={SGD(r.obligations.total)} />)}
           </tr>
           <tr style={{ borderBottom: `1px solid ${C.border}` }}>
-            <RowLabel>TDSR</RowLabel>
+            <RowLabel>TDSR (loans only, limit 55%)</RowLabel>
             {rows.map(r => (
               <Cell key={r.label} value={r.tdsr.tdsr != null ? `${(r.tdsr.tdsr * 100).toFixed(0)}%` : '—'} tone={r.tdsr.exceeded ? 'red' : undefined} bold={r.tdsr.exceeded} />
             ))}
           </tr>
+          {rows.some(r => r.msr?.applicable) && (
+            <tr style={{ borderBottom: `1px solid ${C.border}` }}>
+              <RowLabel>MSR (HDB only, limit 30%)</RowLabel>
+              {rows.map(r => (
+                <Cell
+                  key={r.label}
+                  value={r.msr?.applicable && r.msr.msr != null ? `${(r.msr.msr * 100).toFixed(0)}%` : '—'}
+                  tone={r.msr?.exceeded ? 'red' : undefined} bold={r.msr?.exceeded}
+                />
+              ))}
+            </tr>
+          )}
           <tr style={{ borderBottom: `1px solid ${C.border}` }}>
-            <RowLabel>Monthly investment capacity</RowLabel>
-            {rows.map(r => <Cell key={r.label} value={SGD(r.investmentCapacity)} />)}
+            <RowLabel>Investable now → once loans end</RowLabel>
+            {rows.map(r => (
+              <Cell
+                key={r.label}
+                value={
+                  Math.round(r.finalCapacity) > Math.round(r.investmentCapacity)
+                    ? `${SGD(r.investmentCapacity)} → ${SGD(r.finalCapacity)}`
+                    : SGD(r.investmentCapacity)
+                }
+              />
+            ))}
           </tr>
           <tr style={{ borderBottom: `1px solid ${C.border}` }}>
             <RowLabel>Projected portfolio at retirement</RowLabel>

@@ -11,6 +11,7 @@ import {
   projectGoal, computeStressTest, computeBrokerCosts, BROKER_DATA_AS_OF,
   computeFeeComparison, FEE_BENCHMARK_AS_OF, encodeComparePrefs,
 } from '@/lib/etf/logic'
+import { checkFreshness, freshnessLabel, FRESHNESS_WINDOWS } from '@/lib/shared/freshness'
 import styles from './portfolio.module.css'
 
 const FUND_PALETTE = ['#eab308', '#ff5722', '#38bdf8', '#c4b5fd', '#ef4444', '#10b981', '#fdba74', '#94a3b8']
@@ -140,6 +141,9 @@ function PerformanceChart({ allocations }) {
       <div className={styles.chartFootnote}>
         <p className={styles.chartFootnoteText}>
           Note: Illustrative returns based on general historical performance as of {RETURNS_AS_OF}. Not actual market data. Past performance is not indicative of future results.
+          {checkFreshness(RETURNS_AS_OF, FRESHNESS_WINDOWS.marketData).stale && (
+            <> <strong>&#9888; These figures are around {checkFreshness(RETURNS_AS_OF, FRESHNESS_WINDOWS.marketData).months} months old and have not been refreshed since.</strong></>
+          )}
         </p>
       </div>
     </div>
@@ -319,7 +323,7 @@ function BrokerCostCard({ monthlyInvestment }) {
   return (
     <div className={`${styles.card} ${styles.brokerCard}`}>
       <p className={styles.chartTitle}>Broker Cost Comparison</p>
-      <p className={styles.chartSubtitle}>Illustrative commission + FX conversion cost for a ${amount.toLocaleString()}/month buy, as of {BROKER_DATA_AS_OF}</p>
+      <p className={styles.chartSubtitle}>Illustrative commission + FX conversion cost for a ${amount.toLocaleString()}/month buy · {freshnessLabel(BROKER_DATA_AS_OF, FRESHNESS_WINDOWS.fees) ?? `as of ${BROKER_DATA_AS_OF}`}</p>
       <div className={styles.brokerList}>
         {costs.map((b, i) => (
           <div key={b.id} className={styles.brokerRow}>
@@ -358,7 +362,7 @@ function FeeComparisonCard({ blendedTer, monthlyInvestment }) {
   return (
     <div className={`${styles.card} ${styles.feeCompareCard}`}>
       <p className={styles.chartTitle}>DIY vs Robo-Advisor vs Unit Trust</p>
-      <p className={styles.chartSubtitle}>Same ${amount.toLocaleString()}/month, same assumed growth rate — the only difference is fees, as of {FEE_BENCHMARK_AS_OF}</p>
+      <p className={styles.chartSubtitle}>Same ${amount.toLocaleString()}/month, same assumed growth rate — the only difference is fees · {freshnessLabel(FEE_BENCHMARK_AS_OF, FRESHNESS_WINDOWS.fees) ?? `as of ${FEE_BENCHMARK_AS_OF}`}</p>
       <div className={styles.timeframeGroup}>
         {[10, 20, 30].map(y => (
           <button key={y} onClick={() => setYears(y)}

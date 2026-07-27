@@ -40,13 +40,19 @@ export const TAKE_HOME_RATE = 0.80
 // savings has no source tool to sync from, so it always starts at zero
 // and is manual-entry only.
 export function buildBaselineState(myNumbers) {
-  const { house, drive, retire } = myNumbers || {}
+  const { house, drive, retire, insure, tax } = myNumbers || {}
   return {
     salary: retire?.salary || drive?.salary || 0,
+    // Exact after-tax take-home from TaxWise, when it's been run —
+    // otherwise calcTakeHome falls back to the flat 80% approximation.
+    monthlyTakeHome: tax?.monthlyTakeHome || 0,
+    insurancePremium: insure?.monthlyPremium || 0,
     house: house ? {
       outstandingBalance: house.outstandingBalance || 0,
       monthlyInstalment: house.monthlyInstalment || 0,
       propertyValue: house.propertyValue || 0,
+      tenureRemaining: house.tenureRemaining ?? null,
+      propertyType: house.propertyType || 'private',
       cashProceeds: house.cashProceeds || 0,
       totalCPFRefund: house.totalCPFRefund || 0,
       source: house.source || 'auto',
@@ -55,6 +61,7 @@ export function buildBaselineState(myNumbers) {
       loanOutstanding: drive.loanOutstanding || 0,
       monthlyInstalment: drive.monthlyInstalment || 0,
       carValue: drive.carValue || 0,
+      tenureRemaining: drive.tenureRemaining ?? null,
       source: drive.source || 'auto',
     } : null,
     cpf: {
@@ -121,10 +128,15 @@ export function calcHouseUpgrade({
 export function resolveHouseModule(house) {
   if (!house) return { resolved: null, cashImpact: 0, detail: null }
 
+  const propertyType = house.propertyType || 'private'
+
   if (house.mode === 'purchase') {
     const purchase = calcHousePurchase(house)
     return {
-      resolved: { outstandingBalance: purchase.loanAmount, monthlyInstalment: purchase.monthlyInstalment, propertyValue: purchase.price },
+      resolved: {
+        outstandingBalance: purchase.loanAmount, monthlyInstalment: purchase.monthlyInstalment,
+        propertyValue: purchase.price, tenureRemaining: Number(house.tenureYears) || 25, propertyType,
+      },
       cashImpact: -purchase.cashNeeded,
       detail: purchase,
     }
@@ -133,7 +145,10 @@ export function resolveHouseModule(house) {
   if (house.mode === 'upgrade') {
     const upgrade = calcHouseUpgrade(house)
     return {
-      resolved: { outstandingBalance: upgrade.loanAmount, monthlyInstalment: upgrade.monthlyInstalment, propertyValue: upgrade.price },
+      resolved: {
+        outstandingBalance: upgrade.loanAmount, monthlyInstalment: upgrade.monthlyInstalment,
+        propertyValue: upgrade.price, tenureRemaining: Number(house.tenureYears) || 25, propertyType,
+      },
       cashImpact: -upgrade.gap, // gap > 0: shortfall draws cash; gap < 0: leftover proceeds top it up
       detail: upgrade,
     }
@@ -144,6 +159,8 @@ export function resolveHouseModule(house) {
       outstandingBalance: house.outstandingBalance || 0,
       monthlyInstalment: house.monthlyInstalment || 0,
       propertyValue: house.propertyValue || 0,
+      tenureRemaining: house.tenureRemaining ?? null,
+      propertyType,
     },
     cashImpact: 0,
     detail: null,
@@ -160,10 +177,18 @@ export function calcNetWorth(state) {
   return { propertyEquity, carEquity, cpfTotal, investmentBalance, cashSavings, netWorth }
 }
 
+// Insurance premiums are a real monthly commitment but they are NOT a
+// debt obligation, so they reduce what you can invest without counting
+// toward TDSR or MSR — banks don't count them either.
 export function calcMonthlyObligations(state) {
   const mortgage = state.house?.monthlyInstalment || 0
   const car = state.car?.monthlyInstalment || 0
-  return { mortgage, car, total: mortgage + car }
+  const insurance = state.insurancePremium || 0
+  return {
+    mortgage, car, insurance,
+    debt: mortgage + car,          // what a bank counts
+    total: mortgage + car + insurance, // what actually leaves your account
+  }
 }
 
 // TDSR across every debt in the ledger, not just one loan at a time —
@@ -171,28 +196,96 @@ export function calcMonthlyObligations(state) {
 // loan plus a flat "existing debt" figure the user has to remember to
 // fill in; this sums the actual modules instead.
 export function calcTDSR(state) {
-  const obligations = calcMonthlyObligations(state).total
+  const obligations = calcMonthlyObligations(state).debt
   const salary = state.salary || 0
   const tdsr = salary > 0 ? obligations / salary : null
   const exceeded = tdsr != null && tdsr > TDSR_LIMIT
   return { obligations, tdsr, exceeded }
 }
 
-// What's actually left to invest each month, after take-home pay covers
-// every known debt obligation — replaces the guess RetireWell's
-// "monthly contribution" field used to require.
+// Mortgage Servicing Ratio — 30% of gross monthly income, and unlike
+// TDSR it counts ONLY the property loan. Applies to HDB flats and ECs
+// bought from a developer, where it is very often the binding
+// constraint rather than the 55% TDSR. Returns null for private
+// property, where MSR simply doesn't apply.
+export const MSR_LIMIT = 0.30
+
+export function calcMSR(state) {
+  if (state.house?.propertyType !== 'hdb') return { applicable: false, msr: null, exceeded: false }
+  const mortgage = state.house?.monthlyInstalment || 0
+  const salary = state.salary || 0
+  const msr = salary > 0 ? mortgage / salary : null
+  return { applicable: true, mortgage, msr, exceeded: msr != null && msr > MSR_LIMIT }
+}
+
+// Take-home pay. Prefers an exact after-tax figure from TaxWise when one
+// has been computed (it accounts for the age-banded employee CPF share
+// AND income tax); otherwise falls back to the flat 80%-of-gross
+// approximation the rest of the suite uses, which is roughly right below
+// 55 and increasingly wrong above it.
+export function calcTakeHome(state) {
+  if (state.monthlyTakeHome > 0) return { takeHome: state.monthlyTakeHome, exact: true }
+  return { takeHome: (state.salary || 0) * TAKE_HOME_RATE, exact: false }
+}
+
+// Monthly capacity to invest, right now.
 export function calcInvestmentCapacity(state) {
-  const takeHome = (state.salary || 0) * TAKE_HOME_RATE
+  const { takeHome } = calcTakeHome(state)
   const obligations = calcMonthlyObligations(state).total
   return Math.max(0, takeHome - obligations)
 }
 
+// Capacity month by month over the accumulation period. Loans END —
+// a 7-year car loan does not keep draining a 30-year projection — so
+// each obligation drops out of the calculation once its remaining
+// tenure is up, and capacity steps up accordingly. Insurance premiums
+// have no tenure and are assumed to continue throughout.
+export function buildCapacitySchedule(state, months) {
+  const { takeHome } = calcTakeHome(state)
+  const insurance = state.insurancePremium || 0
+  const houseMonths = state.house?.tenureRemaining != null
+    ? Math.round(state.house.tenureRemaining * 12) : Infinity
+  const carMonths = state.car?.tenureRemaining != null
+    ? Math.round(state.car.tenureRemaining * 12) : Infinity
+  const mortgage = state.house?.monthlyInstalment || 0
+  const car = state.car?.monthlyInstalment || 0
+
+  const schedule = []
+  for (let m = 0; m < Math.max(0, months); m++) {
+    const owed = (m < houseMonths ? mortgage : 0) + (m < carMonths ? car : 0) + insurance
+    schedule.push(Math.max(0, takeHome - owed))
+  }
+  return schedule
+}
+
+// RetireWell's engine takes a single flat monthly contribution, but real
+// capacity steps up as loans end. Rather than approximate with an
+// average (which would misprice the compounding), this solves for the
+// LEVEL contribution whose future value at retirement exactly equals
+// that of the real, time-varying schedule — so the flat figure handed to
+// RetireWell produces the same answer the varying one would.
+export function levelEquivalentContribution(schedule, annualReturnPct) {
+  const n = schedule.length
+  if (n === 0) return 0
+  const r = (Number(annualReturnPct) || 0) / 100 / 12
+  if (r <= 0) return schedule.reduce((a, b) => a + b, 0) / n
+  // Future value of the actual schedule, each contribution compounded
+  // for however many months remain after it.
+  let fv = 0
+  for (let m = 0; m < n; m++) fv += schedule[m] * Math.pow(1 + r, n - m - 1)
+  const annuityFactor = (Math.pow(1 + r, n) - 1) / r
+  return annuityFactor > 0 ? fv / annuityFactor : 0
+}
+
 // Runs a ledger state through RetireWell's own accumulation/depletion
 // engine, using the state's CPF/investment balances and salary as the
-// starting point and this state's investment capacity (not a
-// user-guessed figure) as the monthly contribution.
+// starting point and the level-equivalent of this state's real,
+// loan-tenure-aware capacity schedule as the monthly contribution.
 export function calcScenarioRetirement(state, retireAssumptions) {
-  const capacity = calcInvestmentCapacity(state)
+  const { currentAge = 0, retirementAge = 0, investmentReturn = 0 } = retireAssumptions
+  const months = Math.max(0, Math.round((retirementAge - currentAge) * 12))
+  const schedule = buildCapacitySchedule(state, months)
+  const contribution = levelEquivalentContribution(schedule, investmentReturn)
   return calcRetirement({
     ...retireAssumptions,
     salary: state.salary || 0,
@@ -200,19 +293,29 @@ export function calcScenarioRetirement(state, retireAssumptions) {
     startingSA: state.cpf?.sa || 0,
     startingMA: state.cpf?.ma || 0,
     investmentStart: state.investmentBalance || 0,
-    investmentMonthly: capacity,
+    investmentMonthly: contribution,
   })
 }
 
 // Runs every {label, state} scenario through the full stack and returns
 // one row per scenario, ready for a side-by-side comparison table.
 export function compareScenarios(scenarios, retireAssumptions) {
+  const { currentAge = 0, retirementAge = 0, investmentReturn = 0 } = retireAssumptions
+  const months = Math.max(0, Math.round((retirementAge - currentAge) * 12))
   return scenarios.map(({ label, state }) => {
     const netWorth = calcNetWorth(state)
     const obligations = calcMonthlyObligations(state)
     const tdsr = calcTDSR(state)
+    const msr = calcMSR(state)
+    const takeHome = calcTakeHome(state)
     const investmentCapacity = calcInvestmentCapacity(state)
+    const schedule = buildCapacitySchedule(state, months)
+    const levelCapacity = levelEquivalentContribution(schedule, investmentReturn)
+    const finalCapacity = schedule.length ? schedule[schedule.length - 1] : investmentCapacity
     const retirement = calcScenarioRetirement(state, retireAssumptions)
-    return { label, netWorth, obligations, tdsr, investmentCapacity, retirement }
+    return {
+      label, netWorth, obligations, tdsr, msr, takeHome,
+      investmentCapacity, levelCapacity, finalCapacity, retirement,
+    }
   })
 }

@@ -5,6 +5,7 @@ import {
   buildBaselineState, calcNetWorth, calcMonthlyObligations, calcTDSR,
   calcInvestmentCapacity, calcScenarioRetirement, compareScenarios, TDSR_LIMIT,
   calcHousePurchase, calcHouseUpgrade, resolveHouseModule,
+  calcMSR, MSR_LIMIT, calcTakeHome, buildCapacitySchedule, levelEquivalentContribution,
 } from './calc.js'
 import { calcMonthlyInstalment, calcBSD, calcNextPurchase } from '../house/calc.js'
 
@@ -140,7 +141,132 @@ test('calcMonthlyObligations sums mortgage + car instalments', () => {
   const o = calcMonthlyObligations(state)
   assert.equal(o.mortgage, 2500)
   assert.equal(o.car, 1200)
+  assert.equal(o.debt, 3700)
   assert.equal(o.total, 3700)
+})
+
+test('calcMonthlyObligations separates insurance from debt', () => {
+  const state = { house: { monthlyInstalment: 2500 }, car: { monthlyInstalment: 1200 }, insurancePremium: 500 }
+  const o = calcMonthlyObligations(state)
+  assert.equal(o.insurance, 500)
+  assert.equal(o.debt, 3700)   // what a bank counts
+  assert.equal(o.total, 4200)  // what actually leaves your account
+})
+
+test('calcTDSR excludes insurance premiums, since banks do too', () => {
+  const withoutIns = calcTDSR({ salary: 10_000, house: { monthlyInstalment: 3000 }, car: null })
+  const withIns = calcTDSR({ salary: 10_000, house: { monthlyInstalment: 3000 }, car: null, insurancePremium: 800 })
+  approx(withIns.tdsr, withoutIns.tdsr)
+})
+
+test('calcInvestmentCapacity does subtract insurance premiums', () => {
+  const state = { salary: 10_000, house: { monthlyInstalment: 3000 }, car: null, insurancePremium: 800 }
+  approx(calcInvestmentCapacity(state), 10_000 * 0.8 - 3000 - 800)
+})
+
+// ─── MSR ─────────────────────────────────────────────────────────────────
+
+test('calcMSR does not apply to private property', () => {
+  const m = calcMSR({ salary: 10_000, house: { monthlyInstalment: 4000, propertyType: 'private' } })
+  assert.equal(m.applicable, false)
+  assert.equal(m.msr, null)
+  assert.equal(m.exceeded, false)
+})
+
+test('calcMSR flags an HDB loan above 30% of gross income', () => {
+  const m = calcMSR({ salary: 10_000, house: { monthlyInstalment: 3500, propertyType: 'hdb' } })
+  assert.equal(m.applicable, true)
+  approx(m.msr, 0.35)
+  assert.equal(m.exceeded, true)
+})
+
+test('calcMSR counts only the property loan, not the car', () => {
+  const m = calcMSR({ salary: 10_000, house: { monthlyInstalment: 2500, propertyType: 'hdb' }, car: { monthlyInstalment: 2000 } })
+  approx(m.msr, 0.25)
+  assert.equal(m.exceeded, false)
+})
+
+test('MSR can bind where TDSR passes — the case the suite used to miss', () => {
+  // 32% MSR but only 32% TDSR: a bank rejects this HDB loan even though
+  // it is comfortably inside the 55% TDSR limit.
+  const state = { salary: 10_000, house: { monthlyInstalment: 3200, propertyType: 'hdb' }, car: null }
+  assert.equal(calcTDSR(state).exceeded, false)
+  assert.equal(calcMSR(state).exceeded, true)
+  assert.ok(MSR_LIMIT < TDSR_LIMIT)
+})
+
+// ─── Take-home ───────────────────────────────────────────────────────────
+
+test('calcTakeHome falls back to 80% of gross when TaxWise has not run', () => {
+  const t = calcTakeHome({ salary: 10_000 })
+  approx(t.takeHome, 8_000)
+  assert.equal(t.exact, false)
+})
+
+test('calcTakeHome prefers an exact TaxWise figure when present', () => {
+  const t = calcTakeHome({ salary: 10_000, monthlyTakeHome: 7_240 })
+  approx(t.takeHome, 7_240)
+  assert.equal(t.exact, true)
+})
+
+// ─── Time-phased capacity ────────────────────────────────────────────────
+
+test('buildCapacitySchedule steps capacity up when a loan ends', () => {
+  const state = {
+    salary: 10_000,
+    house: { monthlyInstalment: 2000, tenureRemaining: 10 },
+    car: { monthlyInstalment: 1000, tenureRemaining: 5 },
+  }
+  const schedule = buildCapacitySchedule(state, 12 * 20)
+  approx(schedule[0], 8000 - 3000)            // both loans running
+  approx(schedule[12 * 5], 8000 - 2000)       // car paid off
+  approx(schedule[12 * 10], 8000)             // mortgage paid off too
+})
+
+test('buildCapacitySchedule treats a null tenure as running forever', () => {
+  const state = { salary: 10_000, house: { monthlyInstalment: 2000, tenureRemaining: null }, car: null }
+  const schedule = buildCapacitySchedule(state, 12 * 30)
+  approx(schedule[schedule.length - 1], 6000)
+})
+
+test('buildCapacitySchedule keeps insurance running for the whole period', () => {
+  const state = { salary: 10_000, insurancePremium: 500, car: { monthlyInstalment: 1000, tenureRemaining: 3 } }
+  const schedule = buildCapacitySchedule(state, 12 * 10)
+  approx(schedule[0], 8000 - 1500)
+  approx(schedule[schedule.length - 1], 8000 - 500) // car gone, insurance stays
+})
+
+test('levelEquivalentContribution matches the flat case exactly', () => {
+  const flat = new Array(120).fill(1000)
+  approx(levelEquivalentContribution(flat, 3), 1000, 0.5)
+})
+
+test('levelEquivalentContribution of a rising schedule sits between its endpoints', () => {
+  const state = { salary: 10_000, car: { monthlyInstalment: 2000, tenureRemaining: 5 } }
+  const schedule = buildCapacitySchedule(state, 12 * 20)
+  const level = levelEquivalentContribution(schedule, 3)
+  assert.ok(level > schedule[0], 'above the constrained early years')
+  assert.ok(level < schedule[schedule.length - 1], 'below the unconstrained later years')
+})
+
+test('levelEquivalentContribution handles a zero return without dividing by zero', () => {
+  const schedule = [1000, 2000, 3000]
+  approx(levelEquivalentContribution(schedule, 0), 2000)
+})
+
+test('a car loan that ends beats one that never does — the time-phasing fix', () => {
+  // Same instalment, but a 7-year tenure rather than an open-ended one.
+  const base = { salary: 10_000, cpf: { oa: 0, sa: 0, ma: 0 }, investmentBalance: 0, house: null }
+  const assumptions = {
+    currentAge: 35, retirementAge: 65, lifeExpectancy: 90,
+    desiredMonthlyWithdrawal: 3000, inflationRate: 2.5, swr: 3, investmentReturn: 4,
+  }
+  const ending = calcScenarioRetirement({ ...base, car: { monthlyInstalment: 1500, tenureRemaining: 7 } }, assumptions)
+  const forever = calcScenarioRetirement({ ...base, car: { monthlyInstalment: 1500, tenureRemaining: null } }, assumptions)
+  assert.ok(
+    ending.target.projectedPortfolio > forever.target.projectedPortfolio,
+    'a loan that ends should leave more invested by retirement',
+  )
 })
 
 test('calcTDSR flags when obligations exceed the shared TDSR limit', () => {

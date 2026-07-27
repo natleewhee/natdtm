@@ -17,15 +17,18 @@ global.window = { localStorage: makeStorage() }
 
 const {
   loadMyNumbers, saveHouseNumbers, saveDriveNumbers, saveRetireNumbers,
+  saveInsureNumbers, saveTaxNumbers,
   clearHouseNumbers, clearDriveNumbers, clearRetireNumbers,
 } = await import('./profile.js')
 
-test('loadMyNumbers returns empty v2 defaults when nothing stored', () => {
+test('loadMyNumbers returns empty v3 defaults when nothing stored', () => {
   const data = loadMyNumbers()
-  assert.equal(data.version, 2)
+  assert.equal(data.version, 3)
   assert.equal(data.house, null)
   assert.equal(data.drive, null)
   assert.equal(data.retire, null)
+  assert.equal(data.insure, null)
+  assert.equal(data.tax, null)
 })
 
 test('loadMyNumbers safely ignores malformed JSON', () => {
@@ -34,20 +37,47 @@ test('loadMyNumbers safely ignores malformed JSON', () => {
   assert.equal(data.house, null)
 })
 
-test('loadMyNumbers migrates a v1 record into the v2 shape', () => {
+test('loadMyNumbers migrates a v1 record into the v3 shape', () => {
   window.localStorage.setItem('ndtm_my_numbers_v1', JSON.stringify({
     version: 1,
     house: { cashProceeds: 500000, totalCPFRefund: 120000, salePrice: 1200000, saleDate: '2026-06-01', savedAt: 123 },
     drive: { monthlyCost: 1500, carLabel: 'Toyota Corolla', salary: 6000, savedAt: 456 },
   }))
   const data = loadMyNumbers()
-  assert.equal(data.version, 2)
+  assert.equal(data.version, 3)
   assert.equal(data.house.cashProceeds, 500000)
   assert.equal(data.house.propertyValue, 1200000)
   assert.equal(data.house.outstandingBalance, null)
   assert.equal(data.drive.monthlyInstalment, 1500)
   assert.equal(data.drive.carLabel, 'Toyota Corolla')
   assert.equal(data.retire, null)
+})
+
+test('loadMyNumbers migrates a v2 record, preserving existing slots', () => {
+  window.localStorage.setItem('ndtm_my_numbers_v1', JSON.stringify({
+    version: 2,
+    house: { outstandingBalance: 400000, monthlyInstalment: 2500, source: 'auto', savedAt: 1 },
+    drive: null,
+    retire: { salary: 7000, oaBalance: 80000, source: 'auto', savedAt: 2 },
+  }))
+  const data = loadMyNumbers()
+  assert.equal(data.version, 3)
+  assert.equal(data.house.outstandingBalance, 400000)
+  assert.equal(data.retire.salary, 7000)
+  assert.equal(data.insure, null)
+  assert.equal(data.tax, null)
+})
+
+test('saveInsureNumbers and saveTaxNumbers round-trip independently', () => {
+  window.localStorage.removeItem('ndtm_my_numbers_v1')
+  saveInsureNumbers({ monthlyPremium: 450, score: 72 })
+  saveTaxNumbers({ monthlyTakeHome: 6200, annualTax: 4300, marginalRate: 0.115, age: 40 })
+  const data = loadMyNumbers()
+  assert.equal(data.insure.monthlyPremium, 450)
+  assert.equal(data.insure.score, 72)
+  assert.equal(data.tax.monthlyTakeHome, 6200)
+  assert.equal(data.tax.marginalRate, 0.115)
+  assert.equal(data.tax.age, 40)
 })
 
 test('loadMyNumbers ignores an unknown version', () => {

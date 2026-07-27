@@ -29,6 +29,8 @@ function stateToScenario(state, id, label) {
       propertyValue: state.house ? String(Math.round(state.house.propertyValue || 0)) : '',
       outstandingBalance: state.house ? String(Math.round(state.house.outstandingBalance || 0)) : '',
       monthlyInstalment: state.house ? String(Math.round(state.house.monthlyInstalment || 0)) : '',
+      tenureRemaining: state.house?.tenureRemaining != null ? String(state.house.tenureRemaining) : '',
+      propertyType: state.house?.propertyType || 'private',
       price: '', downpaymentPct: '25', rate: '2.60', tenureYears: '25', otherFees: '', absd: '',
       cashProceeds: state.house?.cashProceeds ? String(Math.round(state.house.cashProceeds)) : '',
       totalCPFRefund: state.house?.totalCPFRefund ? String(Math.round(state.house.totalCPFRefund)) : '',
@@ -39,6 +41,7 @@ function stateToScenario(state, id, label) {
       carValue: state.car ? String(Math.round(state.car.carValue || 0)) : '',
       loanOutstanding: state.car ? String(Math.round(state.car.loanOutstanding || 0)) : '',
       monthlyInstalment: state.car ? String(Math.round(state.car.monthlyInstalment || 0)) : '',
+      tenureRemaining: state.car?.tenureRemaining != null ? String(state.car.tenureRemaining) : '',
       source: state.car?.source || 'manual',
     },
     oaBalance: state.cpf?.oa ? String(Math.round(state.cpf.oa)) : '',
@@ -46,6 +49,9 @@ function stateToScenario(state, id, label) {
     maBalance: state.cpf?.ma ? String(Math.round(state.cpf.ma)) : '',
     investmentBalance: state.investmentBalance ? String(Math.round(state.investmentBalance)) : '',
     cashSavings: state.cashSavings ? String(Math.round(state.cashSavings)) : '',
+    insurancePremium: state.insurancePremium ? String(Math.round(state.insurancePremium)) : '',
+    insuranceSource: state.insurancePremium ? 'auto' : 'manual',
+    monthlyTakeHome: state.monthlyTakeHome || 0,
   }
 }
 
@@ -60,14 +66,14 @@ function scenarioToState(scenario) {
   const houseInput = scenario.hasHouse ? (
     scenario.house.mode === 'purchase'
       ? {
-          mode: 'purchase',
+          mode: 'purchase', propertyType: scenario.house.propertyType || 'private',
           price: num(scenario.house.price), downpaymentPct: num(scenario.house.downpaymentPct) || 25,
           rate: num(scenario.house.rate), tenureYears: num(scenario.house.tenureYears) || 25,
           otherFees: num(scenario.house.otherFees),
         }
       : scenario.house.mode === 'upgrade'
       ? {
-          mode: 'upgrade',
+          mode: 'upgrade', propertyType: scenario.house.propertyType || 'private',
           cashProceeds: num(scenario.house.cashProceeds), totalCPFRefund: num(scenario.house.totalCPFRefund),
           price: num(scenario.house.price), downpaymentPct: num(scenario.house.downpaymentPct) || 25,
           rate: num(scenario.house.rate), tenureYears: num(scenario.house.tenureYears) || 25,
@@ -77,6 +83,8 @@ function scenarioToState(scenario) {
           propertyValue: num(scenario.house.propertyValue),
           outstandingBalance: num(scenario.house.outstandingBalance),
           monthlyInstalment: num(scenario.house.monthlyInstalment),
+          tenureRemaining: scenario.house.tenureRemaining !== '' ? num(scenario.house.tenureRemaining) : null,
+          propertyType: scenario.house.propertyType || 'private',
         }
   ) : null
 
@@ -90,10 +98,13 @@ function scenarioToState(scenario) {
       carValue: num(scenario.car.carValue),
       loanOutstanding: num(scenario.car.loanOutstanding),
       monthlyInstalment: num(scenario.car.monthlyInstalment),
+      tenureRemaining: scenario.car.tenureRemaining !== '' ? num(scenario.car.tenureRemaining) : null,
     } : null,
     cpf: { oa: num(scenario.oaBalance), sa: num(scenario.saBalance), ma: num(scenario.maBalance) },
     investmentBalance: num(scenario.investmentBalance),
     cashSavings,
+    insurancePremium: num(scenario.insurancePremium),
+    monthlyTakeHome: scenario.monthlyTakeHome || 0,
   }
 }
 
@@ -120,7 +131,7 @@ export default function MyLedgerPage() {
     const myNumbers = loadMyNumbers()
     const baseline = buildBaselineState(myNumbers)
     setScenarios([stateToScenario(baseline, 'baseline', 'Baseline')])
-    setSynced(!!(myNumbers.house || myNumbers.drive || myNumbers.retire))
+    setSynced(!!(myNumbers.house || myNumbers.drive || myNumbers.retire || myNumbers.insure || myNumbers.tax))
     /* eslint-enable react-hooks/set-state-in-effect */
   }, [])
 
@@ -174,7 +185,7 @@ export default function MyLedgerPage() {
       <div style={{ maxWidth: 900, margin: '0 auto', padding: '40px 20px 80px' }}>
         {synced && (
           <div style={{ background: C.accentBg, border: `1px solid ${C.accent}55`, borderRadius: C.rL, padding: '12px 16px', marginBottom: 20, fontSize: C.xs, color: C.muted, lineHeight: 1.5 }}>
-            Baseline prefilled from whatever HouseMuch, DriveReady, and RetireWell last had saved on this browser. Everything below is editable — nothing here changes what those tools have saved.
+            Baseline prefilled from whatever the other ndtm tools last had saved on this browser. Everything below is editable — nothing here changes what those tools have saved.
           </div>
         )}
 
@@ -221,7 +232,12 @@ export default function MyLedgerPage() {
             <div style={{ background: C.surface, border: `1px solid ${C.border}`, borderRadius: C.rXL, padding: '20px', boxShadow: C.shadow }}>
               <ComparisonTable rows={comparison} />
               <p style={{ fontSize: C.xs, color: C.faint, lineHeight: 1.6, marginTop: 16 }}>
-                TDSR sums every monthly obligation entered above against gross salary — see <a href="/ledger/the-math" style={{ color: C.accent }}>the math</a> for the full formulas. Retirement figures reuse RetireWell&apos;s own projection engine, using each scenario&apos;s leftover monthly capacity (take-home minus mortgage and car) as the investment contribution, instead of a guessed figure.
+                TDSR counts loan repayments only (banks don&apos;t count insurance premiums), against gross salary; MSR applies to HDB loans and is usually the tighter of the two. Retirement figures reuse RetireWell&apos;s own projection engine, fed with capacity that <strong>rises as your loans end</strong> rather than assuming today&apos;s repayments last forever. See <a href="/ledger/the-math" style={{ color: C.accent }}>the math</a> for the full formulas.
+              </p>
+              <p style={{ fontSize: C.xs, color: C.faint, lineHeight: 1.6, marginTop: 8 }}>
+                {comparison[0]?.takeHome?.exact
+                  ? 'Take-home pay is the exact after-tax figure from TaxWise, including your age-banded CPF share.'
+                  : <>Take-home pay is approximated at 80% of gross. <a href="/tax" style={{ color: C.accent }}>Run TaxWise</a> for an exact after-tax figure — it matters most if you&apos;re over 55 or paying significant tax.</>}
               </p>
             </div>
           </div>

@@ -17,7 +17,7 @@
 const STORAGE_KEY = 'ndtm_my_numbers_v1' // key name predates the v2 schema bump; left as-is, the `version` field inside is what's versioned
 
 const EMPTY = {
-  version: 2,
+  version: 3,
   // { source: 'auto'|'manual', savedAt,
   //   outstandingBalance, rate, tenureRemaining, monthlyInstalment, propertyValue, cpfServicing,
   //   cashProceeds, totalCPFRefund, salePrice, saleDate }
@@ -26,11 +26,17 @@ const EMPTY = {
   drive: null,
   // { source, savedAt, salary, oaBalance, saBalance, maBalance, investmentBalance, monthlyContribution }
   retire: null,
+  // { source, savedAt, monthlyPremium, score } — insurance premiums are a
+  // real recurring obligation, so MyLedger counts them against income.
+  insure: null,
+  // { source, savedAt, monthlyTakeHome, annualTax, marginalRate, age } —
+  // lets MyLedger use an exact after-tax take-home instead of a flat 80%.
+  tax: null,
 }
 
 function migrateV1(parsed) {
   return {
-    version: 2,
+    version: 3,
     house: parsed.house ? {
       source: 'auto', savedAt: parsed.house.savedAt,
       cashProceeds: parsed.house.cashProceeds, totalCPFRefund: parsed.house.totalCPFRefund,
@@ -43,8 +49,14 @@ function migrateV1(parsed) {
       monthlyInstalment: parsed.drive.monthlyCost, carLabel: parsed.drive.carLabel, salary: parsed.drive.salary,
       loanOutstanding: null, rate: null, tenureRemaining: null, carValue: null,
     } : null,
-    retire: null,
+    retire: null, insure: null, tax: null,
   }
+}
+
+// v2 → v3 only adds the insure/tax slots; everything already stored
+// stays exactly as it was.
+function migrateV2(parsed) {
+  return { ...parsed, version: 3, insure: parsed.insure ?? null, tax: parsed.tax ?? null }
 }
 
 function safeParse(raw) {
@@ -52,7 +64,8 @@ function safeParse(raw) {
   try {
     const parsed = JSON.parse(raw)
     if (!parsed || typeof parsed !== 'object') return null
-    if (parsed.version === 2) return parsed
+    if (parsed.version === 3) return parsed
+    if (parsed.version === 2) return migrateV2(parsed)
     if (parsed.version === 1) return migrateV1(parsed)
     return null
   } catch {
@@ -78,7 +91,7 @@ function save(data) {
 export function saveHouseNumbers({
   cashProceeds, totalCPFRefund, salePrice, saleDate,
   outstandingBalance, rate, tenureRemaining, monthlyInstalment, propertyValue, cpfServicing,
-  source = 'auto',
+  propertyType, source = 'auto',
 }) {
   const data = loadMyNumbers()
   data.house = {
@@ -93,6 +106,7 @@ export function saveHouseNumbers({
     monthlyInstalment: monthlyInstalment != null ? Number(monthlyInstalment) || 0 : null,
     propertyValue: propertyValue != null ? Number(propertyValue) || 0 : null,
     cpfServicing: cpfServicing != null ? Number(cpfServicing) || 0 : null,
+    propertyType: propertyType || 'private',
     savedAt: Date.now(),
   }
   save(data)
@@ -133,6 +147,42 @@ export function saveRetireNumbers({
     monthlyContribution: Number(monthlyContribution) || 0,
     savedAt: Date.now(),
   }
+  save(data)
+}
+
+export function saveInsureNumbers({ monthlyPremium, score, source = 'auto' }) {
+  const data = loadMyNumbers()
+  data.insure = {
+    source,
+    monthlyPremium: Number(monthlyPremium) || 0,
+    score: score != null ? Number(score) || 0 : null,
+    savedAt: Date.now(),
+  }
+  save(data)
+}
+
+export function saveTaxNumbers({ monthlyTakeHome, annualTax, marginalRate, age, source = 'auto' }) {
+  const data = loadMyNumbers()
+  data.tax = {
+    source,
+    monthlyTakeHome: Number(monthlyTakeHome) || 0,
+    annualTax: Number(annualTax) || 0,
+    marginalRate: Number(marginalRate) || 0,
+    age: Number(age) || 0,
+    savedAt: Date.now(),
+  }
+  save(data)
+}
+
+export function clearInsureNumbers() {
+  const data = loadMyNumbers()
+  data.insure = null
+  save(data)
+}
+
+export function clearTaxNumbers() {
+  const data = loadMyNumbers()
+  data.tax = null
   save(data)
 }
 

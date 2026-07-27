@@ -10,6 +10,7 @@ import PrintSummary from '@/components/insure/PrintSummary'
 import { getBandColor, explainPillar, computeGaps, generateActionPlan, formatSGD, BENCHMARKS } from '@/lib/insure/engine/scorer'
 import { SITE_URL } from '@/lib/shared/site'
 import { loadScoreHistory } from '@/lib/insure/scoreHistory'
+import { saveInsureNumbers } from '@/lib/shared/profile'
 import { downloadRecheckReminder } from '@/lib/insure/recheckReminder'
 import ShellHeader from '@/components/shared/ShellHeader'
 
@@ -435,6 +436,17 @@ export default function ResultsPage() {
       } catch {}
 
       setHistory(loadScoreHistory())
+
+      // Premiums are a real monthly commitment, so hand them to MyLedger
+      // — it counts them against what's left to invest (though not
+      // toward TDSR, since banks don't either). Local only; see
+      // src/lib/shared/profile.js.
+      if (parsed?.result?.inputs?.monthlyPremium != null) {
+        saveInsureNumbers({
+          monthlyPremium: parsed.result.inputs.monthlyPremium,
+          score: parsed.result.finalScore,
+        })
+      }
     } catch {
       router.push('/insure/check')
     }

@@ -10,6 +10,7 @@ const TOOLS = [
   { key: 'etf', href: '/etf', label: 'Invest' },
   { key: 'house', href: '/house', label: 'House' },
   { key: 'retire', href: '/retire', label: 'Retire' },
+  { key: 'tax', href: '/tax', label: 'Tax' },
   { key: 'ledger', href: '/ledger', label: 'MyLedger' },
 ]
 
