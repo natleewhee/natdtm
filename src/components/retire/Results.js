@@ -20,8 +20,8 @@ export default function RetireResults({ result }) {
   const { retirementAge, lifeExpectancy, accumulation, target, depletion } = result
   const { oaFinal, saFinal, maFinal, cpfTotalFinal, investmentFinal, rstuCappedAtAge } = accumulation
   const {
-    desiredMonthlyWithdrawal, yearsToRetirement, inflatedMonthlyWithdrawal, monthlyFromInvestments,
-    requiredNestEgg, gap, onTrack, extraMonthlyNeeded, swr,
+    desiredMonthlyWithdrawal, yearsToRetirement, inflatedMonthlyWithdrawal,
+    requiredNestEgg, projectedPortfolio, gap, onTrack, extraMonthlyNeeded, swr,
   } = target
   const { depletedAtAge, lastsToLifeExpectancy } = depletion
 
@@ -34,15 +34,15 @@ export default function RetireResults({ result }) {
         value={`${onTrack ? '+' : '−'}${SGD(Math.abs(gap ?? 0))}`}
         sentence={
           onTrack
-            ? `Your projected investments at retirement cover your desired withdrawal at a ${swr}% safe withdrawal rate, with room to spare.`
-            : `Your projected investments fall short of what a ${swr}% safe withdrawal rate needs to cover your desired monthly withdrawal.`
+            ? `Your projected investments + CPF (OA/SA) at retirement cover your desired withdrawal at a ${swr}% safe withdrawal rate, with room to spare.`
+            : `Your projected investments + CPF (OA/SA) at retirement fall short of what a ${swr}% safe withdrawal rate needs to cover your desired monthly withdrawal.`
         }
       />
 
       <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', justifyContent: 'center', margin: '20px 0 8px' }}>
         <InsightPill label="Years to retirement" value={`${yearsToRetirement}`} />
         <InsightPill label="Required nest egg" value={SGD(requiredNestEgg)} />
-        <InsightPill label="Projected investments" value={SGD(investmentFinal)} tone={onTrack ? 'accent' : 'red'} />
+        <InsightPill label="Projected portfolio" value={SGD(projectedPortfolio)} tone={onTrack ? 'accent' : 'red'} />
       </div>
 
       {!onTrack && extraMonthlyNeeded != null && (
@@ -59,11 +59,11 @@ export default function RetireResults({ result }) {
       <div style={{ background: C.blueBg, border: `1px solid ${C.blue}44`, borderRadius: C.rL, padding: '16px 18px', margin: '20px 0' }}>
         <div style={{ fontSize: C.sm, fontWeight: 700, color: C.blueText, marginBottom: 4 }}>
           {depletedAtAge != null
-            ? `At this rate, your investments run out at age ${depletedAtAge}`
-            : `Your investments last through your life expectancy of ${lifeExpectancy}`}
+            ? `At this rate, your combined portfolio runs out at age ${depletedAtAge}`
+            : `Your combined portfolio lasts through your life expectancy of ${lifeExpectancy}`}
         </div>
         <div style={{ fontSize: C.xs, color: C.muted, lineHeight: 1.6 }}>
-          This simulates actually drawing down your investment balance year by year — withdrawing, growing the rest at your assumed money-market return, and escalating the withdrawal with inflation — rather than assuming the 3% rule holds forever. The two checks can disagree, especially for a low-return asset like money market funds.
+          This simulates actually drawing down your investments + CPF (OA/SA) year by year — withdrawing, growing the rest at your assumed money-market return, and escalating the withdrawal with inflation — rather than assuming the 3% rule holds forever. Applying your investment return to the CPF portion too is conservative: CPF&apos;s guaranteed rates typically run higher. The two checks can disagree, especially for a low-return asset like money market funds.
         </div>
       </div>
 
@@ -75,9 +75,10 @@ export default function RetireResults({ result }) {
         <Row label="CPF — Special Account" value={SGD(saFinal)} />
         <Row label="CPF — MediSave Account" value={SGD(maFinal)} />
         <Row label="Total CPF" value={SGD(cpfTotalFinal)} bold />
-        <Row label="Money market investments" value={SGD(investmentFinal)} bold tone={onTrack ? 'green' : 'red'} />
+        <Row label="Money market investments" value={SGD(investmentFinal)} bold />
+        <Row label="Combined portfolio (investments + OA + SA)" value={SGD(projectedPortfolio)} bold tone={onTrack ? 'green' : 'red'} />
         <p style={{ fontSize: C.xs, color: C.faint, lineHeight: 1.6, marginTop: 10 }}>
-          MediSave isn&apos;t counted toward your spendable retirement income above — it&apos;s earmarked for healthcare premiums (MediShield/Integrated Shield Plan), not everyday withdrawals. Only your investments and CPF LIFE payout are checked against your desired withdrawal.
+          MediSave isn&apos;t counted in the combined portfolio above — it&apos;s earmarked for healthcare premiums (MediShield/Integrated Shield Plan), not everyday withdrawals.
         </p>
       </div>
 
@@ -96,10 +97,13 @@ export default function RetireResults({ result }) {
         <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
           <Row label="Desired monthly withdrawal (today's $)" value={SGD(desiredMonthlyWithdrawal)} />
           <Row label="× inflation over years to retirement" value={`→ ${SGD(inflatedMonthlyWithdrawal)}/mo in year 1`} indent />
-          <Row label="− Expected CPF LIFE payout" value={`= ${SGD(monthlyFromInvestments)}/mo from investments`} indent />
           <Row label={`× 12, ÷ ${swr}% safe withdrawal rate`} value={SGD(requiredNestEgg)} bold />
           <div style={{ height: 10 }} />
-          <Row label="Projected investment balance at retirement" value={SGD(investmentFinal)} />
+          <Row label="Money market investments" value={SGD(investmentFinal)} />
+          <Row label="+ CPF Ordinary Account" value={`+${SGD(oaFinal)}`} indent />
+          <Row label="+ CPF Special Account" value={`+${SGD(saFinal)}`} indent />
+          <Row label="Projected combined portfolio" value={SGD(projectedPortfolio)} bold />
+          <div style={{ height: 10 }} />
           <Row label={onTrack ? 'Surplus' : 'Gap'} value={SGD(Math.abs(gap ?? 0))} bold tone={onTrack ? 'green' : 'red'} />
         </div>
         <p style={{ fontSize: C.xs, color: C.faint, lineHeight: 1.6, marginTop: 14 }}>

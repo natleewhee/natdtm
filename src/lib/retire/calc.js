@@ -11,12 +11,15 @@ import {
 } from './cpf.js'
 
 // ─── Accumulation: now → retirement age ─────────────────────────────────
-// CPF's actual Retirement Account/FRS sweep at 55 is not modeled — OA/SA
-// continue compounding at their own rates throughout, since the CPF LIFE
-// payout itself is taken as a manual input rather than derived from an RA
-// balance (see the-math page). RSTU top-ups are credited to SA
-// throughout for the same reason (standing in for "SA or RA, whichever
-// applies"), gated by the prevailing Full Retirement Sum.
+// CPF's actual Retirement Account/FRS sweep at 55 and the CPF LIFE
+// annuity it eventually funds are both out of scope — OA/SA simply keep
+// compounding at their own rates straight through retirement age, and
+// the retirement target check (below) treats OA+SA as part of one
+// combined, self-managed portfolio alongside investments rather than
+// modeling CPF LIFE's real lifetime-annuity payout mechanics (see the-math
+// page). RSTU top-ups are credited to SA throughout for the same reason
+// (standing in for "SA or RA, whichever applies"), gated by the
+// prevailing Full Retirement Sum.
 export function simulateAccumulation(inputs) {
   const {
     currentAge = 0, retirementAge = 0,
@@ -108,15 +111,16 @@ export function simulateAccumulation(inputs) {
 // ─── Retirement target: how big a nest egg do you need? ─────────────────
 // The classic safe-withdrawal-rate approach: withdraw a fixed % of the
 // nest egg in year 1, then escalate that DOLLAR amount by inflation each
-// year after — same mechanics the 3-4% "rule" is built around. CPF LIFE
-// (if you supply an expected payout) is netted off first since it's a
-// separate, largely-guaranteed income stream, not part of the withdrawable
-// investment pool.
+// year after — same mechanics the 3-4% "rule" is built around. Checked
+// against your combined portfolio (money-market investments + CPF
+// Ordinary + Special Account) rather than a separate CPF LIFE payout —
+// simpler to reason about, at the cost of not modeling CPF LIFE's actual
+// lifetime-annuity mechanics (see the-math page). MediSave is excluded:
+// it's earmarked for healthcare premiums, not everyday withdrawals.
 export function calcRetirementTarget(inputs, accumulation) {
   const {
     currentAge = 0, retirementAge = 0,
     desiredMonthlyWithdrawal = 0, inflationRate = 2.5, swr = 3,
-    cpfLifeMonthlyPayout = 0,
     investmentReturn = 0,
   } = inputs
 
@@ -124,18 +128,20 @@ export function calcRetirementTarget(inputs, accumulation) {
   const inflationMultiplier = Math.pow(1 + (Number(inflationRate) || 0) / 100, yearsToRetirement)
   const inflatedMonthlyWithdrawal = (Number(desiredMonthlyWithdrawal) || 0) * inflationMultiplier
 
-  const monthlyFromInvestments = Math.max(0, inflatedMonthlyWithdrawal - (Number(cpfLifeMonthlyPayout) || 0))
-  const annualFromInvestments = monthlyFromInvestments * 12
+  const annualWithdrawal = inflatedMonthlyWithdrawal * 12
   const swrRate = (Number(swr) || 0) / 100
-  const requiredNestEgg = swrRate > 0 ? annualFromInvestments / swrRate : null
+  const requiredNestEgg = swrRate > 0 ? annualWithdrawal / swrRate : null
 
-  const projectedInvestment = accumulation.investmentFinal
-  const gap = requiredNestEgg != null ? requiredNestEgg - projectedInvestment : null
+  const projectedPortfolio = (accumulation.investmentFinal || 0) + (accumulation.oaFinal || 0) + (accumulation.saFinal || 0)
+  const gap = requiredNestEgg != null ? requiredNestEgg - projectedPortfolio : null
   const onTrack = gap != null ? gap <= 0 : null
 
   // Extra monthly contribution needed, from today, to close a gap by
   // retirement — future-value-of-an-ordinary-annuity, inverted for the
-  // payment: C = FV × r / [(1+r)^n − 1].
+  // payment: C = FV × r / [(1+r)^n − 1]. Solved against your investment
+  // return specifically, since topping up investments is the lever you
+  // control most directly (CPF contributions are largely mandatory or
+  // RSTU-capped).
   const monthlyInvReturn = (Number(investmentReturn) || 0) / 100 / 12
   const months = accumulation.months
   let extraMonthlyNeeded = null
@@ -150,52 +156,44 @@ export function calcRetirementTarget(inputs, accumulation) {
 
   return {
     desiredMonthlyWithdrawal: Number(desiredMonthlyWithdrawal) || 0,
-    cpfLifeMonthlyPayout: Number(cpfLifeMonthlyPayout) || 0,
     swr: Number(swr) || 0,
-    yearsToRetirement, inflatedMonthlyWithdrawal, monthlyFromInvestments, annualFromInvestments,
-    requiredNestEgg, projectedInvestment, gap, onTrack, extraMonthlyNeeded,
+    yearsToRetirement, inflatedMonthlyWithdrawal,
+    requiredNestEgg, projectedPortfolio, gap, onTrack, extraMonthlyNeeded,
   }
 }
 
 // ─── Depletion simulation ────────────────────────────────────────────────
-// Given your projected investment balance at retirement, simulate the
-// drawdown year by year: withdraw the inflation-escalated amount (net of
-// your CPF LIFE payout, which escalates on its own schedule depending on
-// your chosen plan), grow the remainder at the assumed money-market
-// return. This is the more honest check for a money-market-only
-// portfolio, where the "3% forever" framing (built for equity-inclusive
-// portfolios) may not actually hold — see the-math page.
-export function simulateDepletion(inputs, startingBalance, firstYearTotalWithdrawal, firstYearCpfLifePayout = 0) {
+// Given your projected combined portfolio at retirement, simulate the
+// drawdown year by year: withdraw the inflation-escalated amount, grow
+// the remainder at your assumed money-market return. Applying that same
+// rate to the CPF portion too is a simplifying, conservative assumption —
+// CPF's guaranteed rates typically run higher — see the-math page. This
+// whole simulation is the more honest check than the safe-withdrawal-rate
+// framing above, which assumes indefinite sustainability that a
+// money-market-heavy portfolio may not actually deliver.
+export function simulateDepletion(inputs, startingBalance, firstYearMonthlyWithdrawal) {
   const {
     retirementAge = 0, lifeExpectancy = 90, inflationRate = 2.5, investmentReturn = 0,
-    cpfLifePlan = 'standard',
   } = inputs
 
   let balance = Number(startingBalance) || 0
-  let totalWithdrawal = Number(firstYearTotalWithdrawal) || 0
-  let cpfLifePayout = Number(firstYearCpfLifePayout) || 0
+  let monthlyWithdrawal = Number(firstYearMonthlyWithdrawal) || 0
   const annualReturn = (Number(investmentReturn) || 0) / 100
   const inflation = (Number(inflationRate) || 0) / 100
-  // CPF LIFE Standard Plan pays a flat nominal amount for life; the
-  // Escalating Plan grows payouts by 2% p.a. — a real, publicly stated
-  // difference between the two plans, not an assumption on my part.
-  const cpfLifeEscalation = cpfLifePlan === 'escalating' ? 0.02 : 0
   const maxYears = Math.max(0, Math.round(lifeExpectancy - retirementAge))
 
   const rows = []
   let depletedAtAge = null
 
   for (let y = 0; y < maxYears; y++) {
-    const investmentWithdrawal = Math.max(0, totalWithdrawal - cpfLifePayout)
-    balance = balance * (1 + annualReturn) - investmentWithdrawal * 12
+    balance = balance * (1 + annualReturn) - monthlyWithdrawal * 12
     const age = retirementAge + y + 1
     if (balance <= 0 && depletedAtAge == null) {
       depletedAtAge = age
       balance = 0
     }
     rows.push({ age, balance: Math.max(0, balance) })
-    totalWithdrawal *= (1 + inflation)
-    cpfLifePayout *= (1 + cpfLifeEscalation)
+    monthlyWithdrawal *= (1 + inflation)
     if (balance <= 0) break
   }
 
@@ -216,14 +214,9 @@ export function calcRetirement(inputs) {
   const accumulation = simulateAccumulation({ ...inputs, housingOaMonths })
   const target = calcRetirementTarget(inputs, accumulation)
   const depletion = simulateDepletion(
-    {
-      retirementAge, lifeExpectancy,
-      inflationRate: inputs.inflationRate, investmentReturn: inputs.investmentReturn,
-      cpfLifePlan: inputs.cpfLifePlan,
-    },
-    accumulation.investmentFinal,
+    { retirementAge, lifeExpectancy, inflationRate: inputs.inflationRate, investmentReturn: inputs.investmentReturn },
+    target.projectedPortfolio,
     target.inflatedMonthlyWithdrawal,
-    target.cpfLifeMonthlyPayout,
   )
 
   return {

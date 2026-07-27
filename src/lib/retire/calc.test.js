@@ -103,26 +103,17 @@ const expectedInflated = 5_000 * Math.pow(1.025, 20)
 assert('Inflated monthly withdrawal compounds over years to retirement', approx(target.inflatedMonthlyWithdrawal, expectedInflated, 1))
 const expectedNestEgg = expectedInflated * 12 / 0.03
 assert('Required nest egg = annual inflated withdrawal / SWR', approx(target.requiredNestEgg, expectedNestEgg, 5))
-assert('Gap is required nest egg minus projected investment', approx(target.gap, expectedNestEgg - 500_000, 5))
+assert('Gap is required nest egg minus projected portfolio', approx(target.gap, expectedNestEgg - 500_000, 5))
 
-// CPF LIFE payout nets off the withdrawal need before hitting the SWR formula.
-const targetWithCpfLife = calcRetirementTarget({
+// The combined portfolio includes OA and SA, not just investments.
+const targetWithCpf = calcRetirementTarget({
   currentAge: 40, retirementAge: 60,
   desiredMonthlyWithdrawal: 5_000, inflationRate: 2.5, swr: 3,
-  cpfLifeMonthlyPayout: 2_000,
   investmentReturn: 4,
-}, flatAccum)
-assert('CPF LIFE payout reduces the required nest egg', targetWithCpfLife.requiredNestEgg < target.requiredNestEgg)
-assert('monthlyFromInvestments nets off CPF LIFE payout', approx(targetWithCpfLife.monthlyFromInvestments, target.inflatedMonthlyWithdrawal - 2_000, 1))
-
-// A CPF LIFE payout larger than the desired withdrawal floors at zero, not negative.
-const targetCpfLifeCoversAll = calcRetirementTarget({
-  currentAge: 40, retirementAge: 60,
-  desiredMonthlyWithdrawal: 1_000, inflationRate: 0, swr: 3,
-  cpfLifeMonthlyPayout: 5_000,
-}, flatAccum)
-assert('CPF LIFE payout exceeding desired withdrawal floors required nest egg at 0', targetCpfLifeCoversAll.requiredNestEgg === 0)
-assert('onTrack is true when the required nest egg is already covered', targetCpfLifeCoversAll.onTrack === true)
+}, { investmentFinal: 500_000, oaFinal: 100_000, saFinal: 50_000, maFinal: 200_000, months: 240 })
+assert('projectedPortfolio sums investments + OA + SA', targetWithCpf.projectedPortfolio === 650_000)
+assert('projectedPortfolio excludes MediSave', targetWithCpf.projectedPortfolio !== 850_000)
+assert('A larger combined portfolio (via CPF) results in a smaller gap than investments alone', targetWithCpf.gap < target.gap)
 
 // A surplus scenario: no gap, no extra contribution needed.
 const surplusTarget = calcRetirementTarget({
@@ -226,18 +217,6 @@ assert('SA growth while RSTU-capped matches interest-only compounding, with no R
 assert('prevailingFRS at the base year equals the base figure', prevailingFRS(CPF_FRS_BASE_YEAR) === CPF_FRS_BASE)
 assert('prevailingFRS grows over time', prevailingFRS(CPF_FRS_BASE_YEAR + 10) > CPF_FRS_BASE)
 
-// ─── CPF LIFE plan escalation in the depletion simulation ────────────────
-const standardPlanDepletion = simulateDepletion(
-  { retirementAge: 65, lifeExpectancy: 90, inflationRate: 2, investmentReturn: 4, cpfLifePlan: 'standard' },
-  5_000_000, 6_000, 2_000,
-)
-const escalatingPlanDepletion = simulateDepletion(
-  { retirementAge: 65, lifeExpectancy: 90, inflationRate: 2, investmentReturn: 4, cpfLifePlan: 'escalating' },
-  5_000_000, 6_000, 2_000,
-)
-assert('Neither plan depletes the balance in this milder scenario, so the comparison below is meaningful', standardPlanDepletion.depletedAtAge === null && escalatingPlanDepletion.depletedAtAge === null)
-assert('An escalating CPF LIFE payout covers more of the need over time, leaving a larger balance than a flat Standard payout', escalatingPlanDepletion.rows.at(-1).balance > standardPlanDepletion.rows.at(-1).balance)
-
 // ─── Orchestrator ────────────────────────────────────────────────────────
 const full = calcRetirement({
   currentAge: 35, retirementAge: 65, lifeExpectancy: 90,
@@ -246,12 +225,12 @@ const full = calcRetirement({
   housingOaMonthly: 1_200, housingOaUntilAge: 55,
   investmentStart: 50_000, investmentMonthly: 1_000, investmentReturn: 3,
   desiredMonthlyWithdrawal: 4_000, inflationRate: 2.5, swr: 3,
-  cpfLifeMonthlyPayout: 1_500,
 })
 assert('Orchestrator produces an accumulation result', full.accumulation.months === 360)
 assert('Orchestrator produces a target result with a gap or surplus verdict', typeof full.target.onTrack === 'boolean')
 assert('Orchestrator produces a depletion result', Array.isArray(full.depletion.rows))
 assert('housingOaUntilAge is correctly converted to months internally', full.accumulation.oaFinal !== undefined)
+assert('Orchestrator\'s depletion simulation starts from the combined portfolio, not investments alone', full.depletion.rows[0].balance > full.accumulation.investmentFinal)
 
 console.log(`\n${'─'.repeat(40)}`)
 console.log(`Results: ${passed} passed, ${failed} failed`)

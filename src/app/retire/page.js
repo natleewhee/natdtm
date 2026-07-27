@@ -4,7 +4,7 @@ import { useState } from 'react'
 import { C, SGD, parseMoney } from '@/lib/retire/theme'
 import { calcRetirement } from '@/lib/retire/calc'
 import { monthlyCpfContribution, CPF_OW_CEILING } from '@/lib/retire/cpf'
-import { MoneyInput, PercentInput, NumberInput, SectionDivider, Segmented } from '@/components/retire/ui'
+import { MoneyInput, PercentInput, NumberInput, SectionDivider } from '@/components/retire/ui'
 import RetireResults from '@/components/retire/Results'
 import ShellHeader from '@/components/shared/ShellHeader'
 import TrustBadges from '@/components/shared/TrustBadges'
@@ -38,8 +38,6 @@ export default function RetireWellPage() {
   const [desiredMonthlyWithdrawal, setDesiredMonthlyWithdrawal] = useState('')
   const [inflationRate, setInflationRate] = useState('2.5')
   const [swr, setSwr] = useState('3')
-  const [cpfLifeMonthlyPayout, setCpfLifeMonthlyPayout] = useState('')
-  const [cpfLifePlan, setCpfLifePlan] = useState('standard')
 
   const [calculated, setCalculated] = useState(false)
 
@@ -59,7 +57,6 @@ export default function RetireWellPage() {
     rstuMonthly: hasRstu ? num(rstuMonthly) : 0,
     investmentStart: num(investmentStart), investmentMonthly: num(investmentMonthly), investmentReturn: num(investmentReturn),
     desiredMonthlyWithdrawal: num(desiredMonthlyWithdrawal), inflationRate: num(inflationRate), swr: num(swr),
-    cpfLifeMonthlyPayout: num(cpfLifeMonthlyPayout), cpfLifePlan,
   }) : null
 
   const handleCalc = () => setCalculated(true)
@@ -173,26 +170,14 @@ export default function RetireWellPage() {
           </div>
 
           <SectionDivider label="Retirement target" />
+          <p style={{ marginTop: -8, marginBottom: 16, fontSize: C.xs, color: C.muted, lineHeight: 1.5 }}>
+            Checked against your combined portfolio at retirement — investments plus CPF Ordinary and Special Account (MediSave excluded, since it&apos;s earmarked for healthcare, not withdrawals).
+          </p>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 16 }}>
             <MoneyInput id="desired-withdrawal" label="Desired monthly withdrawal" hint="In today's dollars — I'll escalate it for inflation" value={desiredMonthlyWithdrawal} onChange={e => setDesiredMonthlyWithdrawal(e.target.value)} />
             <PercentInput id="inflation-rate" label="Inflation assumption" value={inflationRate} onChange={e => setInflationRate(e.target.value)} />
             <PercentInput id="swr" label="Safe withdrawal rate" hint="3% is a conservative default — see the math" value={swr} onChange={e => setSwr(e.target.value)} />
-            <MoneyInput id="cpf-life-payout" label="Expected CPF LIFE payout" hint="Optional — look this up on the CPF Retirement dashboard" value={cpfLifeMonthlyPayout} onChange={e => setCpfLifeMonthlyPayout(e.target.value)} />
           </div>
-          {num(cpfLifeMonthlyPayout) > 0 && (
-            <div style={{ marginTop: 12 }}>
-              <label style={{ display: 'block', fontSize: C.sm, fontWeight: 600, color: C.primary, marginBottom: 7 }}>CPF LIFE plan</label>
-              <Segmented
-                value={cpfLifePlan} onChange={setCpfLifePlan}
-                options={[{ value: 'standard', label: 'Standard' }, { value: 'escalating', label: 'Escalating' }]}
-              />
-              <p style={{ marginTop: 8, fontSize: C.xs, color: C.muted, lineHeight: 1.5 }}>
-                {cpfLifePlan === 'standard'
-                  ? 'Standard Plan payouts are flat for life — used as-is in the depletion simulation.'
-                  : 'Escalating Plan payouts grow 2% every year — the depletion simulation grows your CPF LIFE income to match, reducing how much your investments need to cover over time.'}
-              </p>
-            </div>
-          )}
 
           <div style={{ marginTop: 24 }}>
             <Button variant="accent" fullWidth onClick={handleCalc} disabled={!isReady}>
