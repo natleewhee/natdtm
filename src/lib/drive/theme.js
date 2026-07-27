@@ -44,6 +44,25 @@ export const RATE_TIERS = [
 
 export const SGD = n => `S$${Math.round(n).toLocaleString('en-SG')}`
 
+// Money input parser that understands "k" (thousand) and "m" (million)
+// suffixes on top of plain digits — "80k" → 80000, "1.2m" → 1200000 —
+// same convention as house/theme.js's parseMoney. Returns null (not 0)
+// for empty/unparseable input so callers can tell "nothing typed yet"
+// apart from "typed zero".
+export function parseMoneyKM(raw) {
+  if (raw == null) return null
+  const s = String(raw).trim().toLowerCase().replace(/,/g, '')
+  if (!s) return null
+  let mult = 1
+  let digits = s
+  if (digits.endsWith('k')) { mult = 1_000; digits = digits.slice(0, -1) }
+  else if (digits.endsWith('m')) { mult = 1_000_000; digits = digits.slice(0, -1) }
+  digits = digits.replace(/[^0-9.]/g, '')
+  if (!digits) return null
+  const n = parseFloat(digits)
+  return Number.isFinite(n) ? Math.round(n * mult) : null
+}
+
 // Coarse Singapore-market popularity by brand — a transparent heuristic for
 // ordering the long tail of search results, NOT sourced registration/sales
 // figures (we only have real rank data for the 5 tagged best-sellers). Lower

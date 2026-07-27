@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { C, RATE_TIERS } from '@/lib/drive/theme'
+import { C, RATE_TIERS, parseMoneyKM } from '@/lib/drive/theme'
 import { MAINTENANCE_BY_BRAND } from '@/lib/drive/maintenance'
 
 const BRAND_OPTIONS = Object.entries(MAINTENANCE_BY_BRAND)
@@ -70,7 +70,7 @@ export function UsedCarForm({ slot, onChange }) {
           <div style={{position:'relative'}}>
             <span aria-hidden="true" style={{position:'absolute',left:13,top:'50%',transform:'translateY(-50%)',fontSize:C.sm,fontWeight:600,color:priceRaw?C.accent:C.faint}}>S$</span>
             <input id={`used-price-${slot}`} type="text" inputMode="numeric" value={priceRaw ? Number(priceRaw).toLocaleString('en-SG') : ''}
-              onChange={e => setPriceRaw(e.target.value.replace(/\D/g,''))} placeholder="0"
+              onChange={e => { const p = parseMoneyKM(e.target.value); setPriceRaw(p != null ? String(p) : '') }} placeholder="0"
               style={{width:'100%',background:C.surface,border:`1.5px solid ${priceRaw?C.accent:C.border}`,borderRadius:C.r,padding:'11px 12px 11px 36px',color:C.primary,fontSize:C.lg,fontFamily:C.fontMono,fontWeight:500,outline:'none'}}/>
           </div>
           <p style={{marginTop:5,fontSize:C.xs,color:C.muted,lineHeight:1.5}}>What the seller is asking</p>
@@ -80,7 +80,7 @@ export function UsedCarForm({ slot, onChange }) {
           <div style={{position:'relative'}}>
             <span aria-hidden="true" style={{position:'absolute',left:13,top:'50%',transform:'translateY(-50%)',fontSize:C.sm,fontWeight:600,color:omvRaw?C.accent:C.faint}}>S$</span>
             <input id={`used-omv-${slot}`} type="text" inputMode="numeric" value={omvRaw ? Number(omvRaw).toLocaleString('en-SG') : ''}
-              onChange={e => setOmvRaw(e.target.value.replace(/\D/g,''))} placeholder="0"
+              onChange={e => { const p = parseMoneyKM(e.target.value); setOmvRaw(p != null ? String(p) : '') }} placeholder="0"
               style={{width:'100%',background:C.surface,border:`1.5px solid ${omvRaw?C.accent:C.border}`,borderRadius:C.r,padding:'11px 12px 11px 36px',color:C.primary,fontSize:C.lg,fontFamily:C.fontMono,fontWeight:500,outline:'none'}}/>
           </div>
           <p style={{marginTop:5,fontSize:C.xs,color:C.muted,lineHeight:1.5}}>From the log card or OneMotoring — determines Cat A/B and PARF</p>

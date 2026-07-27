@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useRef, useEffect } from 'react'
-import { C, SGD } from '@/lib/drive/theme'
+import { C, SGD, parseMoneyKM } from '@/lib/drive/theme'
 import { calc, calcCeiling, COE_FALLBACK, COE_FALLBACK_AS_OF, isCoeFallbackStale } from '@/lib/drive/calc'
 import { calcUsed } from '@/lib/drive/used-car'
 import { useDebounce } from '@/lib/drive/hooks'
@@ -224,9 +224,13 @@ export default function DriveReadyPage() {
     })
   }, [rA])
 
-  const handleSalary = e => { const r=e.target.value.replace(/\D/g,''); setSalaryRaw(r); setSalary(r?Number(r).toLocaleString('en-SG'):'') }
-  const handleDown   = e => { const r=e.target.value.replace(/\D/g,''); setDownRaw(r);   setDown(r?Number(r).toLocaleString('en-SG'):'') }
-  const handleExistingDebt = e => { const r=e.target.value.replace(/\D/g,''); setExistingDebtRaw(r); setExistingDebt(r?Number(r).toLocaleString('en-SG'):'') }
+  // Accepts "80k"/"1.2m" shorthand alongside plain digits — parseMoneyKM
+  // resolves the suffix; salaryRaw always ends up as a plain digit
+  // string (same shape it's always been, so persistence/URL-sync and
+  // every downstream parseInt(...) call are untouched).
+  const handleSalary = e => { const p=parseMoneyKM(e.target.value); const r=p!=null?String(p):''; setSalaryRaw(r); setSalary(r?Number(r).toLocaleString('en-SG'):'') }
+  const handleDown   = e => { const p=parseMoneyKM(e.target.value); const r=p!=null?String(p):''; setDownRaw(r);   setDown(r?Number(r).toLocaleString('en-SG'):'') }
+  const handleExistingDebt = e => { const p=parseMoneyKM(e.target.value); const r=p!=null?String(p):''; setExistingDebtRaw(r); setExistingDebt(r?Number(r).toLocaleString('en-SG'):'') }
   const isReady = salaryRaw && downRaw && effCarA && (mode==='single' || effCarB)
   // Garage saves rely on IDs to restore new-car selections — used-car
   // scenarios (manually entered, not persisted) can't round-trip through

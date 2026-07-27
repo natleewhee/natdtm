@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useRef, useEffect } from 'react'
-import { C, SGD, RATE_TIERS, brandTier } from '@/lib/drive/theme'
+import { C, SGD, RATE_TIERS, brandTier, parseMoneyKM } from '@/lib/drive/theme'
 import { calcPriceGap } from '@/lib/drive/calc'
 
 // Common SG car-shopping shorthand that doesn't literally appear in our
@@ -229,8 +229,8 @@ export function CarPicker({ value, onChange, slot, ceiling, down, allCars = [], 
                 type="text"
                 value={customPrice || value.price.toLocaleString('en-SG')}
                 onChange={e => {
-                  const raw = e.target.value.replace(/[^0-9]/g,'')
-                  onCustomPrice && onCustomPrice(raw)
+                  const parsed = parseMoneyKM(e.target.value)
+                  onCustomPrice && onCustomPrice(parsed != null ? String(parsed) : '')
                 }}
                 onFocus={e => { e.target.select() }}
                 aria-label="Enter your dealer-quoted price to override the indicative price"
