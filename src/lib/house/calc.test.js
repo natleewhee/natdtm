@@ -365,6 +365,32 @@ const surplusCheck = calcNextPurchase(
 )
 assert('Next purchase: surplus flagged when available > required', surplusCheck.surplus === true)
 
+// ─── Joint loan share ─────────────────────────────────────────────────────
+const soloShare = calcSale({
+  propertyType: 'private',
+  purchasePrice: 900_000, purchaseDate: '2018-01-15',
+  cpfOutlay: 150_000, loanTaken: 650_000, mortgageRate: 2.6, loanTenure: 25,
+  salePrice: 1_300_000, saleDate: '2026-06-01',
+})
+const jointShare = calcSale({
+  propertyType: 'private',
+  purchasePrice: 900_000, purchaseDate: '2018-01-15',
+  cpfOutlay: 150_000, loanTaken: 650_000, mortgageRate: 2.6, loanTenure: 25,
+  salePrice: 1_300_000, saleDate: '2026-06-01',
+  yourSharePct: 50,
+})
+assert('Default yourSharePct is 100', soloShare.yourSharePct === 100)
+assert('yourCashProceeds at 100% share equals cashProceeds', approx(soloShare.yourCashProceeds, soloShare.cashProceeds, 0.01))
+assert('yourSharePct is recorded', jointShare.yourSharePct === 50)
+assert('yourCashProceeds at 50% share is half of household cashProceeds', approx(jointShare.yourCashProceeds, jointShare.cashProceeds / 2, 0.01))
+assert('yourCashInvested at 50% share is half of household cashInvested', approx(jointShare.yourCashInvested, jointShare.cashInvested / 2, 0.01))
+assert('yourTrueProfitLoss at 50% share is half of household trueProfitLoss', approx(jointShare.yourTrueProfitLoss, jointShare.trueProfitLoss / 2, 0.01))
+assert('yourOutstandingBalance at 50% share is half of household outstandingBalance', approx(jointShare.yourOutstandingBalance, jointShare.outstandingBalance / 2, 0.01))
+assert('yourMonthlyInstalment at 50% share is half of household monthlyInstalment', approx(jointShare.yourMonthlyInstalment, jointShare.monthlyInstalment / 2, 0.01))
+assert('Household (unscaled) figures are identical regardless of share', approx(soloShare.cashProceeds, jointShare.cashProceeds, 0.01))
+assert('totalCPFRefund is NOT scaled by share — CPF withdrawals are already personal', approx(soloShare.totalCPFRefund, jointShare.totalCPFRefund, 0.01))
+assert('cashOnCashReturn ratio is unaffected by share (both terms scale together)', approx(soloShare.cashOnCashReturn, jointShare.cashOnCashReturn, 0.0001))
+
 // ─── yearsBetween edge cases ─────────────────────────────────────────────
 assert('yearsBetween returns 0 for missing dates', yearsBetween(null, '2024-01-01') === 0)
 assert('yearsBetween returns 0 when end is before start', yearsBetween('2024-01-01', '2020-01-01') === 0)

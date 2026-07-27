@@ -88,6 +88,36 @@ export default function ScenarioCard({ scenario, onChange, onRemove, onLabelChan
     </div>
   )
 
+  // Joint loan: what fraction of THIS mortgage (and the home it's
+  // attached to) is yours. Scales outstandingBalance, monthlyInstalment,
+  // AND propertyValue together in resolveHouseModule, so net worth
+  // reflects your equity share rather than your share of the debt
+  // against the full household asset.
+  const jointLoanToggle = (
+    <div style={{ marginTop: 14 }}>
+      <Toggle active={!!scenario.house.isJointLoan} onClick={() => setHouse({ isJointLoan: !scenario.house.isJointLoan, yourSharePct: scenario.house.yourSharePct || '50' })}>
+        This is a joint loan
+      </Toggle>
+      {scenario.house.isJointLoan && (
+        <div style={{ marginTop: 10, maxWidth: 320 }}>
+          <Segmented
+            value={scenario.house.yourSharePct === '50' ? '50' : 'custom'}
+            onChange={v => setHouse({ yourSharePct: v === '50' ? '50' : (scenario.house.yourSharePct === '50' ? '60' : scenario.house.yourSharePct) })}
+            options={[{ value: '50', label: '50 / 50' }, { value: 'custom', label: 'Custom' }]}
+          />
+          {scenario.house.yourSharePct !== '50' && (
+            <div style={{ marginTop: 10, maxWidth: 160 }}>
+              <PercentInput id={`${scenario.id}-house-share`} label="Your share" value={scenario.house.yourSharePct} onChange={e => setHouse({ yourSharePct: e.target.value })} />
+            </div>
+          )}
+          <p style={{ marginTop: 8, fontSize: C.xs, color: C.muted, lineHeight: 1.5 }}>
+            The figures above should stay the real, full loan and property value — this scales only what counts toward your net worth, TDSR, and MSR down to your share.
+          </p>
+        </div>
+      )}
+    </div>
+  )
+
   const downpaymentToggle = (
     <div style={{ marginTop: 12 }}>
       <div style={{ fontSize: C.sm, fontWeight: 600, color: C.primary, marginBottom: 7 }}>Downpayment</div>
@@ -165,6 +195,7 @@ export default function ScenarioCard({ scenario, onChange, onRemove, onLabelChan
               {scenario.house?.source === 'auto' && (
                 <p style={{ marginTop: 8, fontSize: C.xs, color: C.faint }}>Synced from HouseMuch — edit freely, this won&apos;t change what&apos;s saved there.</p>
               )}
+              {jointLoanToggle}
             </>
           )}
 
@@ -191,6 +222,7 @@ export default function ScenarioCard({ scenario, onChange, onRemove, onLabelChan
                   )}
                 </div>
               )}
+              {jointLoanToggle}
             </>
           )}
 
@@ -234,6 +266,7 @@ export default function ScenarioCard({ scenario, onChange, onRemove, onLabelChan
                   )}
                 </div>
               )}
+              {jointLoanToggle}
             </>
           )}
         </>

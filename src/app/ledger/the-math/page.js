@@ -70,6 +70,7 @@ export default function LedgerTheMathPage() {
           + investment portfolio value
           + cash savings`}</Formula>
           <P>A module left empty (no mortgage, no car) simply contributes zero — it&apos;s never treated as a missing/unknown value.</P>
+          <P>For a joint loan, a scenario&apos;s mortgage section has its own &quot;This is a joint loan&quot; toggle. Home value, outstanding balance, and monthly instalment are all scaled together by your share, so what lands in net worth is your equity share (your share of the asset minus your share of the debt) — scaling only the debt would overstate net worth by leaving the full asset value in place against a smaller liability. If a mortgage was auto-synced from a HouseMuch sale that already had its own joint-loan share applied, it arrives here already scaled — MyLedger&apos;s toggle is for a scenario&apos;s own mortgage split, independent of that.</P>
         </Section>
 
         <Section title="Monthly commitments, TDSR and MSR">

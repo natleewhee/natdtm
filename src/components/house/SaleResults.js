@@ -37,7 +37,9 @@ export default function SaleResults({
     trueCostBasis, netSale, trueProfitLoss, isProfit,
     cashOnCashReturn, totalOutlay, roiOnPrice, roiOnOutlay, annualizedRoiOnPrice, annualizedRoiOnOutlay,
     saleIsInFuture,
+    yourSharePct, yourCashProceeds, yourTrueProfitLoss,
   } = result
+  const isJoint = yourSharePct != null && yourSharePct !== 100
 
   return (
     <div style={{ marginTop: 32 }}>
@@ -71,6 +73,20 @@ export default function SaleResults({
           <InsightPill label="Return on your cash" value={`${cashOnCashReturn >= 0 ? '+' : ''}${(cashOnCashReturn * 100).toFixed(0)}%`} tone={cashOnCashReturn >= 0 ? 'accent' : 'red'} />
         )}
       </div>
+
+      {isJoint && (
+        <div style={{ background: C.surface, border: `1.5px solid ${C.accent}66`, borderRadius: C.rL, padding: '16px 18px', margin: '20px 0', textAlign: 'center' }}>
+          <div style={{ fontSize: C.xs, fontWeight: 700, color: C.accent, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 6 }}>
+            Your share ({yourSharePct}%)
+          </div>
+          <div style={{ fontFamily: C.fontMono, fontSize: 26, fontWeight: 600, color: yourTrueProfitLoss >= 0 ? C.greenText : C.redText }}>
+            {yourTrueProfitLoss >= 0 ? '+' : '−'}{SGD(Math.abs(yourTrueProfitLoss))}
+          </div>
+          <p style={{ fontSize: C.xs, color: C.muted, margin: '6px 0 0', lineHeight: 1.5 }}>
+            Everything else on this page is the full household figure — the property, loan, and stamp duty are real, whole-property numbers either way. This is what the {isProfit ? 'profit' : 'loss'} means for you specifically.
+          </p>
+        </div>
+      )}
 
       {(roiOnPrice != null || roiOnOutlay != null) && (
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, margin: '16px 0' }}>
@@ -126,6 +142,9 @@ export default function SaleResults({
         <Row label="− Outstanding loan payoff" value={`−${SGD(outstandingBalance)}`} tone="red" indent />
         <Row label="− CPF refund (principal + accrued interest)" value={`−${SGD(totalCPFRefund)}`} tone="blue" indent />
         <Row label="Cash proceeds" value={SGD(cashProceeds)} bold tone={cashProceeds >= 0 ? 'green' : 'red'} />
+        {isJoint && (
+          <Row label={`Your share (${yourSharePct}%)`} value={SGD(yourCashProceeds)} indent tone={yourCashProceeds >= 0 ? 'green' : 'red'} />
+        )}
       </div>
 
       <div style={{ marginTop: 28 }}>

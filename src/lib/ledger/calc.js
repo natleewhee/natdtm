@@ -125,18 +125,34 @@ export function calcHouseUpgrade({
 // A plain purchase only ever draws down cash; an upgrade can go either
 // way depending on whether the old house's sale proceeds cover the new
 // one.
+//
+// house.yourSharePct (default 100) scales outstandingBalance,
+// monthlyInstalment, AND propertyValue together, so a joint loan's
+// equity contribution to net worth comes out as YOUR share of equity
+// (your share of the asset minus your share of the debt), not your
+// share of the debt against the full household asset. If this house
+// module was auto-synced from a HouseMuch sale, its figures are
+// already scaled there (see src/app/house/page.js) — yourSharePct here
+// is for a scenario's own manually-entered or purchase/upgrade mortgage.
 export function resolveHouseModule(house) {
   if (!house) return { resolved: null, cashImpact: 0, detail: null }
 
   const propertyType = house.propertyType || 'private'
+  const share = (Number(house.yourSharePct) || 100) / 100
+  const scale = (resolved) => ({
+    ...resolved,
+    outstandingBalance: resolved.outstandingBalance * share,
+    monthlyInstalment: resolved.monthlyInstalment * share,
+    propertyValue: resolved.propertyValue * share,
+  })
 
   if (house.mode === 'purchase') {
     const purchase = calcHousePurchase(house)
     return {
-      resolved: {
+      resolved: scale({
         outstandingBalance: purchase.loanAmount, monthlyInstalment: purchase.monthlyInstalment,
         propertyValue: purchase.price, tenureRemaining: Number(house.tenureYears) || 25, propertyType,
-      },
+      }),
       cashImpact: -purchase.cashNeeded,
       detail: purchase,
     }
@@ -145,23 +161,23 @@ export function resolveHouseModule(house) {
   if (house.mode === 'upgrade') {
     const upgrade = calcHouseUpgrade(house)
     return {
-      resolved: {
+      resolved: scale({
         outstandingBalance: upgrade.loanAmount, monthlyInstalment: upgrade.monthlyInstalment,
         propertyValue: upgrade.price, tenureRemaining: Number(house.tenureYears) || 25, propertyType,
-      },
+      }),
       cashImpact: -upgrade.gap, // gap > 0: shortfall draws cash; gap < 0: leftover proceeds top it up
       detail: upgrade,
     }
   }
 
   return {
-    resolved: {
+    resolved: scale({
       outstandingBalance: house.outstandingBalance || 0,
       monthlyInstalment: house.monthlyInstalment || 0,
       propertyValue: house.propertyValue || 0,
       tenureRemaining: house.tenureRemaining ?? null,
       propertyType,
-    },
+    }),
     cashImpact: 0,
     detail: null,
   }

@@ -80,6 +80,14 @@ export function calcSale(inputs) {
     cpfAccruedInterestOverride = null,
     ssdOverride = null,
     today = new Date().toISOString().slice(0, 10),
+    // For a joint loan: what fraction of the property (and its loan) is
+    // yours. Everything above stays a full-household calculation — BSD,
+    // SSD, and mortgage amortization all need the real, whole-property
+    // figures to be correct — this only scales the handful of "what does
+    // this mean for ME" outputs below. CPF principal is NOT scaled: CPF
+    // withdrawals are tracked per person, so cpfOutlay is assumed to
+    // already be your own contribution, not a household total.
+    yourSharePct = 100,
   } = inputs
 
   const yearsHeld = yearsBetween(purchaseDate, saleDate)
@@ -198,6 +206,17 @@ export function calcSale(inputs) {
 
   const mopOk = propertyType !== 'hdb' || yearsHeld >= HDB_MOP_YEARS
 
+  // "Your share" figures — the household numbers above, scaled by your
+  // ownership share. cashOnCashReturn is a ratio of two figures both
+  // scaled by the same factor, so it's identical either way and isn't
+  // duplicated here.
+  const share = (Number(yourSharePct) || 100) / 100
+  const yourCashProceeds = cashProceeds * share
+  const yourCashInvested = cashInvested * share
+  const yourTrueProfitLoss = trueProfitLoss * share
+  const yourOutstandingBalance = outstandingBalance * share
+  const yourMonthlyInstalment = monthlyInstalment * share
+
   return {
     propertyType, yearsHeld, monthsHeld,
     purchasePrice: Number(purchasePrice) || 0,
@@ -217,6 +236,9 @@ export function calcSale(inputs) {
     cashInvested, cashOnCashReturn,
     totalOutlay, roiOnPrice, roiOnOutlay, annualizedRoiOnPrice, annualizedRoiOnOutlay,
     mopOk,
+    yourSharePct: Number(yourSharePct) || 100,
+    yourCashProceeds, yourCashInvested, yourTrueProfitLoss,
+    yourOutstandingBalance, yourMonthlyInstalment,
   }
 }
 

@@ -59,6 +59,7 @@ export default function HouseTheMathPage() {
           { id: 'sellers-stamp-duty-ssd', label: 'SSD' },
           { id: 'additional-buyers-stamp-duty-absd', label: 'ABSD' },
           { id: 'hdb-minimum-occupation-period', label: 'HDB MOP' },
+          { id: 'joint-loans', label: 'Joint loans' },
           { id: 'buying-your-next-place', label: 'Buying next' },
           { id: 'limitations', label: 'Limitations' },
         ]} />
@@ -168,6 +169,16 @@ Entity (company / trustee)         → 65%`}</Formula>
 
         <Section title="HDB Minimum Occupation Period">
           <P>HDB flats legally can&apos;t be sold before {HDB_MOP_YEARS} years from purchase — this is a hard legal restriction, not a cost, so it&apos;s shown as a warning rather than folded into any of the money figures above. If your sale date is less than {HDB_MOP_YEARS} years after your purchase date, the results page flags it clearly; the numbers still calculate for planning purposes.</P>
+        </Section>
+
+        <Section title="Joint loans">
+          <P>For a loan taken out with someone else, everything above — purchase price, BSD, the loan amount, mortgage amortization, SSD — stays the real, whole-property figure, because that math needs the actual numbers to be correct. A single &quot;your share&quot; percentage is applied only at the end, to the handful of figures that answer &quot;what does this mean for me&quot;:</P>
+          <Formula>{`Your cash proceeds     = cash proceeds     × your share
+Your cash invested     = cash invested     × your share
+Your true profit/loss  = true profit/loss  × your share
+Your outstanding balance = outstanding balance × your share
+Your monthly instalment  = monthly instalment  × your share`}</Formula>
+          <Caveat>CPF principal is NOT scaled by your share — CPF withdrawals are tracked per person by CPF Board, so &quot;CPF used at purchase&quot; is assumed to already be your own contribution, not a household total. If you and your co-borrower each used CPF, enter only your own withdrawal in that field. This also doesn&apos;t model unequal cost-sharing (e.g. one person covering more of the downpayment than their ownership share) — the same percentage is applied to every figure.</Caveat>
         </Section>
 
         <Section title="Buying your next place">

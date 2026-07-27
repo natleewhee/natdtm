@@ -93,6 +93,45 @@ test('resolveHouseModule computes a purchase-mode house into the resolved shape'
   assert.ok(detail != null)
 })
 
+// ─── Joint loan share (yourSharePct) ──────────────────────────────────────
+
+test('resolveHouseModule defaults to a 100% (sole) share', () => {
+  const { resolved } = resolveHouseModule({ outstandingBalance: 400000, monthlyInstalment: 2500, propertyValue: 1200000 })
+  approx(resolved.outstandingBalance, 400000)
+  approx(resolved.monthlyInstalment, 2500)
+  approx(resolved.propertyValue, 1200000)
+})
+
+test('resolveHouseModule scales an existing mortgage by yourSharePct', () => {
+  const { resolved } = resolveHouseModule({ outstandingBalance: 400000, monthlyInstalment: 2500, propertyValue: 1200000, yourSharePct: 50 })
+  approx(resolved.outstandingBalance, 200000)
+  approx(resolved.monthlyInstalment, 1250)
+  approx(resolved.propertyValue, 600000)
+})
+
+test('a joint-loan scenario nets the same equity fraction as a sole-loan one', () => {
+  // 50% of (1.2m − 400k) should equal (600k − 200k) — scaling asset and
+  // liability together preserves your true equity share, rather than
+  // scaling only the liability and inflating apparent net worth.
+  const sole = resolveHouseModule({ outstandingBalance: 400000, monthlyInstalment: 2500, propertyValue: 1200000 })
+  const joint = resolveHouseModule({ outstandingBalance: 400000, monthlyInstalment: 2500, propertyValue: 1200000, yourSharePct: 50 })
+  const soleEquity = sole.resolved.propertyValue - sole.resolved.outstandingBalance
+  const jointEquity = joint.resolved.propertyValue - joint.resolved.outstandingBalance
+  approx(jointEquity, soleEquity * 0.5)
+})
+
+test('resolveHouseModule scales a purchase-mode house by yourSharePct too', () => {
+  const full = resolveHouseModule({ mode: 'purchase', price: 1000000, downpaymentPct: 25, rate: 2.6, tenureYears: 25 })
+  const half = resolveHouseModule({ mode: 'purchase', price: 1000000, downpaymentPct: 25, rate: 2.6, tenureYears: 25, yourSharePct: 50 })
+  approx(half.resolved.propertyValue, full.resolved.propertyValue * 0.5)
+  approx(half.resolved.outstandingBalance, full.resolved.outstandingBalance * 0.5)
+  approx(half.resolved.monthlyInstalment, full.resolved.monthlyInstalment * 0.5)
+  // cashImpact (what you actually pay upfront) is NOT scaled — the
+  // downpayment/BSD/fees required from cash savings stay the real,
+  // full amount regardless of ownership split.
+  approx(half.cashImpact, full.cashImpact)
+})
+
 test('resolveHouseModule handles a null house', () => {
   const { resolved, cashImpact, detail } = resolveHouseModule(null)
   assert.equal(resolved, null)

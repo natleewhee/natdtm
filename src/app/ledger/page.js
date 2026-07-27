@@ -32,6 +32,7 @@ function stateToScenario(state, id, label) {
       tenureRemaining: state.house?.tenureRemaining != null ? String(state.house.tenureRemaining) : '',
       propertyType: state.house?.propertyType || 'private',
       price: '', downpaymentPct: '25', rate: '2.60', tenureYears: '25', otherFees: '', absd: '',
+      isJointLoan: false, yourSharePct: '50',
       cashProceeds: state.house?.cashProceeds ? String(Math.round(state.house.cashProceeds)) : '',
       totalCPFRefund: state.house?.totalCPFRefund ? String(Math.round(state.house.totalCPFRefund)) : '',
       source: state.house?.source || 'manual',
@@ -63,17 +64,18 @@ function stateToScenario(state, id, label) {
 // applied to cash savings, floored at zero — a shortfall just means
 // savings alone don't cover it, which ScenarioCard surfaces separately.
 function scenarioToState(scenario) {
+  const yourSharePct = scenario.house?.isJointLoan ? (num(scenario.house.yourSharePct) || 100) : 100
   const houseInput = scenario.hasHouse ? (
     scenario.house.mode === 'purchase'
       ? {
-          mode: 'purchase', propertyType: scenario.house.propertyType || 'private',
+          mode: 'purchase', propertyType: scenario.house.propertyType || 'private', yourSharePct,
           price: num(scenario.house.price), downpaymentPct: num(scenario.house.downpaymentPct) || 25,
           rate: num(scenario.house.rate), tenureYears: num(scenario.house.tenureYears) || 25,
           otherFees: num(scenario.house.otherFees),
         }
       : scenario.house.mode === 'upgrade'
       ? {
-          mode: 'upgrade', propertyType: scenario.house.propertyType || 'private',
+          mode: 'upgrade', propertyType: scenario.house.propertyType || 'private', yourSharePct,
           cashProceeds: num(scenario.house.cashProceeds), totalCPFRefund: num(scenario.house.totalCPFRefund),
           price: num(scenario.house.price), downpaymentPct: num(scenario.house.downpaymentPct) || 25,
           rate: num(scenario.house.rate), tenureYears: num(scenario.house.tenureYears) || 25,
@@ -85,6 +87,7 @@ function scenarioToState(scenario) {
           monthlyInstalment: num(scenario.house.monthlyInstalment),
           tenureRemaining: scenario.house.tenureRemaining !== '' ? num(scenario.house.tenureRemaining) : null,
           propertyType: scenario.house.propertyType || 'private',
+          yourSharePct,
         }
   ) : null
 

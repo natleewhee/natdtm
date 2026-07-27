@@ -17,6 +17,11 @@ const num = parseMoney
 export default function HouseMuchPage() {
   const [propertyType, setPropertyType] = useState('private')
 
+  // Joint loan: what fraction of the property (and its loan) is yours.
+  // Off by default (100% — today's behavior, unchanged for a sole owner).
+  const [isJointLoan, setIsJointLoan] = useState(false)
+  const [yourSharePct, setYourSharePct] = useState('50')
+
   // Purchase
   const [purchasePrice, setPurchasePrice] = useState('')
   const [purchaseDate, setPurchaseDate] = useState('')
@@ -71,6 +76,7 @@ export default function HouseMuchPage() {
     cpfPrincipalOverride: cpfPrincipalOverride !== '' ? num(cpfPrincipalOverride) : null,
     cpfAccruedInterestOverride: cpfInterestOverride !== '' ? num(cpfInterestOverride) : null,
     ssdOverride: ssdOverride !== '' ? num(ssdOverride) : null,
+    yourSharePct: isJointLoan ? num(yourSharePct) : 100,
   }) : null
 
   const handleCalc = () => setCalculated(true)
@@ -81,19 +87,28 @@ export default function HouseMuchPage() {
   // src/lib/shared/profile.js.
   useEffect(() => {
     if (!result) return
+    // For a joint loan, hand off YOUR share — RetireWell/MyLedger need
+    // what actually counts against your own finances, not the full
+    // household figures. propertyValue is scaled the same way as
+    // outstandingBalance so MyLedger's (value − balance) equity math
+    // comes out as YOUR share of equity, not your share of the debt
+    // against the full household asset. salePrice stays the real,
+    // full transaction price — it's describing the sale itself, not
+    // your net worth. CPF refund is never scaled (see calcSale).
+    const share = (isJointLoan ? num(yourSharePct) : 100) / 100
     saveHouseNumbers({
-      cashProceeds: result.cashProceeds,
+      cashProceeds: result.yourCashProceeds,
       totalCPFRefund: result.totalCPFRefund,
       salePrice: result.salePrice,
       saleDate,
-      outstandingBalance: result.outstandingBalance,
+      outstandingBalance: result.yourOutstandingBalance,
       rate: num(mortgageRate),
       tenureRemaining: Math.max(0, num(loanTenure) - result.yearsHeld),
-      monthlyInstalment: result.monthlyInstalment,
-      propertyValue: result.salePrice,
+      monthlyInstalment: result.yourMonthlyInstalment,
+      propertyValue: result.salePrice * share,
       propertyType,
     })
-  }, [result, saleDate, mortgageRate, loanTenure, propertyType])
+  }, [result, saleDate, mortgageRate, loanTenure, propertyType, isJointLoan, yourSharePct])
 
   return (
     <div style={{ minHeight: '100vh', background: C.bg, fontFamily: C.fontBody }}>
@@ -156,6 +171,38 @@ export default function HouseMuchPage() {
               value={agentFeeAtPurchaseRaw} onChange={e => setAgentFeeAtPurchaseRaw(e.target.value)}
             />
             <MoneyInput id="sunk-cost" label="Renovation / sunk costs" hint="Optional" value={sunkCost} onChange={e => setSunkCost(e.target.value)} />
+          </div>
+
+          <div style={{ marginTop: 16 }}>
+            <button
+              type="button" onClick={() => setIsJointLoan(j => !j)} aria-pressed={isJointLoan}
+              style={{
+                display: 'flex', alignItems: 'center', gap: 8, padding: '9px 14px',
+                background: isJointLoan ? C.accentBg : C.bg, border: `1.5px solid ${isJointLoan ? C.accent : C.border}`,
+                borderRadius: 100, cursor: 'pointer', fontSize: C.xs, fontWeight: 700,
+                color: isJointLoan ? C.accent : C.muted, fontFamily: C.fontBody,
+              }}
+            >
+              {isJointLoan ? '✓ ' : ''} This is a joint loan
+            </button>
+            {isJointLoan && (
+              <div style={{ marginTop: 12, maxWidth: 320 }}>
+                <div style={{ fontSize: C.sm, fontWeight: 600, color: C.primary, marginBottom: 7 }}>Your share</div>
+                <Segmented
+                  value={yourSharePct === '50' ? '50' : 'custom'}
+                  onChange={v => setYourSharePct(v === '50' ? '50' : (yourSharePct === '50' ? '60' : yourSharePct))}
+                  options={[{ value: '50', label: '50 / 50' }, { value: 'custom', label: 'Custom' }]}
+                />
+                {yourSharePct !== '50' && (
+                  <div style={{ marginTop: 10, maxWidth: 160 }}>
+                    <PercentInput id="your-share-pct" label="Your share" value={yourSharePct} onChange={e => setYourSharePct(e.target.value)} />
+                  </div>
+                )}
+                <p style={{ marginTop: 8, fontSize: C.xs, color: C.muted, lineHeight: 1.5 }}>
+                  Purchase price, loan, and stamp duty above should still be the real, full figures for the property — this only scales the profit/loss and cash figures below down to your share. Your CPF used at purchase is assumed to already be your own CPF, not the household total.
+                </p>
+              </div>
+            )}
           </div>
 
           {(num(purchasePrice) > 0 && (num(loanTaken) > 0 || num(cpfOutlay) > 0)) && (
