@@ -232,14 +232,27 @@ assert('prevailingBHS at the base year equals the base figure', prevailingBHS(CP
 assert('prevailingBHS grows over time', prevailingBHS(CPF_BHS_BASE_YEAR + 10) > CPF_BHS_BASE)
 
 const bhsNow = prevailingBHS(new Date().getFullYear())
-const belowBhs = creditWithMaOverflow({ oa: 0, sa: 0, ma: bhsNow - 1_000 }, { oa: 200, sa: 100, ma: 300 }, new Date().getFullYear())
+const belowBhs = creditWithMaOverflow({ oa: 0, sa: 0, ma: bhsNow - 1_000 }, { oa: 200, sa: 100, ma: 300 }, bhsNow)
 assert('Below BHS, the full MA contribution is credited with no overflow', approx(belowBhs.ma, bhsNow - 700, 1))
 assert('Below BHS, SA only gets its own contribution, no overflow', belowBhs.sa === 100)
 
-const atBhs = creditWithMaOverflow({ oa: 0, sa: 500, ma: bhsNow }, { oa: 200, sa: 100, ma: 300 }, new Date().getFullYear())
+const atBhs = creditWithMaOverflow({ oa: 0, sa: 500, ma: bhsNow }, { oa: 200, sa: 100, ma: 300 }, bhsNow)
 assert('At the BHS cap, no more MA is credited', atBhs.ma === bhsNow)
 assert('At the BHS cap, the full MA contribution overflows into SA', atBhs.sa === 500 + 100 + 300)
 assert('At the BHS cap, OA is unaffected by the overflow', atBhs.oa === 200)
+
+// From 65, BHS should freeze at whatever the prevailing figure was that
+// year rather than continuing to climb with the general schedule.
+const thisYear = new Date().getFullYear()
+const frozenAt65 = simulateAccumulation({
+  currentAge: 65, retirementAge: 75, currentYear: thisYear,
+  salary: 10_000, startingMA: 0,
+})
+const bhsAt65 = prevailingBHS(thisYear)
+const bhsTenYearsLater = prevailingBHS(thisYear + 10)
+assert('BHS grows over a 10-year span (sanity check the two figures actually differ)', bhsTenYearsLater > bhsAt65)
+assert('MediSave stays capped at the age-65 frozen BHS, not the higher later prevailing figure', frozenAt65.maFinal < bhsTenYearsLater)
+assert('MediSave reaches at least the frozen (age-65) BHS figure (contributions cap there, interest still compounds after)', frozenAt65.maFinal >= bhsAt65)
 
 // A long, high-salary run should trigger BHS overflow well before
 // retirement — once MA hits the cap, new MA-share contributions redirect

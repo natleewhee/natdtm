@@ -7,7 +7,7 @@
 
 import {
   monthlyCpfContribution, monthlyCpfInterest, splitContribution, creditWithMaOverflow,
-  CPF_OW_CEILING, CPF_ANNUAL_CEILING, prevailingFRS,
+  CPF_OW_CEILING, CPF_ANNUAL_CEILING, prevailingFRS, prevailingBHS,
 } from './cpf.js'
 
 // ─── Accumulation: now → retirement age ─────────────────────────────────
@@ -46,17 +46,23 @@ export function simulateAccumulation(inputs) {
   const timeline = []
   let ordinaryWagesThisYear = 0
   let rstuCappedAtAge = null
+  // Once you turn 65, your Basic Healthcare Sum locks in for life at
+  // whatever the prevailing figure was that year — it doesn't keep
+  // rising with the general schedule the way it did before 65.
+  let frozenBHS = null
 
   for (let m = 0; m < months; m++) {
     const ageNow = currentAge + m / 12
     const yearNow = currentYear + Math.floor(m / 12)
+    if (ageNow >= 65 && frozenBHS == null) frozenBHS = prevailingBHS(yearNow)
+    const effectiveBHS = frozenBHS ?? prevailingBHS(yearNow)
 
     // Salary escalates once per year (not on month 0, which uses the
     // starting figure as given).
     if (m > 0 && m % 12 === 0) currentSalary *= (1 + growthRate)
 
     const contrib = monthlyCpfContribution(currentSalary, ageNow)
-    creditWithMaOverflow(balances, contrib, yearNow)
+    creditWithMaOverflow(balances, contrib, effectiveBHS)
     ordinaryWagesThisYear += Math.min(Math.max(0, currentSalary), CPF_OW_CEILING)
 
     // Bonus/AWS and an annual RSTU top-up are both credited once a year.
@@ -65,7 +71,7 @@ export function simulateAccumulation(inputs) {
       const awCeiling = Math.max(0, CPF_ANNUAL_CEILING - ordinaryWagesThisYear)
       const bonusSubjectToCpf = Math.min(Number(annualBonus) || 0, awCeiling)
       const bonusContrib = splitContribution(bonusSubjectToCpf, ageNow)
-      creditWithMaOverflow(balances, bonusContrib, yearNow)
+      creditWithMaOverflow(balances, bonusContrib, effectiveBHS)
     }
     if (isYearEnd) ordinaryWagesThisYear = 0
 

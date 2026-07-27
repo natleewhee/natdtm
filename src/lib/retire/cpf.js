@@ -158,12 +158,19 @@ export function prevailingFRS(year) {
 // Basic Healthcare Sum (BHS): the cap on MediSave. Contributions that
 // would push MA above the prevailing BHS are redirected to SA instead
 // (or RA, from 55 — standing in as SA here, same simplification as
-// elsewhere in this file). Like the FRS, BHS is revised most years on an
-// announced schedule (2022 $66,000 → 2026 $79,000, roughly 4.6% p.a.) —
-// modeled as steady growth off a labeled base year rather than frozen.
+// elsewhere in this file). BHS is revised most years on an announced
+// schedule — historical figures (2017 $52,000 → 2026 $79,000) fit a
+// steady ~4.75% p.a. growth curve within ~0.7% at every point, used here
+// rather than a frozen figure.
+//
+// Crucially, BHS only keeps rising for members under 65 — once you turn
+// 65, YOUR Basic Healthcare Sum is fixed for life at whatever the
+// prevailing figure was that year (a "cohort" figure), even as the
+// prevailing figure keeps climbing for everyone younger. See
+// calc.js's simulateAccumulation for where that freeze is applied.
 export const CPF_BHS_BASE = 79_000
 export const CPF_BHS_BASE_YEAR = 2026
-export const CPF_BHS_GROWTH_RATE = 0.046
+export const CPF_BHS_GROWTH_RATE = 0.0475
 
 export function prevailingBHS(year) {
   const yearsFromBase = Math.max(0, year - CPF_BHS_BASE_YEAR)
@@ -171,10 +178,11 @@ export function prevailingBHS(year) {
 }
 
 // Credits a contribution split {oa, sa, ma} onto running balances,
-// redirecting any MA portion that would exceed the prevailing BHS into
-// SA instead — mutates and returns the balances object.
-export function creditWithMaOverflow(balances, contrib, year) {
-  const bhs = prevailingBHS(year)
+// redirecting any MA portion that would exceed the given BHS cap into SA
+// instead — mutates and returns the balances object. Takes the cap as a
+// dollar figure (not a year) so the caller can pass either the current
+// prevailing BHS or a member's frozen cohort figure once they've turned 65.
+export function creditWithMaOverflow(balances, contrib, bhs) {
   const room = Math.max(0, bhs - balances.ma)
   const maCredited = Math.min(contrib.ma, room)
   const overflow = contrib.ma - maCredited

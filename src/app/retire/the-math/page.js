@@ -104,13 +104,15 @@ a year.`}</Formula>
         </Section>
 
         <Section title="MediSave and the Basic Healthcare Sum">
-          <P>MediSave contributions are capped at the prevailing Basic Healthcare Sum (BHS). Once your MA balance hits it, contributions that would have gone to MA are redirected to SA (or RA, from 55) instead — the same overflow behavior real CPF applies:</P>
-          <Formula>{`Room for MA this contribution = prevailing BHS − current MA balance
+          <P>MediSave contributions are capped at your applicable Basic Healthcare Sum (BHS). Once your MA balance hits it, contributions that would have gone to MA are redirected to SA (or RA, from 55) instead — the same overflow behavior real CPF applies:</P>
+          <Formula>{`Room for MA this contribution = applicable BHS − current MA balance
 MA credited = min(MA share of contribution, room)
 Overflow (if any) = MA share − MA credited, added to SA instead
 
-Prevailing BHS(year) = S$${CPF_BHS_BASE.toLocaleString('en-SG')} × (1 + ${(CPF_BHS_GROWTH_RATE * 100).toFixed(1)}%)^(year − ${CPF_BHS_BASE_YEAR})`}</Formula>
-          <P>The BHS itself rises most years on an announced schedule (roughly S$66,000 in 2022 to S$79,000 in 2026) — modeled here as steady ~{(CPF_BHS_GROWTH_RATE * 100).toFixed(1)}%/year growth off that base rather than frozen, for the same reason as the FRS below. Once MA is capped, it still earns interest as normal — interest isn&apos;t redirected, only new contributions are, so MA can end up above the <em>current</em> BHS over time purely from compounding on an already-capped balance.</P>
+Prevailing BHS(year) = S$${CPF_BHS_BASE.toLocaleString('en-SG')} × (1 + ${(CPF_BHS_GROWTH_RATE * 100).toFixed(2)}%)^(year − ${CPF_BHS_BASE_YEAR})`}</Formula>
+          <P>Historical BHS figures (S$52,000 in 2017 rising to S$79,000 in 2026) fit a steady ~{(CPF_BHS_GROWTH_RATE * 100).toFixed(2)}% p.a. growth curve within less than 1% at every point along the way — used here instead of a frozen figure, which would badly understate the real cap decades out.</P>
+          <P><strong>Your <em>applicable</em> BHS isn&apos;t always the current prevailing figure, though.</strong> Before you turn 65, it is — it moves with the schedule above as you age. But once you turn 65, your BHS locks in for life at whatever the prevailing figure was that year (a &quot;cohort&quot; figure), even as the prevailing figure keeps climbing for everyone younger. Someone who turned 65 in 2022 has a BHS fixed at S$66,000 forever, regardless of what today&apos;s prevailing figure is. This calculator freezes the applicable BHS the month you turn 65 and holds it there for the rest of the projection.</P>
+          <P>Once MA is capped, it still earns interest as normal — interest isn&apos;t redirected, only new contributions are, so MA can end up above your applicable BHS over time purely from compounding on an already-capped balance.</P>
         </Section>
 
         <Section title="Retirement Sum Topping-Up (RSTU)">
