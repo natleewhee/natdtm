@@ -224,13 +224,17 @@ export default function DriveReadyPage() {
     })
   }, [rA])
 
-  // Accepts "80k"/"1.2m" shorthand alongside plain digits — parseMoneyKM
-  // resolves the suffix; salaryRaw always ends up as a plain digit
-  // string (same shape it's always been, so persistence/URL-sync and
-  // every downstream parseInt(...) call are untouched).
-  const handleSalary = e => { const p=parseMoneyKM(e.target.value); const r=p!=null?String(p):''; setSalaryRaw(r); setSalary(r?Number(r).toLocaleString('en-SG'):'') }
-  const handleDown   = e => { const p=parseMoneyKM(e.target.value); const r=p!=null?String(p):''; setDownRaw(r);   setDown(r?Number(r).toLocaleString('en-SG'):'') }
-  const handleExistingDebt = e => { const p=parseMoneyKM(e.target.value); const r=p!=null?String(p):''; setExistingDebtRaw(r); setExistingDebt(r?Number(r).toLocaleString('en-SG'):'') }
+  // Accepts "80k"/"1.2m" shorthand alongside plain digits. The displayed
+  // field (salary/down/existingDebt) is left as literal typed text while
+  // focused — reformatting it on every keystroke was the bug: converting
+  // "1." to "1" the instant it's typed meant a "2" typed next appended to
+  // "1" instead of "1.", turning "1.2m" into "12m". MoneyInput's onBlur
+  // normalizes the display once typing is done; salaryRaw (used for calc,
+  // persistence, URL-sync) is kept in sync live either way, always as a
+  // plain digit string, same shape it's always been.
+  const handleSalary = e => { const v=e.target.value; setSalary(v); const p=parseMoneyKM(v); setSalaryRaw(p!=null?String(p):'') }
+  const handleDown   = e => { const v=e.target.value; setDown(v);   const p=parseMoneyKM(v); setDownRaw(p!=null?String(p):'') }
+  const handleExistingDebt = e => { const v=e.target.value; setExistingDebt(v); const p=parseMoneyKM(v); setExistingDebtRaw(p!=null?String(p):'') }
   const isReady = salaryRaw && downRaw && effCarA && (mode==='single' || effCarB)
   // Garage saves rely on IDs to restore new-car selections — used-car
   // scenarios (manually entered, not persisted) can't round-trip through

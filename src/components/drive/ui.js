@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { C } from '@/lib/drive/theme'
+import { C, parseMoneyKM } from '@/lib/drive/theme'
 import { useCountUp } from '@/lib/drive/hooks'
 
 export function SectionDivider({ label }) {
@@ -17,6 +17,22 @@ export function SectionDivider({ label }) {
 export function MoneyInput({ id, label, hint, value, onChange }) {
   const [focused, setFocused] = useState(false)
   const hintId = hint ? `${id}-hint` : undefined
+  // inputMode="numeric" only affects which virtual keyboard a touch
+  // device shows — it doesn't block letters from a physical keyboard, so
+  // "k"/"m" shorthand still reaches onChange. Actual conversion happens
+  // on blur: normalizing on every keystroke was what broke decimals
+  // ("1.2m" corrupting into "12m" as the "2" landed on an already-
+  // rounded "1"), so the field is left as literal typed text while
+  // focused and only reformatted once typing is done.
+  const handleBlur = e => {
+    setFocused(false)
+    e.target.style.borderColor = value ? C.accent : C.border
+    e.target.style.boxShadow = 'none'
+    const parsed = parseMoneyKM(value)
+    if (parsed != null && String(parsed) !== String(value ?? '')) {
+      onChange({ target: { value: parsed.toLocaleString('en-SG') } })
+    }
+  }
   return (
     <div>
       <label htmlFor={id} style={{display:'block',fontSize:C.sm,fontWeight:600,color:C.primary,marginBottom:7}}>{label}</label>
@@ -25,7 +41,7 @@ export function MoneyInput({ id, label, hint, value, onChange }) {
         <input id={id} type="text" inputMode="numeric" value={value} onChange={onChange} placeholder="0"
           aria-describedby={hintId}
           onFocus={e => { setFocused(true); e.target.style.borderColor=C.accent; e.target.style.boxShadow=`0 0 0 3px ${C.accentBg}` }}
-          onBlur={e  => { setFocused(false); e.target.style.borderColor=value?C.accent:C.border; e.target.style.boxShadow='none' }}
+          onBlur={handleBlur}
           style={{width:'100%',background:C.surface,border:`1.5px solid ${value?C.accent:C.border}`,borderRadius:C.r,padding:'11px 12px 11px 36px',color:C.primary,fontSize:C.lg,fontFamily:C.fontMono,fontWeight:500,outline:'none',transition:'border-color 0.2s,box-shadow 0.2s'}}/>
       </div>
       {hint && <p id={hintId} style={{marginTop:5,fontSize:C.xs,color:C.muted,lineHeight:1.5}}>{hint}</p>}

@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { C } from '@/lib/ledger/theme'
+import { C, parseMoney } from '@/lib/ledger/theme'
 
 export function SectionDivider({ label }) {
   return (
@@ -15,6 +15,17 @@ export function SectionDivider({ label }) {
 export function MoneyInput({ id, label, hint, value, onChange, placeholder = '0' }) {
   const [focused, setFocused] = useState(false)
   const hintId = hint ? `${id}-hint` : undefined
+  // On blur, normalize "7k"/"1.2m" shorthand into a plain number so
+  // there's visible confirmation it was understood — while focused the
+  // raw text is left alone so mid-typed decimals ("1." before the "2")
+  // are never silently rounded away.
+  const handleBlur = () => {
+    setFocused(false)
+    const parsed = parseMoney(value)
+    if (parsed && String(parsed) !== String(value ?? '')) {
+      onChange({ target: { value: String(parsed) } })
+    }
+  }
   return (
     <div>
       <label htmlFor={id} style={{ display: 'block', fontSize: C.sm, fontWeight: 600, color: C.primary, marginBottom: 7 }}>{label}</label>
@@ -23,7 +34,7 @@ export function MoneyInput({ id, label, hint, value, onChange, placeholder = '0'
         <input
           id={id} type="text" inputMode="text" value={value ?? ''} onChange={onChange}
           placeholder={placeholder} aria-describedby={hintId}
-          onFocus={() => setFocused(true)} onBlur={() => setFocused(false)}
+          onFocus={() => setFocused(true)} onBlur={handleBlur}
           style={{
             width: '100%', boxSizing: 'border-box', background: C.surface,
             border: `1.5px solid ${focused ? C.accent : C.border}`, borderRadius: C.r,

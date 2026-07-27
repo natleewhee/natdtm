@@ -30,8 +30,15 @@ function Slider({ label, hint, value, onChange, min, max, step = 1, unit = '' })
 // car-shaped object (or null while required fields are incomplete) matching
 // what src/lib/used-car.js's calcUsed() expects.
 export function UsedCarForm({ slot, onChange }) {
-  const [priceRaw, setPriceRaw] = useState('')
-  const [omvRaw, setOmvRaw] = useState('')
+  // priceText/omvText hold the literal typed text — never reformatted
+  // mid-typing. Reformatting on every keystroke (the previous approach)
+  // corrupted decimals: converting "1." to "1" the instant it's typed
+  // means a "2" typed next appends to "1" instead of "1.", turning
+  // "1.2m" into "12m". parseMoneyKM is applied fresh wherever the actual
+  // number is needed; the field only snaps to a clean formatted number
+  // on blur, once typing is done.
+  const [priceText, setPriceText] = useState('')
+  const [omvText, setOmvText] = useState('')
   const [ageNow, setAgeNow] = useState(5)
   const [monthsRemaining, setMonthsRemaining] = useState(60)
   const [mileage, setMileage] = useState(60000)
@@ -39,9 +46,12 @@ export function UsedCarForm({ slot, onChange }) {
   const [rateTier, setRateTier] = useState('ice')
   const [isElectric, setIsElectric] = useState(false)
 
+  const blurPrice = () => { const p = parseMoneyKM(priceText); if (p != null) setPriceText(p.toLocaleString('en-SG')) }
+  const blurOmv = () => { const p = parseMoneyKM(omvText); if (p != null) setOmvText(p.toLocaleString('en-SG')) }
+
   useEffect(() => {
-    const price = parseInt(priceRaw.replace(/\D/g, ''), 10)
-    const omv = parseInt(omvRaw.replace(/\D/g, ''), 10)
+    const price = parseMoneyKM(priceText)
+    const omv = parseMoneyKM(omvText)
     if (!price || !omv) { onChange(null); return }
     onChange({
       price, omv, ves: 0, ageNow, monthsRemaining, mileage, brandKey, rateTier,
@@ -52,7 +62,7 @@ export function UsedCarForm({ slot, onChange }) {
     // onChange intentionally omitted — it's a fresh closure each render from
     // the parent and including it would re-fire this effect every render
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [priceRaw, omvRaw, ageNow, monthsRemaining, mileage, brandKey, rateTier, isElectric])
+  }, [priceText, omvText, ageNow, monthsRemaining, mileage, brandKey, rateTier, isElectric])
 
   const ageAtExpiry = ageNow + monthsRemaining / 12
   const canGetPARF = ageAtExpiry <= 10
@@ -68,20 +78,20 @@ export function UsedCarForm({ slot, onChange }) {
         <div>
           <label htmlFor={`used-price-${slot}`} style={{display:'block',fontSize:C.sm,fontWeight:600,color:C.primary,marginBottom:7}}>Asking price</label>
           <div style={{position:'relative'}}>
-            <span aria-hidden="true" style={{position:'absolute',left:13,top:'50%',transform:'translateY(-50%)',fontSize:C.sm,fontWeight:600,color:priceRaw?C.accent:C.faint}}>S$</span>
-            <input id={`used-price-${slot}`} type="text" inputMode="numeric" value={priceRaw ? Number(priceRaw).toLocaleString('en-SG') : ''}
-              onChange={e => { const p = parseMoneyKM(e.target.value); setPriceRaw(p != null ? String(p) : '') }} placeholder="0"
-              style={{width:'100%',background:C.surface,border:`1.5px solid ${priceRaw?C.accent:C.border}`,borderRadius:C.r,padding:'11px 12px 11px 36px',color:C.primary,fontSize:C.lg,fontFamily:C.fontMono,fontWeight:500,outline:'none'}}/>
+            <span aria-hidden="true" style={{position:'absolute',left:13,top:'50%',transform:'translateY(-50%)',fontSize:C.sm,fontWeight:600,color:priceText?C.accent:C.faint}}>S$</span>
+            <input id={`used-price-${slot}`} type="text" inputMode="numeric" value={priceText}
+              onChange={e => setPriceText(e.target.value)} onBlur={blurPrice} placeholder="0"
+              style={{width:'100%',background:C.surface,border:`1.5px solid ${priceText?C.accent:C.border}`,borderRadius:C.r,padding:'11px 12px 11px 36px',color:C.primary,fontSize:C.lg,fontFamily:C.fontMono,fontWeight:500,outline:'none'}}/>
           </div>
           <p style={{marginTop:5,fontSize:C.xs,color:C.muted,lineHeight:1.5}}>What the seller is asking</p>
         </div>
         <div>
           <label htmlFor={`used-omv-${slot}`} style={{display:'block',fontSize:C.sm,fontWeight:600,color:C.primary,marginBottom:7}}>Car OMV</label>
           <div style={{position:'relative'}}>
-            <span aria-hidden="true" style={{position:'absolute',left:13,top:'50%',transform:'translateY(-50%)',fontSize:C.sm,fontWeight:600,color:omvRaw?C.accent:C.faint}}>S$</span>
-            <input id={`used-omv-${slot}`} type="text" inputMode="numeric" value={omvRaw ? Number(omvRaw).toLocaleString('en-SG') : ''}
-              onChange={e => { const p = parseMoneyKM(e.target.value); setOmvRaw(p != null ? String(p) : '') }} placeholder="0"
-              style={{width:'100%',background:C.surface,border:`1.5px solid ${omvRaw?C.accent:C.border}`,borderRadius:C.r,padding:'11px 12px 11px 36px',color:C.primary,fontSize:C.lg,fontFamily:C.fontMono,fontWeight:500,outline:'none'}}/>
+            <span aria-hidden="true" style={{position:'absolute',left:13,top:'50%',transform:'translateY(-50%)',fontSize:C.sm,fontWeight:600,color:omvText?C.accent:C.faint}}>S$</span>
+            <input id={`used-omv-${slot}`} type="text" inputMode="numeric" value={omvText}
+              onChange={e => setOmvText(e.target.value)} onBlur={blurOmv} placeholder="0"
+              style={{width:'100%',background:C.surface,border:`1.5px solid ${omvText?C.accent:C.border}`,borderRadius:C.r,padding:'11px 12px 11px 36px',color:C.primary,fontSize:C.lg,fontFamily:C.fontMono,fontWeight:500,outline:'none'}}/>
           </div>
           <p style={{marginTop:5,fontSize:C.xs,color:C.muted,lineHeight:1.5}}>From the log card or OneMotoring — determines Cat A/B and PARF</p>
         </div>

@@ -39,6 +39,45 @@ export function CarPicker({ value, onChange, slot, ceiling, down, allCars = [], 
   const [budgetFilter, setBudgetFilter] = useState(false)
   const inputRef = useRef(null)
   const wrapRef = useRef(null)
+
+  // priceText holds the literal typed text for the dealer-quote field,
+  // separate from the committed customPrice prop — reformatting on every
+  // keystroke (the previous approach) corrupted decimals, converting
+  // "1." to "1" the instant it's typed so a "2" typed next landed on the
+  // already-rounded "1" instead of "1.", turning "1.2m" into "12m".
+  // Only reformats to a clean number on blur, once typing is done; stays
+  // in sync with customPrice when it changes from outside (e.g. cleared,
+  // or restored from a saved scenario).
+  const [priceText, setPriceText] = useState(customPrice)
+  // Only re-sync from an EXTERNAL change to customPrice (car swapped,
+  // cleared elsewhere) — not from the prop update our own commitPrice
+  // just caused, which would otherwise immediately overwrite mid-typed
+  // text like "1.2" with the already-rounded "1" it committed.
+  useEffect(() => {
+    /* eslint-disable react-hooks/set-state-in-effect -- syncing local
+       display text to an external prop change (car swapped, cleared
+       elsewhere), guarded above to skip our own just-committed value */
+    const parsed = parseMoneyKM(priceText)
+    if (parsed != null && String(parsed) === String(customPrice)) return
+    setPriceText(customPrice)
+    /* eslint-enable react-hooks/set-state-in-effect */
+    // priceText intentionally omitted: this effect reacts to customPrice
+    // changing, and re-reads priceText fresh each time via the closure
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [customPrice])
+  // Committed to the parent (and the live price-gap preview below) on
+  // every keystroke — not just blur — since that preview is the whole
+  // point of this field. Safe to do live because the sync effect above
+  // recognizes its own commits and leaves mid-typed text alone.
+  const commitPrice = (text) => {
+    setPriceText(text)
+    const parsed = parseMoneyKM(text)
+    onCustomPrice && onCustomPrice(parsed != null ? String(parsed) : '')
+  }
+  const blurPrice = () => {
+    const parsed = parseMoneyKM(priceText)
+    if (parsed != null) setPriceText(parsed.toLocaleString('en-SG'))
+  }
   const slotCol = slot === 'A' ? C.coah : C.blue
   const hasCeiling = ceiling && (ceiling.catA > 0 || ceiling.catB > 0)
   const budgetCars = hasCeiling ? allCars.filter(car => {
@@ -227,12 +266,11 @@ export function CarPicker({ value, onChange, slot, ceiling, down, allCars = [], 
               <span style={{fontSize:C.sm,color:C.faint}}>S$</span>
               <input
                 type="text"
-                value={customPrice || value.price.toLocaleString('en-SG')}
-                onChange={e => {
-                  const parsed = parseMoneyKM(e.target.value)
-                  onCustomPrice && onCustomPrice(parsed != null ? String(parsed) : '')
-                }}
+                value={priceText}
+                placeholder={value.price.toLocaleString('en-SG')}
+                onChange={e => commitPrice(e.target.value)}
                 onFocus={e => { e.target.select() }}
+                onBlur={blurPrice}
                 aria-label="Enter your dealer-quoted price to override the indicative price"
                 style={{flex:1,minWidth:0,border:'none',outline:'none',fontSize:C.base,fontFamily:C.fontMono,fontWeight:700,color:customPrice ? C.primary : C.muted,background:'transparent',padding:0}}
               />
