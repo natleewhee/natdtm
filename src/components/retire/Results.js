@@ -18,7 +18,10 @@ function Row({ label, value, tone, bold, indent }) {
 export default function RetireResults({ result }) {
   if (!result) return null
   const { retirementAge, lifeExpectancy, accumulation, target, depletion } = result
-  const { oaFinal, saFinal, maFinal, cpfTotalFinal, investmentFinal, rstuCappedAtAge } = accumulation
+  const {
+    oaFinal, saFinal, maFinal, cpfTotalFinal, investmentFinal,
+    rstuCappedAtAge, maCappedAtAge, bhsApplicableAtEnd, oaHousingShortfallAge,
+  } = accumulation
   const {
     desiredMonthlyWithdrawal, yearsToRetirement, inflatedMonthlyWithdrawal,
     requiredNestEgg, projectedPortfolio, gap, onTrack, extraMonthlyNeeded, swr,
@@ -27,6 +30,18 @@ export default function RetireResults({ result }) {
 
   return (
     <div style={{ marginTop: 32 }}>
+      {oaHousingShortfallAge != null && (
+        <div style={{ background: C.redBg, border: `1px solid ${C.red}55`, borderRadius: C.rL, padding: '14px 18px', marginBottom: 24, display: 'flex', gap: 10, alignItems: 'flex-start' }}>
+          <span style={{ fontSize: 18 }}>⚠️</span>
+          <div>
+            <div style={{ fontSize: C.sm, fontWeight: 700, color: C.redText }}>Your CPF OA runs out for housing at age {oaHousingShortfallAge}</div>
+            <div style={{ fontSize: C.xs, color: C.muted, marginTop: 3, lineHeight: 1.5 }}>
+              From this age on, your Ordinary Account can&apos;t fully cover the monthly housing draw you entered — this projection just stops deducting once OA hits zero, which isn&apos;t what actually happens with a real mortgage. In reality you&apos;d need to switch to paying cash, or your figures need a second look.
+            </div>
+          </div>
+        </div>
+      )}
+
       <ResultHero
         verdictLabel={onTrack ? 'On track' : 'Gap'}
         verdictBg={onTrack ? C.greenBg : C.redBg}
@@ -88,10 +103,23 @@ export default function RetireResults({ result }) {
             Your RSTU top-ups stop being accepted at age {rstuCappedAtAge}
           </div>
           <div style={{ fontSize: C.xs, color: C.muted, lineHeight: 1.6 }}>
-            That&apos;s when your Special Account is projected to hit the prevailing Full Retirement Sum — CPF rejects (returns) top-ups beyond that ceiling, so contributions after this age aren&apos;t credited in this projection.
+            That&apos;s when your Special Account is projected to hit your applicable Full Retirement Sum — CPF rejects (returns) top-ups beyond that ceiling, so contributions after this age aren&apos;t credited in this projection.
           </div>
         </div>
       )}
+
+      <div style={{ background: C.amberBg, border: `1px solid ${C.amber}44`, borderRadius: C.rL, padding: '16px 18px', margin: '20px 0' }}>
+        <div style={{ fontSize: C.sm, fontWeight: 700, color: C.amberText, marginBottom: 4 }}>
+          MediSave cap assumed: {SGD(bhsApplicableAtEnd)}
+          {maCappedAtAge != null ? ` (hit at age ${maCappedAtAge})` : ''}
+        </div>
+        <div style={{ fontSize: C.xs, color: C.muted, lineHeight: 1.6 }}>
+          {maCappedAtAge != null
+            ? 'From this age on, new CPF contributions that would have gone to MediSave are redirected to your Special Account instead — MediSave itself keeps earning interest, but stops growing from new contributions.'
+            : 'Your projected MediSave balance stays below this cap for the whole projection, so no contributions get redirected.'}
+          {' '}This is your Basic Healthcare Sum — it rises each year until you turn 65, then locks in for life at whatever it was that year.
+        </div>
+      </div>
 
       <ExploreSection title="Show the math" defaultOpen={false}>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>

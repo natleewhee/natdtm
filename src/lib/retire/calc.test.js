@@ -264,6 +264,56 @@ const highSalaryLongRun = simulateAccumulation({
 })
 assert('A high, long-running salary pushes SA higher than MA thanks to BHS overflow', highSalaryLongRun.saFinal > highSalaryLongRun.maFinal)
 
+// ─── MediSave cap tracking (maCappedAtAge, bhsApplicableAtEnd) ───────────
+const noMaCap = simulateAccumulation({
+  currentAge: 30, retirementAge: 31, salary: 5_000,
+})
+assert('maCappedAtAge is null when nowhere near the BHS', noMaCap.maCappedAtAge === null)
+assert('bhsApplicableAtEnd is returned even with no cap hit', noMaCap.bhsApplicableAtEnd > 0)
+
+const maCapHit = simulateAccumulation({
+  currentAge: 25, retirementAge: 40, currentYear: new Date().getFullYear(), salary: 10_000,
+})
+assert('maCappedAtAge is set once MA contributions start overflowing', maCapHit.maCappedAtAge != null)
+assert('maCappedAtAge is a plausible age within the simulated range', maCapHit.maCappedAtAge > 25 && maCapHit.maCappedAtAge < 40)
+
+// ─── OA housing shortfall tracking ───────────────────────────────────────
+const noShortfall = simulateAccumulation({
+  currentAge: 30, retirementAge: 35, salary: 6_000, startingOA: 200_000, housingOaMonthly: 1_000,
+})
+assert('oaHousingShortfallAge is null when OA comfortably covers the housing draw', noShortfall.oaHousingShortfallAge === null)
+
+const withShortfall = simulateAccumulation({
+  currentAge: 30, retirementAge: 35, salary: 0, startingOA: 2_000, housingOaMonthly: 3_000,
+})
+assert('oaHousingShortfallAge is set once OA can no longer cover the housing draw', withShortfall.oaHousingShortfallAge != null)
+assert('oaHousingShortfallAge fires in the very first month when OA starts below the draw', approx(withShortfall.oaHousingShortfallAge, 30, 0.1))
+assert('OA floors at 0 rather than going negative once shortfall hits', withShortfall.oaFinal >= 0)
+
+// ─── FRS freezes at 55, like BHS freezes at 65 ───────────────────────────
+const thisYear2 = new Date().getFullYear()
+const frsAt55 = prevailingFRS(thisYear2)
+const frsTenYearsLater = prevailingFRS(thisYear2 + 10)
+assert('FRS grows over a 10-year span (sanity check)', frsTenYearsLater > frsAt55)
+
+const rstuFrozenAt55 = simulateAccumulation({
+  currentAge: 55, retirementAge: 65, currentYear: thisYear2,
+  salary: 0, startingSA: frsAt55 - 50_000, rstuAmount: 10_000, rstuFrequency: 'annual',
+})
+assert('RSTU room stays gated by the age-55 frozen FRS, not the higher later prevailing figure', rstuFrozenAt55.saFinal < frsTenYearsLater)
+
+// ─── Bonus escalates with salary growth ──────────────────────────────────
+// Isolate the bonus-escalation effect specifically: salary is 0 in both
+// runs (contributing nothing either way), so any difference in CPF
+// balances must come from the bonus itself growing (or not).
+const flatBonusOnly = simulateAccumulation({
+  currentAge: 30, retirementAge: 40, salary: 0, annualBonus: 10_000, salaryGrowthRate: 0,
+})
+const growingBonusOnly = simulateAccumulation({
+  currentAge: 30, retirementAge: 40, salary: 0, annualBonus: 10_000, salaryGrowthRate: 5,
+})
+assert('With no salary, bonus alone still escalates at the assumed growth rate, producing higher CPF balances', growingBonusOnly.cpfTotalFinal > flatBonusOnly.cpfTotalFinal)
+
 // ─── Orchestrator ────────────────────────────────────────────────────────
 const full = calcRetirement({
   currentAge: 35, retirementAge: 65, lifeExpectancy: 90,

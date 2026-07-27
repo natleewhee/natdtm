@@ -11,17 +11,19 @@ import {
 } from './cpf.js'
 
 // ─── Accumulation: now → retirement age ─────────────────────────────────
-// CPF's actual Retirement Account/FRS sweep at 55 and the CPF LIFE
-// annuity it eventually funds are both out of scope — OA/SA simply keep
-// compounding at their own rates straight through retirement age, and
-// the retirement target check (below) treats OA+SA as part of one
-// combined, self-managed portfolio alongside investments rather than
-// modeling CPF LIFE's real lifetime-annuity payout mechanics (see the-math
-// page). RSTU top-ups are credited to SA throughout for the same reason
+// CPF's actual Retirement Account sweep at 55 and the CPF LIFE annuity
+// it eventually funds are out of scope — OA/SA simply keep compounding
+// at their own rates straight through retirement age, and the
+// retirement target check (below) treats OA+SA as part of one combined,
+// self-managed portfolio alongside investments rather than modeling CPF
+// LIFE's real lifetime-annuity payout mechanics (see the-math page).
+// RSTU top-ups are credited to SA throughout for the same reason
 // (standing in for "SA or RA, whichever applies"), gated by the
-// prevailing Full Retirement Sum. MediSave contributions beyond the
-// prevailing Basic Healthcare Sum overflow into SA the same way real
-// CPF contributions do.
+// applicable Full Retirement Sum — which, like the Basic Healthcare Sum,
+// is a cohort figure: it rises with the general schedule until you hit
+// the milestone age (55 for FRS, 65 for BHS), then freezes for life.
+// MediSave contributions beyond the applicable BHS overflow into SA the
+// same way real CPF contributions do.
 export function simulateAccumulation(inputs) {
   const {
     currentAge = 0, retirementAge = 0,
@@ -37,6 +39,7 @@ export function simulateAccumulation(inputs) {
   const balances = { oa: Number(startingOA) || 0, sa: Number(startingSA) || 0, ma: Number(startingMA) || 0 }
   let investment = Number(investmentStart) || 0
   let currentSalary = Number(salary) || 0
+  let currentBonus = Number(annualBonus) || 0
   const monthlyInvReturn = (Number(investmentReturn) || 0) / 100 / 12
   const housingMonths = Number.isFinite(housingOaMonths) ? housingOaMonths : Infinity
   const growthRate = (Number(salaryGrowthRate) || 0) / 100
@@ -46,43 +49,65 @@ export function simulateAccumulation(inputs) {
   const timeline = []
   let ordinaryWagesThisYear = 0
   let rstuCappedAtAge = null
+  let maCappedAtAge = null
+  let oaHousingShortfallAge = null
   // Once you turn 65, your Basic Healthcare Sum locks in for life at
   // whatever the prevailing figure was that year — it doesn't keep
-  // rising with the general schedule the way it did before 65.
+  // rising with the general schedule the way it did before 65. Your
+  // Retirement Sum (FRS) works the same way, but locks in at 55 instead
+  // (when your Retirement Account would be created) — both modeled with
+  // the same freeze pattern.
   let frozenBHS = null
+  let frozenFRS = null
+  let bhsApplicableAtEnd = prevailingBHS(currentYear)
 
   for (let m = 0; m < months; m++) {
     const ageNow = currentAge + m / 12
     const yearNow = currentYear + Math.floor(m / 12)
     if (ageNow >= 65 && frozenBHS == null) frozenBHS = prevailingBHS(yearNow)
+    if (ageNow >= 55 && frozenFRS == null) frozenFRS = prevailingFRS(yearNow)
     const effectiveBHS = frozenBHS ?? prevailingBHS(yearNow)
+    const effectiveFRS = frozenFRS ?? prevailingFRS(yearNow)
+    bhsApplicableAtEnd = effectiveBHS
 
-    // Salary escalates once per year (not on month 0, which uses the
-    // starting figure as given).
-    if (m > 0 && m % 12 === 0) currentSalary *= (1 + growthRate)
+    // Salary and bonus both escalate once per year (not on month 0,
+    // which uses the starting figures as given) — bonuses are typically
+    // proportional to salary, so grown at the same assumed rate.
+    if (m > 0 && m % 12 === 0) {
+      currentSalary *= (1 + growthRate)
+      currentBonus *= (1 + growthRate)
+    }
 
     const contrib = monthlyCpfContribution(currentSalary, ageNow)
+    if (contrib.ma > Math.max(0, effectiveBHS - balances.ma) && maCappedAtAge == null) {
+      maCappedAtAge = Math.round(ageNow * 10) / 10
+    }
     creditWithMaOverflow(balances, contrib, effectiveBHS)
     ordinaryWagesThisYear += Math.min(Math.max(0, currentSalary), CPF_OW_CEILING)
 
     // Bonus/AWS and an annual RSTU top-up are both credited once a year.
     const isYearEnd = (m + 1) % 12 === 0 || m === months - 1
-    if (isYearEnd && (Number(annualBonus) || 0) > 0) {
+    if (isYearEnd && currentBonus > 0) {
       const awCeiling = Math.max(0, CPF_ANNUAL_CEILING - ordinaryWagesThisYear)
-      const bonusSubjectToCpf = Math.min(Number(annualBonus) || 0, awCeiling)
+      const bonusSubjectToCpf = Math.min(currentBonus, awCeiling)
       const bonusContrib = splitContribution(bonusSubjectToCpf, ageNow)
+      if (bonusContrib.ma > Math.max(0, effectiveBHS - balances.ma) && maCappedAtAge == null) {
+        maCappedAtAge = Math.round(ageNow * 10) / 10
+      }
       creditWithMaOverflow(balances, bonusContrib, effectiveBHS)
     }
     if (isYearEnd) ordinaryWagesThisYear = 0
 
     if (m < housingMonths && (Number(housingOaMonthly) || 0) > 0) {
+      if (balances.oa < housingOaMonthly && oaHousingShortfallAge == null) {
+        oaHousingShortfallAge = Math.round(ageNow * 10) / 10
+      }
       balances.oa = Math.max(0, balances.oa - housingOaMonthly)
     }
 
     const rstuThisMonth = rstuMonthlyAmount > 0 ? rstuMonthlyAmount : (isYearEnd ? rstuAnnualAmount : 0)
     if (rstuThisMonth > 0) {
-      const frs = prevailingFRS(yearNow)
-      const room = Math.max(0, frs - balances.sa)
+      const room = Math.max(0, effectiveFRS - balances.sa)
       const credited = Math.min(rstuThisMonth, room)
       balances.sa += credited
       if (credited < rstuThisMonth && rstuCappedAtAge == null) rstuCappedAtAge = Math.round(ageNow * 10) / 10
@@ -110,6 +135,8 @@ export function simulateAccumulation(inputs) {
     cpfTotalFinal: balances.oa + balances.sa + balances.ma,
     investmentFinal: investment,
     rstuCappedAtAge,
+    maCappedAtAge, bhsApplicableAtEnd,
+    oaHousingShortfallAge,
     timeline,
   }
 }

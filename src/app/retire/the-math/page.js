@@ -90,6 +90,7 @@ The CPF-able portion of your bonus is split into OA/SA/MA using
 the same age-banded rates as your monthly salary, credited once
 a year.`}</Formula>
           <P>A high earner already at the S${CPF_OW_CEILING.toLocaleString('en-SG')}/month Ordinary Wage ceiling for all 12 months has used S${(CPF_OW_CEILING * 12).toLocaleString('en-SG')} of the annual ceiling already — leaving only S${(CPF_ANNUAL_CEILING - CPF_OW_CEILING * 12).toLocaleString('en-SG')} of bonus that&apos;s CPF-able that year. Everything beyond that is still real income, just not CPF income.</P>
+          <P>Your bonus escalates every year at the same assumed growth rate as your salary — bonuses are typically proportional to salary in practice, so growing them together (rather than holding the bonus flat while salary compounds) avoids understating your CPF contributions over a long projection.</P>
         </Section>
 
         <Section title="CPF interest">
@@ -116,12 +117,12 @@ Prevailing BHS(year) = S$${CPF_BHS_BASE.toLocaleString('en-SG')} × (1 + ${(CPF_
         </Section>
 
         <Section title="Retirement Sum Topping-Up (RSTU)">
-          <P>A voluntary top-up straight into SA (or RA, from 55) rather than split across accounts — the standard move for growing your CPF retirement pot faster, since SA/RA earn a higher rate than OA. You can contribute monthly or as a single annual lump sum; either way, CPF only accepts a top-up up to the prevailing Full Retirement Sum (FRS), rejecting anything that would push you over:</P>
-          <Formula>{`Room for RSTU (at each contribution) = prevailing FRS − current SA balance
+          <P>A voluntary top-up straight into SA (or RA, from 55) rather than split across accounts — the standard move for growing your CPF retirement pot faster, since SA/RA earn a higher rate than OA. You can contribute monthly or as a single annual lump sum; either way, CPF only accepts a top-up up to your applicable Full Retirement Sum (FRS), rejecting anything that would push you over:</P>
+          <Formula>{`Room for RSTU (at each contribution) = applicable FRS − current SA balance
 RSTU credited = min(your top-up, room)
 
 Prevailing FRS(year) = S$${CPF_FRS_BASE.toLocaleString('en-SG')} × (1 + ${(CPF_FRS_GROWTH_RATE * 100).toFixed(1)}%)^(year − ${CPF_FRS_BASE_YEAR})`}</Formula>
-          <P>The FRS itself rises roughly {(CPF_FRS_GROWTH_RATE * 100).toFixed(1)}% a year on a schedule CPF Board announces in advance — modeled here as steady growth rather than frozen at today&apos;s figure, since freezing it would make the RSTU ceiling wildly understate reality decades out. If your projection shows your top-ups getting capped at some future age, that&apos;s this ceiling catching up with your SA balance.</P>
+          <P>The FRS rises roughly {(CPF_FRS_GROWTH_RATE * 100).toFixed(1)}% a year on a schedule CPF Board announces in advance — modeled as steady growth rather than frozen, same reasoning as BHS above. It has the same cohort-freeze mechanic too, just at a different milestone: <strong>your applicable FRS locks in for life at age 55</strong> (when your Retirement Account is created), not 65. Before 55, it&apos;s the current prevailing figure; from 55 on, it&apos;s frozen at whatever the prevailing figure was the year you turned 55, even as the prevailing figure keeps rising for people younger than you. If your projection shows your top-ups getting capped at some age, that&apos;s either the prevailing ceiling (under 55) or your own frozen ceiling (55+) catching up with your SA balance.</P>
           <P>Choosing annual instead of monthly changes <em>when</em> the same yearly total is credited (once, at year-end, versus spread across 12 months) — spreading it monthly compounds slightly more since each dollar sits in SA longer on average, so annual and monthly aren&apos;t quite equivalent even before either hits the FRS cap.</P>
           <Caveat>RSTU also comes with real income tax relief — up to S$8,000/year for topping up your own account, another S$8,000/year for a family member&apos;s. This calculator doesn&apos;t compute that relief (it would need your marginal tax rate, which this tool doesn&apos;t collect) — treat it as an added incentive on top of the balances shown, not something already baked into the numbers.</Caveat>
         </Section>
@@ -130,9 +131,10 @@ Prevailing FRS(year) = S$${CPF_FRS_BASE.toLocaleString('en-SG')} × (1 + ${(CPF_
           <P>Each month until your retirement age: your salary (escalating annually at your assumed growth rate) generates a CPF contribution, split into OA/SA/MA and credited with the MediSave overflow rule above applied. Any CPF you draw for housing reduces your OA balance, any RSTU top-up is credited to SA (subject to its cap above), then interest is credited on the resulting balances. Once a year, your bonus/AWS contribution (if any) is added the same way, overflow included. In parallel, your money-market investment balance grows from your monthly contribution plus its own assumed return.</P>
           <Formula>{`OA(t+1) = OA(t) + CPF contribution to OA − housing OA draw, then + interest
 SA(t+1) = SA(t) + CPF contribution to SA + RSTU credited + MA overflow, then + interest
-MA(t+1) = MA(t) + CPF contribution to MA (capped at prevailing BHS), then + interest
+MA(t+1) = MA(t) + CPF contribution to MA (capped at applicable BHS), then + interest
 
 Investment(t+1) = Investment(t) × (1 + monthly return) + monthly contribution`}</Formula>
+          <P>If your OA balance is ever too low to cover the full monthly housing draw you entered, this calculator deducts whatever OA has (down to zero) and flags the age it happened, rather than letting the balance go negative or silently pretending the shortfall didn&apos;t occur — a real mortgage doesn&apos;t partially stop getting paid, so treat that flag as a sign either your housing figures, your CPF starting balances, or your salary assumptions need a second look.</P>
           <Caveat>CPF&apos;s actual Retirement Account sweep at age 55 (moving OA+SA into an RA up to the prevailing Retirement Sum) isn&apos;t modeled — OA and SA simply keep compounding at their own rates straight through and past retirement age.</Caveat>
         </Section>
 
