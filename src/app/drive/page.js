@@ -208,14 +208,19 @@ export default function DriveReadyPage() {
   const rA = (calculated && effCarA)                      ? calcForSlot(conditionA, dSalary, dDown, dTenure, effCarA, liveCOE, dExistingDebt) : null
   const rB = (calculated && effCarB && mode==='compare')   ? calcForSlot(conditionB, dSalary, dDown, dTenure, effCarB, liveCOE, dExistingDebt) : null
 
-  // Hand off this car's true committed monthly cost so RetireWell can nudge
-  // against it — stored locally only. See src/lib/shared/profile.js.
+  // Hand off this car's numbers so RetireWell can nudge against the
+  // monthly cost and MyLedger can use it as a baseline module — stored
+  // locally only. See src/lib/shared/profile.js.
   useEffect(() => {
     if (!rA) return
     saveDriveNumbers({
-      monthlyCost: rA.monthly,
+      monthlyInstalment: rA.monthly,
       carLabel: rA.car?.short || rA.car?.name || null,
       salary: rA.salary,
+      loanOutstanding: rA.loan,
+      rate: (rA.tier?.rate || 0) * 100,
+      tenureRemaining: rA.tenure,
+      carValue: rA.car?.price,
     })
   }, [rA])
 

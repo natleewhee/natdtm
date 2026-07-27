@@ -10,6 +10,7 @@ const TOOLS = [
   { key: 'etf', href: '/etf', label: 'Invest' },
   { key: 'house', href: '/house', label: 'House' },
   { key: 'retire', href: '/retire', label: 'Retire' },
+  { key: 'ledger', href: '/ledger', label: 'MyLedger' },
 ]
 
 // One header, not two stacked bars. The ndtm wordmark and "which tool am I

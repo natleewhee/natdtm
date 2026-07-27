@@ -75,9 +75,10 @@ export default function HouseMuchPage() {
 
   const handleCalc = () => setCalculated(true)
 
-  // Hand off this sale's cash proceeds and CPF refund so RetireWell can
-  // offer them as a prefill — stored locally only, same "no server"
-  // guarantee as the rest of this tool. See src/lib/shared/profile.js.
+  // Hand off this sale's numbers so RetireWell can offer a prefill and
+  // MyLedger can use this mortgage as a baseline module — stored locally
+  // only, same "no server" guarantee as the rest of this tool. See
+  // src/lib/shared/profile.js.
   useEffect(() => {
     if (!result) return
     saveHouseNumbers({
@@ -85,8 +86,13 @@ export default function HouseMuchPage() {
       totalCPFRefund: result.totalCPFRefund,
       salePrice: result.salePrice,
       saleDate,
+      outstandingBalance: result.outstandingBalance,
+      rate: num(mortgageRate),
+      tenureRemaining: Math.max(0, num(loanTenure) - result.yearsHeld),
+      monthlyInstalment: result.monthlyInstalment,
+      propertyValue: result.salePrice,
     })
-  }, [result, saleDate])
+  }, [result, saleDate, mortgageRate, loanTenure])
 
   return (
     <div style={{ minHeight: '100vh', background: C.bg, fontFamily: C.fontBody }}>

@@ -16,60 +16,100 @@ function makeStorage() {
 global.window = { localStorage: makeStorage() }
 
 const {
-  loadMyNumbers, saveHouseNumbers, saveDriveNumbers, clearHouseNumbers, clearDriveNumbers,
+  loadMyNumbers, saveHouseNumbers, saveDriveNumbers, saveRetireNumbers,
+  clearHouseNumbers, clearDriveNumbers, clearRetireNumbers,
 } = await import('./profile.js')
 
-test('loadMyNumbers returns empty defaults when nothing stored', () => {
+test('loadMyNumbers returns empty v2 defaults when nothing stored', () => {
   const data = loadMyNumbers()
-  assert.equal(data.version, 1)
+  assert.equal(data.version, 2)
   assert.equal(data.house, null)
   assert.equal(data.drive, null)
+  assert.equal(data.retire, null)
 })
 
 test('loadMyNumbers safely ignores malformed JSON', () => {
   window.localStorage.setItem('ndtm_my_numbers_v1', 'not json{{{')
   const data = loadMyNumbers()
   assert.equal(data.house, null)
-  assert.equal(data.drive, null)
 })
 
-test('loadMyNumbers ignores a mismatched version', () => {
-  window.localStorage.setItem('ndtm_my_numbers_v1', JSON.stringify({ version: 2, house: { salePrice: 1 } }))
+test('loadMyNumbers migrates a v1 record into the v2 shape', () => {
+  window.localStorage.setItem('ndtm_my_numbers_v1', JSON.stringify({
+    version: 1,
+    house: { cashProceeds: 500000, totalCPFRefund: 120000, salePrice: 1200000, saleDate: '2026-06-01', savedAt: 123 },
+    drive: { monthlyCost: 1500, carLabel: 'Toyota Corolla', salary: 6000, savedAt: 456 },
+  }))
+  const data = loadMyNumbers()
+  assert.equal(data.version, 2)
+  assert.equal(data.house.cashProceeds, 500000)
+  assert.equal(data.house.propertyValue, 1200000)
+  assert.equal(data.house.outstandingBalance, null)
+  assert.equal(data.drive.monthlyInstalment, 1500)
+  assert.equal(data.drive.carLabel, 'Toyota Corolla')
+  assert.equal(data.retire, null)
+})
+
+test('loadMyNumbers ignores an unknown version', () => {
+  window.localStorage.setItem('ndtm_my_numbers_v1', JSON.stringify({ version: 99, house: { salePrice: 1 } }))
   const data = loadMyNumbers()
   assert.equal(data.house, null)
 })
 
-test('saveHouseNumbers round-trips and coerces numbers', () => {
+test('saveHouseNumbers round-trips full v2 fields', () => {
   window.localStorage.removeItem('ndtm_my_numbers_v1')
-  saveHouseNumbers({ cashProceeds: '500000', totalCPFRefund: 120000, salePrice: 1200000, saleDate: '2026-06-01' })
+  saveHouseNumbers({
+    cashProceeds: '500000', totalCPFRefund: 120000, salePrice: 1200000, saleDate: '2026-06-01',
+    outstandingBalance: 400000, rate: 2.6, tenureRemaining: 18, monthlyInstalment: 2500, propertyValue: 1250000, cpfServicing: 1800,
+  })
   const data = loadMyNumbers()
   assert.equal(data.house.cashProceeds, 500000)
-  assert.equal(data.house.totalCPFRefund, 120000)
-  assert.equal(data.house.salePrice, 1200000)
-  assert.equal(data.house.saleDate, '2026-06-01')
+  assert.equal(data.house.outstandingBalance, 400000)
+  assert.equal(data.house.rate, 2.6)
+  assert.equal(data.house.tenureRemaining, 18)
+  assert.equal(data.house.monthlyInstalment, 2500)
+  assert.equal(data.house.propertyValue, 1250000)
+  assert.equal(data.house.cpfServicing, 1800)
+  assert.equal(data.house.source, 'auto')
   assert.equal(typeof data.house.savedAt, 'number')
 })
 
 test('saveDriveNumbers round-trips and does not clobber house numbers', () => {
   window.localStorage.removeItem('ndtm_my_numbers_v1')
   saveHouseNumbers({ cashProceeds: 100, totalCPFRefund: 50, salePrice: 900000, saleDate: '2026-01-01' })
-  saveDriveNumbers({ monthlyCost: 1500, carLabel: 'Toyota Corolla', salary: 6000 })
+  saveDriveNumbers({ monthlyInstalment: 1500, carLabel: 'Toyota Corolla', salary: 6000, loanOutstanding: 60000, rate: 2.8, tenureRemaining: 7, carValue: 90000 })
   const data = loadMyNumbers()
-  assert.equal(data.drive.monthlyCost, 1500)
-  assert.equal(data.drive.carLabel, 'Toyota Corolla')
-  assert.equal(data.drive.salary, 6000)
+  assert.equal(data.drive.monthlyInstalment, 1500)
+  assert.equal(data.drive.loanOutstanding, 60000)
+  assert.equal(data.drive.carValue, 90000)
   assert.equal(data.house.cashProceeds, 100)
 })
 
-test('clearHouseNumbers and clearDriveNumbers null out only their own slot', () => {
+test('saveRetireNumbers round-trips', () => {
+  window.localStorage.removeItem('ndtm_my_numbers_v1')
+  saveRetireNumbers({ salary: 7000, oaBalance: 80000, saBalance: 60000, maBalance: 40000, investmentBalance: 150000, monthlyContribution: 1000 })
+  const data = loadMyNumbers()
+  assert.equal(data.retire.salary, 7000)
+  assert.equal(data.retire.oaBalance, 80000)
+  assert.equal(data.retire.investmentBalance, 150000)
+  assert.equal(data.retire.source, 'auto')
+})
+
+test('clear functions null out only their own slot', () => {
   window.localStorage.removeItem('ndtm_my_numbers_v1')
   saveHouseNumbers({ cashProceeds: 1, totalCPFRefund: 1, salePrice: 1, saleDate: '2026-01-01' })
-  saveDriveNumbers({ monthlyCost: 1, carLabel: 'x', salary: 1 })
+  saveDriveNumbers({ monthlyInstalment: 1, carLabel: 'x', salary: 1 })
+  saveRetireNumbers({ salary: 1, oaBalance: 1, saBalance: 1, maBalance: 1, investmentBalance: 1, monthlyContribution: 1 })
   clearHouseNumbers()
   let data = loadMyNumbers()
   assert.equal(data.house, null)
   assert.notEqual(data.drive, null)
+  assert.notEqual(data.retire, null)
   clearDriveNumbers()
   data = loadMyNumbers()
   assert.equal(data.drive, null)
+  assert.notEqual(data.retire, null)
+  clearRetireNumbers()
+  data = loadMyNumbers()
+  assert.equal(data.retire, null)
 })

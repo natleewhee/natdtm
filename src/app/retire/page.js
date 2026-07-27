@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react'
 import { C, SGD, parseMoney } from '@/lib/retire/theme'
 import { calcRetirement } from '@/lib/retire/calc'
 import { monthlyCpfContribution, CPF_OW_CEILING } from '@/lib/retire/cpf'
-import { loadMyNumbers } from '@/lib/shared/profile'
+import { loadMyNumbers, saveRetireNumbers } from '@/lib/shared/profile'
 import { MoneyInput, PercentInput, NumberInput, SectionDivider, Segmented } from '@/components/retire/ui'
 import RetireResults from '@/components/retire/Results'
 import ShellHeader from '@/components/shared/ShellHeader'
@@ -87,6 +87,19 @@ export default function RetireWellPage() {
   }) : null
 
   const handleCalc = () => setCalculated(true)
+
+  // Hand off this month's CPF balances/investments/salary so MyLedger can
+  // use them as a baseline module — stored locally only. See
+  // src/lib/shared/profile.js.
+  useEffect(() => {
+    if (!result) return
+    saveRetireNumbers({
+      salary: num(salary),
+      oaBalance: num(startingOA), saBalance: num(startingSA), maBalance: num(startingMA),
+      investmentBalance: num(investmentStart),
+      monthlyContribution: num(investmentMonthly),
+    })
+  }, [result, salary, startingOA, startingSA, startingMA, investmentStart, investmentMonthly])
 
   return (
     <div style={{ minHeight: '100vh', background: C.bg, fontFamily: C.fontBody }}>
@@ -230,8 +243,8 @@ export default function RetireWellPage() {
 
           {driveNumbers && (
             <p style={{ marginTop: 10, fontSize: C.xs, color: C.muted, lineHeight: 1.5 }}>
-              From DriveReady{driveNumbers.carLabel ? `, your ${driveNumbers.carLabel}` : ''}: you&apos;re committing {SGD(driveNumbers.monthlyCost)}/month to a car loan.
-              {num(investmentMonthly) > 0 && ` That's ${(driveNumbers.monthlyCost / (num(investmentMonthly) || 1)).toFixed(1)}× your planned monthly investment — worth weighing against each other.`}
+              From DriveReady{driveNumbers.carLabel ? `, your ${driveNumbers.carLabel}` : ''}: you&apos;re committing {SGD(driveNumbers.monthlyInstalment)}/month to a car loan.
+              {num(investmentMonthly) > 0 && ` That's ${(driveNumbers.monthlyInstalment / (num(investmentMonthly) || 1)).toFixed(1)}× your planned monthly investment — worth weighing against each other.`}
             </p>
           )}
 
