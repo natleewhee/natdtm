@@ -11,9 +11,15 @@ export const CPF_RATES_AS_OF = '2026-01-01'
 
 // Monthly Ordinary Wage ceiling — the salary CPF contributions are capped
 // against. Raised on a phased schedule from $6,000 (pre-2023) to $8,000
-// (from Jan 2026). Bonuses/AWS are excluded entirely — this calculator
-// only asks for base salary.
+// (from Jan 2026).
 export const CPF_OW_CEILING = 8_000
+
+// Total annual CPF wages (Ordinary + Additional/bonus) subject to
+// contribution. Additional Wage (bonus/AWS) ceiling for the year =
+// this minus the Ordinary Wages already subject to CPF that year — so
+// a bonus is only partly (or not at all) CPF-able once your monthly
+// salary alone has used up most of the annual ceiling.
+export const CPF_ANNUAL_CEILING = 102_000
 
 // Age bands as at the start of the contribution year. `alloc` is the
 // share of the TOTAL contribution (not of salary) credited to each
@@ -34,18 +40,25 @@ export function contributionRatesForAge(age) {
   return band
 }
 
-// Monthly CPF contribution split, from monthly salary capped at the OW
-// ceiling. Returns dollar amounts credited to each sub-account this month.
-export function monthlyCpfContribution(salary, age) {
-  const wage = Math.min(Math.max(0, Number(salary) || 0), CPF_OW_CEILING)
+// Splits an already-capped wage base into OA/SA/MA using the age-banded
+// allocation — shared by the monthly (OW-capped) and bonus (AW-capped)
+// contribution calculations below.
+export function splitContribution(wageBase, age) {
+  const wage = Math.max(0, Number(wageBase) || 0)
   const { total, oa, sa, ma } = contributionRatesForAge(age)
-  const contribution = wage * total
   return {
-    total: contribution,
+    total: wage * total,
     oa: wage * oa,
     sa: wage * sa,
     ma: wage * ma,
   }
+}
+
+// Monthly CPF contribution split, from monthly salary capped at the OW
+// ceiling. Returns dollar amounts credited to each sub-account this month.
+export function monthlyCpfContribution(salary, age) {
+  const wage = Math.min(Math.max(0, Number(salary) || 0), CPF_OW_CEILING)
+  return splitContribution(wage, age)
 }
 
 export const CPF_OA_RATE = 0.025
@@ -123,4 +136,21 @@ export function monthlyCpfInterest(balances, age) {
     sa: (Number(balances.sa) || 0) * (CPF_SA_RATE / 12) + extra.sa,
     ma: (Number(balances.ma) || 0) * (CPF_MA_RATE / 12) + extra.ma,
   }
+}
+
+// Retirement Sum Topping-Up (RSTU): voluntary cash top-ups go straight
+// into SA (or RA, from 55) rather than being split across accounts, and
+// are only accepted up to the prevailing Full Retirement Sum (FRS) — CPF
+// rejects (returns) any top-up beyond that. The FRS itself rises each
+// year on a pre-announced schedule (~3.5% p.a. historically), which
+// matters a lot over a multi-decade projection — modeled here as a
+// steady growth rate off a labeled base year rather than frozen at
+// today's figure.
+export const CPF_FRS_BASE = 220_400
+export const CPF_FRS_BASE_YEAR = 2026
+export const CPF_FRS_GROWTH_RATE = 0.035
+
+export function prevailingFRS(year) {
+  const yearsFromBase = Math.max(0, year - CPF_FRS_BASE_YEAR)
+  return CPF_FRS_BASE * Math.pow(1 + CPF_FRS_GROWTH_RATE, yearsFromBase)
 }

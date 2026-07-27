@@ -4,7 +4,11 @@ import { useRouter } from 'next/navigation'
 import { C } from '@/lib/retire/theme'
 import ShellHeader from '@/components/shared/ShellHeader'
 import MathTOC from '@/components/shared/MathTOC'
-import { CPF_RATES_AS_OF, CPF_OW_CEILING, CPF_CONTRIBUTION_TABLE, CPF_OA_RATE, CPF_SA_RATE, CPF_EXTRA_BELOW_55_RATE, CPF_EXTRA_BELOW_55_CAP, CPF_EXTRA_OA_CAP, CPF_EXTRA_55_TIER1_RATE, CPF_EXTRA_55_TIER1_CAP, CPF_EXTRA_55_TIER2_RATE, CPF_EXTRA_55_TIER2_CAP } from '@/lib/retire/cpf'
+import {
+  CPF_RATES_AS_OF, CPF_OW_CEILING, CPF_ANNUAL_CEILING, CPF_CONTRIBUTION_TABLE, CPF_OA_RATE, CPF_SA_RATE,
+  CPF_EXTRA_BELOW_55_RATE, CPF_EXTRA_BELOW_55_CAP, CPF_EXTRA_OA_CAP, CPF_EXTRA_55_TIER1_RATE, CPF_EXTRA_55_TIER1_CAP,
+  CPF_EXTRA_55_TIER2_RATE, CPF_EXTRA_55_TIER2_CAP, CPF_FRS_BASE, CPF_FRS_BASE_YEAR, CPF_FRS_GROWTH_RATE,
+} from '@/lib/retire/cpf'
 
 function slug(title) {
   return title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '')
@@ -50,7 +54,9 @@ export default function RetireTheMathPage() {
         <MathTOC items={[
           { id: 'why-not-just-the-4-rule', label: 'Why not the 4% rule' },
           { id: 'cpf-contributions', label: 'CPF contributions' },
+          { id: 'bonus-and-the-annual-wage-ceiling', label: 'Bonus/AWS' },
           { id: 'cpf-interest', label: 'CPF interest' },
+          { id: 'retirement-sum-topping-up-rstu', label: 'RSTU' },
           { id: 'accumulation-now-retirement-age', label: 'Accumulation' },
           { id: 'the-retirement-target', label: 'Retirement target' },
           { id: 'depletion-simulation', label: 'Depletion simulation' },
@@ -68,8 +74,20 @@ export default function RetireTheMathPage() {
           <Formula>{CPF_CONTRIBUTION_TABLE.map(b =>
             `Age ${b.minAge}${b.maxAge >= 999 ? '+' : `–${b.maxAge}`}: ${(b.total * 100).toFixed(1)}% total  (OA ${(b.oa * 100).toFixed(1)}% · SA ${(b.sa * 100).toFixed(1)}% · MA ${(b.ma * 100).toFixed(1)}%)`
           ).join('\n')}</Formula>
-          <P>Ordinary Wage ceiling: S${CPF_OW_CEILING.toLocaleString('en-SG')}/month. Bonuses and other additional wages aren&apos;t modeled — only base salary.</P>
+          <P>Ordinary Wage ceiling: S${CPF_OW_CEILING.toLocaleString('en-SG')}/month.</P>
           <Caveat>Contribution rates for ages above 55 are on a multi-year phase-in (announced in Budget 2023) moving toward parity with the below-55 rate by around 2030 — they change periodically. Figures above are a good-faith snapshot as of {CPF_RATES_AS_OF}, not pulled live from CPF Board. Verify against the official CPF contribution rate tables, especially if you&apos;re in the 55+ bands.</Caveat>
+        </Section>
+
+        <Section title="Bonus and the annual wage ceiling">
+          <P>An annual bonus/AWS is also subject to CPF — but only up to whatever&apos;s left of the total annual wage ceiling after your regular salary has used its share:</P>
+          <Formula>{`Total annual CPF wage ceiling: S$${CPF_ANNUAL_CEILING.toLocaleString('en-SG')}
+
+Bonus subject to CPF = min(your bonus, S$${CPF_ANNUAL_CEILING.toLocaleString('en-SG')} − this year's Ordinary Wages already credited)
+
+The CPF-able portion of your bonus is split into OA/SA/MA using
+the same age-banded rates as your monthly salary, credited once
+a year.`}</Formula>
+          <P>A high earner already at the S${CPF_OW_CEILING.toLocaleString('en-SG')}/month Ordinary Wage ceiling for all 12 months has used S${(CPF_OW_CEILING * 12).toLocaleString('en-SG')} of the annual ceiling already — leaving only S${(CPF_ANNUAL_CEILING - CPF_OW_CEILING * 12).toLocaleString('en-SG')} of bonus that&apos;s CPF-able that year. Everything beyond that is still real income, just not CPF income.</P>
         </Section>
 
         <Section title="CPF interest">
@@ -83,14 +101,24 @@ export default function RetireTheMathPage() {
           <P>OA is counted first against these caps, since it&apos;s the sub-account most people have the most of early on — matching how CPF Board actually allocates the extra interest.</P>
         </Section>
 
+        <Section title="Retirement Sum Topping-Up (RSTU)">
+          <P>A voluntary top-up straight into SA (or RA, from 55) rather than split across accounts — the standard move for growing your CPF retirement pot faster, since SA/RA earn a higher rate than OA. CPF only accepts a top-up up to the prevailing Full Retirement Sum (FRS); anything that would push you over the ceiling is rejected:</P>
+          <Formula>{`Room for RSTU this month = prevailing FRS − current SA balance
+RSTU credited = min(your monthly top-up, room)
+
+Prevailing FRS(year) = S$${CPF_FRS_BASE.toLocaleString('en-SG')} × (1 + ${(CPF_FRS_GROWTH_RATE * 100).toFixed(1)}%)^(year − ${CPF_FRS_BASE_YEAR})`}</Formula>
+          <P>The FRS itself rises roughly {(CPF_FRS_GROWTH_RATE * 100).toFixed(1)}% a year on a schedule CPF Board announces in advance — modeled here as steady growth rather than frozen at today&apos;s figure, since freezing it would make the RSTU ceiling wildly understate reality decades out. If your projection shows your top-ups getting capped at some future age, that&apos;s this ceiling catching up with your SA balance.</P>
+          <Caveat>RSTU also comes with real income tax relief — up to S$8,000/year for topping up your own account, another S$8,000/year for a family member&apos;s. This calculator doesn&apos;t compute that relief (it would need your marginal tax rate, which this tool doesn&apos;t collect) — treat it as an added incentive on top of the balances shown, not something already baked into the numbers.</Caveat>
+        </Section>
+
         <Section title="Accumulation (now → retirement age)">
-          <P>Each month until your retirement age: your salary generates a CPF contribution (above), any CPF you draw for housing reduces your OA balance, then interest is credited on the resulting balances. In parallel, your money-market investment balance grows from your monthly contribution plus its own assumed return.</P>
+          <P>Each month until your retirement age: your salary (escalating annually at your assumed growth rate) generates a CPF contribution, any CPF you draw for housing reduces your OA balance, any RSTU top-up is credited to SA (subject to its cap above), then interest is credited on the resulting balances. Once a year, your bonus/AWS contribution (if any) is added the same way. In parallel, your money-market investment balance grows from your monthly contribution plus its own assumed return.</P>
           <Formula>{`OA(t+1) = OA(t) + CPF contribution to OA − housing OA draw, then + interest
-SA(t+1) = SA(t) + CPF contribution to SA, then + interest
+SA(t+1) = SA(t) + CPF contribution to SA + RSTU credited, then + interest
 MA(t+1) = MA(t) + CPF contribution to MA, then + interest
 
 Investment(t+1) = Investment(t) × (1 + monthly return) + monthly contribution`}</Formula>
-          <Caveat>Salary is held flat in nominal terms — no wage-growth assumption is modeled. Since real salaries usually grow over a career, this is a deliberately conservative simplification: it likely understates your real CPF savings, not overstates them. CPF&apos;s actual Retirement Account sweep at age 55 (moving OA+SA into an RA up to the prevailing Retirement Sum) also isn&apos;t modeled — OA and SA simply keep compounding at their own rates throughout, since your CPF LIFE payout is taken as a number you look up yourself rather than derived from an RA balance (the real CPF LIFE payout formula isn&apos;t public).</Caveat>
+          <Caveat>CPF&apos;s actual Retirement Account sweep at age 55 (moving OA+SA into an RA up to the prevailing Retirement Sum) isn&apos;t modeled — OA and SA simply keep compounding at their own rates throughout, since your CPF LIFE payout is taken as a number you look up yourself rather than derived from an RA balance (the real CPF LIFE payout formula isn&apos;t public). MediSave also isn&apos;t capped at the Basic Healthcare Sum here — see Limitations.</Caveat>
         </Section>
 
         <Section title="The retirement target">
@@ -105,15 +133,19 @@ Required nest egg = (Monthly withdrawal from investments × 12) ÷ Safe withdraw
         </Section>
 
         <Section title="Depletion simulation">
-          <P>Rather than trusting the safe-withdrawal-rate framing to hold forever, this simulates what actually happens to your investment balance, year by year, from retirement age to your planning-until age:</P>
-          <Formula>{`Balance(year+1) = Balance(year) × (1 + assumed return) − this year's withdrawal
-This year's withdrawal escalates by inflation every year, same as above.`}</Formula>
-          <P>If the balance hits zero before your planning-until age, that age is shown as when your money runs out. If it never hits zero, your investments last the full horizon. For a money-market-only portfolio with a modest return, this can disagree with the safe-withdrawal-rate check above — and when it does, I&apos;d trust this simulation more, since it doesn&apos;t assume indefinite sustainability the way the 3-4% rule research does.</P>
+          <P>Rather than trusting the safe-withdrawal-rate framing to hold forever, this simulates what actually happens to your investment balance, year by year, from retirement age to your planning-until age. Your CPF LIFE payout is netted off your total withdrawal need each year before drawing from investments, and escalates on its own schedule depending on which plan you picked:</P>
+          <Formula>{`Total withdrawal(year+1) = Total withdrawal(year) × (1 + inflation)
+CPF LIFE payout(year+1) = CPF LIFE payout(year) × (1 + 2%)   [Escalating Plan]
+                         = CPF LIFE payout(year)              [Standard Plan]
+
+Drawn from investments = Total withdrawal − CPF LIFE payout
+Balance(year+1) = Balance(year) × (1 + assumed return) − (Drawn from investments × 12)`}</Formula>
+          <P>The Escalating Plan&apos;s 2%/year growth and the Standard Plan&apos;s flat payout are both real, publicly stated CPF LIFE plan mechanics — not assumptions I&apos;m making. If the balance hits zero before your planning-until age, that age is shown as when your money runs out. For a money-market-only portfolio with a modest return, this can disagree with the safe-withdrawal-rate check above — and when it does, I&apos;d trust this simulation more, since it doesn&apos;t assume indefinite sustainability the way the 3-4% rule research does.</P>
         </Section>
 
         <Section title="Limitations">
-          <P>This calculator doesn&apos;t model: bonus/AWS CPF contributions, wage growth over your career, the CPF Retirement Account sweep and Retirement Sum mechanics at age 55, an exact CPF LIFE payout (taken as your own manual estimate instead), Supplementary Retirement Scheme (SRS) contributions, sequence-of-returns risk (a bad run of returns early in retirement is riskier than the same average return spread evenly — this simulation uses one constant assumed return throughout), or taxes. The money-market return and inflation rate are both single constant assumptions for the entire horizon, which in reality will fluctuate with interest-rate cycles.</P>
-          <Caveat>MediSave contributions in real life stop once your MA balance hits the Basic Healthcare Sum (BHS) — excess is redirected to SA (or RA after 55) instead. This calculator doesn&apos;t cap MA, so over a long projection its MA figure will look unrealistically large. Your <em>total</em> CPF figure is unaffected (SA and MA earn the same base rate, so misattributing the account doesn&apos;t change the total), but don&apos;t take the OA/SA/MA split at face value for long horizons — only the total.</Caveat>
+          <P>This calculator doesn&apos;t model: wage growth or bonus timing beyond the simplified annual assumptions above, the CPF Retirement Account sweep and Retirement Sum mechanics at age 55, an exact CPF LIFE payout (taken as your own manual estimate instead), Supplementary Retirement Scheme (SRS) contributions, RSTU income tax relief, sequence-of-returns risk (a bad run of returns early in retirement is riskier than the same average return spread evenly — this simulation uses one constant assumed return throughout), or taxes (moot in Singapore anyway — CPF withdrawals and capital gains aren&apos;t taxed). The money-market return and inflation rate are both single constant assumptions for the entire horizon, which in reality will fluctuate with interest-rate cycles.</P>
+          <Caveat>MediSave contributions in real life stop once your MA balance hits the Basic Healthcare Sum (BHS) — excess is redirected to SA (or RA after 55) instead. This calculator doesn&apos;t cap MA, so over a long projection its MA figure will look unrealistically large. Your <em>total</em> CPF figure is unaffected (SA and MA earn the same base rate, so misattributing the account doesn&apos;t change the total), but don&apos;t take the OA/SA/MA split at face value for long horizons — only the total. Separately, MediSave is tracked but never counted toward your spendable withdrawal target — it&apos;s earmarked for healthcare, not living expenses.</Caveat>
         </Section>
 
         <div style={{ marginTop: 40, padding: 20, background: C.surface, borderRadius: C.rL, border: `1px solid ${C.border}`, fontSize: C.xs, color: C.faint, lineHeight: 1.7 }}>

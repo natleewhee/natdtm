@@ -7,7 +7,8 @@ import {
   simulateAccumulation, calcRetirementTarget, simulateDepletion, calcRetirement,
 } from './calc.js'
 import {
-  monthlyCpfContribution, monthlyCpfInterest, contributionRatesForAge, CPF_OW_CEILING,
+  monthlyCpfContribution, monthlyCpfInterest, contributionRatesForAge, splitContribution,
+  CPF_OW_CEILING, CPF_ANNUAL_CEILING, prevailingFRS, CPF_FRS_BASE, CPF_FRS_BASE_YEAR,
 } from './cpf.js'
 
 let passed = 0
@@ -164,6 +165,78 @@ const lasts = simulateDepletion(
 )
 assert('A large balance against a modest withdrawal lasts to life expectancy', lasts.lastsToLifeExpectancy === true)
 assert('depletedAtAge is null when it lasts', lasts.depletedAtAge === null)
+
+// ─── Bonus / Additional Wage ceiling ──────────────────────────────────────
+assert('splitContribution divides an already-capped wage base without re-capping', approx(splitContribution(102_000, 30).total, 102_000 * 0.37, 0.01))
+
+const noBonusAccum = simulateAccumulation({
+  currentAge: 30, retirementAge: 31, salary: 6_000,
+})
+const withBonusAccum = simulateAccumulation({
+  currentAge: 30, retirementAge: 31, salary: 6_000, annualBonus: 12_000,
+})
+assert('An annual bonus increases CPF balances relative to no bonus', withBonusAccum.cpfTotalFinal > noBonusAccum.cpfTotalFinal)
+
+// $6,000/mo × 12 = $72,000 ordinary wages for the year, leaving
+// CPF_ANNUAL_CEILING − $72,000 of annual-ceiling room for the bonus.
+// A bonus at exactly that remainder vs. one well beyond it should
+// contribute identical CPF, since the excess isn't CPF-able.
+const remainingCeiling = CPF_ANNUAL_CEILING - 6_000 * 12
+const smallBonusAccum = simulateAccumulation({
+  currentAge: 30, retirementAge: 31, salary: 6_000, annualBonus: remainingCeiling,
+})
+const bigBonusAccum = simulateAccumulation({
+  currentAge: 30, retirementAge: 31, salary: 6_000, annualBonus: remainingCeiling + 20_000,
+})
+assert('A bonus beyond the remaining annual wage ceiling contributes no more CPF than the ceiling allows', approx(smallBonusAccum.cpfTotalFinal, bigBonusAccum.cpfTotalFinal, 1))
+
+// ─── Salary growth ────────────────────────────────────────────────────────
+const flatSalaryAccum = simulateAccumulation({
+  currentAge: 30, retirementAge: 35, salary: 6_000,
+})
+const growingSalaryAccum = simulateAccumulation({
+  currentAge: 30, retirementAge: 35, salary: 6_000, salaryGrowthRate: 5,
+})
+assert('Salary growth results in higher CPF balances than flat salary', growingSalaryAccum.cpfTotalFinal > flatSalaryAccum.cpfTotalFinal)
+
+// ─── RSTU (voluntary top-up to SA) ────────────────────────────────────────
+const noRstuAccum = simulateAccumulation({
+  currentAge: 30, retirementAge: 31, salary: 5_000, startingSA: 10_000,
+})
+const withRstuAccum = simulateAccumulation({
+  currentAge: 30, retirementAge: 31, salary: 5_000, startingSA: 10_000, rstuMonthly: 500,
+})
+assert('RSTU increases the SA balance relative to not topping up', withRstuAccum.saFinal > noRstuAccum.saFinal)
+assert('RSTU is not capped when nowhere near the Full Retirement Sum', withRstuAccum.rstuCappedAtAge === null)
+
+// A SA balance already at the Full Retirement Sum should reject further RSTU top-ups.
+const frsNow = prevailingFRS(new Date().getFullYear())
+const atCapAccum = simulateAccumulation({
+  currentAge: 40, retirementAge: 41, currentYear: new Date().getFullYear(),
+  salary: 0, startingSA: frsNow, rstuMonthly: 1_000,
+})
+assert('RSTU top-up is capped once SA is already at the prevailing Full Retirement Sum', atCapAccum.rstuCappedAtAge === 40)
+// SA should grow only from interest (base + extra tiers), not from any
+// RSTU credit — replicate the same 12-month interest-only compounding
+// independently to confirm no RSTU dollars snuck in.
+let expectedSa = frsNow
+for (let i = 0; i < 12; i++) expectedSa += monthlyCpfInterest({ oa: 0, sa: expectedSa, ma: 0 }, 40).sa
+assert('SA growth while RSTU-capped matches interest-only compounding, with no RSTU credited', approx(atCapAccum.saFinal, expectedSa, 1))
+
+assert('prevailingFRS at the base year equals the base figure', prevailingFRS(CPF_FRS_BASE_YEAR) === CPF_FRS_BASE)
+assert('prevailingFRS grows over time', prevailingFRS(CPF_FRS_BASE_YEAR + 10) > CPF_FRS_BASE)
+
+// ─── CPF LIFE plan escalation in the depletion simulation ────────────────
+const standardPlanDepletion = simulateDepletion(
+  { retirementAge: 65, lifeExpectancy: 90, inflationRate: 2, investmentReturn: 4, cpfLifePlan: 'standard' },
+  5_000_000, 6_000, 2_000,
+)
+const escalatingPlanDepletion = simulateDepletion(
+  { retirementAge: 65, lifeExpectancy: 90, inflationRate: 2, investmentReturn: 4, cpfLifePlan: 'escalating' },
+  5_000_000, 6_000, 2_000,
+)
+assert('Neither plan depletes the balance in this milder scenario, so the comparison below is meaningful', standardPlanDepletion.depletedAtAge === null && escalatingPlanDepletion.depletedAtAge === null)
+assert('An escalating CPF LIFE payout covers more of the need over time, leaving a larger balance than a flat Standard payout', escalatingPlanDepletion.rows.at(-1).balance > standardPlanDepletion.rows.at(-1).balance)
 
 // ─── Orchestrator ────────────────────────────────────────────────────────
 const full = calcRetirement({

@@ -17,8 +17,8 @@ function Row({ label, value, tone, bold, indent }) {
 
 export default function RetireResults({ result }) {
   if (!result) return null
-  const { currentAge, retirementAge, lifeExpectancy, accumulation, target, depletion } = result
-  const { oaFinal, saFinal, maFinal, cpfTotalFinal, investmentFinal } = accumulation
+  const { retirementAge, lifeExpectancy, accumulation, target, depletion } = result
+  const { oaFinal, saFinal, maFinal, cpfTotalFinal, investmentFinal, rstuCappedAtAge } = accumulation
   const {
     desiredMonthlyWithdrawal, yearsToRetirement, inflatedMonthlyWithdrawal, monthlyFromInvestments,
     requiredNestEgg, gap, onTrack, extraMonthlyNeeded, swr,
@@ -76,7 +76,21 @@ export default function RetireResults({ result }) {
         <Row label="CPF — MediSave Account" value={SGD(maFinal)} />
         <Row label="Total CPF" value={SGD(cpfTotalFinal)} bold />
         <Row label="Money market investments" value={SGD(investmentFinal)} bold tone={onTrack ? 'green' : 'red'} />
+        <p style={{ fontSize: C.xs, color: C.faint, lineHeight: 1.6, marginTop: 10 }}>
+          MediSave isn&apos;t counted toward your spendable retirement income above — it&apos;s earmarked for healthcare premiums (MediShield/Integrated Shield Plan), not everyday withdrawals. Only your investments and CPF LIFE payout are checked against your desired withdrawal.
+        </p>
       </div>
+
+      {rstuCappedAtAge != null && (
+        <div style={{ background: C.amberBg, border: `1px solid ${C.amber}44`, borderRadius: C.rL, padding: '16px 18px', margin: '20px 0' }}>
+          <div style={{ fontSize: C.sm, fontWeight: 700, color: C.amberText, marginBottom: 4 }}>
+            Your RSTU top-ups stop being accepted at age {rstuCappedAtAge}
+          </div>
+          <div style={{ fontSize: C.xs, color: C.muted, lineHeight: 1.6 }}>
+            That&apos;s when your Special Account is projected to hit the prevailing Full Retirement Sum — CPF rejects (returns) top-ups beyond that ceiling, so contributions after this age aren&apos;t credited in this projection.
+          </div>
+        </div>
+      )}
 
       <ExploreSection title="Show the math" defaultOpen={false}>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>

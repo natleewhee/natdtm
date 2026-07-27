@@ -5,22 +5,26 @@
 // year-by-year depletion simulation. Pure functions — no React, no
 // fetch. Covered by calc.test.js.
 
-import { monthlyCpfContribution, monthlyCpfInterest } from './cpf.js'
+import {
+  monthlyCpfContribution, monthlyCpfInterest, splitContribution,
+  CPF_OW_CEILING, CPF_ANNUAL_CEILING, prevailingFRS,
+} from './cpf.js'
 
 // ─── Accumulation: now → retirement age ─────────────────────────────────
-// Salary is held flat in nominal terms — no wage-growth assumption is
-// modeled, which is a deliberately conservative simplification (real
-// salaries usually grow, so this likely understates CPF savings, not
-// overstates them). CPF's actual Retirement Account/FRS sweep at 55 is
-// also not modeled — OA/SA continue compounding at their own rates
-// throughout, since the CPF LIFE payout itself is taken as a manual
-// input rather than derived from an RA balance (see the-math page).
+// CPF's actual Retirement Account/FRS sweep at 55 is not modeled — OA/SA
+// continue compounding at their own rates throughout, since the CPF LIFE
+// payout itself is taken as a manual input rather than derived from an RA
+// balance (see the-math page). RSTU top-ups are credited to SA
+// throughout for the same reason (standing in for "SA or RA, whichever
+// applies"), gated by the prevailing Full Retirement Sum.
 export function simulateAccumulation(inputs) {
   const {
     currentAge = 0, retirementAge = 0,
-    salary = 0,
+    currentYear = new Date().getFullYear(),
+    salary = 0, salaryGrowthRate = 0, annualBonus = 0,
     startingOA = 0, startingSA = 0, startingMA = 0,
     housingOaMonthly = 0, housingOaMonths = Infinity,
+    rstuMonthly = 0,
     investmentStart = 0, investmentMonthly = 0, investmentReturn = 0,
   } = inputs
 
@@ -29,20 +33,52 @@ export function simulateAccumulation(inputs) {
   let sa = Number(startingSA) || 0
   let ma = Number(startingMA) || 0
   let investment = Number(investmentStart) || 0
+  let currentSalary = Number(salary) || 0
   const monthlyInvReturn = (Number(investmentReturn) || 0) / 100 / 12
   const housingMonths = Number.isFinite(housingOaMonths) ? housingOaMonths : Infinity
+  const growthRate = (Number(salaryGrowthRate) || 0) / 100
 
   const timeline = []
+  let ordinaryWagesThisYear = 0
+  let rstuCappedAtAge = null
 
   for (let m = 0; m < months; m++) {
     const ageNow = currentAge + m / 12
-    const contrib = monthlyCpfContribution(salary, ageNow)
+    const yearNow = currentYear + Math.floor(m / 12)
+
+    // Salary escalates once per year (not on month 0, which uses the
+    // starting figure as given).
+    if (m > 0 && m % 12 === 0) currentSalary *= (1 + growthRate)
+
+    const contrib = monthlyCpfContribution(currentSalary, ageNow)
     oa += contrib.oa
     sa += contrib.sa
     ma += contrib.ma
+    ordinaryWagesThisYear += Math.min(Math.max(0, currentSalary), CPF_OW_CEILING)
+
+    // Bonus/AWS is credited once a year, capped by whatever's left of the
+    // total annual wage ceiling after the year's Ordinary Wages.
+    const isYearEnd = (m + 1) % 12 === 0 || m === months - 1
+    if (isYearEnd && (Number(annualBonus) || 0) > 0) {
+      const awCeiling = Math.max(0, CPF_ANNUAL_CEILING - ordinaryWagesThisYear)
+      const bonusSubjectToCpf = Math.min(Number(annualBonus) || 0, awCeiling)
+      const bonusContrib = splitContribution(bonusSubjectToCpf, ageNow)
+      oa += bonusContrib.oa
+      sa += bonusContrib.sa
+      ma += bonusContrib.ma
+    }
+    if (isYearEnd) ordinaryWagesThisYear = 0
 
     if (m < housingMonths && (Number(housingOaMonthly) || 0) > 0) {
       oa = Math.max(0, oa - housingOaMonthly)
+    }
+
+    if ((Number(rstuMonthly) || 0) > 0) {
+      const frs = prevailingFRS(yearNow)
+      const room = Math.max(0, frs - sa)
+      const credited = Math.min(rstuMonthly, room)
+      sa += credited
+      if (credited < rstuMonthly && rstuCappedAtAge == null) rstuCappedAtAge = Math.round(ageNow * 10) / 10
     }
 
     const interest = monthlyCpfInterest({ oa, sa, ma }, ageNow)
@@ -64,6 +100,7 @@ export function simulateAccumulation(inputs) {
     months,
     oaFinal: oa, saFinal: sa, maFinal: ma, cpfTotalFinal: oa + sa + ma,
     investmentFinal: investment,
+    rstuCappedAtAge,
     timeline,
   }
 }
@@ -122,35 +159,43 @@ export function calcRetirementTarget(inputs, accumulation) {
 
 // ─── Depletion simulation ────────────────────────────────────────────────
 // Given your projected investment balance at retirement, simulate the
-// drawdown year by year: withdraw the inflation-escalated amount, grow
-// the remainder at the assumed money-market return. This is the more
-// honest check for a money-market-only portfolio, where the "3% forever"
-// framing (built for equity-inclusive portfolios) may not actually hold —
-// see the-math page.
-export function simulateDepletion(inputs, startingBalance, firstYearMonthlyWithdrawal) {
+// drawdown year by year: withdraw the inflation-escalated amount (net of
+// your CPF LIFE payout, which escalates on its own schedule depending on
+// your chosen plan), grow the remainder at the assumed money-market
+// return. This is the more honest check for a money-market-only
+// portfolio, where the "3% forever" framing (built for equity-inclusive
+// portfolios) may not actually hold — see the-math page.
+export function simulateDepletion(inputs, startingBalance, firstYearTotalWithdrawal, firstYearCpfLifePayout = 0) {
   const {
     retirementAge = 0, lifeExpectancy = 90, inflationRate = 2.5, investmentReturn = 0,
+    cpfLifePlan = 'standard',
   } = inputs
 
   let balance = Number(startingBalance) || 0
-  let monthlyWithdrawal = Number(firstYearMonthlyWithdrawal) || 0
+  let totalWithdrawal = Number(firstYearTotalWithdrawal) || 0
+  let cpfLifePayout = Number(firstYearCpfLifePayout) || 0
   const annualReturn = (Number(investmentReturn) || 0) / 100
   const inflation = (Number(inflationRate) || 0) / 100
+  // CPF LIFE Standard Plan pays a flat nominal amount for life; the
+  // Escalating Plan grows payouts by 2% p.a. — a real, publicly stated
+  // difference between the two plans, not an assumption on my part.
+  const cpfLifeEscalation = cpfLifePlan === 'escalating' ? 0.02 : 0
   const maxYears = Math.max(0, Math.round(lifeExpectancy - retirementAge))
 
   const rows = []
   let depletedAtAge = null
 
   for (let y = 0; y < maxYears; y++) {
-    const annualWithdrawal = monthlyWithdrawal * 12
-    balance = balance * (1 + annualReturn) - annualWithdrawal
+    const investmentWithdrawal = Math.max(0, totalWithdrawal - cpfLifePayout)
+    balance = balance * (1 + annualReturn) - investmentWithdrawal * 12
     const age = retirementAge + y + 1
     if (balance <= 0 && depletedAtAge == null) {
       depletedAtAge = age
       balance = 0
     }
     rows.push({ age, balance: Math.max(0, balance) })
-    monthlyWithdrawal *= (1 + inflation)
+    totalWithdrawal *= (1 + inflation)
+    cpfLifePayout *= (1 + cpfLifeEscalation)
     if (balance <= 0) break
   }
 
@@ -171,9 +216,14 @@ export function calcRetirement(inputs) {
   const accumulation = simulateAccumulation({ ...inputs, housingOaMonths })
   const target = calcRetirementTarget(inputs, accumulation)
   const depletion = simulateDepletion(
-    { retirementAge, lifeExpectancy, inflationRate: inputs.inflationRate, investmentReturn: inputs.investmentReturn },
+    {
+      retirementAge, lifeExpectancy,
+      inflationRate: inputs.inflationRate, investmentReturn: inputs.investmentReturn,
+      cpfLifePlan: inputs.cpfLifePlan,
+    },
     accumulation.investmentFinal,
-    target.monthlyFromInvestments,
+    target.inflatedMonthlyWithdrawal,
+    target.cpfLifeMonthlyPayout,
   )
 
   return {
