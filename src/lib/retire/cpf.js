@@ -154,3 +154,32 @@ export function prevailingFRS(year) {
   const yearsFromBase = Math.max(0, year - CPF_FRS_BASE_YEAR)
   return CPF_FRS_BASE * Math.pow(1 + CPF_FRS_GROWTH_RATE, yearsFromBase)
 }
+
+// Basic Healthcare Sum (BHS): the cap on MediSave. Contributions that
+// would push MA above the prevailing BHS are redirected to SA instead
+// (or RA, from 55 — standing in as SA here, same simplification as
+// elsewhere in this file). Like the FRS, BHS is revised most years on an
+// announced schedule (2022 $66,000 → 2026 $79,000, roughly 4.6% p.a.) —
+// modeled as steady growth off a labeled base year rather than frozen.
+export const CPF_BHS_BASE = 79_000
+export const CPF_BHS_BASE_YEAR = 2026
+export const CPF_BHS_GROWTH_RATE = 0.046
+
+export function prevailingBHS(year) {
+  const yearsFromBase = Math.max(0, year - CPF_BHS_BASE_YEAR)
+  return CPF_BHS_BASE * Math.pow(1 + CPF_BHS_GROWTH_RATE, yearsFromBase)
+}
+
+// Credits a contribution split {oa, sa, ma} onto running balances,
+// redirecting any MA portion that would exceed the prevailing BHS into
+// SA instead — mutates and returns the balances object.
+export function creditWithMaOverflow(balances, contrib, year) {
+  const bhs = prevailingBHS(year)
+  const room = Math.max(0, bhs - balances.ma)
+  const maCredited = Math.min(contrib.ma, room)
+  const overflow = contrib.ma - maCredited
+  balances.oa += contrib.oa
+  balances.sa += contrib.sa + overflow
+  balances.ma += maCredited
+  return balances
+}

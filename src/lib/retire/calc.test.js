@@ -7,8 +7,9 @@ import {
   simulateAccumulation, calcRetirementTarget, simulateDepletion, calcRetirement,
 } from './calc.js'
 import {
-  monthlyCpfContribution, monthlyCpfInterest, contributionRatesForAge, splitContribution,
+  monthlyCpfContribution, monthlyCpfInterest, contributionRatesForAge, splitContribution, creditWithMaOverflow,
   CPF_OW_CEILING, CPF_ANNUAL_CEILING, prevailingFRS, CPF_FRS_BASE, CPF_FRS_BASE_YEAR,
+  prevailingBHS, CPF_BHS_BASE, CPF_BHS_BASE_YEAR,
 } from './cpf.js'
 
 let passed = 0
@@ -195,16 +196,25 @@ const noRstuAccum = simulateAccumulation({
   currentAge: 30, retirementAge: 31, salary: 5_000, startingSA: 10_000,
 })
 const withRstuAccum = simulateAccumulation({
-  currentAge: 30, retirementAge: 31, salary: 5_000, startingSA: 10_000, rstuMonthly: 500,
+  currentAge: 30, retirementAge: 31, salary: 5_000, startingSA: 10_000, rstuAmount: 500, rstuFrequency: 'monthly',
 })
 assert('RSTU increases the SA balance relative to not topping up', withRstuAccum.saFinal > noRstuAccum.saFinal)
 assert('RSTU is not capped when nowhere near the Full Retirement Sum', withRstuAccum.rstuCappedAtAge === null)
+
+// An annual RSTU top-up of 12x the monthly amount, credited once at
+// year-end, should land close to (but not exactly, since it misses 11
+// months of compounding on that lump sum) the monthly-cadence result.
+const annualRstuAccum = simulateAccumulation({
+  currentAge: 30, retirementAge: 31, salary: 5_000, startingSA: 10_000, rstuAmount: 6_000, rstuFrequency: 'annual',
+})
+assert('Annual RSTU top-up increases SA relative to no top-up', annualRstuAccum.saFinal > noRstuAccum.saFinal)
+assert('Annual RSTU (credited once, late) grows less than the same total credited monthly (compounds longer)', annualRstuAccum.saFinal < withRstuAccum.saFinal)
 
 // A SA balance already at the Full Retirement Sum should reject further RSTU top-ups.
 const frsNow = prevailingFRS(new Date().getFullYear())
 const atCapAccum = simulateAccumulation({
   currentAge: 40, retirementAge: 41, currentYear: new Date().getFullYear(),
-  salary: 0, startingSA: frsNow, rstuMonthly: 1_000,
+  salary: 0, startingSA: frsNow, rstuAmount: 1_000, rstuFrequency: 'monthly',
 })
 assert('RSTU top-up is capped once SA is already at the prevailing Full Retirement Sum', atCapAccum.rstuCappedAtAge === 40)
 // SA should grow only from interest (base + extra tiers), not from any
@@ -216,6 +226,30 @@ assert('SA growth while RSTU-capped matches interest-only compounding, with no R
 
 assert('prevailingFRS at the base year equals the base figure', prevailingFRS(CPF_FRS_BASE_YEAR) === CPF_FRS_BASE)
 assert('prevailingFRS grows over time', prevailingFRS(CPF_FRS_BASE_YEAR + 10) > CPF_FRS_BASE)
+
+// ─── MediSave (Basic Healthcare Sum) overflow ────────────────────────────
+assert('prevailingBHS at the base year equals the base figure', prevailingBHS(CPF_BHS_BASE_YEAR) === CPF_BHS_BASE)
+assert('prevailingBHS grows over time', prevailingBHS(CPF_BHS_BASE_YEAR + 10) > CPF_BHS_BASE)
+
+const bhsNow = prevailingBHS(new Date().getFullYear())
+const belowBhs = creditWithMaOverflow({ oa: 0, sa: 0, ma: bhsNow - 1_000 }, { oa: 200, sa: 100, ma: 300 }, new Date().getFullYear())
+assert('Below BHS, the full MA contribution is credited with no overflow', approx(belowBhs.ma, bhsNow - 700, 1))
+assert('Below BHS, SA only gets its own contribution, no overflow', belowBhs.sa === 100)
+
+const atBhs = creditWithMaOverflow({ oa: 0, sa: 500, ma: bhsNow }, { oa: 200, sa: 100, ma: 300 }, new Date().getFullYear())
+assert('At the BHS cap, no more MA is credited', atBhs.ma === bhsNow)
+assert('At the BHS cap, the full MA contribution overflows into SA', atBhs.sa === 500 + 100 + 300)
+assert('At the BHS cap, OA is unaffected by the overflow', atBhs.oa === 200)
+
+// A long, high-salary run should trigger BHS overflow well before
+// retirement — once MA hits the cap, new MA-share contributions redirect
+// to SA, which (despite a lower base allocation rate than MA) should end
+// up larger over 30 years as a result.
+const highSalaryLongRun = simulateAccumulation({
+  currentAge: 25, retirementAge: 55, currentYear: new Date().getFullYear(),
+  salary: 10_000, // above the OW ceiling, maximizing MA contribution
+})
+assert('A high, long-running salary pushes SA higher than MA thanks to BHS overflow', highSalaryLongRun.saFinal > highSalaryLongRun.maFinal)
 
 // ─── Orchestrator ────────────────────────────────────────────────────────
 const full = calcRetirement({

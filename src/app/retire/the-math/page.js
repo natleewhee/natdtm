@@ -8,6 +8,7 @@ import {
   CPF_RATES_AS_OF, CPF_OW_CEILING, CPF_ANNUAL_CEILING, CPF_CONTRIBUTION_TABLE, CPF_OA_RATE, CPF_SA_RATE,
   CPF_EXTRA_BELOW_55_RATE, CPF_EXTRA_BELOW_55_CAP, CPF_EXTRA_OA_CAP, CPF_EXTRA_55_TIER1_RATE, CPF_EXTRA_55_TIER1_CAP,
   CPF_EXTRA_55_TIER2_RATE, CPF_EXTRA_55_TIER2_CAP, CPF_FRS_BASE, CPF_FRS_BASE_YEAR, CPF_FRS_GROWTH_RATE,
+  CPF_BHS_BASE, CPF_BHS_BASE_YEAR, CPF_BHS_GROWTH_RATE,
 } from '@/lib/retire/cpf'
 
 function slug(title) {
@@ -56,6 +57,7 @@ export default function RetireTheMathPage() {
           { id: 'cpf-contributions', label: 'CPF contributions' },
           { id: 'bonus-and-the-annual-wage-ceiling', label: 'Bonus/AWS' },
           { id: 'cpf-interest', label: 'CPF interest' },
+          { id: 'medisave-and-the-basic-healthcare-sum', label: 'MediSave cap' },
           { id: 'retirement-sum-topping-up-rstu', label: 'RSTU' },
           { id: 'accumulation-now-retirement-age', label: 'Accumulation' },
           { id: 'the-retirement-target', label: 'Retirement target' },
@@ -101,24 +103,35 @@ a year.`}</Formula>
           <P>OA is counted first against these caps, since it&apos;s the sub-account most people have the most of early on — matching how CPF Board actually allocates the extra interest.</P>
         </Section>
 
+        <Section title="MediSave and the Basic Healthcare Sum">
+          <P>MediSave contributions are capped at the prevailing Basic Healthcare Sum (BHS). Once your MA balance hits it, contributions that would have gone to MA are redirected to SA (or RA, from 55) instead — the same overflow behavior real CPF applies:</P>
+          <Formula>{`Room for MA this contribution = prevailing BHS − current MA balance
+MA credited = min(MA share of contribution, room)
+Overflow (if any) = MA share − MA credited, added to SA instead
+
+Prevailing BHS(year) = S$${CPF_BHS_BASE.toLocaleString('en-SG')} × (1 + ${(CPF_BHS_GROWTH_RATE * 100).toFixed(1)}%)^(year − ${CPF_BHS_BASE_YEAR})`}</Formula>
+          <P>The BHS itself rises most years on an announced schedule (roughly S$66,000 in 2022 to S$79,000 in 2026) — modeled here as steady ~{(CPF_BHS_GROWTH_RATE * 100).toFixed(1)}%/year growth off that base rather than frozen, for the same reason as the FRS below. Once MA is capped, it still earns interest as normal — interest isn&apos;t redirected, only new contributions are, so MA can end up above the <em>current</em> BHS over time purely from compounding on an already-capped balance.</P>
+        </Section>
+
         <Section title="Retirement Sum Topping-Up (RSTU)">
-          <P>A voluntary top-up straight into SA (or RA, from 55) rather than split across accounts — the standard move for growing your CPF retirement pot faster, since SA/RA earn a higher rate than OA. CPF only accepts a top-up up to the prevailing Full Retirement Sum (FRS); anything that would push you over the ceiling is rejected:</P>
-          <Formula>{`Room for RSTU this month = prevailing FRS − current SA balance
-RSTU credited = min(your monthly top-up, room)
+          <P>A voluntary top-up straight into SA (or RA, from 55) rather than split across accounts — the standard move for growing your CPF retirement pot faster, since SA/RA earn a higher rate than OA. You can contribute monthly or as a single annual lump sum; either way, CPF only accepts a top-up up to the prevailing Full Retirement Sum (FRS), rejecting anything that would push you over:</P>
+          <Formula>{`Room for RSTU (at each contribution) = prevailing FRS − current SA balance
+RSTU credited = min(your top-up, room)
 
 Prevailing FRS(year) = S$${CPF_FRS_BASE.toLocaleString('en-SG')} × (1 + ${(CPF_FRS_GROWTH_RATE * 100).toFixed(1)}%)^(year − ${CPF_FRS_BASE_YEAR})`}</Formula>
           <P>The FRS itself rises roughly {(CPF_FRS_GROWTH_RATE * 100).toFixed(1)}% a year on a schedule CPF Board announces in advance — modeled here as steady growth rather than frozen at today&apos;s figure, since freezing it would make the RSTU ceiling wildly understate reality decades out. If your projection shows your top-ups getting capped at some future age, that&apos;s this ceiling catching up with your SA balance.</P>
+          <P>Choosing annual instead of monthly changes <em>when</em> the same yearly total is credited (once, at year-end, versus spread across 12 months) — spreading it monthly compounds slightly more since each dollar sits in SA longer on average, so annual and monthly aren&apos;t quite equivalent even before either hits the FRS cap.</P>
           <Caveat>RSTU also comes with real income tax relief — up to S$8,000/year for topping up your own account, another S$8,000/year for a family member&apos;s. This calculator doesn&apos;t compute that relief (it would need your marginal tax rate, which this tool doesn&apos;t collect) — treat it as an added incentive on top of the balances shown, not something already baked into the numbers.</Caveat>
         </Section>
 
         <Section title="Accumulation (now → retirement age)">
-          <P>Each month until your retirement age: your salary (escalating annually at your assumed growth rate) generates a CPF contribution, any CPF you draw for housing reduces your OA balance, any RSTU top-up is credited to SA (subject to its cap above), then interest is credited on the resulting balances. Once a year, your bonus/AWS contribution (if any) is added the same way. In parallel, your money-market investment balance grows from your monthly contribution plus its own assumed return.</P>
+          <P>Each month until your retirement age: your salary (escalating annually at your assumed growth rate) generates a CPF contribution, split into OA/SA/MA and credited with the MediSave overflow rule above applied. Any CPF you draw for housing reduces your OA balance, any RSTU top-up is credited to SA (subject to its cap above), then interest is credited on the resulting balances. Once a year, your bonus/AWS contribution (if any) is added the same way, overflow included. In parallel, your money-market investment balance grows from your monthly contribution plus its own assumed return.</P>
           <Formula>{`OA(t+1) = OA(t) + CPF contribution to OA − housing OA draw, then + interest
-SA(t+1) = SA(t) + CPF contribution to SA + RSTU credited, then + interest
-MA(t+1) = MA(t) + CPF contribution to MA, then + interest
+SA(t+1) = SA(t) + CPF contribution to SA + RSTU credited + MA overflow, then + interest
+MA(t+1) = MA(t) + CPF contribution to MA (capped at prevailing BHS), then + interest
 
 Investment(t+1) = Investment(t) × (1 + monthly return) + monthly contribution`}</Formula>
-          <Caveat>CPF&apos;s actual Retirement Account sweep at age 55 (moving OA+SA into an RA up to the prevailing Retirement Sum) isn&apos;t modeled — OA and SA simply keep compounding at their own rates straight through and past retirement age. MediSave also isn&apos;t capped at the Basic Healthcare Sum here — see Limitations.</Caveat>
+          <Caveat>CPF&apos;s actual Retirement Account sweep at age 55 (moving OA+SA into an RA up to the prevailing Retirement Sum) isn&apos;t modeled — OA and SA simply keep compounding at their own rates straight through and past retirement age.</Caveat>
         </Section>
 
         <Section title="The retirement target">
@@ -142,7 +155,7 @@ This year's withdrawal escalates by inflation every year, same as above.`}</Form
 
         <Section title="Limitations">
           <P>This calculator doesn&apos;t model: wage growth or bonus timing beyond the simplified annual assumptions above, the CPF Retirement Account sweep and Retirement Sum mechanics at age 55, CPF LIFE&apos;s actual lifetime-annuity payout (approximated instead by treating OA+SA as a self-managed pot — see above), Supplementary Retirement Scheme (SRS) contributions, RSTU income tax relief, sequence-of-returns risk (a bad run of returns early in retirement is riskier than the same average return spread evenly — this simulation uses one constant assumed return throughout), or taxes (moot in Singapore anyway — CPF withdrawals and capital gains aren&apos;t taxed). The money-market return and inflation rate are both single constant assumptions for the entire horizon, which in reality will fluctuate with interest-rate cycles.</P>
-          <Caveat>MediSave contributions in real life stop once your MA balance hits the Basic Healthcare Sum (BHS) — excess is redirected to SA (or RA after 55) instead. This calculator doesn&apos;t cap MA, so over a long projection its MA figure will look unrealistically large. Your <em>total</em> CPF figure is unaffected (SA and MA earn the same base rate, so misattributing the account doesn&apos;t change the total), but don&apos;t take the OA/SA/MA split at face value for long horizons — only the total. Separately, MediSave is tracked but never counted in the combined portfolio — it&apos;s earmarked for healthcare, not living expenses.</Caveat>
+          <Caveat>MediSave is tracked but never counted in the combined portfolio — it&apos;s earmarked for healthcare, not living expenses, even though its balance is capped and overflows into SA the same way real CPF does.</Caveat>
         </Section>
 
         <div style={{ marginTop: 40, padding: 20, background: C.surface, borderRadius: C.rL, border: `1px solid ${C.border}`, fontSize: C.xs, color: C.faint, lineHeight: 1.7 }}>

@@ -6,7 +6,7 @@
 // fetch. Covered by calc.test.js.
 
 import {
-  monthlyCpfContribution, monthlyCpfInterest, splitContribution,
+  monthlyCpfContribution, monthlyCpfInterest, splitContribution, creditWithMaOverflow,
   CPF_OW_CEILING, CPF_ANNUAL_CEILING, prevailingFRS,
 } from './cpf.js'
 
@@ -19,7 +19,9 @@ import {
 // modeling CPF LIFE's real lifetime-annuity payout mechanics (see the-math
 // page). RSTU top-ups are credited to SA throughout for the same reason
 // (standing in for "SA or RA, whichever applies"), gated by the
-// prevailing Full Retirement Sum.
+// prevailing Full Retirement Sum. MediSave contributions beyond the
+// prevailing Basic Healthcare Sum overflow into SA the same way real
+// CPF contributions do.
 export function simulateAccumulation(inputs) {
   const {
     currentAge = 0, retirementAge = 0,
@@ -27,19 +29,19 @@ export function simulateAccumulation(inputs) {
     salary = 0, salaryGrowthRate = 0, annualBonus = 0,
     startingOA = 0, startingSA = 0, startingMA = 0,
     housingOaMonthly = 0, housingOaMonths = Infinity,
-    rstuMonthly = 0,
+    rstuAmount = 0, rstuFrequency = 'monthly',
     investmentStart = 0, investmentMonthly = 0, investmentReturn = 0,
   } = inputs
 
   const months = Math.max(0, Math.round((retirementAge - currentAge) * 12))
-  let oa = Number(startingOA) || 0
-  let sa = Number(startingSA) || 0
-  let ma = Number(startingMA) || 0
+  const balances = { oa: Number(startingOA) || 0, sa: Number(startingSA) || 0, ma: Number(startingMA) || 0 }
   let investment = Number(investmentStart) || 0
   let currentSalary = Number(salary) || 0
   const monthlyInvReturn = (Number(investmentReturn) || 0) / 100 / 12
   const housingMonths = Number.isFinite(housingOaMonths) ? housingOaMonths : Infinity
   const growthRate = (Number(salaryGrowthRate) || 0) / 100
+  const rstuMonthlyAmount = rstuFrequency === 'annual' ? 0 : (Number(rstuAmount) || 0)
+  const rstuAnnualAmount = rstuFrequency === 'annual' ? (Number(rstuAmount) || 0) : 0
 
   const timeline = []
   let ordinaryWagesThisYear = 0
@@ -54,54 +56,52 @@ export function simulateAccumulation(inputs) {
     if (m > 0 && m % 12 === 0) currentSalary *= (1 + growthRate)
 
     const contrib = monthlyCpfContribution(currentSalary, ageNow)
-    oa += contrib.oa
-    sa += contrib.sa
-    ma += contrib.ma
+    creditWithMaOverflow(balances, contrib, yearNow)
     ordinaryWagesThisYear += Math.min(Math.max(0, currentSalary), CPF_OW_CEILING)
 
-    // Bonus/AWS is credited once a year, capped by whatever's left of the
-    // total annual wage ceiling after the year's Ordinary Wages.
+    // Bonus/AWS and an annual RSTU top-up are both credited once a year.
     const isYearEnd = (m + 1) % 12 === 0 || m === months - 1
     if (isYearEnd && (Number(annualBonus) || 0) > 0) {
       const awCeiling = Math.max(0, CPF_ANNUAL_CEILING - ordinaryWagesThisYear)
       const bonusSubjectToCpf = Math.min(Number(annualBonus) || 0, awCeiling)
       const bonusContrib = splitContribution(bonusSubjectToCpf, ageNow)
-      oa += bonusContrib.oa
-      sa += bonusContrib.sa
-      ma += bonusContrib.ma
+      creditWithMaOverflow(balances, bonusContrib, yearNow)
     }
     if (isYearEnd) ordinaryWagesThisYear = 0
 
     if (m < housingMonths && (Number(housingOaMonthly) || 0) > 0) {
-      oa = Math.max(0, oa - housingOaMonthly)
+      balances.oa = Math.max(0, balances.oa - housingOaMonthly)
     }
 
-    if ((Number(rstuMonthly) || 0) > 0) {
+    const rstuThisMonth = rstuMonthlyAmount > 0 ? rstuMonthlyAmount : (isYearEnd ? rstuAnnualAmount : 0)
+    if (rstuThisMonth > 0) {
       const frs = prevailingFRS(yearNow)
-      const room = Math.max(0, frs - sa)
-      const credited = Math.min(rstuMonthly, room)
-      sa += credited
-      if (credited < rstuMonthly && rstuCappedAtAge == null) rstuCappedAtAge = Math.round(ageNow * 10) / 10
+      const room = Math.max(0, frs - balances.sa)
+      const credited = Math.min(rstuThisMonth, room)
+      balances.sa += credited
+      if (credited < rstuThisMonth && rstuCappedAtAge == null) rstuCappedAtAge = Math.round(ageNow * 10) / 10
     }
 
-    const interest = monthlyCpfInterest({ oa, sa, ma }, ageNow)
-    oa += interest.oa
-    sa += interest.sa
-    ma += interest.ma
+    const interest = monthlyCpfInterest(balances, ageNow)
+    balances.oa += interest.oa
+    balances.sa += interest.sa
+    balances.ma += interest.ma
 
     investment = investment * (1 + monthlyInvReturn) + (Number(investmentMonthly) || 0)
 
     if ((m + 1) % 12 === 0 || m === months - 1) {
       timeline.push({
         age: Math.round((currentAge + (m + 1) / 12) * 10) / 10,
-        oa, sa, ma, cpfTotal: oa + sa + ma, investment,
+        oa: balances.oa, sa: balances.sa, ma: balances.ma,
+        cpfTotal: balances.oa + balances.sa + balances.ma, investment,
       })
     }
   }
 
   return {
     months,
-    oaFinal: oa, saFinal: sa, maFinal: ma, cpfTotalFinal: oa + sa + ma,
+    oaFinal: balances.oa, saFinal: balances.sa, maFinal: balances.ma,
+    cpfTotalFinal: balances.oa + balances.sa + balances.ma,
     investmentFinal: investment,
     rstuCappedAtAge,
     timeline,

@@ -4,7 +4,7 @@ import { useState } from 'react'
 import { C, SGD, parseMoney } from '@/lib/retire/theme'
 import { calcRetirement } from '@/lib/retire/calc'
 import { monthlyCpfContribution, CPF_OW_CEILING } from '@/lib/retire/cpf'
-import { MoneyInput, PercentInput, NumberInput, SectionDivider } from '@/components/retire/ui'
+import { MoneyInput, PercentInput, NumberInput, SectionDivider, Segmented } from '@/components/retire/ui'
 import RetireResults from '@/components/retire/Results'
 import ShellHeader from '@/components/shared/ShellHeader'
 import TrustBadges from '@/components/shared/TrustBadges'
@@ -29,7 +29,8 @@ export default function RetireWellPage() {
   const [housingOaUntilAge, setHousingOaUntilAge] = useState('')
 
   const [hasRstu, setHasRstu] = useState(false)
-  const [rstuMonthly, setRstuMonthly] = useState('')
+  const [rstuAmount, setRstuAmount] = useState('')
+  const [rstuFrequency, setRstuFrequency] = useState('monthly')
 
   const [investmentStart, setInvestmentStart] = useState('')
   const [investmentMonthly, setInvestmentMonthly] = useState('')
@@ -54,7 +55,7 @@ export default function RetireWellPage() {
     startingOA: num(startingOA), startingSA: num(startingSA), startingMA: num(startingMA),
     housingOaMonthly: hasHousingDraw ? num(housingOaMonthly) : 0,
     housingOaUntilAge: hasHousingDraw && housingOaUntilAge !== '' ? num(housingOaUntilAge) : null,
-    rstuMonthly: hasRstu ? num(rstuMonthly) : 0,
+    rstuAmount: hasRstu ? num(rstuAmount) : 0, rstuFrequency,
     investmentStart: num(investmentStart), investmentMonthly: num(investmentMonthly), investmentReturn: num(investmentReturn),
     desiredMonthlyWithdrawal: num(desiredMonthlyWithdrawal), inflationRate: num(inflationRate), swr: num(swr),
   }) : null
@@ -156,8 +157,18 @@ export default function RetireWellPage() {
               {hasRstu ? '✓ ' : ''} I&apos;m topping up my Special Account (RSTU)
             </button>
             {hasRstu && (
-              <div style={{ marginTop: 12, maxWidth: 260 }}>
-                <MoneyInput id="rstu-monthly" label="Monthly RSTU top-up" hint="Capped at the prevailing Full Retirement Sum — see the math" value={rstuMonthly} onChange={e => setRstuMonthly(e.target.value)} />
+              <div style={{ marginTop: 12, maxWidth: 320 }}>
+                <div style={{ marginBottom: 10 }}>
+                  <Segmented
+                    value={rstuFrequency} onChange={setRstuFrequency}
+                    options={[{ value: 'monthly', label: 'Monthly' }, { value: 'annual', label: 'Annual' }]}
+                  />
+                </div>
+                <MoneyInput
+                  id="rstu-amount" label={rstuFrequency === 'annual' ? 'Annual RSTU top-up' : 'Monthly RSTU top-up'}
+                  hint="Capped at the prevailing Full Retirement Sum — see the math"
+                  value={rstuAmount} onChange={e => setRstuAmount(e.target.value)}
+                />
               </div>
             )}
           </div>
