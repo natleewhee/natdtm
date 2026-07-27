@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { C, SGD, parseMoney } from '@/lib/ledger/theme'
-import { buildBaselineState, compareScenarios } from '@/lib/ledger/calc'
+import { buildBaselineState, compareScenarios, resolveHouseModule } from '@/lib/ledger/calc'
 import { loadMyNumbers } from '@/lib/shared/profile'
 import { MoneyInput, PercentInput, NumberInput, SectionDivider } from '@/components/ledger/ui'
 import ScenarioCard from '@/components/ledger/ScenarioCard'
@@ -25,9 +25,11 @@ function stateToScenario(state, id, label) {
     salary: state.salary ? String(Math.round(state.salary)) : '',
     hasHouse: !!state.house,
     house: {
+      mode: 'existing',
       propertyValue: state.house ? String(Math.round(state.house.propertyValue || 0)) : '',
       outstandingBalance: state.house ? String(Math.round(state.house.outstandingBalance || 0)) : '',
       monthlyInstalment: state.house ? String(Math.round(state.house.monthlyInstalment || 0)) : '',
+      price: '', downpaymentPct: '25', rate: '2.60', tenureYears: '25', otherFees: '',
       source: state.house?.source || 'manual',
     },
     hasCar: !!state.car,
@@ -41,19 +43,38 @@ function stateToScenario(state, id, label) {
     saBalance: state.cpf?.sa ? String(Math.round(state.cpf.sa)) : '',
     maBalance: state.cpf?.ma ? String(Math.round(state.cpf.ma)) : '',
     investmentBalance: state.investmentBalance ? String(Math.round(state.investmentBalance)) : '',
+    cashSavings: state.cashSavings ? String(Math.round(state.cashSavings)) : '',
   }
 }
 
 // Converts a scenario's string fields back into the numeric state shape
-// the ledger engine (src/lib/ledger/calc.js) computes against.
+// the ledger engine (src/lib/ledger/calc.js) computes against. A
+// "buying a new house" module gets resolved into loan/instalment/BSD via
+// resolveHouseModule, and the cash it requires is drawn down from cash
+// savings (floored at zero — a shortfall just means savings alone don't
+// cover it, which the ComparisonTable/ScenarioCard surface separately).
 function scenarioToState(scenario) {
+  const houseInput = scenario.hasHouse ? (
+    scenario.house.mode === 'purchase'
+      ? {
+          mode: 'purchase',
+          price: num(scenario.house.price), downpaymentPct: num(scenario.house.downpaymentPct) || 25,
+          rate: num(scenario.house.rate), tenureYears: num(scenario.house.tenureYears) || 25,
+          otherFees: num(scenario.house.otherFees),
+        }
+      : {
+          propertyValue: num(scenario.house.propertyValue),
+          outstandingBalance: num(scenario.house.outstandingBalance),
+          monthlyInstalment: num(scenario.house.monthlyInstalment),
+        }
+  ) : null
+
+  const { resolved: house, cashNeeded } = resolveHouseModule(houseInput)
+  const cashSavings = Math.max(0, num(scenario.cashSavings) - cashNeeded)
+
   return {
     salary: num(scenario.salary),
-    house: scenario.hasHouse ? {
-      propertyValue: num(scenario.house.propertyValue),
-      outstandingBalance: num(scenario.house.outstandingBalance),
-      monthlyInstalment: num(scenario.house.monthlyInstalment),
-    } : null,
+    house,
     car: scenario.hasCar ? {
       carValue: num(scenario.car.carValue),
       loanOutstanding: num(scenario.car.loanOutstanding),
@@ -61,6 +82,7 @@ function scenarioToState(scenario) {
     } : null,
     cpf: { oa: num(scenario.oaBalance), sa: num(scenario.saBalance), ma: num(scenario.maBalance) },
     investmentBalance: num(scenario.investmentBalance),
+    cashSavings,
   }
 }
 

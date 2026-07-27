@@ -10,6 +10,7 @@
 
 import { calcRetirement } from '../retire/calc.js'
 import { TDSR_LIMIT } from '../drive/calc.js'
+import { calcMonthlyInstalment, calcBSD } from '../house/calc.js'
 
 export { TDSR_LIMIT }
 
@@ -17,18 +18,23 @@ export { TDSR_LIMIT }
 // 80% assumption already used in drive/calc.js's affordability check.
 export const TAKE_HOME_RATE = 0.80
 
-// A "ledger state" is the shape every scenario is built from:
+// A "ledger state" is the shape every scenario is built from — this is
+// the RESOLVED shape (see resolveHouseModule below for how a "buying a
+// new house" input gets turned into this):
 // {
 //   salary,
 //   house: { outstandingBalance, monthlyInstalment, propertyValue } | null,
 //   car:   { loanOutstanding, monthlyInstalment, carValue } | null,
 //   cpf:   { oa, sa, ma },
 //   investmentBalance,
+//   cashSavings,
 // }
 
 // Builds a baseline ledger state from the shared "My Numbers" store
 // (see src/lib/shared/profile.js) — whatever HouseMuch/DriveReady/
 // RetireWell last saved, filled to zero/null where a module is empty.
+// Cash savings has no source tool to sync from, so it always starts at
+// zero here and is manual-entry only.
 export function buildBaselineState(myNumbers) {
   const { house, drive, retire } = myNumbers || {}
   return {
@@ -49,6 +55,49 @@ export function buildBaselineState(myNumbers) {
       ma: retire?.maBalance || 0,
     },
     investmentBalance: retire?.investmentBalance || 0,
+    cashSavings: 0,
+  }
+}
+
+// Turns a "buying a new house" input into the actual loan/instalment/BSD
+// numbers, the same way HouseMuch's NextPurchase does — reducing-balance
+// instalment on a fresh loan, BSD from the public schedule. downpaymentPct
+// defaults to 25% (75% loan), the standard first-home-loan LTV ceiling.
+export function calcHousePurchase({ price = 0, downpaymentPct = 25, rate = 0, tenureYears = 25, otherFees = 0 }) {
+  const p = Math.max(0, Number(price) || 0)
+  const downPct = Math.max(0, Math.min(100, Number(downpaymentPct) || 0))
+  const downpaymentAmount = p * (downPct / 100)
+  const loanAmount = Math.max(0, p - downpaymentAmount)
+  const monthlyInstalment = calcMonthlyInstalment(loanAmount, rate, tenureYears)
+  const bsd = calcBSD(p)
+  const fees = Number(otherFees) || 0
+  const cashNeeded = downpaymentAmount + bsd + fees
+  return { price: p, downpaymentAmount, loanAmount, monthlyInstalment, bsd, otherFees: fees, cashNeeded }
+}
+
+// Resolves a scenario's house input (either a plain existing-mortgage
+// shape, or a { mode: 'purchase', ...calcHousePurchase inputs } shape)
+// into the { outstandingBalance, monthlyInstalment, propertyValue } shape
+// every other function here expects, plus how much cash buying it would
+// draw down.
+export function resolveHouseModule(house) {
+  if (!house) return { resolved: null, cashNeeded: 0, purchase: null }
+  if (house.mode === 'purchase') {
+    const purchase = calcHousePurchase(house)
+    return {
+      resolved: { outstandingBalance: purchase.loanAmount, monthlyInstalment: purchase.monthlyInstalment, propertyValue: purchase.price },
+      cashNeeded: purchase.cashNeeded,
+      purchase,
+    }
+  }
+  return {
+    resolved: {
+      outstandingBalance: house.outstandingBalance || 0,
+      monthlyInstalment: house.monthlyInstalment || 0,
+      propertyValue: house.propertyValue || 0,
+    },
+    cashNeeded: 0,
+    purchase: null,
   }
 }
 
@@ -57,8 +106,9 @@ export function calcNetWorth(state) {
   const carEquity = state.car ? (state.car.carValue || 0) - (state.car.loanOutstanding || 0) : 0
   const cpfTotal = (state.cpf?.oa || 0) + (state.cpf?.sa || 0) + (state.cpf?.ma || 0)
   const investmentBalance = state.investmentBalance || 0
-  const netWorth = propertyEquity + carEquity + cpfTotal + investmentBalance
-  return { propertyEquity, carEquity, cpfTotal, investmentBalance, netWorth }
+  const cashSavings = state.cashSavings || 0
+  const netWorth = propertyEquity + carEquity + cpfTotal + investmentBalance + cashSavings
+  return { propertyEquity, carEquity, cpfTotal, investmentBalance, cashSavings, netWorth }
 }
 
 export function calcMonthlyObligations(state) {

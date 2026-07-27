@@ -4,7 +4,9 @@ import assert from 'node:assert/strict'
 import {
   buildBaselineState, calcNetWorth, calcMonthlyObligations, calcTDSR,
   calcInvestmentCapacity, calcScenarioRetirement, compareScenarios, TDSR_LIMIT,
+  calcHousePurchase, resolveHouseModule,
 } from './calc.js'
+import { calcMonthlyInstalment, calcBSD } from '../house/calc.js'
 
 function approx(a, b, eps = 0.01) {
   assert.ok(Math.abs(a - b) <= eps, `expected ${a} ≈ ${b}`)
@@ -50,6 +52,50 @@ test('calcNetWorth treats a null module as zero equity', () => {
   const state = { salary: 0, house: null, car: null, cpf: { oa: 0, sa: 0, ma: 0 }, investmentBalance: 0 }
   const nw = calcNetWorth(state)
   assert.equal(nw.netWorth, 0)
+})
+
+test('calcNetWorth includes cash savings', () => {
+  const state = { salary: 0, house: null, car: null, cpf: { oa: 0, sa: 0, ma: 0 }, investmentBalance: 0, cashSavings: 50000 }
+  const nw = calcNetWorth(state)
+  assert.equal(nw.cashSavings, 50000)
+  assert.equal(nw.netWorth, 50000)
+})
+
+test('calcHousePurchase derives loan/instalment/BSD from price and downpayment %', () => {
+  const p = calcHousePurchase({ price: 1000000, downpaymentPct: 25, rate: 2.6, tenureYears: 25 })
+  approx(p.downpaymentAmount, 250000)
+  approx(p.loanAmount, 750000)
+  approx(p.monthlyInstalment, calcMonthlyInstalment(750000, 2.6, 25))
+  approx(p.bsd, calcBSD(1000000))
+  approx(p.cashNeeded, 250000 + calcBSD(1000000))
+})
+
+test('calcHousePurchase defaults to a 75% loan (25% down)', () => {
+  const p = calcHousePurchase({ price: 800000, rate: 2.6, tenureYears: 25 })
+  approx(p.loanAmount, 600000)
+})
+
+test('resolveHouseModule passes through an existing-mortgage shape unchanged', () => {
+  const { resolved, cashNeeded, purchase } = resolveHouseModule({ outstandingBalance: 400000, monthlyInstalment: 2500, propertyValue: 1200000 })
+  assert.equal(resolved.outstandingBalance, 400000)
+  assert.equal(cashNeeded, 0)
+  assert.equal(purchase, null)
+})
+
+test('resolveHouseModule computes a purchase-mode house into the resolved shape', () => {
+  const { resolved, cashNeeded, purchase } = resolveHouseModule({ mode: 'purchase', price: 1000000, downpaymentPct: 25, rate: 2.6, tenureYears: 25 })
+  assert.equal(resolved.propertyValue, 1000000)
+  approx(resolved.outstandingBalance, 750000)
+  approx(resolved.monthlyInstalment, calcMonthlyInstalment(750000, 2.6, 25))
+  assert.ok(cashNeeded > 0)
+  assert.ok(purchase != null)
+})
+
+test('resolveHouseModule handles a null house', () => {
+  const { resolved, cashNeeded, purchase } = resolveHouseModule(null)
+  assert.equal(resolved, null)
+  assert.equal(cashNeeded, 0)
+  assert.equal(purchase, null)
 })
 
 test('calcMonthlyObligations sums mortgage + car instalments', () => {

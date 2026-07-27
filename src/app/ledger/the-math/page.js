@@ -96,6 +96,15 @@ Investment capacity = max(0, take-home pay − monthly obligations)`}</Formula>
 
         <Section title="Scenarios">
           <P>A scenario is a complete, independent copy of your numbers — starting from your baseline, then edited freely (add a car, swap in a bigger mortgage, bump your salary). Each scenario runs through every formula above completely independently; nothing about one scenario affects another. Up to three scenarios (baseline plus two what-ifs) can be compared side by side.</P>
+          <P>A scenario&apos;s mortgage can either be an existing loan (plain balance/instalment fields) or &quot;buying a new house&quot; — the same math HouseMuch&apos;s NextPurchase uses:</P>
+          <Formula>{`Downpayment = new house price × downpayment %  (defaults to 25%, i.e. a 75% loan)
+Loan amount = price − downpayment
+Monthly instalment = standard reducing-balance formula, at your entered rate and tenure
+BSD = computed from the public stamp duty schedule (same as HouseMuch)
+
+Cash needed upfront = downpayment + BSD + other fees you enter
+Cash savings after the purchase = max(0, cash savings entered − cash needed)`}</Formula>
+          <Caveat>If cash needed exceeds what you&apos;ve entered as cash savings, that scenario flags a shortfall rather than going negative — cash savings floors at zero in the net worth and comparison figures, since a real purchase in that situation would need financing you haven&apos;t modeled (a bridging loan, selling other assets, etc.) rather than silently going into debt.</Caveat>
         </Section>
 
         <Section title="Limitations">
