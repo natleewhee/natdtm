@@ -17,7 +17,7 @@
 const STORAGE_KEY = 'ndtm_my_numbers_v1' // key name predates the v2 schema bump; left as-is, the `version` field inside is what's versioned
 
 const EMPTY = {
-  version: 3,
+  version: 4,
   // { source: 'auto'|'manual', savedAt,
   //   outstandingBalance, rate, tenureRemaining, monthlyInstalment, propertyValue, cpfServicing,
   //   cashProceeds, totalCPFRefund, salePrice, saleDate }
@@ -32,11 +32,15 @@ const EMPTY = {
   // { source, savedAt, monthlyTakeHome, annualTax, marginalRate, age } —
   // lets MyLedger use an exact after-tax take-home instead of a flat 80%.
   tax: null,
+  // { source, savedAt, portfolioValue, monthlyContribution } — WhatETF's
+  // DCA plan and (if the rebalance tool has been used) actual current
+  // holdings, so MyLedger's net worth isn't missing money invested there.
+  etf: null,
 }
 
 function migrateV1(parsed) {
   return {
-    version: 3,
+    version: 4,
     house: parsed.house ? {
       source: 'auto', savedAt: parsed.house.savedAt,
       cashProceeds: parsed.house.cashProceeds, totalCPFRefund: parsed.house.totalCPFRefund,
@@ -49,7 +53,7 @@ function migrateV1(parsed) {
       monthlyInstalment: parsed.drive.monthlyCost, carLabel: parsed.drive.carLabel, salary: parsed.drive.salary,
       loanOutstanding: null, rate: null, tenureRemaining: null, carValue: null,
     } : null,
-    retire: null, insure: null, tax: null,
+    retire: null, insure: null, tax: null, etf: null,
   }
 }
 
@@ -59,13 +63,19 @@ function migrateV2(parsed) {
   return { ...parsed, version: 3, insure: parsed.insure ?? null, tax: parsed.tax ?? null }
 }
 
+// v3 → v4 only adds the etf slot.
+function migrateV3(parsed) {
+  return { ...parsed, version: 4, etf: parsed.etf ?? null }
+}
+
 function safeParse(raw) {
   if (!raw) return null
   try {
     const parsed = JSON.parse(raw)
     if (!parsed || typeof parsed !== 'object') return null
-    if (parsed.version === 3) return parsed
-    if (parsed.version === 2) return migrateV2(parsed)
+    if (parsed.version === 4) return parsed
+    if (parsed.version === 3) return migrateV3(parsed)
+    if (parsed.version === 2) return migrateV3(migrateV2(parsed))
     if (parsed.version === 1) return migrateV1(parsed)
     return null
   } catch {
@@ -171,6 +181,27 @@ export function saveTaxNumbers({ monthlyTakeHome, annualTax, marginalRate, age, 
     age: Number(age) || 0,
     savedAt: Date.now(),
   }
+  save(data)
+}
+
+// The portfolio page (DCA plan) and rebalance page (actual holdings) each
+// know only their own half of this slot, so merge with whatever the other
+// page last saved instead of clobbering it with a default 0.
+export function saveEtfNumbers({ portfolioValue, monthlyContribution, source = 'auto' }) {
+  const data = loadMyNumbers()
+  const existing = data.etf || {}
+  data.etf = {
+    source,
+    portfolioValue: portfolioValue != null ? Number(portfolioValue) || 0 : (existing.portfolioValue ?? 0),
+    monthlyContribution: monthlyContribution != null ? Number(monthlyContribution) || 0 : (existing.monthlyContribution ?? 0),
+    savedAt: Date.now(),
+  }
+  save(data)
+}
+
+export function clearEtfNumbers() {
+  const data = loadMyNumbers()
+  data.etf = null
   save(data)
 }
 

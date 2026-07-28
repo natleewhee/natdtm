@@ -138,12 +138,25 @@ export function generatePortfolio(prefs) {
     allocations.push({ etf: ETFS.CSPX, percentage: usW })
     allocations.push({ etf: ETFS.EIMI, percentage: emW })
     allocations.push({ etf: ETFS.WSML, percentage: scW })
+    // Split the "other tilt" slice evenly across every tilt the user
+    // selected — an if/else-if chain here would silently honor only the
+    // first match, dropping any other selected region with no indication
+    // (e.g. selecting both China and Japan used to give the whole slice
+    // to Japan alone). US/EM already have their own dedicated usW/emW
+    // slots, so their share of otW tops those up rather than creating a
+    // separate line; Japan/China get a new line each.
     if (otW > 0) {
-      if      (prefs.tilts.includes('Japan'))              allocations.push({ etf: ETFS.VJPW, percentage: otW })
-      else if (prefs.tilts.includes('China / Hong Kong'))  allocations.push({ etf: ETFS.HMCH, percentage: otW })
-      else if (prefs.tilts.includes('United States'))      allocations.find(a => a.etf.ticker === 'CSPX').percentage += otW
-      else if (prefs.tilts.includes('Emerging Markets'))   allocations.find(a => a.etf.ticker === 'EIMI').percentage += otW
-      else allocations.find(a => a.etf.ticker === 'VWRA').percentage += otW
+      if (prefs.tilts.length > 0) {
+        const perTilt = otW / prefs.tilts.length
+        prefs.tilts.forEach(tilt => {
+          if      (tilt === 'Japan')             allocations.push({ etf: ETFS.VJPW, percentage: perTilt })
+          else if (tilt === 'China / Hong Kong') allocations.push({ etf: ETFS.HMCH, percentage: perTilt })
+          else if (tilt === 'United States')     allocations.find(a => a.etf.ticker === 'CSPX').percentage += perTilt
+          else if (tilt === 'Emerging Markets')  allocations.find(a => a.etf.ticker === 'EIMI').percentage += perTilt
+        })
+      } else {
+        allocations.find(a => a.etf.ticker === 'VWRA').percentage += otW
+      }
     }
     const bondNote = bondW > 0 ? ' A global bond sleeve (AGGU) is included to temper volatility for your conservative risk preference.' : ''
     whyItWorks = `This portfolio breaks down global exposure into specific building blocks, allowing you to overweight regions or factors (like small caps) while ensuring no single country dominates your entire wealth.${bondNote}`

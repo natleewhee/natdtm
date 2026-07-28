@@ -40,7 +40,7 @@ export const TAKE_HOME_RATE = 0.80
 // savings has no source tool to sync from, so it always starts at zero
 // and is manual-entry only.
 export function buildBaselineState(myNumbers) {
-  const { house, drive, retire, insure, tax } = myNumbers || {}
+  const { house, drive, retire, insure, tax, etf } = myNumbers || {}
   return {
     salary: retire?.salary || drive?.salary || 0,
     // Exact after-tax take-home from TaxWise, when it's been run —
@@ -69,7 +69,10 @@ export function buildBaselineState(myNumbers) {
       sa: retire?.saBalance || 0,
       ma: retire?.maBalance || 0,
     },
-    investmentBalance: retire?.investmentBalance || 0,
+    // RetireWell's CPF-investment-scheme balance plus WhatETF's own
+    // brokerage holdings (if the rebalance tool has been used) — two
+    // different pots of invested money, so they add rather than override.
+    investmentBalance: (retire?.investmentBalance || 0) + (etf?.portfolioValue || 0),
     cashSavings: 0,
   }
 }

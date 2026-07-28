@@ -289,8 +289,15 @@ const expectedInterestRemaining = Math.max(0, projMonthlyInstalment * projMonths
 assert('Total interest paid = as-of-today override + projected remaining interest', approx(projected.totalInterestPaid, projInterestPaidAsOf + expectedInterestRemaining, 1))
 assert('Total interest paid at a future sale exceeds the as-of-today figure', projected.totalInterestPaid > projInterestPaidAsOf)
 
-const expectedCpfInterestRemaining = calcCPFAccruedInterest(projCpfPrincipalAsOf, projMonthsAsOfToSale / 12)
-assert('CPF accrued interest = as-of-today override + projected remaining compounding', approx(projected.cpfAccruedInterest, projCpfInterestAsOf + expectedCpfInterestRemaining, 1))
+// The remaining leg compounds on (principal + interest already accrued as
+// of today), not on bare principal again — a true single continuous
+// compounding period split into two legs, not two independent legs summed.
+const expectedCpfInterestRemaining = calcCPFAccruedInterest(projCpfPrincipalAsOf + projCpfInterestAsOf, projMonthsAsOfToSale / 12)
+assert('CPF accrued interest = as-of-today override + projected remaining compounding (on top of interest already accrued)', approx(projected.cpfAccruedInterest, projCpfInterestAsOf + expectedCpfInterestRemaining, 1))
+// Confirms the fix actually changed behavior: strictly greater than the
+// old (understating) additive-legs formula would have given.
+const oldBuggyFormula = projCpfInterestAsOf + calcCPFAccruedInterest(projCpfPrincipalAsOf, projMonthsAsOfToSale / 12)
+assert('Fixed compounding gives a higher (correct) figure than the old additive-legs formula', projected.cpfAccruedInterest > oldBuggyFormula)
 assert('CPF principal stays flat from today to a future sale (no further top-ups modeled)', projected.cpfPrincipalTotal === projCpfPrincipalAsOf)
 
 // If the sale date is today (or in the past), overrides apply directly —
@@ -381,12 +388,41 @@ const jointShare = calcSale({
 })
 assert('Default yourSharePct is 100', soloShare.yourSharePct === 100)
 assert('yourCashProceeds at 100% share equals cashProceeds', approx(soloShare.yourCashProceeds, soloShare.cashProceeds, 0.01))
+assert('yourCashInvested at 100% share equals cashInvested', approx(soloShare.yourCashInvested, soloShare.cashInvested, 0.01))
 assert('yourSharePct is recorded', jointShare.yourSharePct === 50)
-assert('yourCashProceeds at 50% share is half of household cashProceeds', approx(jointShare.yourCashProceeds, jointShare.cashProceeds / 2, 0.01))
-assert('yourCashInvested at 50% share is half of household cashInvested', approx(jointShare.yourCashInvested, jointShare.cashInvested / 2, 0.01))
-assert('yourTrueProfitLoss at 50% share is half of household trueProfitLoss', approx(jointShare.yourTrueProfitLoss, jointShare.trueProfitLoss / 2, 0.01))
+// cashProceeds/cashInvested are MIXED figures (joint components minus an
+// already-personal, unscaled CPF component) — halving them naively would
+// double-discount your own CPF. The correct 50% figure is: half of the
+// joint-only slice, minus the FULL (unscaled) CPF refund/outlay.
+const expectedYourCashProceeds = 0.5 * (jointShare.salePrice - jointShare.outstandingBalance - jointShare.sellingCosts) - jointShare.totalCPFRefund
+const expectedYourCashOutlay = 0.5 * (jointShare.purchasePrice + jointShare.purchaseFees - jointShare.loanTaken) - jointShare.cpfOutlay
+const expectedYourCashInvested = Math.max(0, expectedYourCashOutlay) + 0.5 * jointShare.sunkCost
+assert('yourCashProceeds at 50% share correctly avoids double-discounting CPF', approx(jointShare.yourCashProceeds, expectedYourCashProceeds, 0.01))
+assert('yourCashInvested at 50% share correctly avoids double-discounting CPF', approx(jointShare.yourCashInvested, expectedYourCashInvested, 0.01))
+assert('yourCashProceeds at 50% share is NOT simply half of household cashProceeds (that would double-discount CPF)', !approx(jointShare.yourCashProceeds, jointShare.cashProceeds / 2, 1))
+assert('yourTrueProfitLoss at 50% share is half of household trueProfitLoss (no CPF involved)', approx(jointShare.yourTrueProfitLoss, jointShare.trueProfitLoss / 2, 0.01))
 assert('yourOutstandingBalance at 50% share is half of household outstandingBalance', approx(jointShare.yourOutstandingBalance, jointShare.outstandingBalance / 2, 0.01))
 assert('yourMonthlyInstalment at 50% share is half of household monthlyInstalment', approx(jointShare.yourMonthlyInstalment, jointShare.monthlyInstalment / 2, 0.01))
+
+// ─── Joint loan share edge cases ─────────────────────────────────────────
+const zeroShareInputs = {
+  propertyType: 'private',
+  purchasePrice: 900_000, purchaseDate: '2018-01-15',
+  cpfOutlay: 150_000, loanTaken: 650_000, mortgageRate: 2.6, loanTenure: 25,
+  salePrice: 1_300_000, saleDate: '2026-06-01',
+}
+const zeroShare = calcSale({ ...zeroShareInputs, yourSharePct: 0 })
+assert('yourSharePct of exactly 0 is NOT coerced to 100 (falsy-coercion trap)', zeroShare.yourSharePct === 0)
+assert('yourTrueProfitLoss at 0% share is 0', approx(zeroShare.yourTrueProfitLoss, 0, 0.01))
+assert('yourOutstandingBalance at 0% share is 0', approx(zeroShare.yourOutstandingBalance, 0, 0.01))
+assert('yourCashProceeds at 0% share is -totalCPFRefund (none of the joint proceeds, but still your own CPF)', approx(zeroShare.yourCashProceeds, -zeroShare.totalCPFRefund, 0.01))
+
+const overShare = calcSale({ ...zeroShareInputs, yourSharePct: 150 })
+assert('yourSharePct above 100 is clamped to 100', overShare.yourSharePct === 100)
+assert('Clamped 150% share behaves identically to 100% share', approx(overShare.yourTrueProfitLoss, soloShare.trueProfitLoss, 0.01))
+
+const negativeShare = calcSale({ ...zeroShareInputs, yourSharePct: -20 })
+assert('Negative yourSharePct is clamped to 0', negativeShare.yourSharePct === 0)
 assert('Household (unscaled) figures are identical regardless of share', approx(soloShare.cashProceeds, jointShare.cashProceeds, 0.01))
 assert('totalCPFRefund is NOT scaled by share — CPF withdrawals are already personal', approx(soloShare.totalCPFRefund, jointShare.totalCPFRefund, 0.01))
 assert('cashOnCashReturn ratio is unaffected by share (both terms scale together)', approx(soloShare.cashOnCashReturn, jointShare.cashOnCashReturn, 0.0001))

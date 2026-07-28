@@ -12,6 +12,7 @@ import {
   computeFeeComparison, FEE_BENCHMARK_AS_OF, encodeComparePrefs,
 } from '@/lib/etf/logic'
 import { checkFreshness, freshnessLabel, FRESHNESS_WINDOWS } from '@/lib/shared/freshness'
+import { saveEtfNumbers } from '@/lib/shared/profile'
 import styles from './portfolio.module.css'
 
 const FUND_PALETTE = ['#eab308', '#ff5722', '#38bdf8', '#c4b5fd', '#ef4444', '#10b981', '#fdba74', '#94a3b8']
@@ -489,6 +490,12 @@ function PortfolioContent() {
       router.replace('/etf/preferences')
     }
   }, [router, searchParams])
+
+  useEffect(() => {
+    if (!data?.prefs) return
+    const monthly = Number(data.prefs.monthlyInvestment) || 0
+    if (monthly > 0) saveEtfNumbers({ monthlyContribution: monthly })
+  }, [data])
 
   if (!data) return (
     <div className={styles.loadingPage}>

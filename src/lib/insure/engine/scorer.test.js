@@ -579,6 +579,25 @@ assert('DI explanation (unanswered) mentions it is supplementary', diExplainUnan
 const diExplainAnswered = explainPillar('di', scoreWithDI);
 assert('DI explanation (answered, no cover) mentions the benchmark', diExplainAnswered.includes('$3,000'));
 
+// ─── Zero-income/zero-debt edge case (target <= 0) ────────────────────────
+// annualIncome=0 and outstandingDebt=0 makes target=0; if amount is also 0
+// (e.g. hasCI='yes' but no amount/band resolved), the naive amount/target
+// division is 0/0 = NaN. A $0 target is trivially met, so this should
+// score 100, not NaN.
+const ciZeroTarget = scoreCIBase('yes', 0, null, 0, 0);
+assert('scoreCIBase with zero income/debt/amount does not produce NaN', !Number.isNaN(ciZeroTarget.score));
+assert('scoreCIBase with a zero target (trivially met) scores 100', ciZeroTarget.score === 100);
+
+const lifeZeroTarget = scoreLife('yes', 0, null, 0, 0);
+assert('scoreLife with zero income/debt/amount does not produce NaN', !Number.isNaN(lifeZeroTarget.score));
+assert('scoreLife with a zero target (trivially met) scores 100', lifeZeroTarget.score === 100);
+
+// Non-zero amount against a zero target should still cap at 100, not
+// Infinity — this path already worked before the fix, kept as a guard
+// against a future regression.
+const ciZeroTargetWithAmount = scoreCIBase('yes', 50000, null, 0, 0);
+assert('scoreCIBase with a zero target and positive amount caps at 100, not Infinity', ciZeroTargetWithAmount.score === 100);
+
 // ---------------------------------------------------------------------------
 console.log(`\n${'─'.repeat(40)}`);
 console.log(`Results: ${passed} passed, ${failed} failed`);

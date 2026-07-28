@@ -17,18 +17,19 @@ global.window = { localStorage: makeStorage() }
 
 const {
   loadMyNumbers, saveHouseNumbers, saveDriveNumbers, saveRetireNumbers,
-  saveInsureNumbers, saveTaxNumbers,
-  clearHouseNumbers, clearDriveNumbers, clearRetireNumbers,
+  saveInsureNumbers, saveTaxNumbers, saveEtfNumbers,
+  clearHouseNumbers, clearDriveNumbers, clearRetireNumbers, clearEtfNumbers,
 } = await import('./profile.js')
 
-test('loadMyNumbers returns empty v3 defaults when nothing stored', () => {
+test('loadMyNumbers returns empty v4 defaults when nothing stored', () => {
   const data = loadMyNumbers()
-  assert.equal(data.version, 3)
+  assert.equal(data.version, 4)
   assert.equal(data.house, null)
   assert.equal(data.drive, null)
   assert.equal(data.retire, null)
   assert.equal(data.insure, null)
   assert.equal(data.tax, null)
+  assert.equal(data.etf, null)
 })
 
 test('loadMyNumbers safely ignores malformed JSON', () => {
@@ -44,13 +45,14 @@ test('loadMyNumbers migrates a v1 record into the v3 shape', () => {
     drive: { monthlyCost: 1500, carLabel: 'Toyota Corolla', salary: 6000, savedAt: 456 },
   }))
   const data = loadMyNumbers()
-  assert.equal(data.version, 3)
+  assert.equal(data.version, 4)
   assert.equal(data.house.cashProceeds, 500000)
   assert.equal(data.house.propertyValue, 1200000)
   assert.equal(data.house.outstandingBalance, null)
   assert.equal(data.drive.monthlyInstalment, 1500)
   assert.equal(data.drive.carLabel, 'Toyota Corolla')
   assert.equal(data.retire, null)
+  assert.equal(data.etf, null)
 })
 
 test('loadMyNumbers migrates a v2 record, preserving existing slots', () => {
@@ -61,11 +63,26 @@ test('loadMyNumbers migrates a v2 record, preserving existing slots', () => {
     retire: { salary: 7000, oaBalance: 80000, source: 'auto', savedAt: 2 },
   }))
   const data = loadMyNumbers()
-  assert.equal(data.version, 3)
+  assert.equal(data.version, 4)
   assert.equal(data.house.outstandingBalance, 400000)
   assert.equal(data.retire.salary, 7000)
   assert.equal(data.insure, null)
   assert.equal(data.tax, null)
+  assert.equal(data.etf, null)
+})
+
+test('loadMyNumbers migrates a v3 record, preserving existing slots and adding etf', () => {
+  window.localStorage.setItem('ndtm_my_numbers_v1', JSON.stringify({
+    version: 3,
+    house: null, drive: null, retire: null,
+    insure: { monthlyPremium: 300, score: 60, source: 'auto', savedAt: 1 },
+    tax: { monthlyTakeHome: 5000, source: 'auto', savedAt: 2 },
+  }))
+  const data = loadMyNumbers()
+  assert.equal(data.version, 4)
+  assert.equal(data.insure.monthlyPremium, 300)
+  assert.equal(data.tax.monthlyTakeHome, 5000)
+  assert.equal(data.etf, null)
 })
 
 test('saveInsureNumbers and saveTaxNumbers round-trip independently', () => {
@@ -78,6 +95,16 @@ test('saveInsureNumbers and saveTaxNumbers round-trip independently', () => {
   assert.equal(data.tax.monthlyTakeHome, 6200)
   assert.equal(data.tax.marginalRate, 0.115)
   assert.equal(data.tax.age, 40)
+})
+
+test('saveEtfNumbers round-trips independently', () => {
+  window.localStorage.removeItem('ndtm_my_numbers_v1')
+  saveEtfNumbers({ portfolioValue: 25000, monthlyContribution: 800 })
+  const data = loadMyNumbers()
+  assert.equal(data.etf.portfolioValue, 25000)
+  assert.equal(data.etf.monthlyContribution, 800)
+  assert.equal(data.etf.source, 'auto')
+  assert.equal(typeof data.etf.savedAt, 'number')
 })
 
 test('loadMyNumbers ignores an unknown version', () => {

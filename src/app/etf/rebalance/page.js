@@ -5,6 +5,7 @@ import { useSearchParams } from 'next/navigation'
 import { loadPortfolio } from '@/components/etf/shared'
 import ShellHeader from '@/components/shared/ShellHeader'
 import { computeRebalance, decodePrefsFromParams, generatePortfolio } from '@/lib/etf/logic'
+import { saveEtfNumbers } from '@/lib/shared/profile'
 import styles from './rebalance.module.css'
 
 export default function RebalancePage() {
@@ -38,6 +39,10 @@ function RebalanceContent() {
     if (!portfolio) return null
     return computeRebalance(portfolio.allocations, currentValues, contribution)
   }, [portfolio, currentValues, contribution])
+
+  useEffect(() => {
+    if (result?.currentTotal > 0) saveEtfNumbers({ portfolioValue: result.currentTotal })
+  }, [result])
 
   if (portfolio === undefined) return (
     <div className={styles.loadingPage}><div className={styles.spinner} /></div>

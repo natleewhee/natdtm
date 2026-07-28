@@ -64,7 +64,10 @@ export default function TaxWisePage() {
   const result = calculated && isReady ? calcTax(inputs) : null
 
   // Hand the exact after-tax, age-correct take-home to MyLedger, which
-  // otherwise falls back to a flat 80%-of-gross approximation.
+  // otherwise falls back to a flat 80%-of-gross approximation. Depend on
+  // the primitive figures, not `result` itself — calcTax returns a new
+  // object every render (inputs is rebuilt each render too), so keying
+  // off the object reference would re-save to localStorage every render.
   useEffect(() => {
     if (!result) return
     saveTaxNumbers({
@@ -73,7 +76,8 @@ export default function TaxWisePage() {
       marginalRate: result.marginal,
       age: num(age),
     })
-  }, [result, age])
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- intentionally keyed off primitives, not `result` itself (a new object every render)
+  }, [result?.monthlyTakeHome, result?.tax, result?.marginal, age])
 
   const srsCap = residency === 'foreigner' ? SRS_CAP_FOREIGNER : SRS_CAP_CITIZEN_PR
 

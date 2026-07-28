@@ -52,7 +52,12 @@ function stateToScenario(state, id, label) {
     cashSavings: state.cashSavings ? String(Math.round(state.cashSavings)) : '',
     insurancePremium: state.insurancePremium ? String(Math.round(state.insurancePremium)) : '',
     insuranceSource: state.insurancePremium ? 'auto' : 'manual',
+    // monthlyTakeHome is an EXACT figure from TaxWise, computed for a
+    // specific salary — monthlyTakeHomeSalary records which one, so
+    // scenarioToState can tell it's gone stale once the scenario's
+    // salary is edited away from that baseline.
     monthlyTakeHome: state.monthlyTakeHome || 0,
+    monthlyTakeHomeSalary: state.monthlyTakeHome ? (state.salary || 0) : 0,
   }
 }
 
@@ -107,7 +112,13 @@ function scenarioToState(scenario) {
     investmentBalance: num(scenario.investmentBalance),
     cashSavings,
     insurancePremium: num(scenario.insurancePremium),
-    monthlyTakeHome: scenario.monthlyTakeHome || 0,
+    // If the salary was edited away from what monthlyTakeHome was
+    // actually computed for, that exact figure no longer applies —
+    // fall back to calcTakeHome's flat 80% approximation instead of
+    // silently reusing take-home math for a different salary.
+    monthlyTakeHome: Math.round(num(scenario.salary)) === Math.round(scenario.monthlyTakeHomeSalary || 0)
+      ? (scenario.monthlyTakeHome || 0)
+      : 0,
   }
 }
 
@@ -134,7 +145,7 @@ export default function MyLedgerPage() {
     const myNumbers = loadMyNumbers()
     const baseline = buildBaselineState(myNumbers)
     setScenarios([stateToScenario(baseline, 'baseline', 'Baseline')])
-    setSynced(!!(myNumbers.house || myNumbers.drive || myNumbers.retire || myNumbers.insure || myNumbers.tax))
+    setSynced(!!(myNumbers.house || myNumbers.drive || myNumbers.retire || myNumbers.insure || myNumbers.tax || myNumbers.etf))
     /* eslint-enable react-hooks/set-state-in-effect */
   }, [])
 
@@ -143,7 +154,8 @@ export default function MyLedgerPage() {
   const addScenario = () => {
     if (scenarios.length >= MAX_SCENARIOS) return
     const base = scenarios[0]
-    const label = scenarios.length === 1 ? 'Scenario A' : 'Scenario B'
+    const usedLabels = new Set(scenarios.map(sc => sc.label))
+    const label = ['Scenario A', 'Scenario B'].find(l => !usedLabels.has(l)) || 'Scenario B'
     setScenarios(s => [...s, { ...base, id: nextId(), label, house: { ...base.house }, car: { ...base.car } }])
   }
 

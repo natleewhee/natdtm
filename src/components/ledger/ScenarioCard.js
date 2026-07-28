@@ -98,6 +98,11 @@ export default function ScenarioCard({ scenario, onChange, onRemove, onLabelChan
       <Toggle active={!!scenario.house.isJointLoan} onClick={() => setHouse({ isJointLoan: !scenario.house.isJointLoan, yourSharePct: scenario.house.yourSharePct || '50' })}>
         This is a joint loan
       </Toggle>
+      {scenario.house.isJointLoan && scenario.house.source === 'auto' && (
+        <p style={{ marginTop: 8, fontSize: C.xs, color: C.redText, lineHeight: 1.5 }}>
+          These figures were synced from HouseMuch, where they were already scaled down to your share of a joint loan — turning this on would scale them down a second time. Only use this if the numbers above are the FULL household loan/property value.
+        </p>
+      )}
       {scenario.house.isJointLoan && (
         <div style={{ marginTop: 10, maxWidth: 320 }}>
           <Segmented

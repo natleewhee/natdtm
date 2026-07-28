@@ -223,9 +223,19 @@ export function calcTax(inputs) {
   const maxSrsSaving = reliefValue(chargeableIncome, reliefs.raw, srsHeadroom)
   const maxRstuSaving = reliefValue(chargeableIncome, reliefs.raw, rstuHeadroom)
 
+  // Each "max saving" above is computed as if it alone had the full
+  // remaining $80K cap headroom to itself — true in isolation, but if
+  // someone follows BOTH suggestions they're competing for the same
+  // shared headroom, so the two savings shown side by side don't simply
+  // add. Flag it whenever their individual headroom claims combined
+  // would overrun what's actually left under the cap.
+  const combinedCapHeadroom = Math.max(0, PERSONAL_RELIEF_CAP - reliefs.raw)
+  const capHeadroomSharedBetweenSrsAndRstu = (srsHeadroom + rstuHeadroom) > combinedCapHeadroom
+
   return {
     employmentIncome, reliefs, chargeableIncome, tax, marginal, effectiveRate,
     employeeCpf, annualTakeHome, monthlyTakeHome,
     nextThousand, srsHeadroom, rstuHeadroom, maxSrsSaving, maxRstuSaving,
+    combinedCapHeadroom, capHeadroomSharedBetweenSrsAndRstu,
   }
 }

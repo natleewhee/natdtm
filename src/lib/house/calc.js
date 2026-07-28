@@ -53,6 +53,19 @@ export function calcCPFAccruedInterest(cpfPrincipal, yearsHeld, rate = CPF_OA_RA
   return P * (Math.pow(1 + rate, yearsHeld) - 1)
 }
 
+// Resolves a joint-loan share input to a percentage in [0, 100],
+// defaulting to 100 (sole ownership) only when nothing usable was
+// passed in. `Number(0) || 100` — the naive version of this — is a
+// classic falsy-coercion trap: entering exactly 0% would silently
+// become 100%, crediting a co-borrower with zero stake in the full
+// household profit/loss instead of none. Also clamps > 100 / negative
+// entries, since nothing upstream validates the input field.
+function resolveSharePct(pct) {
+  const n = Number(pct)
+  if (!Number.isFinite(n)) return 100
+  return Math.min(100, Math.max(0, n))
+}
+
 // ─── Part A: selling the current house ──────────────────────────────────
 // propertyType: 'hdb' | 'private'
 //
@@ -154,7 +167,13 @@ export function calcSale(inputs) {
   const cpfAccruedInterestAsOfComputed = calcCPFAccruedInterest(cpfPrincipalAsOf, monthsPurchaseToAsOf / 12)
   const cpfAccruedInterestComputed = cpfAccruedInterestAsOfComputed
   const cpfAccruedInterestAsOf = cpfAccruedInterestOverride ?? cpfAccruedInterestAsOfComputed
-  const cpfAccruedInterestRemaining = calcCPFAccruedInterest(cpfPrincipalAsOf, monthsAsOfToSale / 12)
+  // The remaining leg compounds on top of principal + interest ALREADY
+  // accrued as of today, not on bare principal again — otherwise the two
+  // legs just sum linearly and understate the true compound total (the
+  // cross term P·leg1·leg2 gets dropped). E.g. 10yr then 2yr more at
+  // 2.5%: summing the legs separately understates accrued interest by
+  // ~4% versus compounding one continuous period.
+  const cpfAccruedInterestRemaining = calcCPFAccruedInterest(cpfPrincipalAsOf + cpfAccruedInterestAsOf, monthsAsOfToSale / 12)
   const cpfAccruedInterest = cpfAccruedInterestAsOf + cpfAccruedInterestRemaining
   const totalCPFRefund = cpfPrincipalTotal + cpfAccruedInterest
 
@@ -206,13 +225,28 @@ export function calcSale(inputs) {
 
   const mopOk = propertyType !== 'hdb' || yearsHeld >= HDB_MOP_YEARS
 
-  // "Your share" figures — the household numbers above, scaled by your
-  // ownership share. cashOnCashReturn is a ratio of two figures both
-  // scaled by the same factor, so it's identical either way and isn't
-  // duplicated here.
-  const share = (Number(yourSharePct) || 100) / 100
-  const yourCashProceeds = cashProceeds * share
-  const yourCashInvested = cashInvested * share
+  // "Your share" figures — most of the household numbers above scale
+  // cleanly by ownership share, since they never touch CPF: trueProfitLoss,
+  // outstandingBalance, and monthlyInstalment are pure property/loan
+  // economics. cashProceeds and cashInvested are different — each is
+  // already a MIXED figure: joint components (sale price, loan payoff,
+  // selling costs / purchase price, fees, loan taken) minus a CPF
+  // component that's already fully yours and unscaled (cpfOutlay/
+  // totalCPFRefund — see the comment above on why CPF isn't scaled).
+  // Naively multiplying the whole mixed figure by share would scale away
+  // part of your own CPF a second time. So each is decomposed back into
+  // its joint slice (scaled) recombined with its already-personal CPF
+  // slice (left alone) — the two are equal at share=100, matching the
+  // unscaled household figures exactly with no behavior change there.
+  const share = resolveSharePct(yourSharePct) / 100
+
+  const jointSaleBase = (Number(salePrice) || 0) - outstandingBalance - sellingCosts // no CPF in this slice
+  const yourCashProceeds = jointSaleBase * share - totalCPFRefund
+
+  const jointPurchaseBase = (Number(purchasePrice) || 0) + purchaseFees - (Number(loanTaken) || 0) // no CPF in this slice
+  const yourCashOutlay = jointPurchaseBase * share - (Number(cpfOutlay) || 0)
+  const yourCashInvested = Math.max(0, yourCashOutlay) + (Number(sunkCost) || 0) * share
+
   const yourTrueProfitLoss = trueProfitLoss * share
   const yourOutstandingBalance = outstandingBalance * share
   const yourMonthlyInstalment = monthlyInstalment * share
@@ -236,7 +270,7 @@ export function calcSale(inputs) {
     cashInvested, cashOnCashReturn,
     totalOutlay, roiOnPrice, roiOnOutlay, annualizedRoiOnPrice, annualizedRoiOnOutlay,
     mopOk,
-    yourSharePct: Number(yourSharePct) || 100,
+    yourSharePct: resolveSharePct(yourSharePct),
     yourCashProceeds, yourCashInvested, yourTrueProfitLoss,
     yourOutstandingBalance, yourMonthlyInstalment,
   }

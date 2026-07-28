@@ -191,6 +191,15 @@ test('calcTax reports SRS and RSTU headroom and what filling it would save', () 
   assert.ok(r.maxRstuSaving.saving > 0)
 })
 
+test('calcTax flags when SRS and RSTU headroom together would overrun the shared $80K cap', () => {
+  const tight = calcTax({ monthlySalary: 10_000, age: 40, otherReliefs: 70_000 })
+  assert.ok(tight.capHeadroomSharedBetweenSrsAndRstu, 'little cap headroom left, but SRS+RSTU individual caps still claim far more than that')
+  assert.ok(tight.combinedCapHeadroom < tight.srsHeadroom + tight.rstuHeadroom)
+
+  const roomy = calcTax({ monthlySalary: 10_000, age: 40 })
+  assert.ok(!roomy.capHeadroomSharedBetweenSrsAndRstu, 'plenty of cap headroom left, no conflict between the two suggestions')
+})
+
 test('calcTax on a low income owes nothing and flags no relief benefit', () => {
   const r = calcTax({ monthlySalary: 1_500, age: 30 })
   approx(r.tax, 0)

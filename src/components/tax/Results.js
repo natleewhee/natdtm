@@ -35,6 +35,7 @@ export default function TaxResults({ result }) {
     employmentIncome, reliefs, chargeableIncome, tax, marginal, effectiveRate,
     employeeCpf, annualTakeHome, monthlyTakeHome,
     srsHeadroom, rstuHeadroom, maxSrsSaving, maxRstuSaving, nextThousand,
+    capHeadroomSharedBetweenSrsAndRstu,
   } = result
 
   const claimed = Object.entries(reliefs.breakdown).filter(([, v]) => v > 0)
@@ -87,6 +88,11 @@ export default function TaxResults({ result }) {
               </div>
             )}
           </div>
+          {capHeadroomSharedBetweenSrsAndRstu && (
+            <div style={{ fontSize: C.xs, color: C.amberText, lineHeight: 1.6, marginTop: 8 }}>
+              These two are shown at their own individual limits, but they draw from the same {SGD(PERSONAL_RELIEF_CAP)} overall cap — you don&apos;t have enough headroom left to claim both maximums at once, so doing both means splitting this room between them, not adding the two savings together.
+            </div>
+          )}
           <div style={{ fontSize: C.xs, color: C.faint, lineHeight: 1.6, marginTop: 8 }}>
             Both lock your money away — SRS until statutory retirement age (withdrawals before that face a 5% penalty and are fully taxable), CPF top-ups permanently. The tax saving is real, but it isn&apos;t free money.
           </div>

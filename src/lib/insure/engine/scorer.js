@@ -200,7 +200,9 @@ export function scoreCIBase(
 
   const { amount, isEstimated } = resolveAmount(ciAmount, ciBand, ciBandMap);
   const multiple = annualIncome > 0 ? amount / annualIncome : 0;
-  const score = roundScore(Math.min(amount / target, 1.0) * 100);
+  // target <= 0 (zero income, zero debt) would otherwise divide 0/0 into
+  // NaN when amount is also 0 — a target of $0 needed is trivially met.
+  const score = target > 0 ? roundScore(Math.min(amount / target, 1.0) * 100) : 100;
 
   return { score, amount, isEstimated, multiple, target, adequateMultiple };
 }
@@ -286,7 +288,12 @@ export function scoreLife(
 
   const { amount, isEstimated } = resolveAmount(lifeAmount, lifeBand, lifeBandMap);
   const multiple = annualIncome > 0 ? amount / annualIncome : 0;
-  const score = roundScore(Math.min(amount / target, 1.0) * 100);
+  // target <= 0 (zero income-multiple branch with zero debt) would
+  // otherwise divide 0/0 into NaN when amount is also 0 — a target of $0
+  // needed is trivially met. usesIncomeMultiple's own branch already adds
+  // FINAL_EXPENSES_BUFFER so it can't hit this in practice, but the
+  // income-multiple branch (zero income + zero debt) can.
+  const score = target > 0 ? roundScore(Math.min(amount / target, 1.0) * 100) : 100;
 
   return { score, amount, isEstimated, multiple, target, adequateMultiple, usesIncomeMultiple };
 }

@@ -94,8 +94,13 @@ export default function HouseMuchPage() {
     // comes out as YOUR share of equity, not your share of the debt
     // against the full household asset. salePrice stays the real,
     // full transaction price — it's describing the sale itself, not
-    // your net worth. CPF refund is never scaled (see calcSale).
-    const share = (isJointLoan ? num(yourSharePct) : 100) / 100
+    // your net worth. CPF refund is never scaled (see calcSale). Reuses
+    // result.yourSharePct (already clamped to [0,100] inside calcSale)
+    // rather than re-deriving it from the raw input here — recomputing
+    // it separately would disagree with the already-clamped
+    // yourOutstandingBalance/yourMonthlyInstalment above whenever the
+    // typed share is out of range (e.g. "150").
+    const share = result.yourSharePct / 100
     saveHouseNumbers({
       cashProceeds: result.yourCashProceeds,
       totalCPFRefund: result.totalCPFRefund,
@@ -197,6 +202,11 @@ export default function HouseMuchPage() {
                   <div style={{ marginTop: 10, maxWidth: 160 }}>
                     <PercentInput id="your-share-pct" label="Your share" value={yourSharePct} onChange={e => setYourSharePct(e.target.value)} />
                   </div>
+                )}
+                {(num(yourSharePct) < 0 || num(yourSharePct) > 100) && (
+                  <p style={{ marginTop: 6, fontSize: C.xs, color: C.redText, lineHeight: 1.5 }}>
+                    A share has to be between 0% and 100% — this will be treated as {num(yourSharePct) > 100 ? '100%' : '0%'}.
+                  </p>
                 )}
                 <p style={{ marginTop: 8, fontSize: C.xs, color: C.muted, lineHeight: 1.5 }}>
                   Purchase price, loan, and stamp duty above should still be the real, full figures for the property — this only scales the profit/loss and cash figures below down to your share. Your CPF used at purchase is assumed to already be your own CPF, not the household total.

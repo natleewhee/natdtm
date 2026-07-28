@@ -48,7 +48,7 @@ export function ResultPanel({ r, tenure, visible, slim=false }) {
   const { vc, vcText, vbg, vborder, car, tier, verdict, ratio, monthly, loan, maxLoan,
           interest, repay, takeHome, reqDown, canDown, shortfall, extraDown,
           saving, coo, totalCoo, lcPct, deprAtTenure, salary, down, tenure: rTenure, liveCOE, liveCOEPremium,
-          existingDebt, tdsr, tdsrExceeded } = r
+          existingDebt, tdsr, tdsrExceeded, tenureClamped, maxTenureFromCoe } = r
   // TDSR can fail even when the in-app "comfort" verdict says Affordable —
   // they're independent constraints (your own comfort vs. the bank's
   // regulatory ceiling) — so suggestions need to fire on either condition,
@@ -136,26 +136,33 @@ export function ResultPanel({ r, tenure, visible, slim=false }) {
           <div style={{background:C.accentBg,border:`1px solid ${C.accent}55`,borderRadius:C.r,padding:'12px 14px',marginBottom:14,opacity:metricsIn?1:0,transition:'opacity 0.5s 0.1s'}}>
             <div style={{fontSize:C.xs,fontWeight:700,color:C.accent,textTransform:'uppercase',letterSpacing:'0.08em',marginBottom:4}}>✓ Reduced loan</div>
             <p style={{fontSize:C.sm,color:C.accentText,lineHeight:1.65}}>
-              You&apos;re putting <strong>{SGD(extraDown)}</strong> above the minimum, reducing your loan to <strong>{SGD(loan)}</strong> from the max of <strong>{SGD(maxLoan)}</strong>. Saves you <strong>{SGD((maxLoan-loan)*tier.rate*tenure)}</strong> in interest.
+              You&apos;re putting <strong>{SGD(extraDown)}</strong> above the minimum, reducing your loan to <strong>{SGD(loan)}</strong> from the max of <strong>{SGD(maxLoan)}</strong>. Saves you <strong>{SGD((maxLoan-loan)*tier.rate*rTenure)}</strong> in interest.
+            </p>
+          </div>
+        )}
+        {tenureClamped && (
+          <div style={{background:C.amberBg,border:`1px solid ${C.amber}44`,borderRadius:C.r,padding:'11px 14px',marginBottom:14,opacity:metricsIn?1:0,transition:'opacity 0.5s'}}>
+            <p style={{fontSize:C.sm,color:C.amberText,lineHeight:1.6,margin:0}}>
+              Shortened to <strong>{rTenure} year{rTenure>1?'s':''}</strong> — this car&apos;s COE only has {maxTenureFromCoe} year{maxTenureFromCoe>1?'s':''} left, so a loan can&apos;t run longer than that.
             </p>
           </div>
         )}
         <div style={{display:'grid',gridTemplateColumns:'minmax(0,1fr) minmax(0,1fr)',gap:8,marginBottom:14}}>
-          <StatBox label="Monthly instalment" value={`S$${Math.round(monthly)}`}  sub={`${tenure} yr at ${tier.display}`}  accent delay={0}   visible={metricsIn}/>
+          <StatBox label="Monthly instalment" value={`S$${Math.round(monthly)}`}  sub={`${rTenure} yr at ${tier.display}`}  accent delay={0}   visible={metricsIn}/>
           <StatBox label="Actual loan"         value={`S$${Math.round(loan)}`}     sub={`${car.loanCap}% of price`}          delay={80}  visible={metricsIn}/>
           <StatBox label="Total interest"      value={`S$${Math.round(interest)}`} sub={`Total repayable: ${SGD(repay)}`}    accent delay={160} visible={metricsIn}/>
           <StatBox label="Your take-home"      value={`S$${Math.round(takeHome)}`} sub={`30% safe limit: ${SGD(takeHome*0.30)}/mo`} delay={240} visible={metricsIn}/>
         </div>
-        <OwnershipCurve coo={coo} tenure={tenure} visible={metricsIn}/>
-        <DepreciationCard r={r} tenure={tenure} visible={metricsIn}/>
+        <OwnershipCurve coo={coo} tenure={rTenure} visible={metricsIn}/>
+        <DepreciationCard r={r} tenure={rTenure} visible={metricsIn}/>
         <RunningCostCard r={r} visible={metricsIn}/>
-        {metricsIn && <CoeSensitivity r={r} tenure={tenure}/>}
+        {metricsIn && <CoeSensitivity r={r} tenure={rTenure}/>}
         {tier.id !== 'ice' && saving > 0 && (
           <div style={{display:'flex',alignItems:'flex-start',gap:12,background:C.accentBg,border:`1px solid ${C.accent}44`,borderRadius:C.r,padding:'12px 14px',marginBottom:14,opacity:metricsIn?1:0,transition:'opacity 0.5s 0.45s'}}>
             <span style={{fontSize:20,flexShrink:0}}>💰</span>
             <div>
               <div style={{fontSize:C.xs,fontWeight:700,color:C.accent,textTransform:'uppercase',letterSpacing:'0.08em',marginBottom:4}}>Green rate savings vs ICE</div>
-              <p style={{fontSize:C.sm,color:C.accentText,lineHeight:1.65}}>Save <strong>{SGD(saving)}</strong> total — <strong>{SGD(saving/(tenure*12))}/mo</strong> less than a petrol loan at the same amount.</p>
+              <p style={{fontSize:C.sm,color:C.accentText,lineHeight:1.65}}>Save <strong>{SGD(saving)}</strong> total — <strong>{SGD(saving/(rTenure*12))}/mo</strong> less than a petrol loan at the same amount.</p>
             </div>
           </div>
         )}
