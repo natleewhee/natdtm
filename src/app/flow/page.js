@@ -3,9 +3,9 @@
 import { useEffect, useMemo, useState } from 'react'
 import { C, SGD, parseMoney } from '@/lib/flow/theme'
 import {
-  buildMonthlyFlow, monthlyCpfSplit, quickLivingExpenses, detailedLivingExpenses,
-  backSolveLivingExpenses, reconciliationGap, buildTwelveMonthSchedule, findTightestMonth,
-  compareGiroToLump, trueSavingsRate, cashSavingsRate, fixedCostRatio, runwayMonths,
+  buildMonthlyFlow, quickLivingExpenses, detailedLivingExpenses,
+  backSolveLivingExpenses, reconciliationGap, buildTwelveMonthSchedule,
+  trueSavingsRate, cashSavingsRate, fixedCostRatio, runwayMonths,
   DEFAULT_MA_HEALTH_PREMIUM,
 } from '@/lib/flow/calc'
 import { CPF_OW_CEILING, CPF_ANNUAL_CEILING } from '@/lib/retire/cpf'
@@ -39,7 +39,6 @@ export default function FlowStatePage() {
   const [age, setAge] = useState('')
   const [salary, setSalary] = useState('')
   const [salaryPrefilled, setSalaryPrefilled] = useState(false)
-  const [annualBonus, setAnnualBonus] = useState('')
 
   // ─── Housing ─────────────────────────────────────────────────────────
   const [hasHouse, setHasHouse] = useState(false)
@@ -80,8 +79,8 @@ export default function FlowStatePage() {
   const [liquidSavings, setLiquidSavings] = useState('')
 
   // ─── Twelve-month planner ────────────────────────────────────────────
+  const [taxPaymentMode, setTaxPaymentMode] = useState('lump') // 'lump' | 'monthly' (GIRO)
   const [taxDueMonth, setTaxDueMonth] = useState('3')
-  const [bonusMonth, setBonusMonth] = useState('5')
   const [lumpyItems, setLumpyItems] = useState([])
 
   const [calculated, setCalculated] = useState(false)
@@ -190,18 +189,34 @@ export default function FlowStatePage() {
     runway: runwayMonths(flow, liquidSavings),
   } : null
 
-  // Twelve-month schedule: base surplus is this typical month's, plus a
-  // bonus (if any) landing once as a lumpy item, plus whatever else the
-  // user has added.
-  const items = useMemo(() => {
-    const arr = lumpyItems.map(i => ({ label: i.label, amount: num(i.amount), month: Number(i.month) }))
-    if (num(annualBonus) > 0) arr.push({ label: 'Bonus', amount: num(annualBonus), month: Number(bonusMonth) })
-    return arr
-  }, [lumpyItems, annualBonus, bonusMonth])
+  // Twelve-month schedule: base surplus is this typical month's, plus
+  // every lumpy item — each one entered as a positive amount and tagged
+  // either 'expense' (subtracts) or 'bonus' (adds), so the schedule gets
+  // a correctly-signed number regardless of which the user picked.
+  const items = useMemo(() => (
+    lumpyItems.map(i => ({
+      label: i.label, month: Number(i.month),
+      amount: i.type === 'bonus' ? num(i.amount) : -num(i.amount),
+    }))
+  ), [lumpyItems])
 
-  const scheduleCompare = flow ? compareGiroToLump({
+  // Total of everything marked 'bonus' — feeds the CPF-annual-ceiling
+  // insight in Results.js, which needs a positive annual figure.
+  const annualBonusTotal = useMemo(() => (
+    lumpyItems.filter(i => i.type === 'bonus').reduce((sum, i) => sum + num(i.amount), 0)
+  ), [lumpyItems])
+
+  const primarySchedule = flow ? buildTwelveMonthSchedule({
     baseMonthlySurplus: flow.surplus, annualTax: flow.tax.monthly * 12,
+    taxMode: taxPaymentMode === 'monthly' ? 'giro' : 'lump',
     taxDueMonth: num(taxDueMonth), lumpyItems: items, startBalance: num(liquidSavings),
+  }) : null
+
+  // Only worth showing an alternative when the primary plan is lump-sum
+  // — someone already on GIRO has nothing to switch to.
+  const altSchedule = (flow && taxPaymentMode === 'lump') ? buildTwelveMonthSchedule({
+    baseMonthlySurplus: flow.surplus, annualTax: flow.tax.monthly * 12,
+    taxMode: 'giro', lumpyItems: items, startBalance: num(liquidSavings),
   }) : null
 
   // Write the measured monthly figures back to the shared store so
@@ -218,7 +233,7 @@ export default function FlowStatePage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps -- keyed off primitives via flow.nodes.living.value/flow.surplus, not the flow object identity (rebuilt every render)
   }, [calculated, flow?.nodes.living.value, flow?.surplus, metrics?.trueSavings, metrics?.cashSavings])
 
-  const addLumpyItem = () => setLumpyItems(items => [...items, { id: nextLumpyId(), label: '', amount: '', month: '0' }])
+  const addLumpyItem = () => setLumpyItems(items => [...items, { id: nextLumpyId(), label: '', amount: '', month: '0', type: 'expense' }])
   const updateLumpyItem = (id, patch) => setLumpyItems(items => items.map(i => i.id === id ? { ...i, ...patch } : i))
   const removeLumpyItem = (id) => setLumpyItems(items => items.filter(i => i.id !== id))
 
@@ -256,9 +271,6 @@ export default function FlowStatePage() {
           {salaryPrefilled && (
             <p style={{ marginTop: 10, fontSize: C.xs, color: C.faint }}>Salary prefilled from another ndtm tool on this browser — edit it freely.</p>
           )}
-          <div style={{ marginTop: 14 }}>
-            <MoneyInput id="flow-bonus" label="Annual bonus / AWS" hint="Optional — used only in the twelve-month plan below, not the typical-month picture" value={annualBonus} onChange={e => setAnnualBonus(e.target.value)} />
-          </div>
 
           <SectionDivider label="Mortgage" />
           <Toggle active={hasHouse} onClick={() => setHasHouse(h => !h)}>I have a mortgage</Toggle>
@@ -378,10 +390,24 @@ export default function FlowStatePage() {
 
           <SectionDivider label="The twelve-month plan" />
           <p style={{ marginTop: -8, marginBottom: 16, fontSize: C.xs, color: C.muted, lineHeight: 1.5 }}>
-            Add anything lumpy — road tax, insurance renewals, travel, SRS top-ups. A monthly average hides exactly the months that actually hurt.
+            Add anything lumpy — road tax, insurance renewals, travel, SRS top-ups, or a bonus. Mark each one as an expense or a bonus; a monthly average hides exactly the months that actually hurt.
           </p>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(170px, 1fr))', gap: 14, marginBottom: 14 }}>
-            <div>
+
+          <div style={{ marginBottom: 14 }}>
+            <label style={{ display: 'block', fontSize: C.sm, fontWeight: 600, color: C.primary, marginBottom: 10 }}>How do you pay income tax?</label>
+            <Segmented
+              value={taxPaymentMode} onChange={setTaxPaymentMode}
+              options={[{ value: 'lump', label: 'One bill' }, { value: 'monthly', label: 'Monthly (GIRO)' }]}
+            />
+            {taxPaymentMode === 'monthly' && (
+              <p style={{ marginTop: 8, fontSize: C.xs, color: C.muted, lineHeight: 1.5 }}>
+                Spread evenly across all twelve months — no due-month needed.
+              </p>
+            )}
+          </div>
+
+          {taxPaymentMode === 'lump' && (
+            <div style={{ maxWidth: 260, marginBottom: 14 }}>
               <label style={{ display: 'block', fontSize: C.sm, fontWeight: 600, color: C.primary, marginBottom: 7 }}>Income tax bill lands in</label>
               <select value={taxDueMonth} onChange={e => setTaxDueMonth(e.target.value)} style={{
                 width: '100%', boxSizing: 'border-box', background: C.surface, border: `1.5px solid ${C.border}`,
@@ -390,40 +416,55 @@ export default function FlowStatePage() {
                 {MONTH_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
               </select>
             </div>
-            {num(annualBonus) > 0 && (
-              <div>
-                <label style={{ display: 'block', fontSize: C.sm, fontWeight: 600, color: C.primary, marginBottom: 7 }}>Bonus arrives in</label>
-                <select value={bonusMonth} onChange={e => setBonusMonth(e.target.value)} style={{
-                  width: '100%', boxSizing: 'border-box', background: C.surface, border: `1.5px solid ${C.border}`,
-                  borderRadius: C.r, padding: '11px 12px', color: C.primary, fontSize: C.lg, fontFamily: C.fontMono, fontWeight: 500,
-                }}>
-                  {MONTH_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
-                </select>
-              </div>
-            )}
-          </div>
+          )}
 
-          {lumpyItems.map(item => (
-            <div key={item.id} style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 1fr auto', gap: 10, marginBottom: 10, alignItems: 'end' }}>
-              <div>
-                <label style={{ display: 'block', fontSize: C.xs, fontWeight: 600, color: C.muted, marginBottom: 5 }}>What</label>
-                <input value={item.label} onChange={e => updateLumpyItem(item.id, { label: e.target.value })} placeholder="Road tax"
-                  style={{ width: '100%', boxSizing: 'border-box', background: C.surface, border: `1.5px solid ${C.border}`, borderRadius: C.r, padding: '10px 12px', color: C.primary, fontSize: C.sm, fontFamily: C.fontBody }} />
+          {lumpyItems.map(item => {
+            const isBonus = item.type === 'bonus'
+            return (
+              <div key={item.id} style={{ display: 'grid', gridTemplateColumns: '2fr auto 1fr 1fr auto', gap: 10, marginBottom: 10, alignItems: 'end' }}>
+                <div>
+                  <label style={{ display: 'block', fontSize: C.xs, fontWeight: 600, color: C.muted, marginBottom: 5 }}>What</label>
+                  <input value={item.label} onChange={e => updateLumpyItem(item.id, { label: e.target.value })} placeholder={isBonus ? 'Bonus' : 'Road tax'}
+                    style={{ width: '100%', boxSizing: 'border-box', background: C.surface, border: `1.5px solid ${C.border}`, borderRadius: C.r, padding: '10px 12px', color: C.primary, fontSize: C.sm, fontFamily: C.fontBody }} />
+                </div>
+                <div>
+                  <label style={{ display: 'block', fontSize: C.xs, fontWeight: 600, color: C.muted, marginBottom: 5 }}>Type</label>
+                  <div style={{ display: 'flex', gap: 4 }}>
+                    <button
+                      type="button" onClick={() => updateLumpyItem(item.id, { type: 'expense' })} aria-pressed={!isBonus}
+                      title="Expense — subtracts from your balance"
+                      style={{
+                        padding: '10px 10px', fontSize: 13, fontWeight: 700, borderRadius: C.r, cursor: 'pointer', fontFamily: C.fontBody,
+                        background: !isBonus ? C.redBg : C.bg, border: `1.5px solid ${!isBonus ? C.red : C.border}`,
+                        color: !isBonus ? C.redText : C.muted,
+                      }}
+                    >−</button>
+                    <button
+                      type="button" onClick={() => updateLumpyItem(item.id, { type: 'bonus' })} aria-pressed={isBonus}
+                      title="Bonus / income — adds to your balance"
+                      style={{
+                        padding: '10px 10px', fontSize: 13, fontWeight: 700, borderRadius: C.r, cursor: 'pointer', fontFamily: C.fontBody,
+                        background: isBonus ? C.greenBg : C.bg, border: `1.5px solid ${isBonus ? C.green : C.border}`,
+                        color: isBonus ? C.greenText : C.muted,
+                      }}
+                    >+</button>
+                  </div>
+                </div>
+                <MoneyInput id={`flow-lumpy-${item.id}`} label="Amount" value={item.amount} onChange={e => updateLumpyItem(item.id, { amount: e.target.value })} />
+                <div>
+                  <label style={{ display: 'block', fontSize: C.xs, fontWeight: 600, color: C.muted, marginBottom: 5 }}>Month</label>
+                  <select value={item.month} onChange={e => updateLumpyItem(item.id, { month: e.target.value })} style={{
+                    width: '100%', boxSizing: 'border-box', background: C.surface, border: `1.5px solid ${C.border}`,
+                    borderRadius: C.r, padding: '10px 8px', color: C.primary, fontSize: C.sm, fontFamily: C.fontMono,
+                  }}>
+                    {MONTH_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
+                  </select>
+                </div>
+                <button type="button" onClick={() => removeLumpyItem(item.id)} aria-label="Remove"
+                  style={{ background: 'none', border: 'none', color: C.faint, fontSize: C.sm, cursor: 'pointer', padding: '10px 4px' }}>✕</button>
               </div>
-              <MoneyInput id={`flow-lumpy-${item.id}`} label="Amount" value={item.amount} onChange={e => updateLumpyItem(item.id, { amount: e.target.value })} />
-              <div>
-                <label style={{ display: 'block', fontSize: C.xs, fontWeight: 600, color: C.muted, marginBottom: 5 }}>Month</label>
-                <select value={item.month} onChange={e => updateLumpyItem(item.id, { month: e.target.value })} style={{
-                  width: '100%', boxSizing: 'border-box', background: C.surface, border: `1.5px solid ${C.border}`,
-                  borderRadius: C.r, padding: '10px 8px', color: C.primary, fontSize: C.sm, fontFamily: C.fontMono,
-                }}>
-                  {MONTH_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
-                </select>
-              </div>
-              <button type="button" onClick={() => removeLumpyItem(item.id)} aria-label="Remove"
-                style={{ background: 'none', border: 'none', color: C.faint, fontSize: C.sm, cursor: 'pointer', padding: '10px 4px' }}>✕</button>
-            </div>
-          ))}
+            )
+          })}
           <button type="button" onClick={addLumpyItem} style={{
             background: 'none', border: `1.5px dashed ${C.border}`, borderRadius: C.r, padding: '9px 14px',
             fontSize: C.xs, fontWeight: 700, color: C.muted, cursor: 'pointer', fontFamily: C.fontBody,
@@ -438,9 +479,9 @@ export default function FlowStatePage() {
 
         {calculated && flow && (
           <FlowResults
-            flow={flow} metrics={metrics} scheduleCompare={scheduleCompare}
+            flow={flow} metrics={metrics} primarySchedule={primarySchedule} altSchedule={altSchedule} taxPaymentMode={taxPaymentMode}
             liquidSavings={num(liquidSavings)} gap={gap}
-            house={house} annualBonus={num(annualBonus)} salary={num(salary)} age={num(age)}
+            house={house} annualBonus={annualBonusTotal} salary={num(salary)} age={num(age)}
           />
         )}
       </div>

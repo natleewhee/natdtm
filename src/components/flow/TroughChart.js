@@ -4,16 +4,19 @@ import { C, SGD } from '@/lib/flow/theme'
 
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
 
-// Twelve months of running cash balance, lump-sum tax (red, solid) vs
-// GIRO-spread tax (green, dashed) overlaid on the same axes — the
-// comparison that makes "move your tax to GIRO" a concrete, visual case
-// rather than a sentence to take on faith.
-export default function TroughChart({ lump, giro, events = {}, troughMonth }) {
-  if (!lump || lump.length === 0) return null
+// Twelve months of running cash balance for whichever tax-payment plan is
+// actually chosen (solid), optionally overlaid with an alternative
+// (dashed) — e.g. lump-sum tax vs GIRO, so "switch to this instead" is a
+// concrete, visual case rather than a sentence to take on faith. `alt` is
+// only passed when there's a genuine alternative worth showing; a plan
+// with nothing to compare against just draws the one line.
+export default function TroughChart({ primary, alt, events = {}, troughMonth, tone = 'red' }) {
+  if (!primary || primary.length === 0) return null
 
+  const primaryColor = tone === 'green' ? C.green : C.red
   const W = 1000, H = 424
   const PAD = { l: 62, r: 20, t: 26, b: 70 }
-  const balances = [...lump.map(r => r.balance), ...giro.map(r => r.balance)]
+  const balances = [...primary.map(r => r.balance), ...(alt ? alt.map(r => r.balance) : [])]
   const rawMax = Math.max(...balances, 0)
   const rawMin = Math.min(...balances, 0)
   const yMax = Math.ceil((rawMax * 1.1) / 5000) * 5000 || 5000
@@ -27,8 +30,8 @@ export default function TroughChart({ lump, giro, events = {}, troughMonth }) {
   for (let v = Math.ceil(yMin / 5000) * 5000; v <= yMax; v += 5000) gridSteps.push(v)
   if (!gridSteps.includes(0) && yMin < 0) gridSteps.push(0)
 
-  const lumpBalances = lump.map(r => r.balance)
-  const areaD = line(lumpBalances) + ' L ' + px(11) + ' ' + py(yMin) + ' L ' + px(0) + ' ' + py(yMin) + ' Z'
+  const primaryBalances = primary.map(r => r.balance)
+  const areaD = line(primaryBalances) + ' L ' + px(11) + ' ' + py(yMin) + ' L ' + px(0) + ' ' + py(yMin) + ' Z'
 
   return (
     <div style={{ overflowX: 'auto', padding: '4px 4px 4px' }}>
@@ -36,8 +39,8 @@ export default function TroughChart({ lump, giro, events = {}, troughMonth }) {
         aria-label={`Line chart of running cash balance over twelve months. Tightest month is ${MONTHS[troughMonth]}.`}>
         <defs>
           <linearGradient id="trough-fill" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor={C.red} stopOpacity="0.22" />
-            <stop offset="100%" stopColor={C.red} stopOpacity="0" />
+            <stop offset="0%" stopColor={primaryColor} stopOpacity="0.22" />
+            <stop offset="100%" stopColor={primaryColor} stopOpacity="0" />
           </linearGradient>
         </defs>
 
@@ -56,17 +59,19 @@ export default function TroughChart({ lump, giro, events = {}, troughMonth }) {
           <rect x={PAD.l} y={py(0)} width={W - PAD.l - PAD.r} height={py(yMin) - py(0)} fill={C.red} opacity={0.07} />
         )}
 
-        <path d={line(giro.map(r => r.balance))} fill="none" stroke={C.green} strokeWidth={2} strokeDasharray="5 4" strokeLinejoin="round" opacity={0.85} />
+        {alt && (
+          <path d={line(alt.map(r => r.balance))} fill="none" stroke={C.green} strokeWidth={2} strokeDasharray="5 4" strokeLinejoin="round" opacity={0.85} />
+        )}
         <path d={areaD} fill="url(#trough-fill)" />
-        <path d={line(lumpBalances)} fill="none" stroke={C.red} strokeWidth={2.5} strokeLinejoin="round" strokeLinecap="round" />
+        <path d={line(primaryBalances)} fill="none" stroke={primaryColor} strokeWidth={2.5} strokeLinejoin="round" strokeLinecap="round" />
 
-        {lump.map((row, i) => {
+        {primary.map((row, i) => {
           const isTrough = i === troughMonth
           const anchor = i === 0 ? 'start' : i === MONTHS.length - 1 ? 'end' : 'middle'
           return (
             <g key={i}>
               <circle cx={px(i)} cy={py(row.balance)} r={isTrough ? 5.5 : 3}
-                fill={isTrough ? C.accent : C.red}
+                fill={isTrough ? C.accent : primaryColor}
                 stroke={isTrough ? C.coah : 'none'} strokeWidth={isTrough ? 2 : 0} />
               <text x={px(i)} y={H - 48} textAnchor="middle" style={{ fontFamily: C.fontMono, fontSize: 10.5, fill: isTrough ? C.accent : C.faint, fontVariantNumeric: 'tabular-nums' }}>
                 {MONTHS[i]}
@@ -80,9 +85,9 @@ export default function TroughChart({ lump, giro, events = {}, troughMonth }) {
           )
         })}
 
-        <text x={px(troughMonth) + 12} y={py(lump[troughMonth].balance) + 5} style={{
+        <text x={px(troughMonth) + 12} y={py(primary[troughMonth].balance) + 5} style={{
           fontFamily: C.fontBody, fontSize: 12.5, fontWeight: 700, fill: C.accent,
-        }}>{SGD(lump[troughMonth].balance)}</text>
+        }}>{SGD(primary[troughMonth].balance)}</text>
       </svg>
     </div>
   )

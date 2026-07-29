@@ -34,15 +34,19 @@ function Callout({ tone, title, children }) {
   )
 }
 
-export default function FlowResults({ flow, metrics, scheduleCompare, liquidSavings, gap, house, annualBonus, salary, age }) {
+export default function FlowResults({ flow, metrics, primarySchedule, altSchedule, taxPaymentMode, liquidSavings, gap, house, annualBonus, salary, age }) {
   const trueSavingsPct = pct(metrics.trueSavings)
   const cashSavingsPct = pct(metrics.cashSavings)
   const fixedCostPct = pct(metrics.fixedCost)
   const runwayText = metrics.runway === Infinity ? '∞' : `${metrics.runway.toFixed(1)} mo`
 
-  const lumpTrough = scheduleCompare ? findTightestMonth(scheduleCompare.lump) : null
-  const giroTrough = scheduleCompare ? findTightestMonth(scheduleCompare.giro) : null
-  const isTight = lumpTrough && lumpTrough.shortfall > 0
+  // `altSchedule` only exists when there's a genuine alternative worth
+  // showing (lump-sum tax, where switching to GIRO is a real option) —
+  // someone already on GIRO has nothing to switch to, so there's no
+  // "fix" to suggest and the chart draws a single line.
+  const primaryTrough = primarySchedule ? findTightestMonth(primarySchedule) : null
+  const altTrough = altSchedule ? findTightestMonth(altSchedule) : null
+  const isTight = primaryTrough && primaryTrough.shortfall > 0
 
   const capacityBefore = calcInvestmentCapacity({
     salary, monthlyTakeHome: flow.cash,
@@ -74,7 +78,7 @@ export default function FlowResults({ flow, metrics, scheduleCompare, liquidSavi
             background: isTight ? C.accentBg : C.greenBg,
             border: `1px solid ${isTight ? C.amber : C.green}44`,
           }}>
-            {isTight ? `Watch ${MONTHS[lumpTrough.month].slice(0, 3)}` : 'Cash stays positive'}
+            {isTight ? `Watch ${MONTHS[primaryTrough.month].slice(0, 3)}` : 'Cash stays positive'}
           </span>
           <span style={{ fontSize: 12, color: C.faint }}>Typical month · no bonus</span>
         </div>
@@ -83,7 +87,7 @@ export default function FlowResults({ flow, metrics, scheduleCompare, liquidSavi
           You keep <span style={{ color: C.accentText }}>{trueSavingsPct}</span> of what you earn
           {metrics.trueSavings > metrics.cashSavings * 1.3 && <> — far more than the <span style={{ color: C.accentText }}>{cashSavingsPct}</span> your bank balance suggests</>}.
           {isTight
-            ? <> But you run out of cash in <span style={{ color: C.accentText }}>{MONTHS[lumpTrough.month]}</span>, and the fix costs nothing.</>
+            ? <> But you run out of cash in <span style={{ color: C.accentText }}>{MONTHS[primaryTrough.month]}</span>{altSchedule ? <>, and the fix costs nothing</> : null}.</>
             : <> Your cash never goes negative across the year, even with every lumpy item you&apos;ve added.</>}
         </p>
 
@@ -92,8 +96,8 @@ export default function FlowResults({ flow, metrics, scheduleCompare, liquidSavi
           <Metric label="Cash savings rate" value={cashSavingsPct} tone="amber" note={`${SGD(Math.max(0, flow.surplus))} of ${SGD(flow.cash)} take-home`} />
           <Metric label="Fixed costs" value={fixedCostPct} tone="amber" note="of take-home, cash only" />
           <Metric label="Runway" value={runwayText} tone={metrics.runway < 3 ? 'red' : metrics.runway < 6 ? 'amber' : 'green'} note={`${SGD(liquidSavings)} liquid`} />
-          {lumpTrough && (
-            <Metric label="Tightest month" value={isTight ? `−${SGD(lumpTrough.shortfall)}` : SGD(lumpTrough.balance)} tone={isTight ? 'red' : 'green'} note={MONTHS[lumpTrough.month]} />
+          {primaryTrough && (
+            <Metric label="Tightest month" value={isTight ? `−${SGD(primaryTrough.shortfall)}` : SGD(primaryTrough.balance)} tone={isTight ? 'red' : 'green'} note={MONTHS[primaryTrough.month]} />
           )}
         </div>
       </div>
@@ -145,22 +149,30 @@ export default function FlowResults({ flow, metrics, scheduleCompare, liquidSavi
         </div>
       )}
 
-      {scheduleCompare && (
+      {primarySchedule && (
         <div style={{ marginTop: 28 }}>
           <h2 style={{ fontFamily: C.fontDisplay, fontSize: 22, color: C.primary, margin: '0 0 8px' }}>Twelve months, not one average</h2>
           <p style={{ fontSize: C.sm, color: C.muted, lineHeight: 1.6, margin: '0 0 16px', maxWidth: '68ch' }}>
-            A monthly average hides the shape of a year. Everything lumpy you&apos;ve added, plus the tax bill, land somewhere specific — before a bonus (if any) arrives to smooth it back out.
+            A monthly average hides the shape of a year. Every expense and bonus you&apos;ve marked lands in its own month, plus the tax bill — and a monthly bonus doesn&apos;t smooth anything out if it never arrives until a specific month.
           </p>
           <div style={{ background: C.surface, border: `1px solid ${C.border}`, borderRadius: C.rXL, boxShadow: C.shadow }}>
             <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap', padding: '14px 20px', borderBottom: `1px solid ${C.border}` }}>
-              <Legend color={C.red} label="As planned — tax paid as one bill" />
-              <Legend color={C.green} dashLine label="With tax on GIRO instalments" />
+              <Legend color={isTight ? C.red : C.green} label={taxPaymentMode === 'monthly' ? 'As planned — tax paid monthly (GIRO)' : 'As planned — tax paid as one bill'} />
+              {altSchedule && <Legend color={C.green} dashLine label="With tax on GIRO instalments" />}
               <Legend color={C.accent} label="Tightest month" />
             </div>
-            <TroughChart lump={scheduleCompare.lump} giro={scheduleCompare.giro} troughMonth={lumpTrough.month} />
-            {isTight && giroTrough && giroTrough.shortfall < lumpTrough.shortfall && (
-              <Callout tone="fix" title={`Move your tax to GIRO — ${MONTHS[lumpTrough.month]} goes from ${lumpTrough.balance < 0 ? '−' : ''}${SGD(Math.abs(lumpTrough.balance))} to ${giroTrough.balance >= 0 ? '+' : '−'}${SGD(Math.abs(giroTrough.balance))}`}>
-                Both paths end the year at roughly <strong style={{ color: C.text }}>{SGD(scheduleCompare.yearEndGiro)}</strong> — identical annual outcome. Spreading the tax bill over twelve instalments instead of one lump sum costs nothing and removes the trough. Alternatively, set aside <strong style={{ color: C.text }}>{SGD((flow.tax.monthly * 12) / 12)}</strong>/month from January so the lump-sum month doesn&apos;t bite.
+            <TroughChart primary={primarySchedule} alt={altSchedule} troughMonth={primaryTrough.month} tone={isTight ? 'red' : 'green'} />
+            {isTight && altTrough && altTrough.shortfall < primaryTrough.shortfall && (
+              <Callout tone="fix" title={`Move your tax to GIRO — ${MONTHS[primaryTrough.month]} goes from ${primaryTrough.balance < 0 ? '−' : ''}${SGD(Math.abs(primaryTrough.balance))} to ${altTrough.balance >= 0 ? '+' : '−'}${SGD(Math.abs(altTrough.balance))}`}>
+                Both paths end the year at roughly <strong style={{ color: C.text }}>{SGD(altSchedule[altSchedule.length - 1].balance)}</strong> — identical annual outcome. Spreading the tax bill over twelve instalments instead of one lump sum costs nothing and removes the trough. Alternatively, set aside <strong style={{ color: C.text }}>{SGD(flow.tax.monthly)}</strong>/month from January so the lump-sum month doesn&apos;t bite.
+              </Callout>
+            )}
+            {isTight && (!altTrough || altTrough.shortfall >= primaryTrough.shortfall) && (
+              <Callout tone="watch" title={`${MONTHS[primaryTrough.month]} still runs short${altSchedule ? ' even on GIRO' : ''}`}>
+                {altSchedule
+                  ? <>Spreading tax evenly is already the smoothest option for the tax bill itself — this trough is coming from something else you&apos;ve added (a lumpy expense or a thin month before a bonus lands). </>
+                  : null}
+                Set aside <strong style={{ color: C.text }}>{SGD(primaryTrough.shortfall)}</strong> ahead of {MONTHS[primaryTrough.month]}, or move the expense to a month with more room.
               </Callout>
             )}
           </div>
