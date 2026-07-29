@@ -1,0 +1,449 @@
+'use client'
+
+import { useEffect, useMemo, useState } from 'react'
+import { C, SGD, parseMoney } from '@/lib/flow/theme'
+import {
+  buildMonthlyFlow, monthlyCpfSplit, quickLivingExpenses, detailedLivingExpenses,
+  backSolveLivingExpenses, reconciliationGap, buildTwelveMonthSchedule, findTightestMonth,
+  compareGiroToLump, trueSavingsRate, cashSavingsRate, fixedCostRatio, runwayMonths,
+  DEFAULT_MA_HEALTH_PREMIUM,
+} from '@/lib/flow/calc'
+import { CPF_OW_CEILING, CPF_ANNUAL_CEILING } from '@/lib/retire/cpf'
+import { loadMyNumbers, saveFlowNumbers } from '@/lib/shared/profile'
+import { MoneyInput, NumberInput, PercentInput, SectionDivider, Segmented, Toggle } from '@/components/flow/ui'
+import FlowResults from '@/components/flow/Results'
+import ShellHeader from '@/components/shared/ShellHeader'
+import TrustBadges from '@/components/shared/TrustBadges'
+import Button from '@/components/shared/Button'
+
+const num = parseMoney
+let lumpyCounter = 0
+const nextLumpyId = () => { lumpyCounter += 1; return `lumpy-${lumpyCounter}` }
+
+const CATEGORY_FIELDS = [
+  { key: 'food', label: 'Food & groceries' },
+  { key: 'transport', label: 'Transport' },
+  { key: 'utilities', label: 'Utilities' },
+  { key: 'telco', label: 'Phone & internet' },
+  { key: 'parents', label: 'Parents / family allowance' },
+  { key: 'childcare', label: 'Childcare / school' },
+  { key: 'subscriptions', label: 'Subscriptions' },
+  { key: 'shopping', label: 'Everything else' },
+]
+
+const MONTH_OPTIONS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+  .map((label, value) => ({ label, value: String(value) }))
+
+export default function FlowStatePage() {
+  // ─── You / income ───────────────────────────────────────────────────
+  const [age, setAge] = useState('')
+  const [salary, setSalary] = useState('')
+  const [salaryPrefilled, setSalaryPrefilled] = useState(false)
+  const [annualBonus, setAnnualBonus] = useState('')
+
+  // ─── Housing ─────────────────────────────────────────────────────────
+  const [hasHouse, setHasHouse] = useState(false)
+  const [houseSource, setHouseSource] = useState('manual')
+  const [outstandingBalance, setOutstandingBalance] = useState('')
+  const [rate, setRate] = useState('2.60')
+  const [monthlyInstalment, setMonthlyInstalment] = useState('')
+  const [cpfServicing, setCpfServicing] = useState('')
+
+  // ─── Car ─────────────────────────────────────────────────────────────
+  const [hasCar, setHasCar] = useState(false)
+  const [carSource, setCarSource] = useState('manual')
+  const [carInstalment, setCarInstalment] = useState('')
+
+  // ─── Insurance ───────────────────────────────────────────────────────
+  const [insuranceSource, setInsuranceSource] = useState('manual')
+  const [insurancePremium, setInsurancePremium] = useState('')
+  const [maHealthPremium, setMaHealthPremium] = useState(String(DEFAULT_MA_HEALTH_PREMIUM))
+
+  // ─── Investing ───────────────────────────────────────────────────────
+  const [investSource, setInvestSource] = useState('manual')
+  const [investMonthly, setInvestMonthly] = useState('')
+
+  // ─── Tax ─────────────────────────────────────────────────────────────
+  const [taxSource, setTaxSource] = useState('manual')
+  const [annualTax, setAnnualTax] = useState('')
+
+  // ─── Living expenses ─────────────────────────────────────────────────
+  const [livingMode, setLivingMode] = useState('quick')
+  const [quickAmount, setQuickAmount] = useState('')
+  const [categories, setCategories] = useState(Object.fromEntries(CATEGORY_FIELDS.map(f => [f.key, ''])))
+  const [backStart, setBackStart] = useState('')
+  const [backEnd, setBackEnd] = useState('')
+  const [backMonths, setBackMonths] = useState('12')
+  const [showReconcile, setShowReconcile] = useState(false)
+
+  // ─── Runway ──────────────────────────────────────────────────────────
+  const [liquidSavings, setLiquidSavings] = useState('')
+
+  // ─── Twelve-month planner ────────────────────────────────────────────
+  const [taxDueMonth, setTaxDueMonth] = useState('3')
+  const [bonusMonth, setBonusMonth] = useState('5')
+  const [lumpyItems, setLumpyItems] = useState([])
+
+  const [calculated, setCalculated] = useState(false)
+
+  // One-time prefill from the shared "My Numbers" store — nothing is
+  // sent anywhere; see src/lib/shared/profile.js.
+  useEffect(() => {
+    /* eslint-disable react-hooks/set-state-in-effect -- one-time read from
+       localStorage on mount; unavailable during SSR so can't happen during
+       render without a hydration mismatch */
+    const myNumbers = loadMyNumbers()
+    const { house, drive, retire, insure, tax, etf } = myNumbers
+
+    const knownSalary = retire?.salary || drive?.salary || 0
+    if (knownSalary > 0) { setSalary(String(Math.round(knownSalary))); setSalaryPrefilled(true) }
+    if (tax?.age) setAge(String(Math.round(tax.age)))
+
+    if (house) {
+      setHasHouse(true)
+      setHouseSource('auto')
+      if (house.outstandingBalance != null) setOutstandingBalance(String(Math.round(house.outstandingBalance)))
+      if (house.rate != null) setRate(String(house.rate))
+      if (house.monthlyInstalment != null) setMonthlyInstalment(String(Math.round(house.monthlyInstalment)))
+      if (house.cpfServicing != null) setCpfServicing(String(Math.round(house.cpfServicing)))
+    }
+    if (drive?.monthlyInstalment) {
+      setHasCar(true)
+      setCarSource('auto')
+      setCarInstalment(String(Math.round(drive.monthlyInstalment)))
+    }
+    if (insure?.monthlyPremium) {
+      setInsuranceSource('auto')
+      setInsurancePremium(String(Math.round(insure.monthlyPremium)))
+    }
+    if (etf?.monthlyContribution) {
+      setInvestSource('auto')
+      setInvestMonthly(String(Math.round(etf.monthlyContribution)))
+    }
+    if (tax?.annualTax != null) {
+      setTaxSource('auto')
+      setAnnualTax(String(Math.round(tax.annualTax)))
+    }
+    /* eslint-enable react-hooks/set-state-in-effect */
+  }, [])
+
+  const isReady = num(age) > 0 && num(salary) > 0
+
+  const house = useMemo(() => hasHouse ? {
+    outstandingBalance: num(outstandingBalance), rate: num(rate),
+    monthlyInstalment: num(monthlyInstalment), cpfServicing: num(cpfServicing),
+  } : null, [hasHouse, outstandingBalance, rate, monthlyInstalment, cpfServicing])
+
+  const car = useMemo(() => hasCar ? { monthlyInstalment: num(carInstalment) } : null, [hasCar, carInstalment])
+
+  // Claimed living expenses, from whichever mode is active.
+  const claimedLiving = useMemo(() => {
+    if (livingMode === 'quick') return quickLivingExpenses(quickAmount)
+    if (livingMode === 'detailed') return detailedLivingExpenses(categories)
+    // 'backsolve' computes its own figure below, once we know cash income
+    // and non-living outflow — see backSolvedLiving.
+    return 0
+  }, [livingMode, quickAmount, categories])
+
+  // A preview flow at zero living expenses, purely to read off cash
+  // income and non-living cash outflow for the back-solve calculation
+  // and the reconciliation check.
+  const previewFlow = useMemo(() => {
+    if (!isReady) return null
+    return buildMonthlyFlow({
+      age: num(age), salary: num(salary), annualTax: taxSource === 'auto' ? num(annualTax) : null,
+      house, car, insurancePremium: num(insurancePremium), maHealthPremium: num(maHealthPremium),
+      investMonthly: num(investMonthly), livingExpenses: 0,
+    })
+  }, [isReady, age, salary, taxSource, annualTax, house, car, insurancePremium, maHealthPremium, investMonthly])
+
+  // At zero living expenses, surplus = cash − every other cash outflow,
+  // so the outflow itself is just their difference.
+  const nonLivingCashOutflow = previewFlow ? previewFlow.cash - previewFlow.surplus : 0
+
+  const backSolvedLiving = useMemo(() => {
+    if (!previewFlow) return 0
+    return backSolveLivingExpenses({
+      startBalance: backStart, endBalance: backEnd, months: backMonths,
+      monthlyCashIncome: previewFlow.cash, monthlyNonLivingOutflow: nonLivingCashOutflow,
+    })
+  }, [previewFlow, backStart, backEnd, backMonths, nonLivingCashOutflow])
+
+  const livingExpenses = livingMode === 'backsolve' ? backSolvedLiving : claimedLiving
+
+  const gap = (livingMode !== 'backsolve' && backStart !== '' && backEnd !== '')
+    ? reconciliationGap(claimedLiving, backSolvedLiving) : 0
+
+  const flow = useMemo(() => {
+    if (!isReady) return null
+    return buildMonthlyFlow({
+      age: num(age), salary: num(salary), annualTax: taxSource === 'auto' ? num(annualTax) : null,
+      house, car, insurancePremium: num(insurancePremium), maHealthPremium: num(maHealthPremium),
+      investMonthly: num(investMonthly), livingExpenses,
+    })
+  }, [isReady, age, salary, taxSource, annualTax, house, car, insurancePremium, maHealthPremium, investMonthly, livingExpenses])
+
+  const metrics = flow ? {
+    trueSavings: trueSavingsRate(flow),
+    cashSavings: cashSavingsRate(flow),
+    fixedCost: fixedCostRatio(flow),
+    runway: runwayMonths(flow, liquidSavings),
+  } : null
+
+  // Twelve-month schedule: base surplus is this typical month's, plus a
+  // bonus (if any) landing once as a lumpy item, plus whatever else the
+  // user has added.
+  const items = useMemo(() => {
+    const arr = lumpyItems.map(i => ({ label: i.label, amount: num(i.amount), month: Number(i.month) }))
+    if (num(annualBonus) > 0) arr.push({ label: 'Bonus', amount: num(annualBonus), month: Number(bonusMonth) })
+    return arr
+  }, [lumpyItems, annualBonus, bonusMonth])
+
+  const scheduleCompare = flow ? compareGiroToLump({
+    baseMonthlySurplus: flow.surplus, annualTax: flow.tax.monthly * 12,
+    taxDueMonth: num(taxDueMonth), lumpyItems: items, startBalance: num(liquidSavings),
+  }) : null
+
+  // Write the measured monthly figures back to the shared store so
+  // MyLedger stops assuming living expenses are zero — see
+  // ledger/calc.js's calcInvestmentCapacity/buildCapacitySchedule.
+  useEffect(() => {
+    if (!calculated || !flow) return
+    saveFlowNumbers({
+      livingExpenses: flow.nodes.living.value,
+      monthlySurplus: flow.surplus,
+      trueSavingsRate: metrics?.trueSavings ?? null,
+      cashSavingsRate: metrics?.cashSavings ?? null,
+    })
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- keyed off primitives via flow.nodes.living.value/flow.surplus, not the flow object identity (rebuilt every render)
+  }, [calculated, flow?.nodes.living.value, flow?.surplus, metrics?.trueSavings, metrics?.cashSavings])
+
+  const addLumpyItem = () => setLumpyItems(items => [...items, { id: nextLumpyId(), label: '', amount: '', month: '0' }])
+  const updateLumpyItem = (id, patch) => setLumpyItems(items => items.map(i => i.id === id ? { ...i, ...patch } : i))
+  const removeLumpyItem = (id) => setLumpyItems(items => items.filter(i => i.id !== id))
+
+  return (
+    <div style={{ minHeight: '100vh', background: C.bg, fontFamily: C.fontBody }}>
+      <ShellHeader title="FlowState" links={[{ href: '/flow/the-math', label: 'The Math' }]} />
+
+      <div style={{ background: C.coah, padding: '48px 32px 52px', textAlign: 'center' }}>
+        <div style={{ fontFamily: C.fontCoah, fontSize: 10, fontWeight: 600, color: 'rgba(255,255,255,0.35)', letterSpacing: '0.18em', textTransform: 'uppercase', marginBottom: 14 }}>
+          Singapore Cashflow Planner
+        </div>
+        <h1 style={{ fontFamily: C.fontDisplay, fontSize: 'clamp(30px, 5.5vw, 48px)', color: '#fff', marginBottom: 10, lineHeight: 1.2 }}>
+          Where does your money actually go?
+        </h1>
+        <p style={{ fontFamily: C.fontDisplay, fontSize: 18, color: 'rgba(255,255,255,0.5)', marginBottom: 24, fontStyle: 'italic' }}>
+          CPF and cash split before you ever see them — see both pipes, and where each one lands.
+        </p>
+        <TrustBadges tone="dark" items={['Splits CPF from cash automatically', 'Finds your tightest month', 'Zero data collected', 'Free, forever']} />
+      </div>
+
+      <div style={{ background: C.surface, borderBottom: `1px solid ${C.border}`, padding: '8px 24px', textAlign: 'center' }}>
+        <p style={{ fontSize: 11, color: C.faint, margin: 0 }}>
+          Educational tool only · Not financial advice · Not affiliated with CPF Board or IRAS
+        </p>
+      </div>
+
+      <div style={{ maxWidth: 720, margin: '0 auto', padding: '40px 20px 80px' }}>
+        <div style={{ background: C.surface, border: `1px solid ${C.border}`, borderRadius: C.rXL, padding: '28px 24px', boxShadow: C.shadow }}>
+
+          <SectionDivider label="You" />
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 16 }}>
+            <NumberInput id="flow-age" label="Age" hint="Sets your CPF contribution rate and allocation" value={age} onChange={e => setAge(e.target.value)} />
+            <MoneyInput id="flow-salary" label="Monthly gross salary" value={salary} onChange={e => { setSalary(e.target.value); setSalaryPrefilled(false) }} />
+          </div>
+          {salaryPrefilled && (
+            <p style={{ marginTop: 10, fontSize: C.xs, color: C.faint }}>Salary prefilled from another ndtm tool on this browser — edit it freely.</p>
+          )}
+          <div style={{ marginTop: 14 }}>
+            <MoneyInput id="flow-bonus" label="Annual bonus / AWS" hint="Optional — used only in the twelve-month plan below, not the typical-month picture" value={annualBonus} onChange={e => setAnnualBonus(e.target.value)} />
+          </div>
+
+          <SectionDivider label="Mortgage" />
+          <Toggle active={hasHouse} onClick={() => setHasHouse(h => !h)}>I have a mortgage</Toggle>
+          {hasHouse && (
+            <>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(170px, 1fr))', gap: 14, marginTop: 14 }}>
+                <MoneyInput id="flow-house-balance" label="Outstanding balance" value={outstandingBalance} onChange={e => setOutstandingBalance(e.target.value)} />
+                <PercentInput id="flow-house-rate" label="Interest rate (p.a.)" value={rate} onChange={e => setRate(e.target.value)} />
+                <MoneyInput id="flow-house-instalment" label="Monthly instalment" value={monthlyInstalment} onChange={e => setMonthlyInstalment(e.target.value)} />
+                <MoneyInput id="flow-house-cpf" label="...of which, paid from CPF-OA" hint="Leave blank if you're not sure — this is the whole reason the flow looks different from a naive budget" value={cpfServicing} onChange={e => setCpfServicing(e.target.value)} />
+              </div>
+              {houseSource === 'auto' && (
+                <p style={{ marginTop: 8, fontSize: C.xs, color: C.faint }}>Synced from HouseMuch — edit freely, this won&apos;t change what&apos;s saved there.</p>
+              )}
+            </>
+          )}
+
+          <SectionDivider label="Car" />
+          <Toggle active={hasCar} onClick={() => setHasCar(c => !c)}>I have a car loan</Toggle>
+          {hasCar && (
+            <>
+              <div style={{ marginTop: 14, maxWidth: 260 }}>
+                <MoneyInput id="flow-car-instalment" label="Monthly instalment" value={carInstalment} onChange={e => setCarInstalment(e.target.value)} />
+              </div>
+              {carSource === 'auto' && (
+                <p style={{ marginTop: 8, fontSize: C.xs, color: C.faint }}>Synced from DriveReady — edit freely.</p>
+              )}
+            </>
+          )}
+
+          <SectionDivider label="Insurance" />
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(170px, 1fr))', gap: 14 }}>
+            <MoneyInput id="flow-insurance" label="Life & CI premiums (cash)" value={insurancePremium} onChange={e => setInsurancePremium(e.target.value)} />
+            <MoneyInput id="flow-ma-health" label="Health insurance (from MediSave)" hint="An estimate — most Integrated Shield Plan premiums are paid from MediSave, not cash" value={maHealthPremium} onChange={e => setMaHealthPremium(e.target.value)} />
+          </div>
+          {insuranceSource === 'auto' && (
+            <p style={{ marginTop: 8, fontSize: C.xs, color: C.faint }}>Cash premium synced from InsureCheck — edit freely.</p>
+          )}
+
+          <SectionDivider label="Investing" />
+          <div style={{ maxWidth: 260 }}>
+            <MoneyInput id="flow-invest" label="Monthly DCA / investing" value={investMonthly} onChange={e => setInvestMonthly(e.target.value)} />
+          </div>
+          {investSource === 'auto' && (
+            <p style={{ marginTop: 8, fontSize: C.xs, color: C.faint }}>Synced from WhatETF — edit freely.</p>
+          )}
+
+          <SectionDivider label="Income tax" />
+          {taxSource === 'auto' ? (
+            <p style={{ fontSize: C.sm, color: C.muted, lineHeight: 1.6 }}>
+              Using your exact figure from TaxWise ({SGD(num(annualTax))}/yr). <a href="/tax" style={{ color: C.accent }}>Update it there</a> if your income has changed.
+            </p>
+          ) : (
+            <p style={{ fontSize: C.sm, color: C.muted, lineHeight: 1.6 }}>
+              No TaxWise figure found — <a href="/tax" style={{ color: C.accent }}>run TaxWise</a> for your exact tax, or FlowState will estimate it from your salary and age with no reliefs applied.
+            </p>
+          )}
+
+          <SectionDivider label="Living expenses" />
+          <Segmented
+            value={livingMode} onChange={setLivingMode}
+            options={[{ value: 'quick', label: 'Quick' }, { value: 'detailed', label: 'Detailed' }, { value: 'backsolve', label: "I don't know" }]}
+          />
+          {livingMode === 'quick' && (
+            <div style={{ marginTop: 14, maxWidth: 260 }}>
+              <MoneyInput id="flow-living-quick" label="Roughly everything else, per month" value={quickAmount} onChange={e => setQuickAmount(e.target.value)} />
+            </div>
+          )}
+          {livingMode === 'detailed' && (
+            <div style={{ marginTop: 14, display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(170px, 1fr))', gap: 14 }}>
+              {CATEGORY_FIELDS.map(f => (
+                <MoneyInput key={f.key} id={`flow-cat-${f.key}`} label={f.label} value={categories[f.key]} onChange={e => setCategories(c => ({ ...c, [f.key]: e.target.value }))} />
+              ))}
+            </div>
+          )}
+          {livingMode === 'backsolve' && (
+            <div style={{ marginTop: 14 }}>
+              <p style={{ fontSize: C.xs, color: C.muted, lineHeight: 1.6, marginBottom: 12 }}>
+                Nobody remembers what they actually spend — but a bank balance from a year ago and today pins it exactly. Whatever came in and isn&apos;t in the account went somewhere.
+              </p>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: 14 }}>
+                <MoneyInput id="flow-back-start" label="Bank balance, a while ago" value={backStart} onChange={e => setBackStart(e.target.value)} />
+                <MoneyInput id="flow-back-end" label="Bank balance, today" value={backEnd} onChange={e => setBackEnd(e.target.value)} />
+                <NumberInput id="flow-back-months" label="Months between them" value={backMonths} onChange={e => setBackMonths(e.target.value)} />
+              </div>
+            </div>
+          )}
+          {livingMode !== 'backsolve' && (
+            <div style={{ marginTop: 14 }}>
+              <button
+                type="button" onClick={() => setShowReconcile(s => !s)} aria-pressed={showReconcile}
+                style={{
+                  display: 'flex', alignItems: 'center', gap: 8, padding: '9px 14px',
+                  background: showReconcile ? C.accentBg : C.bg, border: `1.5px solid ${showReconcile ? C.accent : C.border}`,
+                  borderRadius: 100, cursor: 'pointer', fontSize: C.xs, fontWeight: 700,
+                  color: showReconcile ? C.accent : C.muted, fontFamily: C.fontBody,
+                }}
+              >
+                {showReconcile ? '− ' : '+ '} Check this against your bank balance
+              </button>
+              {showReconcile && (
+                <div style={{ marginTop: 14 }}>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: 14 }}>
+                    <MoneyInput id="flow-back-start-2" label="Bank balance, a while ago" value={backStart} onChange={e => setBackStart(e.target.value)} />
+                    <MoneyInput id="flow-back-end-2" label="Bank balance, today" value={backEnd} onChange={e => setBackEnd(e.target.value)} />
+                    <NumberInput id="flow-back-months-2" label="Months between them" value={backMonths} onChange={e => setBackMonths(e.target.value)} />
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
+          <SectionDivider label="Runway" />
+          <div style={{ maxWidth: 260 }}>
+            <MoneyInput id="flow-liquid" label="Liquid cash savings" hint="Not CPF, not invested — money you could spend today" value={liquidSavings} onChange={e => setLiquidSavings(e.target.value)} />
+          </div>
+
+          <SectionDivider label="The twelve-month plan" />
+          <p style={{ marginTop: -8, marginBottom: 16, fontSize: C.xs, color: C.muted, lineHeight: 1.5 }}>
+            Add anything lumpy — road tax, insurance renewals, travel, SRS top-ups. A monthly average hides exactly the months that actually hurt.
+          </p>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(170px, 1fr))', gap: 14, marginBottom: 14 }}>
+            <div>
+              <label style={{ display: 'block', fontSize: C.sm, fontWeight: 600, color: C.primary, marginBottom: 7 }}>Income tax bill lands in</label>
+              <select value={taxDueMonth} onChange={e => setTaxDueMonth(e.target.value)} style={{
+                width: '100%', boxSizing: 'border-box', background: C.surface, border: `1.5px solid ${C.border}`,
+                borderRadius: C.r, padding: '11px 12px', color: C.primary, fontSize: C.lg, fontFamily: C.fontMono, fontWeight: 500,
+              }}>
+                {MONTH_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
+              </select>
+            </div>
+            {num(annualBonus) > 0 && (
+              <div>
+                <label style={{ display: 'block', fontSize: C.sm, fontWeight: 600, color: C.primary, marginBottom: 7 }}>Bonus arrives in</label>
+                <select value={bonusMonth} onChange={e => setBonusMonth(e.target.value)} style={{
+                  width: '100%', boxSizing: 'border-box', background: C.surface, border: `1.5px solid ${C.border}`,
+                  borderRadius: C.r, padding: '11px 12px', color: C.primary, fontSize: C.lg, fontFamily: C.fontMono, fontWeight: 500,
+                }}>
+                  {MONTH_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
+                </select>
+              </div>
+            )}
+          </div>
+
+          {lumpyItems.map(item => (
+            <div key={item.id} style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 1fr auto', gap: 10, marginBottom: 10, alignItems: 'end' }}>
+              <div>
+                <label style={{ display: 'block', fontSize: C.xs, fontWeight: 600, color: C.muted, marginBottom: 5 }}>What</label>
+                <input value={item.label} onChange={e => updateLumpyItem(item.id, { label: e.target.value })} placeholder="Road tax"
+                  style={{ width: '100%', boxSizing: 'border-box', background: C.surface, border: `1.5px solid ${C.border}`, borderRadius: C.r, padding: '10px 12px', color: C.primary, fontSize: C.sm, fontFamily: C.fontBody }} />
+              </div>
+              <MoneyInput id={`flow-lumpy-${item.id}`} label="Amount" value={item.amount} onChange={e => updateLumpyItem(item.id, { amount: e.target.value })} />
+              <div>
+                <label style={{ display: 'block', fontSize: C.xs, fontWeight: 600, color: C.muted, marginBottom: 5 }}>Month</label>
+                <select value={item.month} onChange={e => updateLumpyItem(item.id, { month: e.target.value })} style={{
+                  width: '100%', boxSizing: 'border-box', background: C.surface, border: `1.5px solid ${C.border}`,
+                  borderRadius: C.r, padding: '10px 8px', color: C.primary, fontSize: C.sm, fontFamily: C.fontMono,
+                }}>
+                  {MONTH_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
+                </select>
+              </div>
+              <button type="button" onClick={() => removeLumpyItem(item.id)} aria-label="Remove"
+                style={{ background: 'none', border: 'none', color: C.faint, fontSize: C.sm, cursor: 'pointer', padding: '10px 4px' }}>✕</button>
+            </div>
+          ))}
+          <button type="button" onClick={addLumpyItem} style={{
+            background: 'none', border: `1.5px dashed ${C.border}`, borderRadius: C.r, padding: '9px 14px',
+            fontSize: C.xs, fontWeight: 700, color: C.muted, cursor: 'pointer', fontFamily: C.fontBody,
+          }}>+ Add a lumpy item</button>
+
+          <div style={{ marginTop: 24 }}>
+            <Button variant="accent" fullWidth onClick={() => setCalculated(true)} disabled={!isReady}>
+              {isReady ? 'Show me where it goes' : 'Enter your age and salary above'}
+            </Button>
+          </div>
+        </div>
+
+        {calculated && flow && (
+          <FlowResults
+            flow={flow} metrics={metrics} scheduleCompare={scheduleCompare}
+            liquidSavings={num(liquidSavings)} gap={gap}
+            house={house} annualBonus={num(annualBonus)} salary={num(salary)} age={num(age)}
+          />
+        )}
+      </div>
+    </div>
+  )
+}

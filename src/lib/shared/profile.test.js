@@ -17,19 +17,20 @@ global.window = { localStorage: makeStorage() }
 
 const {
   loadMyNumbers, saveHouseNumbers, saveDriveNumbers, saveRetireNumbers,
-  saveInsureNumbers, saveTaxNumbers, saveEtfNumbers,
-  clearHouseNumbers, clearDriveNumbers, clearRetireNumbers, clearEtfNumbers,
+  saveInsureNumbers, saveTaxNumbers, saveEtfNumbers, saveFlowNumbers,
+  clearHouseNumbers, clearDriveNumbers, clearRetireNumbers, clearEtfNumbers, clearFlowNumbers,
 } = await import('./profile.js')
 
-test('loadMyNumbers returns empty v4 defaults when nothing stored', () => {
+test('loadMyNumbers returns empty v5 defaults when nothing stored', () => {
   const data = loadMyNumbers()
-  assert.equal(data.version, 4)
+  assert.equal(data.version, 5)
   assert.equal(data.house, null)
   assert.equal(data.drive, null)
   assert.equal(data.retire, null)
   assert.equal(data.insure, null)
   assert.equal(data.tax, null)
   assert.equal(data.etf, null)
+  assert.equal(data.flow, null)
 })
 
 test('loadMyNumbers safely ignores malformed JSON', () => {
@@ -45,7 +46,7 @@ test('loadMyNumbers migrates a v1 record into the v3 shape', () => {
     drive: { monthlyCost: 1500, carLabel: 'Toyota Corolla', salary: 6000, savedAt: 456 },
   }))
   const data = loadMyNumbers()
-  assert.equal(data.version, 4)
+  assert.equal(data.version, 5)
   assert.equal(data.house.cashProceeds, 500000)
   assert.equal(data.house.propertyValue, 1200000)
   assert.equal(data.house.outstandingBalance, null)
@@ -53,6 +54,7 @@ test('loadMyNumbers migrates a v1 record into the v3 shape', () => {
   assert.equal(data.drive.carLabel, 'Toyota Corolla')
   assert.equal(data.retire, null)
   assert.equal(data.etf, null)
+  assert.equal(data.flow, null)
 })
 
 test('loadMyNumbers migrates a v2 record, preserving existing slots', () => {
@@ -63,12 +65,13 @@ test('loadMyNumbers migrates a v2 record, preserving existing slots', () => {
     retire: { salary: 7000, oaBalance: 80000, source: 'auto', savedAt: 2 },
   }))
   const data = loadMyNumbers()
-  assert.equal(data.version, 4)
+  assert.equal(data.version, 5)
   assert.equal(data.house.outstandingBalance, 400000)
   assert.equal(data.retire.salary, 7000)
   assert.equal(data.insure, null)
   assert.equal(data.tax, null)
   assert.equal(data.etf, null)
+  assert.equal(data.flow, null)
 })
 
 test('loadMyNumbers migrates a v3 record, preserving existing slots and adding etf', () => {
@@ -79,10 +82,23 @@ test('loadMyNumbers migrates a v3 record, preserving existing slots and adding e
     tax: { monthlyTakeHome: 5000, source: 'auto', savedAt: 2 },
   }))
   const data = loadMyNumbers()
-  assert.equal(data.version, 4)
+  assert.equal(data.version, 5)
   assert.equal(data.insure.monthlyPremium, 300)
   assert.equal(data.tax.monthlyTakeHome, 5000)
   assert.equal(data.etf, null)
+  assert.equal(data.flow, null)
+})
+
+test('loadMyNumbers migrates a v4 record, preserving existing slots and adding flow', () => {
+  window.localStorage.setItem('ndtm_my_numbers_v1', JSON.stringify({
+    version: 4,
+    house: null, drive: null, retire: null, insure: null, tax: null,
+    etf: { portfolioValue: 25000, monthlyContribution: 800, source: 'auto', savedAt: 1 },
+  }))
+  const data = loadMyNumbers()
+  assert.equal(data.version, 5)
+  assert.equal(data.etf.portfolioValue, 25000)
+  assert.equal(data.flow, null)
 })
 
 test('saveInsureNumbers and saveTaxNumbers round-trip independently', () => {
@@ -105,6 +121,28 @@ test('saveEtfNumbers round-trips independently', () => {
   assert.equal(data.etf.monthlyContribution, 800)
   assert.equal(data.etf.source, 'auto')
   assert.equal(typeof data.etf.savedAt, 'number')
+})
+
+test('saveFlowNumbers round-trips independently', () => {
+  window.localStorage.removeItem('ndtm_my_numbers_v1')
+  saveFlowNumbers({ livingExpenses: 3200, monthlySurplus: 1739, trueSavingsRate: 0.38, cashSavingsRate: 0.29 })
+  const data = loadMyNumbers()
+  assert.equal(data.flow.livingExpenses, 3200)
+  assert.equal(data.flow.monthlySurplus, 1739)
+  assert.equal(data.flow.trueSavingsRate, 0.38)
+  assert.equal(data.flow.cashSavingsRate, 0.29)
+  assert.equal(data.flow.source, 'auto')
+  assert.equal(typeof data.flow.savedAt, 'number')
+})
+
+test('clearFlowNumbers nulls only the flow slot', () => {
+  window.localStorage.removeItem('ndtm_my_numbers_v1')
+  saveFlowNumbers({ livingExpenses: 3200 })
+  saveEtfNumbers({ portfolioValue: 25000, monthlyContribution: 800 })
+  clearFlowNumbers()
+  const data = loadMyNumbers()
+  assert.equal(data.flow, null)
+  assert.notEqual(data.etf, null)
 })
 
 test('loadMyNumbers ignores an unknown version', () => {

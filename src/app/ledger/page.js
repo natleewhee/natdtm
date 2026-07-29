@@ -52,6 +52,8 @@ function stateToScenario(state, id, label) {
     cashSavings: state.cashSavings ? String(Math.round(state.cashSavings)) : '',
     insurancePremium: state.insurancePremium ? String(Math.round(state.insurancePremium)) : '',
     insuranceSource: state.insurancePremium ? 'auto' : 'manual',
+    livingExpenses: state.livingExpenses ? String(Math.round(state.livingExpenses)) : '',
+    livingExpensesSource: state.livingExpenses ? 'auto' : 'manual',
     // monthlyTakeHome is an EXACT figure from TaxWise, computed for a
     // specific salary — monthlyTakeHomeSalary records which one, so
     // scenarioToState can tell it's gone stale once the scenario's
@@ -112,6 +114,7 @@ function scenarioToState(scenario) {
     investmentBalance: num(scenario.investmentBalance),
     cashSavings,
     insurancePremium: num(scenario.insurancePremium),
+    livingExpenses: num(scenario.livingExpenses),
     // If the salary was edited away from what monthlyTakeHome was
     // actually computed for, that exact figure no longer applies —
     // fall back to calcTakeHome's flat 80% approximation instead of
@@ -145,7 +148,7 @@ export default function MyLedgerPage() {
     const myNumbers = loadMyNumbers()
     const baseline = buildBaselineState(myNumbers)
     setScenarios([stateToScenario(baseline, 'baseline', 'Baseline')])
-    setSynced(!!(myNumbers.house || myNumbers.drive || myNumbers.retire || myNumbers.insure || myNumbers.tax || myNumbers.etf))
+    setSynced(!!(myNumbers.house || myNumbers.drive || myNumbers.retire || myNumbers.insure || myNumbers.tax || myNumbers.etf || myNumbers.flow))
     /* eslint-enable react-hooks/set-state-in-effect */
   }, [])
 

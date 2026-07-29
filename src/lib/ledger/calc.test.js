@@ -27,6 +27,13 @@ test('buildBaselineState fills from a full My Numbers snapshot', () => {
   assert.equal(state.investmentBalance, 150000)
 })
 
+test('buildBaselineState reads livingExpenses from the FlowState slot', () => {
+  const synced = buildBaselineState({ flow: { livingExpenses: 3200 } })
+  assert.equal(synced.livingExpenses, 3200)
+  const unsynced = buildBaselineState({})
+  assert.equal(unsynced.livingExpenses, 0)
+})
+
 test('buildBaselineState handles empty/missing modules', () => {
   const state = buildBaselineState({})
   assert.equal(state.salary, 0)
@@ -203,6 +210,23 @@ test('calcInvestmentCapacity does subtract insurance premiums', () => {
   approx(calcInvestmentCapacity(state), 10_000 * 0.8 - 3000 - 800)
 })
 
+test('calcInvestmentCapacity subtracts FlowState-measured living expenses once synced', () => {
+  const state = { salary: 8000, house: { monthlyInstalment: 1815 }, car: null, insurancePremium: 280, livingExpenses: 3200 }
+  approx(calcInvestmentCapacity(state), 8000 * 0.8 - 1815 - 280 - 3200)
+})
+
+test('calcInvestmentCapacity is unchanged when FlowState has never run (no livingExpenses field)', () => {
+  const withField = { salary: 8000, house: { monthlyInstalment: 1815 }, car: null, insurancePremium: 280, livingExpenses: 0 }
+  const withoutField = { salary: 8000, house: { monthlyInstalment: 1815 }, car: null, insurancePremium: 280 }
+  approx(calcInvestmentCapacity(withField), calcInvestmentCapacity(withoutField))
+})
+
+test('calcTDSR and calcMSR exclude living expenses, since banks do too', () => {
+  const withoutLiving = calcTDSR({ salary: 10_000, house: { monthlyInstalment: 3000 }, car: null })
+  const withLiving = calcTDSR({ salary: 10_000, house: { monthlyInstalment: 3000 }, car: null, livingExpenses: 3200 })
+  approx(withLiving.tdsr, withoutLiving.tdsr)
+})
+
 // ─── MSR ─────────────────────────────────────────────────────────────────
 
 test('calcMSR does not apply to private property', () => {
@@ -273,6 +297,13 @@ test('buildCapacitySchedule keeps insurance running for the whole period', () =>
   const schedule = buildCapacitySchedule(state, 12 * 10)
   approx(schedule[0], 8000 - 1500)
   approx(schedule[schedule.length - 1], 8000 - 500) // car gone, insurance stays
+})
+
+test('buildCapacitySchedule keeps living expenses running for the whole period too, like insurance', () => {
+  const state = { salary: 10_000, livingExpenses: 3000, car: { monthlyInstalment: 1000, tenureRemaining: 3 } }
+  const schedule = buildCapacitySchedule(state, 12 * 10)
+  approx(schedule[0], 8000 - 4000)
+  approx(schedule[schedule.length - 1], 8000 - 3000) // car gone, living expenses stay
 })
 
 test('levelEquivalentContribution matches the flat case exactly', () => {

@@ -17,7 +17,7 @@
 const STORAGE_KEY = 'ndtm_my_numbers_v1' // key name predates the v2 schema bump; left as-is, the `version` field inside is what's versioned
 
 const EMPTY = {
-  version: 4,
+  version: 5,
   // { source: 'auto'|'manual', savedAt,
   //   outstandingBalance, rate, tenureRemaining, monthlyInstalment, propertyValue, cpfServicing,
   //   cashProceeds, totalCPFRefund, salePrice, saleDate }
@@ -36,11 +36,17 @@ const EMPTY = {
   // DCA plan and (if the rebalance tool has been used) actual current
   // holdings, so MyLedger's net worth isn't missing money invested there.
   etf: null,
+  // { source, savedAt, livingExpenses, monthlySurplus, trueSavingsRate,
+  //   cashSavingsRate } — FlowState's measured monthly living spend.
+  // MyLedger's own investment-capacity math used to assume this was
+  // zero (take-home minus loans and insurance, nothing else); once
+  // FlowState has run, MyLedger subtracts the real figure instead.
+  flow: null,
 }
 
 function migrateV1(parsed) {
   return {
-    version: 4,
+    version: 5,
     house: parsed.house ? {
       source: 'auto', savedAt: parsed.house.savedAt,
       cashProceeds: parsed.house.cashProceeds, totalCPFRefund: parsed.house.totalCPFRefund,
@@ -53,7 +59,7 @@ function migrateV1(parsed) {
       monthlyInstalment: parsed.drive.monthlyCost, carLabel: parsed.drive.carLabel, salary: parsed.drive.salary,
       loanOutstanding: null, rate: null, tenureRemaining: null, carValue: null,
     } : null,
-    retire: null, insure: null, tax: null, etf: null,
+    retire: null, insure: null, tax: null, etf: null, flow: null,
   }
 }
 
@@ -68,14 +74,20 @@ function migrateV3(parsed) {
   return { ...parsed, version: 4, etf: parsed.etf ?? null }
 }
 
+// v4 → v5 only adds the flow slot.
+function migrateV4(parsed) {
+  return { ...parsed, version: 5, flow: parsed.flow ?? null }
+}
+
 function safeParse(raw) {
   if (!raw) return null
   try {
     const parsed = JSON.parse(raw)
     if (!parsed || typeof parsed !== 'object') return null
-    if (parsed.version === 4) return parsed
-    if (parsed.version === 3) return migrateV3(parsed)
-    if (parsed.version === 2) return migrateV3(migrateV2(parsed))
+    if (parsed.version === 5) return parsed
+    if (parsed.version === 4) return migrateV4(parsed)
+    if (parsed.version === 3) return migrateV4(migrateV3(parsed))
+    if (parsed.version === 2) return migrateV4(migrateV3(migrateV2(parsed)))
     if (parsed.version === 1) return migrateV1(parsed)
     return null
   } catch {
@@ -202,6 +214,25 @@ export function saveEtfNumbers({ portfolioValue, monthlyContribution, source = '
 export function clearEtfNumbers() {
   const data = loadMyNumbers()
   data.etf = null
+  save(data)
+}
+
+export function saveFlowNumbers({ livingExpenses, monthlySurplus, trueSavingsRate, cashSavingsRate, source = 'auto' }) {
+  const data = loadMyNumbers()
+  data.flow = {
+    source,
+    livingExpenses: Number(livingExpenses) || 0,
+    monthlySurplus: monthlySurplus != null ? Number(monthlySurplus) || 0 : null,
+    trueSavingsRate: trueSavingsRate != null ? Number(trueSavingsRate) || 0 : null,
+    cashSavingsRate: cashSavingsRate != null ? Number(cashSavingsRate) || 0 : null,
+    savedAt: Date.now(),
+  }
+  save(data)
+}
+
+export function clearFlowNumbers() {
+  const data = loadMyNumbers()
+  data.flow = null
   save(data)
 }
 

@@ -297,6 +297,17 @@ export default function ScenarioCard({ scenario, onChange, onRemove, onLabelChan
         <p style={{ marginTop: 8, fontSize: C.xs, color: C.faint }}>Synced from InsureCheck — edit freely.</p>
       )}
 
+      <SectionDivider label="Living expenses" />
+      <MoneyInput id={`${scenario.id}-living`} label="Everything else — food, transport, utilities, subscriptions" hint="Reduces what you can invest, same as a loan — but isn't counted toward TDSR" value={scenario.livingExpenses} onChange={e => set({ livingExpenses: e.target.value })} />
+      {scenario.livingExpensesSource === 'auto' && num(scenario.livingExpenses) > 0 && (
+        <p style={{ marginTop: 8, fontSize: C.xs, color: C.faint }}>Synced from FlowState — edit freely, this won&apos;t change what&apos;s saved there.</p>
+      )}
+      {scenario.livingExpensesSource !== 'auto' && (
+        <p style={{ marginTop: 8, fontSize: C.xs, color: C.faint }}>
+          Not synced — <a href="/flow" style={{ color: C.accent }}>run FlowState</a> to measure this instead of guessing.
+        </p>
+      )}
+
       <SectionDivider label="Cash & investments" />
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: 14 }}>
         <MoneyInput id={`${scenario.id}-cash`} label="Cash savings" hint="Adjusted automatically by a house purchase/upgrade above" value={scenario.cashSavings} onChange={e => set({ cashSavings: e.target.value })} />

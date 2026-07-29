@@ -40,13 +40,17 @@ export const TAKE_HOME_RATE = 0.80
 // savings has no source tool to sync from, so it always starts at zero
 // and is manual-entry only.
 export function buildBaselineState(myNumbers) {
-  const { house, drive, retire, insure, tax, etf } = myNumbers || {}
+  const { house, drive, retire, insure, tax, etf, flow } = myNumbers || {}
   return {
     salary: retire?.salary || drive?.salary || 0,
     // Exact after-tax take-home from TaxWise, when it's been run —
     // otherwise calcTakeHome falls back to the flat 80% approximation.
     monthlyTakeHome: tax?.monthlyTakeHome || 0,
     insurancePremium: insure?.monthlyPremium || 0,
+    // FlowState's measured monthly living spend — see calcInvestmentCapacity
+    // and buildCapacitySchedule below for how this replaces the old
+    // implicit assumption that living expenses were zero.
+    livingExpenses: flow?.livingExpenses || 0,
     house: house ? {
       outstandingBalance: house.outstandingBalance || 0,
       monthlyInstalment: house.monthlyInstalment || 0,
@@ -247,21 +251,28 @@ export function calcTakeHome(state) {
   return { takeHome: (state.salary || 0) * TAKE_HOME_RATE, exact: false }
 }
 
-// Monthly capacity to invest, right now.
+// Monthly capacity to invest, right now. Subtracts FlowState's measured
+// living expenses when available — previously this implicitly assumed
+// living costs were zero, overstating capacity by whatever someone
+// actually spends on food, transport, utilities and everything else
+// that isn't a loan or insurance premium.
 export function calcInvestmentCapacity(state) {
   const { takeHome } = calcTakeHome(state)
   const obligations = calcMonthlyObligations(state).total
-  return Math.max(0, takeHome - obligations)
+  const living = state.livingExpenses || 0
+  return Math.max(0, takeHome - obligations - living)
 }
 
 // Capacity month by month over the accumulation period. Loans END —
 // a 7-year car loan does not keep draining a 30-year projection — so
 // each obligation drops out of the calculation once its remaining
 // tenure is up, and capacity steps up accordingly. Insurance premiums
-// have no tenure and are assumed to continue throughout.
+// and living expenses have no tenure and are assumed to continue
+// throughout.
 export function buildCapacitySchedule(state, months) {
   const { takeHome } = calcTakeHome(state)
   const insurance = state.insurancePremium || 0
+  const living = state.livingExpenses || 0
   const houseMonths = state.house?.tenureRemaining != null
     ? Math.round(state.house.tenureRemaining * 12) : Infinity
   const carMonths = state.car?.tenureRemaining != null
@@ -271,7 +282,7 @@ export function buildCapacitySchedule(state, months) {
 
   const schedule = []
   for (let m = 0; m < Math.max(0, months); m++) {
-    const owed = (m < houseMonths ? mortgage : 0) + (m < carMonths ? car : 0) + insurance
+    const owed = (m < houseMonths ? mortgage : 0) + (m < carMonths ? car : 0) + insurance + living
     schedule.push(Math.max(0, takeHome - owed))
   }
   return schedule

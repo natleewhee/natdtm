@@ -43,6 +43,12 @@ const TOOLS = [
     title: 'MyLedger',
     desc: 'Your whole picture at once — net worth, debt servicing across every loan, and what buying a car or upgrading your house does to your retirement.',
   },
+  {
+    href: '/flow',
+    eyebrow: 'Cashflow',
+    title: 'FlowState',
+    desc: 'Where your salary actually goes — CPF split from cash automatically, your mortgage split into what is paid from CPF vs cash, and the one month a year your account runs dry.',
+  },
 ]
 
 export default function HomePage() {
