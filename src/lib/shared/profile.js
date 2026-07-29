@@ -13,8 +13,19 @@
 // and TDSR — v1 only carried one-shot snapshot fields for the RetireWell
 // prefill. migrateV1 upgrades old stored data into the v2 shape rather
 // than discarding it.
+//
+// Named profiles (up to MAX_PROFILES) wrap this same per-module shape —
+// each profile holds one full copy of it, so "Me" and "Joint with
+// Alex" can hold entirely different numbers without either one
+// overwriting the other. loadMyNumbers/saveXNumbers/clearXNumbers all
+// operate on whichever profile is ACTIVE, so every existing call site
+// across every tool keeps working unchanged — only the storage layer
+// underneath it changed. A browser that has never seen profiles has its
+// existing flat data migrated into a single profile named "My Numbers".
 
-const STORAGE_KEY = 'ndtm_my_numbers_v1' // key name predates the v2 schema bump; left as-is, the `version` field inside is what's versioned
+const STORAGE_KEY = 'ndtm_my_numbers_v1' // key name predates the v2 schema bump and the profiles wrapper; left as-is, the `version`/`schemaVersion` fields inside are what's versioned
+export const MAX_PROFILES = 3
+const DEFAULT_PROFILE_NAME = 'My Numbers'
 
 const EMPTY = {
   version: 5,
@@ -79,35 +90,162 @@ function migrateV4(parsed) {
   return { ...parsed, version: 5, flow: parsed.flow ?? null }
 }
 
-function safeParse(raw) {
-  if (!raw) return null
-  try {
-    const parsed = JSON.parse(raw)
-    if (!parsed || typeof parsed !== 'object') return null
-    if (parsed.version === 5) return parsed
-    if (parsed.version === 4) return migrateV4(parsed)
-    if (parsed.version === 3) return migrateV4(migrateV3(parsed))
-    if (parsed.version === 2) return migrateV4(migrateV3(migrateV2(parsed)))
-    if (parsed.version === 1) return migrateV1(parsed)
-    return null
-  } catch {
-    return null
-  }
+// Migrates one profile's inner per-module data (the shape EMPTY
+// describes) up to the current version — same logic that used to run
+// directly against the raw localStorage payload, before profiles
+// existed, so a single profile's `data` field is exactly what
+// loadMyNumbers() used to return wholesale.
+function migrateInnerData(parsed) {
+  if (!parsed || typeof parsed !== 'object') return null
+  if (parsed.version === 5) return parsed
+  if (parsed.version === 4) return migrateV4(parsed)
+  if (parsed.version === 3) return migrateV4(migrateV3(parsed))
+  if (parsed.version === 2) return migrateV4(migrateV3(migrateV2(parsed)))
+  if (parsed.version === 1) return migrateV1(parsed)
+  return null
 }
 
-export function loadMyNumbers() {
-  if (typeof window === 'undefined') return { ...EMPTY }
-  const parsed = safeParse(window.localStorage.getItem(STORAGE_KEY))
-  return parsed ? { ...EMPTY, ...parsed } : { ...EMPTY }
+function newProfileId() {
+  if (typeof crypto !== 'undefined' && crypto.randomUUID) return crypto.randomUUID()
+  return `profile-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`
 }
 
-function save(data) {
+function makeProfile(name, data) {
+  const now = Date.now()
+  return { id: newProfileId(), name: name || DEFAULT_PROFILE_NAME, createdAt: now, updatedAt: now, data: data || { ...EMPTY } }
+}
+
+function isWrapped(parsed) {
+  return !!parsed && typeof parsed === 'object' && Array.isArray(parsed.profiles)
+}
+
+function saveStore(store) {
   if (typeof window === 'undefined') return
   try {
-    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(data))
+    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(store))
   } catch {
     // localStorage unavailable (private browsing, quota) — fail silently
   }
+}
+
+// Loads the raw wrapper { schemaVersion, activeProfileId, profiles }
+// from localStorage, migrating a pre-profiles flat payload (or nothing
+// at all) into a single default profile. Never returns an empty
+// profiles array — there is always at least one profile to be active.
+// Whenever it has to synthesize or migrate a store shape, it persists
+// the result immediately (rather than only on the next write) — a
+// read-only call like getActiveProfileId() must return the SAME id on
+// every call, not mint a fresh, un-persisted profile each time.
+function loadStore() {
+  if (typeof window === 'undefined') return { schemaVersion: 1, activeProfileId: null, profiles: [makeProfile(DEFAULT_PROFILE_NAME)] }
+  let parsed = null
+  try {
+    const raw = window.localStorage.getItem(STORAGE_KEY)
+    parsed = raw ? JSON.parse(raw) : null
+  } catch {
+    parsed = null
+  }
+
+  if (isWrapped(parsed)) {
+    const profiles = parsed.profiles
+      .map(p => ({
+        id: p.id || newProfileId(),
+        name: p.name || DEFAULT_PROFILE_NAME,
+        createdAt: p.createdAt || Date.now(),
+        updatedAt: p.updatedAt || Date.now(),
+        data: { ...EMPTY, ...(migrateInnerData(p.data) || {}) },
+      }))
+      .slice(0, MAX_PROFILES)
+    if (profiles.length === 0) profiles.push(makeProfile(DEFAULT_PROFILE_NAME))
+    const activeProfileId = profiles.some(p => p.id === parsed.activeProfileId) ? parsed.activeProfileId : profiles[0].id
+    const store = { schemaVersion: 1, activeProfileId, profiles }
+    const changed = profiles.some((p, i) => p.id !== parsed.profiles[i]?.id) || activeProfileId !== parsed.activeProfileId
+    if (changed) saveStore(store)
+    return store
+  }
+
+  // Pre-profiles flat payload (or nothing/garbage) — migrate whatever's
+  // there into a single starting profile rather than discarding it.
+  const migrated = migrateInnerData(parsed)
+  const profile = makeProfile(DEFAULT_PROFILE_NAME, migrated ? { ...EMPTY, ...migrated } : { ...EMPTY })
+  const store = { schemaVersion: 1, activeProfileId: profile.id, profiles: [profile] }
+  saveStore(store)
+  return store
+}
+
+function getActiveProfile(store) {
+  return store.profiles.find(p => p.id === store.activeProfileId) || store.profiles[0]
+}
+
+export function loadMyNumbers() {
+  const store = loadStore()
+  const active = getActiveProfile(store)
+  return active ? { ...EMPTY, ...active.data } : { ...EMPTY }
+}
+
+// Writes into the ACTIVE profile's data — every saveXNumbers/
+// clearXNumbers function below is unchanged from before profiles
+// existed; only what this function does underneath them changed.
+function save(data) {
+  if (typeof window === 'undefined') return
+  const store = loadStore()
+  const idx = store.profiles.findIndex(p => p.id === store.activeProfileId)
+  if (idx === -1) return
+  store.profiles[idx] = { ...store.profiles[idx], data, updatedAt: Date.now() }
+  saveStore(store)
+}
+
+// ─── Profile management ─────────────────────────────────────────────────
+
+export function listProfiles() {
+  const store = loadStore()
+  return store.profiles.map(p => ({ id: p.id, name: p.name, updatedAt: p.updatedAt, isActive: p.id === store.activeProfileId }))
+}
+
+export function getActiveProfileId() {
+  return loadStore().activeProfileId
+}
+
+// Creates a new empty profile (up to MAX_PROFILES) and makes it active.
+// Returns the new profile's id, or null if already at the cap.
+export function createProfile(name) {
+  const store = loadStore()
+  if (store.profiles.length >= MAX_PROFILES) return null
+  const profile = makeProfile((name || '').trim() || `Profile ${store.profiles.length + 1}`)
+  store.profiles.push(profile)
+  store.activeProfileId = profile.id
+  saveStore(store)
+  return profile.id
+}
+
+export function renameProfile(id, name) {
+  const trimmed = (name || '').trim()
+  if (!trimmed) return
+  const store = loadStore()
+  const profile = store.profiles.find(p => p.id === id)
+  if (!profile) return
+  profile.name = trimmed
+  saveStore(store)
+}
+
+// Deletes a profile — refuses to delete the last remaining one, since
+// there must always be an active profile for every tool to read/write.
+// If the deleted profile was active, switches to whichever is first.
+// Returns false if the delete was refused.
+export function deleteProfile(id) {
+  const store = loadStore()
+  if (store.profiles.length <= 1) return false
+  store.profiles = store.profiles.filter(p => p.id !== id)
+  if (store.activeProfileId === id) store.activeProfileId = store.profiles[0].id
+  saveStore(store)
+  return true
+}
+
+export function setActiveProfile(id) {
+  const store = loadStore()
+  if (!store.profiles.some(p => p.id === id)) return
+  store.activeProfileId = id
+  saveStore(store)
 }
 
 export function saveHouseNumbers({

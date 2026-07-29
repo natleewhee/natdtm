@@ -1,0 +1,168 @@
+'use client'
+
+import { useEffect, useRef, useState } from 'react'
+import {
+  listProfiles, createProfile, renameProfile, deleteProfile, setActiveProfile, MAX_PROFILES,
+} from '@/lib/shared/profile'
+
+// Lets someone keep separate named sets of numbers on the same browser
+// — "Me", "Joint with Alex", "5-years-from-now plan" — each with its
+// own live data across every tool, rather than one household's numbers
+// overwriting another's. Global, not per-tool: every tool reads/writes
+// through the same active profile (see src/lib/shared/profile.js), so
+// this lives in the shared header rather than any one page.
+//
+// Switching, creating, or deleting reloads the page — every tool loads
+// its own state once on mount via its own effect, and there's no single
+// place to broadcast "the active profile changed" to all of them at
+// once. A full reload is the simplest way every tool ends up showing
+// the newly-active profile's numbers, not the previous one's.
+export default function ProfileSwitcher() {
+  const [profiles, setProfiles] = useState(null) // null until mounted — avoids an SSR/client name mismatch
+  const [open, setOpen] = useState(false)
+  const [editingId, setEditingId] = useState(null)
+  const [editingName, setEditingName] = useState('')
+  const [creating, setCreating] = useState(false)
+  const [newName, setNewName] = useState('')
+  const menuRef = useRef(null)
+
+  useEffect(() => {
+    /* eslint-disable-next-line react-hooks/set-state-in-effect -- one-time
+       read from localStorage on mount; unavailable during SSR so can't
+       happen during render without a hydration mismatch */
+    setProfiles(listProfiles())
+  }, [])
+
+  useEffect(() => {
+    if (!open) return
+    function onDocClick(e) {
+      if (menuRef.current && !menuRef.current.contains(e.target)) closeMenu()
+    }
+    document.addEventListener('mousedown', onDocClick)
+    return () => document.removeEventListener('mousedown', onDocClick)
+  }, [open])
+
+  if (!profiles) return null // nothing to show before the client-only profile list has loaded
+
+  function closeMenu() {
+    setOpen(false)
+    setEditingId(null)
+    setCreating(false)
+    setNewName('')
+  }
+
+  const active = profiles.find(p => p.isActive) || profiles[0]
+
+  function handleSwitch(id) {
+    if (id === active.id) { closeMenu(); return }
+    setActiveProfile(id)
+    window.location.reload()
+  }
+
+  function startRename(p) {
+    setEditingId(p.id)
+    setEditingName(p.name)
+  }
+  function saveRename() {
+    if (editingId) renameProfile(editingId, editingName)
+    setProfiles(listProfiles())
+    setEditingId(null)
+  }
+
+  function handleDelete(id) {
+    const wasActive = id === active.id
+    const ok = deleteProfile(id)
+    if (!ok) return
+    if (wasActive) { window.location.reload(); return }
+    setProfiles(listProfiles())
+  }
+
+  function submitCreate() {
+    const id = createProfile(newName)
+    if (!id) return // at MAX_PROFILES — button is hidden in that state, but guard anyway
+    window.location.reload()
+  }
+
+  return (
+    <div className="shell-switcher" ref={menuRef}>
+      <button
+        type="button"
+        className="shell-switcher-btn shell-profile-btn"
+        onClick={() => (open ? closeMenu() : setOpen(true))}
+        aria-expanded={open}
+        aria-haspopup="true"
+        title="Switch profile"
+      >
+        {active.name}
+        <span className="shell-switcher-caret" aria-hidden="true">▾</span>
+      </button>
+
+      {open && (
+        <div className="shell-switcher-menu shell-profile-menu" role="menu">
+          <div className="shell-profile-menu-label">Profiles</div>
+          {profiles.map(p => (
+            <div key={p.id} className="shell-profile-row">
+              {editingId === p.id ? (
+                <input
+                  autoFocus
+                  className="shell-profile-rename-input"
+                  value={editingName}
+                  onChange={e => setEditingName(e.target.value)}
+                  onKeyDown={e => {
+                    if (e.key === 'Enter') saveRename()
+                    if (e.key === 'Escape') setEditingId(null)
+                  }}
+                  onBlur={saveRename}
+                />
+              ) : (
+                <>
+                  <button
+                    type="button"
+                    className="shell-profile-name"
+                    onClick={() => handleSwitch(p.id)}
+                    role="menuitemradio"
+                    aria-checked={p.isActive}
+                  >
+                    <span className={`shell-profile-dot${p.isActive ? ' shell-profile-dot--active' : ''}`} aria-hidden="true" />
+                    {p.name}
+                  </button>
+                  <div className="shell-profile-actions">
+                    <button type="button" className="shell-profile-action" onClick={() => startRename(p)} aria-label={`Rename ${p.name}`}>Rename</button>
+                    {profiles.length > 1 && (
+                      <button type="button" className="shell-profile-action shell-profile-action--danger" onClick={() => handleDelete(p.id)} aria-label={`Delete ${p.name}`}>Delete</button>
+                    )}
+                  </div>
+                </>
+              )}
+            </div>
+          ))}
+
+          <div className="shell-switcher-divider" />
+
+          {creating ? (
+            <div className="shell-profile-row">
+              <input
+                autoFocus
+                className="shell-profile-rename-input"
+                placeholder={`Profile ${profiles.length + 1}`}
+                value={newName}
+                onChange={e => setNewName(e.target.value)}
+                onKeyDown={e => {
+                  if (e.key === 'Enter') submitCreate()
+                  if (e.key === 'Escape') setCreating(false)
+                }}
+              />
+              <button type="button" className="shell-profile-action" onClick={submitCreate}>Add</button>
+            </div>
+          ) : profiles.length < MAX_PROFILES ? (
+            <button type="button" className="shell-profile-add-btn" onClick={() => setCreating(true)}>
+              + New profile
+            </button>
+          ) : (
+            <div className="shell-profile-menu-hint">Up to {MAX_PROFILES} profiles</div>
+          )}
+        </div>
+      )}
+    </div>
+  )
+}

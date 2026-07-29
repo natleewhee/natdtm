@@ -3,6 +3,7 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useEffect, useRef, useState } from 'react'
+import ProfileSwitcher from './ProfileSwitcher'
 
 const TOOLS = [
   { key: 'insure', href: '/insure', label: 'Insure' },
@@ -88,6 +89,7 @@ export default function ShellHeader({
               )}
             </div>
           )}
+          <ProfileSwitcher />
         </div>
 
         {hasContext && (

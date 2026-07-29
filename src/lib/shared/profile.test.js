@@ -19,6 +19,8 @@ const {
   loadMyNumbers, saveHouseNumbers, saveDriveNumbers, saveRetireNumbers,
   saveInsureNumbers, saveTaxNumbers, saveEtfNumbers, saveFlowNumbers,
   clearHouseNumbers, clearDriveNumbers, clearRetireNumbers, clearEtfNumbers, clearFlowNumbers,
+  listProfiles, createProfile, renameProfile, deleteProfile, setActiveProfile, getActiveProfileId,
+  MAX_PROFILES,
 } = await import('./profile.js')
 
 test('loadMyNumbers returns empty v5 defaults when nothing stored', () => {
@@ -207,4 +209,131 @@ test('clear functions null out only their own slot', () => {
   clearRetireNumbers()
   data = loadMyNumbers()
   assert.equal(data.retire, null)
+})
+
+// ─── Named profiles ─────────────────────────────────────────────────────
+
+test('a fresh browser starts with a single default profile that is active', () => {
+  window.localStorage.removeItem('ndtm_my_numbers_v1')
+  const profiles = listProfiles()
+  assert.equal(profiles.length, 1)
+  assert.equal(profiles[0].name, 'My Numbers')
+  assert.equal(profiles[0].isActive, true)
+  assert.equal(getActiveProfileId(), profiles[0].id)
+})
+
+test('an old flat (pre-profiles) payload migrates into a single "My Numbers" profile, data intact', () => {
+  window.localStorage.setItem('ndtm_my_numbers_v1', JSON.stringify({
+    version: 3,
+    house: { outstandingBalance: 400000, source: 'auto', savedAt: 1 },
+    drive: null, retire: null,
+    insure: { monthlyPremium: 300, source: 'auto', savedAt: 2 },
+    tax: null,
+  }))
+  const profiles = listProfiles()
+  assert.equal(profiles.length, 1)
+  assert.equal(profiles[0].name, 'My Numbers')
+  const data = loadMyNumbers()
+  assert.equal(data.house.outstandingBalance, 400000)
+  assert.equal(data.insure.monthlyPremium, 300)
+  assert.equal(data.version, 5)
+})
+
+test('createProfile adds a new empty profile and makes it active', () => {
+  window.localStorage.removeItem('ndtm_my_numbers_v1')
+  saveHouseNumbers({ cashProceeds: 1, totalCPFRefund: 1, salePrice: 1, saleDate: '2026-01-01' })
+  const newId = createProfile('Joint with Alex')
+  assert.notEqual(newId, null)
+  assert.equal(getActiveProfileId(), newId)
+  // the new profile starts empty — it does NOT inherit the old profile's house data
+  const data = loadMyNumbers()
+  assert.equal(data.house, null)
+  const profiles = listProfiles()
+  assert.equal(profiles.length, 2)
+  assert.equal(profiles.find(p => p.id === newId).name, 'Joint with Alex')
+})
+
+test('each profile holds independent data — switching does not leak numbers across profiles', () => {
+  window.localStorage.removeItem('ndtm_my_numbers_v1')
+  const profileA = getActiveProfileId()
+  saveHouseNumbers({ cashProceeds: 100, totalCPFRefund: 1, salePrice: 1, saleDate: '2026-01-01' })
+
+  const profileB = createProfile('Profile B')
+  saveHouseNumbers({ cashProceeds: 200, totalCPFRefund: 1, salePrice: 1, saleDate: '2026-01-01' })
+  assert.equal(loadMyNumbers().house.cashProceeds, 200)
+
+  setActiveProfile(profileA)
+  assert.equal(loadMyNumbers().house.cashProceeds, 100)
+
+  setActiveProfile(profileB)
+  assert.equal(loadMyNumbers().house.cashProceeds, 200)
+})
+
+test('createProfile refuses beyond MAX_PROFILES', () => {
+  window.localStorage.removeItem('ndtm_my_numbers_v1')
+  assert.equal(MAX_PROFILES, 3)
+  createProfile('Second')
+  const third = createProfile('Third')
+  assert.notEqual(third, null)
+  const fourth = createProfile('Fourth')
+  assert.equal(fourth, null)
+  assert.equal(listProfiles().length, 3)
+})
+
+test('renameProfile updates the name without touching data or other profiles', () => {
+  window.localStorage.removeItem('ndtm_my_numbers_v1')
+  const id = getActiveProfileId()
+  saveHouseNumbers({ cashProceeds: 500, totalCPFRefund: 1, salePrice: 1, saleDate: '2026-01-01' })
+  renameProfile(id, 'Retirement plan')
+  assert.equal(listProfiles().find(p => p.id === id).name, 'Retirement plan')
+  assert.equal(loadMyNumbers().house.cashProceeds, 500)
+})
+
+test('renameProfile ignores a blank name', () => {
+  window.localStorage.removeItem('ndtm_my_numbers_v1')
+  const id = getActiveProfileId()
+  const originalName = listProfiles()[0].name
+  renameProfile(id, '   ')
+  assert.equal(listProfiles().find(p => p.id === id).name, originalName)
+})
+
+test('deleteProfile refuses to delete the last remaining profile', () => {
+  window.localStorage.removeItem('ndtm_my_numbers_v1')
+  const id = getActiveProfileId()
+  const deleted = deleteProfile(id)
+  assert.equal(deleted, false)
+  assert.equal(listProfiles().length, 1)
+})
+
+test('deleting the active profile switches to another one and its own data survives', () => {
+  window.localStorage.removeItem('ndtm_my_numbers_v1')
+  const profileA = getActiveProfileId()
+  saveHouseNumbers({ cashProceeds: 111, totalCPFRefund: 1, salePrice: 1, saleDate: '2026-01-01' })
+  const profileB = createProfile('B')
+  saveHouseNumbers({ cashProceeds: 222, totalCPFRefund: 1, salePrice: 1, saleDate: '2026-01-01' })
+
+  const deleted = deleteProfile(profileB)
+  assert.equal(deleted, true)
+  assert.equal(getActiveProfileId(), profileA)
+  assert.equal(loadMyNumbers().house.cashProceeds, 111)
+  assert.equal(listProfiles().length, 1)
+})
+
+test('deleting a non-active profile leaves the active one untouched', () => {
+  window.localStorage.removeItem('ndtm_my_numbers_v1')
+  const profileA = getActiveProfileId()
+  saveHouseNumbers({ cashProceeds: 111, totalCPFRefund: 1, salePrice: 1, saleDate: '2026-01-01' })
+  const profileB = createProfile('B')
+  setActiveProfile(profileA)
+
+  deleteProfile(profileB)
+  assert.equal(getActiveProfileId(), profileA)
+  assert.equal(loadMyNumbers().house.cashProceeds, 111)
+})
+
+test('setActiveProfile ignores an unknown id', () => {
+  window.localStorage.removeItem('ndtm_my_numbers_v1')
+  const original = getActiveProfileId()
+  setActiveProfile('not-a-real-id')
+  assert.equal(getActiveProfileId(), original)
 })
