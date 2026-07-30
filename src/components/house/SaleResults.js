@@ -42,6 +42,7 @@ export default function SaleResults({
     yourSharePct, yourCashProceeds, yourTrueProfitLoss,
     personBSharePct, personBCashProceeds, personBTrueProfitLoss,
     personBCpfPrincipalComputed, personBCpfAccruedInterestComputed,
+    cashProceedsSplitMode,
   } = result
   const isJoint = yourSharePct != null && yourSharePct !== 100
 
@@ -165,6 +166,11 @@ export default function SaleResults({
         )}
         {isJoint && (
           <Row label={`Person B's share (${personBSharePct}%)`} value={SGD(personBCashProceeds)} indent tone={personBCashProceeds >= 0 ? 'green' : 'red'} />
+        )}
+        {isJoint && (
+          <p style={{ fontSize: C.xs, color: C.faint, lineHeight: 1.5, margin: '6px 0 0' }}>
+            CPF refunded to each of you first, then the rest split by {cashProceedsSplitMode === 'outlay' ? 'cash outlay at purchase' : 'ownership share'}.
+          </p>
         )}
       </div>
 

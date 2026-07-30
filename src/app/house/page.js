@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react'
 import { C, SGD, parseMoney } from '@/lib/house/theme'
 import { calcSale, calcBSD } from '@/lib/house/calc'
-import { saveHouseNumbers } from '@/lib/shared/profile'
+import { saveHouseNumbers, saveToolInputs, loadToolInputs } from '@/lib/shared/profile'
 import { MoneyInput, PercentInput, NumberInput, DateInput, Segmented, SectionDivider, FeeInput } from '@/components/house/ui'
 import SaleResults from '@/components/house/SaleResults'
 import NextPurchase from '@/components/house/NextPurchase'
@@ -28,6 +28,12 @@ export default function HouseMuchPage() {
   const [personBCpfOutlay, setPersonBCpfOutlay] = useState('')
   const [personBCpfPrincipalOverride, setPersonBCpfPrincipalOverride] = useState('')
   const [personBCpfInterestOverride, setPersonBCpfInterestOverride] = useState('')
+  // How to split the CASH proceeds (after CPF's already been refunded to
+  // each owner's own CPF account) between the two of you. 'share' (the
+  // default) splits by ownership share, same as everything else. 'outlay'
+  // splits by how much cash each of you actually put in at purchase —
+  // useful when the share on paper doesn't match who fronted the money.
+  const [cashProceedsSplitMode, setCashProceedsSplitMode] = useState('share')
 
   // Purchase
   const [purchasePrice, setPurchasePrice] = useState('')
@@ -56,6 +62,65 @@ export default function HouseMuchPage() {
   const [ssdOverride, setSsdOverride] = useState('')
 
   const [calculated, setCalculated] = useState(false)
+
+  const [restoredFromSave, setRestoredFromSave] = useState(false)
+  const [justSaved, setJustSaved] = useState(false)
+
+  // Restore whatever was last explicitly saved to this profile — scoped
+  // per-profile, same as every other tool's Save button. Nothing else
+  // reads this; it's purely for "here's what I typed last time."
+  useEffect(() => {
+    const saved = loadToolInputs('house')
+    if (!saved) return
+    /* eslint-disable react-hooks/set-state-in-effect */
+    setPropertyType(saved.propertyType ?? 'private')
+    setIsJointLoan(!!saved.isJointLoan)
+    setYourSharePct(saved.yourSharePct ?? '50')
+    setPersonBCpfOutlay(saved.personBCpfOutlay ?? '')
+    setPersonBCpfPrincipalOverride(saved.personBCpfPrincipalOverride ?? '')
+    setPersonBCpfInterestOverride(saved.personBCpfInterestOverride ?? '')
+    setCashProceedsSplitMode(saved.cashProceedsSplitMode ?? 'share')
+    setPurchasePrice(saved.purchasePrice ?? '')
+    setPurchaseDate(saved.purchaseDate ?? '')
+    setCpfOutlay(saved.cpfOutlay ?? '')
+    setLoanTaken(saved.loanTaken ?? '')
+    setMortgageRate(saved.mortgageRate ?? '2.60')
+    setLoanTenure(saved.loanTenure ?? '25')
+    setLegalFeesAtPurchase(saved.legalFeesAtPurchase ?? '')
+    setAgentFeeAtPurchaseMode(saved.agentFeeAtPurchaseMode ?? 'manual')
+    setAgentFeeAtPurchaseRaw(saved.agentFeeAtPurchaseRaw ?? '')
+    setSunkCost(saved.sunkCost ?? '')
+    setSalePrice(saved.salePrice ?? '')
+    setSaleDate(saved.saleDate ?? '')
+    setAgentFeeAtSaleMode(saved.agentFeeAtSaleMode ?? '1pct')
+    setAgentFeeAtSaleRaw(saved.agentFeeAtSaleRaw ?? '')
+    setLegalFeesAtSale(saved.legalFeesAtSale ?? '')
+    setOutstandingOverride(saved.outstandingOverride ?? '')
+    setTotalInterestOverride(saved.totalInterestOverride ?? '')
+    setCpfPrincipalOverride(saved.cpfPrincipalOverride ?? '')
+    setCpfInterestOverride(saved.cpfInterestOverride ?? '')
+    setSsdOverride(saved.ssdOverride ?? '')
+    setRestoredFromSave(true)
+    /* eslint-enable react-hooks/set-state-in-effect */
+  }, [])
+
+  const handleSaveInputs = () => {
+    saveToolInputs('house', {
+      propertyType, isJointLoan, yourSharePct,
+      personBCpfOutlay, personBCpfPrincipalOverride, personBCpfInterestOverride, cashProceedsSplitMode,
+      purchasePrice, purchaseDate, cpfOutlay, loanTaken, mortgageRate, loanTenure,
+      legalFeesAtPurchase, agentFeeAtPurchaseMode, agentFeeAtPurchaseRaw, sunkCost,
+      salePrice, saleDate, agentFeeAtSaleMode, agentFeeAtSaleRaw, legalFeesAtSale,
+      outstandingOverride, totalInterestOverride, cpfPrincipalOverride, cpfInterestOverride, ssdOverride,
+    })
+    setJustSaved(true)
+  }
+
+  useEffect(() => {
+    if (!justSaved) return
+    const t = setTimeout(() => setJustSaved(false), 2200)
+    return () => clearTimeout(t)
+  }, [justSaved])
 
   const isReady = num(purchasePrice) > 0 && purchaseDate && num(salePrice) > 0 && saleDate
 
@@ -87,6 +152,7 @@ export default function HouseMuchPage() {
     personBCpfOutlay: isJointLoan ? num(personBCpfOutlay) : 0,
     personBCpfPrincipalOverride: isJointLoan && personBCpfPrincipalOverride !== '' ? num(personBCpfPrincipalOverride) : null,
     personBCpfAccruedInterestOverride: isJointLoan && personBCpfInterestOverride !== '' ? num(personBCpfInterestOverride) : null,
+    cashProceedsSplitMode: isJointLoan ? cashProceedsSplitMode : 'share',
   }) : null
 
   const handleCalc = () => setCalculated(true)
@@ -152,6 +218,12 @@ export default function HouseMuchPage() {
 
       <div style={{ maxWidth: 720, margin: '0 auto', padding: '40px 20px 80px' }}>
         <div style={{ background: C.surface, border: `1px solid ${C.border}`, borderRadius: C.rXL, padding: '28px 24px', boxShadow: C.shadow }}>
+
+          {restoredFromSave && (
+            <div style={{ marginBottom: 16, padding: '10px 14px', background: C.accentBg, border: `1px solid ${C.accent}55`, borderRadius: C.r, fontSize: C.xs, color: C.accent, fontWeight: 600 }}>
+              Restored what you last saved to this profile — edit freely.
+            </div>
+          )}
 
           <div style={{ marginBottom: 8 }}>
             <label style={{ display: 'block', fontSize: C.sm, fontWeight: 600, color: C.primary, marginBottom: 10 }}>Property type</label>
@@ -219,7 +291,7 @@ export default function HouseMuchPage() {
                   </p>
                 )}
                 <p style={{ marginTop: 8, fontSize: C.xs, color: C.muted, lineHeight: 1.5 }}>
-                  Purchase price, loan, and stamp duty above should still be the real, full figures for the property — this only scales the profit/loss and cash figures below down to your share. CPF is never split by share — it&apos;s tracked per person below.
+                  Purchase price, loan, and stamp duty above should still be the real, full figures for the property — this only scales the profit/loss and cash figures below down to your share. Each of you tracks your own CPF below; on sale, it&apos;s refunded to each of you first, then what&apos;s left is split (see below).
                 </p>
                 <div style={{ marginTop: 18, paddingTop: 16, borderTop: `1px solid ${C.border}` }}>
                   <div style={{ fontSize: C.sm, fontWeight: 600, color: C.primary, marginBottom: 10 }}>Person B&apos;s CPF</div>
@@ -227,6 +299,19 @@ export default function HouseMuchPage() {
                     <MoneyInput id="person-b-cpf-outlay" label="Person B's CPF used at purchase" hint="Their own CPF withdrawn at purchase — down payment plus any fees paid via their CPF. Leave blank if only you used CPF." value={personBCpfOutlay} onChange={e => setPersonBCpfOutlay(e.target.value)} />
                     <MoneyInput id="person-b-cpf-interest-known" label="Person B's CPF accrued interest today" hint="Optional — from their CPF portal's Property panel. Leave blank to estimate." value={personBCpfInterestOverride} onChange={e => setPersonBCpfInterestOverride(e.target.value)} />
                   </div>
+                </div>
+                <div style={{ marginTop: 18, paddingTop: 16, borderTop: `1px solid ${C.border}` }}>
+                  <div style={{ fontSize: C.sm, fontWeight: 600, color: C.primary, marginBottom: 7 }}>Split the cash proceeds by</div>
+                  <Segmented
+                    value={cashProceedsSplitMode}
+                    onChange={setCashProceedsSplitMode}
+                    options={[{ value: 'share', label: 'Ownership share' }, { value: 'outlay', label: 'Cash outlay at purchase' }]}
+                  />
+                  <p style={{ marginTop: 8, fontSize: C.xs, color: C.muted, lineHeight: 1.5 }}>
+                    {cashProceedsSplitMode === 'outlay'
+                      ? "CPF is refunded to each of you first, then what's left is split by how much cash each of you actually put in at purchase — not your ownership share."
+                      : "CPF is refunded to each of you first, then what's left is split by your ownership share above."}
+                  </p>
                 </div>
               </div>
             )}
@@ -260,11 +345,17 @@ export default function HouseMuchPage() {
             <MoneyInput id="legal-fees-sale" label="Legal fees at sale" value={legalFeesAtSale} onChange={e => setLegalFeesAtSale(e.target.value)} />
           </div>
 
-          <div style={{ marginTop: 24 }}>
-            <Button variant="accent" fullWidth onClick={handleCalc} disabled={!isReady}>
+          <div style={{ marginTop: 24, display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+            <Button variant="accent" onClick={handleCalc} disabled={!isReady} style={{ flex: '1 1 220px' }}>
               {isReady ? 'Calculate my true profit/loss' : 'Fill in the fields above'}
             </Button>
+            <Button variant="outline" onClick={handleSaveInputs} style={{ flex: '0 0 auto' }}>
+              {justSaved ? 'Saved to this profile ✓' : 'Save my inputs'}
+            </Button>
           </div>
+          <p style={{ marginTop: 10, fontSize: C.xs, color: C.faint, lineHeight: 1.5 }}>
+            Everything above stays on this device until you press Save — then it&apos;s tied to whichever profile is active, so it&apos;s here next time you open HouseMuch.
+          </p>
         </div>
 
         {result && (

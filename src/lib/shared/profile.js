@@ -28,7 +28,7 @@ export const MAX_PROFILES = 3
 const DEFAULT_PROFILE_NAME = 'My Numbers'
 
 const EMPTY = {
-  version: 5,
+  version: 6,
   // { source: 'auto'|'manual', savedAt,
   //   outstandingBalance, rate, tenureRemaining, monthlyInstalment, propertyValue, cpfServicing,
   //   cashProceeds, totalCPFRefund, salePrice, saleDate }
@@ -53,6 +53,10 @@ const EMPTY = {
   // zero (take-home minus loans and insurance, nothing else); once
   // FlowState has run, MyLedger subtracts the real figure instead.
   flow: null,
+  // MyLedger has no metrics of its own to hand to other tools — this
+  // slot only ever holds `inputs` (via saveToolInputs/loadToolInputs
+  // below), so its own retirement-planning fields can be restored.
+  ledger: null,
 }
 
 function migrateV1(parsed) {
@@ -90,6 +94,11 @@ function migrateV4(parsed) {
   return { ...parsed, version: 5, flow: parsed.flow ?? null }
 }
 
+// v5 → v6 only adds the ledger slot.
+function migrateV5(parsed) {
+  return { ...parsed, version: 6, ledger: parsed.ledger ?? null }
+}
+
 // Migrates one profile's inner per-module data (the shape EMPTY
 // describes) up to the current version — same logic that used to run
 // directly against the raw localStorage payload, before profiles
@@ -97,11 +106,12 @@ function migrateV4(parsed) {
 // loadMyNumbers() used to return wholesale.
 function migrateInnerData(parsed) {
   if (!parsed || typeof parsed !== 'object') return null
-  if (parsed.version === 5) return parsed
-  if (parsed.version === 4) return migrateV4(parsed)
-  if (parsed.version === 3) return migrateV4(migrateV3(parsed))
-  if (parsed.version === 2) return migrateV4(migrateV3(migrateV2(parsed)))
-  if (parsed.version === 1) return migrateV1(parsed)
+  if (parsed.version === 6) return parsed
+  if (parsed.version === 5) return migrateV5(parsed)
+  if (parsed.version === 4) return migrateV5(migrateV4(parsed))
+  if (parsed.version === 3) return migrateV5(migrateV4(migrateV3(parsed)))
+  if (parsed.version === 2) return migrateV5(migrateV4(migrateV3(migrateV2(parsed))))
+  if (parsed.version === 1) return migrateV5(migrateV1(parsed))
   return null
 }
 
@@ -248,13 +258,19 @@ export function setActiveProfile(id) {
   saveStore(store)
 }
 
+// Merges onto whatever's already in the house slot (rather than a full
+// overwrite) so this auto-sync never clobbers a saved `inputs` blob
+// written by saveToolInputs('house', ...) — same reasoning as
+// saveFlowNumbers/saveFlowInputs above.
 export function saveHouseNumbers({
   cashProceeds, totalCPFRefund, salePrice, saleDate,
   outstandingBalance, rate, tenureRemaining, monthlyInstalment, propertyValue, cpfServicing,
   propertyType, source = 'auto',
 }) {
   const data = loadMyNumbers()
+  const existing = data.house || {}
   data.house = {
+    ...existing,
     source,
     cashProceeds: Number(cashProceeds) || 0,
     totalCPFRefund: Number(totalCPFRefund) || 0,
@@ -272,13 +288,16 @@ export function saveHouseNumbers({
   save(data)
 }
 
+// Merges onto whatever's already in the drive slot — see saveHouseNumbers.
 export function saveDriveNumbers({
   monthlyInstalment, carLabel, salary,
   loanOutstanding, rate, tenureRemaining, carValue,
   source = 'auto',
 }) {
   const data = loadMyNumbers()
+  const existing = data.drive || {}
   data.drive = {
+    ...existing,
     source,
     monthlyInstalment: Number(monthlyInstalment) || 0,
     carLabel: carLabel || null,
@@ -292,12 +311,15 @@ export function saveDriveNumbers({
   save(data)
 }
 
+// Merges onto whatever's already in the retire slot — see saveHouseNumbers.
 export function saveRetireNumbers({
   salary, oaBalance, saBalance, maBalance, investmentBalance, monthlyContribution,
   source = 'auto',
 }) {
   const data = loadMyNumbers()
+  const existing = data.retire || {}
   data.retire = {
+    ...existing,
     source,
     salary: Number(salary) || 0,
     oaBalance: Number(oaBalance) || 0,
@@ -310,9 +332,12 @@ export function saveRetireNumbers({
   save(data)
 }
 
+// Merges onto whatever's already in the insure slot — see saveHouseNumbers.
 export function saveInsureNumbers({ monthlyPremium, score, source = 'auto' }) {
   const data = loadMyNumbers()
+  const existing = data.insure || {}
   data.insure = {
+    ...existing,
     source,
     monthlyPremium: Number(monthlyPremium) || 0,
     score: score != null ? Number(score) || 0 : null,
@@ -321,9 +346,12 @@ export function saveInsureNumbers({ monthlyPremium, score, source = 'auto' }) {
   save(data)
 }
 
+// Merges onto whatever's already in the tax slot — see saveHouseNumbers.
 export function saveTaxNumbers({ monthlyTakeHome, annualTax, marginalRate, age, source = 'auto' }) {
   const data = loadMyNumbers()
+  const existing = data.tax || {}
   data.tax = {
+    ...existing,
     source,
     monthlyTakeHome: Number(monthlyTakeHome) || 0,
     annualTax: Number(annualTax) || 0,
@@ -403,6 +431,29 @@ export function saveFlowInputs(inputs) {
 export function loadFlowInputs() {
   const data = loadMyNumbers()
   return data.flow?.inputs || null
+}
+
+// Generic version of saveFlowInputs/loadFlowInputs above, for every other
+// tool's own raw form inputs — HouseMuch, DriveReady, RetireWell, TaxWise,
+// WhatETF, MyLedger. Each tool's "Save my inputs" button calls
+// saveToolInputs(tool, {...every field on the page}); the tool restores it
+// on mount via loadToolInputs(tool). Merges onto whatever's already in
+// that tool's slot so it never clobbers the auto-synced metrics fields
+// (e.g. saveHouseNumbers) that other tools read.
+const TOOLS_WITH_INPUTS = ['house', 'drive', 'retire', 'insure', 'tax', 'etf', 'ledger']
+
+export function saveToolInputs(tool, inputs) {
+  if (!TOOLS_WITH_INPUTS.includes(tool)) return
+  const data = loadMyNumbers()
+  const existing = data[tool] || {}
+  data[tool] = { ...existing, inputs, inputsSavedAt: Date.now() }
+  save(data)
+}
+
+export function loadToolInputs(tool) {
+  if (!TOOLS_WITH_INPUTS.includes(tool)) return null
+  const data = loadMyNumbers()
+  return data[tool]?.inputs || null
 }
 
 export function clearInsureNumbers() {

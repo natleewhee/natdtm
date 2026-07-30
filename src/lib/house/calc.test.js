@@ -390,16 +390,17 @@ assert('Default yourSharePct is 100', soloShare.yourSharePct === 100)
 assert('yourCashProceeds at 100% share equals cashProceeds', approx(soloShare.yourCashProceeds, soloShare.cashProceeds, 0.01))
 assert('yourCashInvested at 100% share equals cashInvested', approx(soloShare.yourCashInvested, soloShare.cashInvested, 0.01))
 assert('yourSharePct is recorded', jointShare.yourSharePct === 50)
-// cashProceeds/cashInvested are MIXED figures (joint components minus an
-// already-personal, unscaled CPF component) — halving them naively would
-// double-discount your own CPF. The correct 50% figure is: half of the
-// joint-only slice, minus the FULL (unscaled) CPF refund/outlay.
-const expectedYourCashProceeds = 0.5 * (jointShare.salePrice - jointShare.outstandingBalance - jointShare.sellingCosts) - jointShare.totalCPFRefund
+// cashOutlay/cashInvested are at PURCHASE, where each owner really did
+// pay in their own cash + their own CPF — a mixed figure (joint slice
+// minus your own, unscaled CPF). cashProceeds is at SALE, where CPF is
+// refunded to each owner's own CPF account off the top, at the
+// household level, before what's left is split — so (default 'share'
+// mode) your cashProceeds IS simply your share of the already-net
+// household cashProceeds, unlike cashOutlay.
 const expectedYourCashOutlay = 0.5 * (jointShare.purchasePrice + jointShare.purchaseFees - jointShare.loanTaken) - jointShare.cpfOutlay
 const expectedYourCashInvested = Math.max(0, expectedYourCashOutlay) + 0.5 * jointShare.sunkCost
-assert('yourCashProceeds at 50% share correctly avoids double-discounting CPF', approx(jointShare.yourCashProceeds, expectedYourCashProceeds, 0.01))
+assert('yourCashProceeds at 50% share is exactly half of the already-net household cashProceeds (default share mode)', approx(jointShare.yourCashProceeds, jointShare.cashProceeds / 2, 0.01))
 assert('yourCashInvested at 50% share correctly avoids double-discounting CPF', approx(jointShare.yourCashInvested, expectedYourCashInvested, 0.01))
-assert('yourCashProceeds at 50% share is NOT simply half of household cashProceeds (that would double-discount CPF)', !approx(jointShare.yourCashProceeds, jointShare.cashProceeds / 2, 1))
 assert('yourTrueProfitLoss at 50% share is half of household trueProfitLoss (no CPF involved)', approx(jointShare.yourTrueProfitLoss, jointShare.trueProfitLoss / 2, 0.01))
 assert('yourOutstandingBalance at 50% share is half of household outstandingBalance', approx(jointShare.yourOutstandingBalance, jointShare.outstandingBalance / 2, 0.01))
 assert('yourMonthlyInstalment at 50% share is half of household monthlyInstalment', approx(jointShare.yourMonthlyInstalment, jointShare.monthlyInstalment / 2, 0.01))
@@ -415,7 +416,7 @@ const zeroShare = calcSale({ ...zeroShareInputs, yourSharePct: 0 })
 assert('yourSharePct of exactly 0 is NOT coerced to 100 (falsy-coercion trap)', zeroShare.yourSharePct === 0)
 assert('yourTrueProfitLoss at 0% share is 0', approx(zeroShare.yourTrueProfitLoss, 0, 0.01))
 assert('yourOutstandingBalance at 0% share is 0', approx(zeroShare.yourOutstandingBalance, 0, 0.01))
-assert('yourCashProceeds at 0% share is -totalCPFRefund (none of the joint proceeds, but still your own CPF)', approx(zeroShare.yourCashProceeds, -zeroShare.totalCPFRefund, 0.01))
+assert('yourCashProceeds at 0% share is 0 (none of the already-net household proceeds, default share mode)', approx(zeroShare.yourCashProceeds, 0, 0.01))
 
 const overShare = calcSale({ ...zeroShareInputs, yourSharePct: 150 })
 assert('yourSharePct above 100 is clamped to 100', overShare.yourSharePct === 100)
@@ -455,12 +456,27 @@ assert(
   approx(twoPerson.personACashProceeds, twoPerson.yourCashProceeds, 0.01),
 )
 assert(
-  "personA's cash proceeds subtract ONLY their own CPF refund, not the household total (no double counting of person B's CPF)",
-  approx(twoPerson.personACashProceeds, 0.6 * (twoPerson.salePrice - twoPerson.outstandingBalance - twoPerson.sellingCosts) - twoPerson.personATotalCPFRefund, 0.01),
+  "personA's cash proceeds, default share mode, is their share of the ALREADY-NET household total (CPF pooled off the top, then split)",
+  approx(twoPerson.personACashProceeds, 0.6 * twoPerson.cashProceeds, 0.01),
 )
 assert(
-  "personB's cash proceeds subtract ONLY their own CPF refund",
-  approx(twoPerson.personBCashProceeds, 0.4 * (twoPerson.salePrice - twoPerson.outstandingBalance - twoPerson.sellingCosts) - twoPerson.personBTotalCPFRefund, 0.01),
+  "personB's cash proceeds is their share of the same already-net household total",
+  approx(twoPerson.personBCashProceeds, 0.4 * twoPerson.cashProceeds, 0.01),
+)
+// This fixture's CPF ratio (150k:100k = 1.5) happens to equal its share
+// ratio (60:40 = 1.5), which would make the pooled-split formula above
+// numerically indistinguishable from the old "subtract only your own
+// CPF" formula. A second fixture with a CPF ratio that DOESN'T match
+// the share ratio proves the two formulas really do differ now.
+const skewedCpfRatio = calcSale({ ...twoPersonInputs, cpfOutlay: 300_000, personBCpfOutlay: 50_000 })
+const oldFormulaPersonA = 0.6 * (skewedCpfRatio.salePrice - skewedCpfRatio.outstandingBalance - skewedCpfRatio.sellingCosts) - skewedCpfRatio.personATotalCPFRefund
+assert(
+  "pooled-split cash proceeds genuinely differs from the old per-owner-subtracts-own-CPF formula when CPF ratio != share ratio",
+  !approx(skewedCpfRatio.personACashProceeds, oldFormulaPersonA, 1),
+)
+assert(
+  'pooled-split still sums to the household cashProceeds even with a skewed CPF ratio',
+  approx(skewedCpfRatio.personACashProceeds + skewedCpfRatio.personBCashProceeds, skewedCpfRatio.cashProceeds, 0.01),
 )
 assert(
   'personA + personB cash proceeds sum to the true household cash proceeds',
@@ -499,6 +515,38 @@ assert('personBCpfOutlay=0 (default) reproduces the exact same totalCPFRefund as
 assert('personBCpfOutlay=0 (default) reproduces the exact same yourCashProceeds as omitting it entirely', approx(legacyJoint.yourCashProceeds, explicitZeroB.yourCashProceeds, 0.001))
 assert('personBCpfOutlay=0 (default) reproduces the exact same cashOutlay as omitting it entirely', approx(legacyJoint.cashOutlay, explicitZeroB.cashOutlay, 0.001))
 
+// ─── Cash-proceeds split toggle: 'share' vs 'outlay' ─────────────────────
+assert("cashProceedsSplitMode defaults to 'share' when not specified", twoPerson.cashProceedsSplitMode === 'share')
+const outlaySplit = calcSale({ ...twoPersonInputs, cashProceedsSplitMode: 'outlay' })
+assert("cashProceedsSplitMode is recorded as 'outlay' when requested", outlaySplit.cashProceedsSplitMode === 'outlay')
+assert(
+  'outlay-mode split still sums to the household cashProceeds',
+  approx(outlaySplit.personACashProceeds + outlaySplit.personBCashProceeds, outlaySplit.cashProceeds, 0.01),
+)
+assert(
+  "outlay-mode splits proportional to each owner's own cash outlay at purchase, not their ownership share",
+  approx(outlaySplit.personACashProceeds, outlaySplit.cashProceeds * (outlaySplit.personACashOutlay / (outlaySplit.personACashOutlay + outlaySplit.personBCashOutlay)), 0.01),
+)
+const skewedOutlaySplit = calcSale({ ...skewedCpfRatio, cashProceedsSplitMode: 'outlay' })
+assert(
+  'outlay-mode genuinely differs from share-mode when cash outlay ratio != ownership share ratio',
+  !approx(skewedOutlaySplit.personACashProceeds, skewedCpfRatio.personACashProceeds, 1),
+)
+// If outlay data is unusable (both owners' cash outlay <= 0), outlay
+// mode falls back to share-based split rather than dividing by zero.
+const noOutlayInputs = {
+  propertyType: 'private',
+  purchasePrice: 100_000, purchaseDate: '2018-01-15',
+  cpfOutlay: 0, personBCpfOutlay: 0, loanTaken: 200_000, mortgageRate: 2.6, loanTenure: 25,
+  salePrice: 500_000, saleDate: '2026-06-01',
+  yourSharePct: 60, cashProceedsSplitMode: 'outlay',
+}
+const noOutlayFallback = calcSale(noOutlayInputs)
+assert(
+  'outlay mode falls back to share split when both owners have zero/negative cash outlay',
+  approx(noOutlayFallback.personACashProceeds, noOutlayFallback.cashProceeds * 0.6, 0.01),
+)
+
 // Person B's own CPF-principal/accrued-interest overrides work exactly
 // like person A's — checking their own CPF portal for their own number.
 const withBOverrides = calcSale({
@@ -509,7 +557,14 @@ const withBOverrides = calcSale({
 assert('personBCpfPrincipal reflects the override, not the computed default', withBOverrides.personBCpfPrincipal === 110_000)
 assert('personBCpfAccruedInterest reflects the override, not the computed default', withBOverrides.personBCpfAccruedInterest === 12_000)
 assert('personBTotalCPFRefund is exactly the overridden principal + overridden interest', approx(withBOverrides.personBTotalCPFRefund, 122_000, 0.01))
-assert("person A's own figures are untouched by person B's overrides", approx(withBOverrides.personACashProceeds, twoPerson.personACashProceeds, 0.01))
+// cashOutlay/trueProfitLoss/outstandingBalance are each owner's own,
+// unaffected by the OTHER owner's CPF. cashProceeds, in default 'share'
+// mode, is a share of the pooled, already-net household figure — so it
+// DOES move when person B's own CPF override changes (the whole pool
+// shrinks), which is the whole point of pooling before splitting.
+assert("person A's cashOutlay is untouched by person B's overrides", approx(withBOverrides.personACashOutlay, twoPerson.personACashOutlay, 0.01))
+assert("person A's trueProfitLoss is untouched by person B's overrides", approx(withBOverrides.personATrueProfitLoss, twoPerson.personATrueProfitLoss, 0.01))
+assert("person A's cashProceeds DOES move with person B's overrides in share mode (pooled CPF)", !approx(withBOverrides.personACashProceeds, twoPerson.personACashProceeds, 1))
 
 // ─── yearsBetween edge cases ─────────────────────────────────────────────
 assert('yearsBetween returns 0 for missing dates', yearsBetween(null, '2024-01-01') === 0)

@@ -110,6 +110,13 @@ export function calcSale(inputs) {
     personBCpfOutlay = 0,
     personBCpfPrincipalOverride = null,
     personBCpfAccruedInterestOverride = null,
+    // How to split the CASH proceeds (below, after CPF has already been
+    // refunded to each owner's own CPF account off the top) between the
+    // two owners. 'share' (default) splits by ownership share, same as
+    // every other joint figure. 'outlay' instead splits by how much cash
+    // each owner actually put in at purchase — useful when the share on
+    // paper doesn't match who fronted the money.
+    cashProceedsSplitMode = 'share',
   } = inputs
 
   const yearsHeld = yearsBetween(purchaseDate, saleDate)
@@ -254,26 +261,24 @@ export function calcSale(inputs) {
   // Per-owner figures — most of the household numbers above scale cleanly
   // by ownership share, since they never touch CPF: trueProfitLoss,
   // outstandingBalance, and monthlyInstalment are pure property/loan
-  // economics. cashProceeds and cashInvested are different — each is
-  // already a MIXED figure: joint components (sale price, loan payoff,
-  // selling costs / purchase price, fees, loan taken) minus a CPF
-  // component that's already fully personal and unscaled (see personCpf()
-  // above — CPF isn't split by share, each owner's own CPF is already
-  // theirs alone). Naively multiplying the whole mixed figure by share
-  // would scale away part of a person's own CPF a second time, so each is
-  // decomposed back into its joint slice (scaled) recombined with its
-  // own already-personal CPF slice (left alone) — computed once per
-  // owner via the same formula, since the math is identical either way.
+  // economics. cashOutlay (at purchase) is each owner's own real
+  // contribution — their share of the joint purchase cost minus their
+  // own CPF used, since that's literally how a joint purchase gets paid
+  // for. cashProceeds (at sale) is different: CPF is refunded to each
+  // owner's own CPF account off the top, at the household level, BEFORE
+  // the remaining cash is split — so the already-net household
+  // `cashProceeds` (CPF fully removed) is what actually gets divided
+  // between the owners, not a per-owner "my share minus my own CPF"
+  // figure (which would double-subtract CPF unevenly and leave the
+  // owner who used less CPF with a disproportionate cash windfall).
   const share = resolveSharePct(yourSharePct) / 100
   const personBShare = 1 - share
 
-  const jointSaleBase = (Number(salePrice) || 0) - outstandingBalance - sellingCosts // no CPF in this slice
   const jointPurchaseBase = (Number(purchasePrice) || 0) + purchaseFees - (Number(loanTaken) || 0) // no CPF in this slice
 
-  function ownerFigures(ownerShare, ownerCpfOutlay, ownerCpf) {
+  function ownerFigures(ownerShare, ownerCpfOutlay) {
     const cashOutlayForOwner = jointPurchaseBase * ownerShare - ownerCpfOutlay
     return {
-      cashProceeds: jointSaleBase * ownerShare - ownerCpf.totalRefund,
       cashOutlay: cashOutlayForOwner,
       cashInvested: Math.max(0, cashOutlayForOwner) + (Number(sunkCost) || 0) * ownerShare,
       trueProfitLoss: trueProfitLoss * ownerShare,
@@ -282,8 +287,19 @@ export function calcSale(inputs) {
     }
   }
 
-  const personA = ownerFigures(share, Number(cpfOutlay) || 0, personACpf)
-  const personB = ownerFigures(personBShare, Number(personBCpfOutlay) || 0, personBCpf)
+  const personAFigures = ownerFigures(share, Number(cpfOutlay) || 0)
+  const personBFigures = ownerFigures(personBShare, Number(personBCpfOutlay) || 0)
+
+  // Cash-proceeds split: by ownership share (default), or by each
+  // owner's own cash outlay at purchase — falling back to share if
+  // outlay data is missing/non-positive (e.g. cashOutlayUnclear).
+  const outlayTotal = Math.max(0, personAFigures.cashOutlay) + Math.max(0, personBFigures.cashOutlay)
+  const outlayShareA = outlayTotal > 0 ? Math.max(0, personAFigures.cashOutlay) / outlayTotal : share
+  const proceedsShareA = cashProceedsSplitMode === 'outlay' ? outlayShareA : share
+  const proceedsShareB = 1 - proceedsShareA
+
+  const personA = { ...personAFigures, cashProceeds: cashProceeds * proceedsShareA }
+  const personB = { ...personBFigures, cashProceeds: cashProceeds * proceedsShareB }
 
   return {
     propertyType, yearsHeld, monthsHeld,
@@ -327,6 +343,8 @@ export function calcSale(inputs) {
     personBTotalCPFRefund: personBCpf.totalRefund,
     personBCashProceeds: personB.cashProceeds, personBCashOutlay: personB.cashOutlay, personBCashInvested: personB.cashInvested,
     personBTrueProfitLoss: personB.trueProfitLoss, personBOutstandingBalance: personB.outstandingBalance, personBMonthlyInstalment: personB.monthlyInstalment,
+    cashProceedsSplitMode: cashProceedsSplitMode === 'outlay' ? 'outlay' : 'share',
+    personACashOutlaySharePct: outlayShareA * 100,
   }
 }
 

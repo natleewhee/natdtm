@@ -18,14 +18,15 @@ global.window = { localStorage: makeStorage() }
 const {
   loadMyNumbers, saveHouseNumbers, saveDriveNumbers, saveRetireNumbers,
   saveInsureNumbers, saveTaxNumbers, saveEtfNumbers, saveFlowNumbers, saveFlowInputs, loadFlowInputs,
+  saveToolInputs, loadToolInputs,
   clearHouseNumbers, clearDriveNumbers, clearRetireNumbers, clearEtfNumbers, clearFlowNumbers,
   listProfiles, createProfile, renameProfile, deleteProfile, setActiveProfile, getActiveProfileId,
   MAX_PROFILES,
 } = await import('./profile.js')
 
-test('loadMyNumbers returns empty v5 defaults when nothing stored', () => {
+test('loadMyNumbers returns empty v6 defaults when nothing stored', () => {
   const data = loadMyNumbers()
-  assert.equal(data.version, 5)
+  assert.equal(data.version, 6)
   assert.equal(data.house, null)
   assert.equal(data.drive, null)
   assert.equal(data.retire, null)
@@ -33,6 +34,7 @@ test('loadMyNumbers returns empty v5 defaults when nothing stored', () => {
   assert.equal(data.tax, null)
   assert.equal(data.etf, null)
   assert.equal(data.flow, null)
+  assert.equal(data.ledger, null)
 })
 
 test('loadMyNumbers safely ignores malformed JSON', () => {
@@ -48,7 +50,7 @@ test('loadMyNumbers migrates a v1 record into the v3 shape', () => {
     drive: { monthlyCost: 1500, carLabel: 'Toyota Corolla', salary: 6000, savedAt: 456 },
   }))
   const data = loadMyNumbers()
-  assert.equal(data.version, 5)
+  assert.equal(data.version, 6)
   assert.equal(data.house.cashProceeds, 500000)
   assert.equal(data.house.propertyValue, 1200000)
   assert.equal(data.house.outstandingBalance, null)
@@ -67,7 +69,7 @@ test('loadMyNumbers migrates a v2 record, preserving existing slots', () => {
     retire: { salary: 7000, oaBalance: 80000, source: 'auto', savedAt: 2 },
   }))
   const data = loadMyNumbers()
-  assert.equal(data.version, 5)
+  assert.equal(data.version, 6)
   assert.equal(data.house.outstandingBalance, 400000)
   assert.equal(data.retire.salary, 7000)
   assert.equal(data.insure, null)
@@ -84,7 +86,7 @@ test('loadMyNumbers migrates a v3 record, preserving existing slots and adding e
     tax: { monthlyTakeHome: 5000, source: 'auto', savedAt: 2 },
   }))
   const data = loadMyNumbers()
-  assert.equal(data.version, 5)
+  assert.equal(data.version, 6)
   assert.equal(data.insure.monthlyPremium, 300)
   assert.equal(data.tax.monthlyTakeHome, 5000)
   assert.equal(data.etf, null)
@@ -98,7 +100,7 @@ test('loadMyNumbers migrates a v4 record, preserving existing slots and adding f
     etf: { portfolioValue: 25000, monthlyContribution: 800, source: 'auto', savedAt: 1 },
   }))
   const data = loadMyNumbers()
-  assert.equal(data.version, 5)
+  assert.equal(data.version, 6)
   assert.equal(data.etf.portfolioValue, 25000)
   assert.equal(data.flow, null)
 })
@@ -175,6 +177,50 @@ test('saveFlowInputs is scoped per profile, same as everything else', () => {
   saveFlowInputs({ age: '50' })
   setActiveProfile(other) // no-op, already active, but exercise the API
   assert.deepEqual(loadFlowInputs(), { age: '50' })
+})
+
+test('loadToolInputs returns null when nothing has been saved', () => {
+  window.localStorage.removeItem('ndtm_my_numbers_v1')
+  assert.equal(loadToolInputs('house'), null)
+})
+
+test('saveToolInputs / loadToolInputs round-trips for every supported tool', () => {
+  window.localStorage.removeItem('ndtm_my_numbers_v1')
+  for (const tool of ['house', 'drive', 'retire', 'insure', 'tax', 'etf', 'ledger']) {
+    const inputs = { tool, purchasePrice: '900000' }
+    saveToolInputs(tool, inputs)
+    assert.deepEqual(loadToolInputs(tool), inputs, `${tool} round-trips`)
+  }
+})
+
+test('saveToolInputs for an unsupported tool name is a no-op', () => {
+  window.localStorage.removeItem('ndtm_my_numbers_v1')
+  saveToolInputs('notarealtool', { x: 1 })
+  assert.equal(loadToolInputs('notarealtool'), null)
+})
+
+test('saveToolInputs(house) does not clobber saveHouseNumbers metrics, and vice versa', () => {
+  window.localStorage.removeItem('ndtm_my_numbers_v1')
+  saveHouseNumbers({ cashProceeds: 500000, totalCPFRefund: 120000, salePrice: 1200000, saleDate: '2026-01-01' })
+  saveToolInputs('house', { purchasePrice: '900000' })
+  let data = loadMyNumbers()
+  assert.equal(data.house.cashProceeds, 500000, 'metrics survive an inputs save')
+  assert.deepEqual(data.house.inputs, { purchasePrice: '900000' })
+
+  saveHouseNumbers({ cashProceeds: 600000, totalCPFRefund: 130000, salePrice: 1300000, saleDate: '2026-02-01' })
+  data = loadMyNumbers()
+  assert.equal(data.house.cashProceeds, 600000, 'metrics still update normally')
+  assert.deepEqual(data.house.inputs, { purchasePrice: '900000' }, 'inputs survive a later metrics save')
+})
+
+test('saveToolInputs is scoped per profile, same as saveFlowInputs', () => {
+  window.localStorage.removeItem('ndtm_my_numbers_v1')
+  saveToolInputs('drive', { carLabel: 'Toyota Corolla' })
+  const other = createProfile('Other')
+  assert.equal(loadToolInputs('drive'), null, 'a fresh profile has no saved inputs')
+  saveToolInputs('drive', { carLabel: 'Honda Civic' })
+  setActiveProfile(other)
+  assert.deepEqual(loadToolInputs('drive'), { carLabel: 'Honda Civic' })
 })
 
 test('clearFlowNumbers nulls only the flow slot', () => {
@@ -276,7 +322,7 @@ test('an old flat (pre-profiles) payload migrates into a single "My Numbers" pro
   const data = loadMyNumbers()
   assert.equal(data.house.outstandingBalance, 400000)
   assert.equal(data.insure.monthlyPremium, 300)
-  assert.equal(data.version, 5)
+  assert.equal(data.version, 6)
 })
 
 test('createProfile adds a new empty profile and makes it active', () => {
