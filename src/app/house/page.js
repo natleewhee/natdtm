@@ -21,6 +21,13 @@ export default function HouseMuchPage() {
   // Off by default (100% — today's behavior, unchanged for a sole owner).
   const [isJointLoan, setIsJointLoan] = useState(false)
   const [yourSharePct, setYourSharePct] = useState('50')
+  // Person B's own CPF — separate from cpfOutlay (Person A's) below, since
+  // CPF is tracked per person and must never be split by share. Blank/0
+  // by default so a joint loan with only your own CPF known behaves
+  // exactly as before this existed.
+  const [personBCpfOutlay, setPersonBCpfOutlay] = useState('')
+  const [personBCpfPrincipalOverride, setPersonBCpfPrincipalOverride] = useState('')
+  const [personBCpfInterestOverride, setPersonBCpfInterestOverride] = useState('')
 
   // Purchase
   const [purchasePrice, setPurchasePrice] = useState('')
@@ -77,6 +84,9 @@ export default function HouseMuchPage() {
     cpfAccruedInterestOverride: cpfInterestOverride !== '' ? num(cpfInterestOverride) : null,
     ssdOverride: ssdOverride !== '' ? num(ssdOverride) : null,
     yourSharePct: isJointLoan ? num(yourSharePct) : 100,
+    personBCpfOutlay: isJointLoan ? num(personBCpfOutlay) : 0,
+    personBCpfPrincipalOverride: isJointLoan && personBCpfPrincipalOverride !== '' ? num(personBCpfPrincipalOverride) : null,
+    personBCpfAccruedInterestOverride: isJointLoan && personBCpfInterestOverride !== '' ? num(personBCpfInterestOverride) : null,
   }) : null
 
   const handleCalc = () => setCalculated(true)
@@ -161,9 +171,9 @@ export default function HouseMuchPage() {
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 16 }}>
             <MoneyInput id="purchase-price" label="Purchase price" value={purchasePrice} onChange={e => setPurchasePrice(e.target.value)} />
             <DateInput id="purchase-date" label="Purchase date" value={purchaseDate} onChange={e => setPurchaseDate(e.target.value)} />
-            <MoneyInput id="cpf-outlay" label="CPF used at purchase" hint="The full amount withdrawn at the time of purchase — down payment plus any fees paid via CPF (stamp duty, legal, valuation). Not your current CPF principal, which is entered separately below if you're servicing your mortgage via CPF" value={cpfOutlay} onChange={e => setCpfOutlay(e.target.value)} />
+            <MoneyInput id="cpf-outlay" label={isJointLoan ? "Person A's CPF used at purchase" : 'CPF used at purchase'} hint="The full amount withdrawn at the time of purchase — down payment plus any fees paid via CPF (stamp duty, legal, valuation). Not your current CPF principal, which is entered separately below if you're servicing your mortgage via CPF" value={cpfOutlay} onChange={e => setCpfOutlay(e.target.value)} />
             <MoneyInput
-              id="cpf-interest-known" label="CPF accrued interest today" hint="Optional — your CPF portal's Property panel shows this live, right now, regardless of when you bought. Leave blank to estimate."
+              id="cpf-interest-known" label={isJointLoan ? "Person A's CPF accrued interest today" : 'CPF accrued interest today'} hint="Optional — your CPF portal's Property panel shows this live, right now, regardless of when you bought. Leave blank to estimate."
               value={cpfInterestOverride} onChange={e => setCpfInterestOverride(e.target.value)}
             />
             <MoneyInput id="loan-taken" label="Loan taken" value={loanTaken} onChange={e => setLoanTaken(e.target.value)} />
@@ -209,8 +219,15 @@ export default function HouseMuchPage() {
                   </p>
                 )}
                 <p style={{ marginTop: 8, fontSize: C.xs, color: C.muted, lineHeight: 1.5 }}>
-                  Purchase price, loan, and stamp duty above should still be the real, full figures for the property — this only scales the profit/loss and cash figures below down to your share. Your CPF used at purchase is assumed to already be your own CPF, not the household total.
+                  Purchase price, loan, and stamp duty above should still be the real, full figures for the property — this only scales the profit/loss and cash figures below down to your share. CPF is never split by share — it&apos;s tracked per person below.
                 </p>
+                <div style={{ marginTop: 18, paddingTop: 16, borderTop: `1px solid ${C.border}` }}>
+                  <div style={{ fontSize: C.sm, fontWeight: 600, color: C.primary, marginBottom: 10 }}>Person B&apos;s CPF</div>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 16 }}>
+                    <MoneyInput id="person-b-cpf-outlay" label="Person B's CPF used at purchase" hint="Their own CPF withdrawn at purchase — down payment plus any fees paid via their CPF. Leave blank if only you used CPF." value={personBCpfOutlay} onChange={e => setPersonBCpfOutlay(e.target.value)} />
+                    <MoneyInput id="person-b-cpf-interest-known" label="Person B's CPF accrued interest today" hint="Optional — from their CPF portal's Property panel. Leave blank to estimate." value={personBCpfInterestOverride} onChange={e => setPersonBCpfInterestOverride(e.target.value)} />
+                  </div>
+                </div>
               </div>
             )}
           </div>
@@ -259,6 +276,8 @@ export default function HouseMuchPage() {
               cpfPrincipalOverride={cpfPrincipalOverride} onCpfPrincipalOverride={e => setCpfPrincipalOverride(e.target.value)}
               cpfInterestOverride={cpfInterestOverride} onCpfInterestOverride={e => setCpfInterestOverride(e.target.value)}
               ssdOverride={ssdOverride} onSsdOverride={e => setSsdOverride(e.target.value)}
+              personBCpfPrincipalOverride={personBCpfPrincipalOverride} onPersonBCpfPrincipalOverride={e => setPersonBCpfPrincipalOverride(e.target.value)}
+              personBCpfInterestOverride={personBCpfInterestOverride} onPersonBCpfInterestOverride={e => setPersonBCpfInterestOverride(e.target.value)}
             />
 
             <div style={{ marginTop: 32, background: C.surface, border: `1px solid ${C.border}`, borderRadius: C.rXL, padding: '4px 24px', boxShadow: C.shadow }}>

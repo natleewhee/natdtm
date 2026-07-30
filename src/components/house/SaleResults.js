@@ -23,6 +23,8 @@ export default function SaleResults({
   cpfPrincipalOverride, onCpfPrincipalOverride,
   cpfInterestOverride, onCpfInterestOverride,
   ssdOverride, onSsdOverride,
+  personBCpfPrincipalOverride, onPersonBCpfPrincipalOverride,
+  personBCpfInterestOverride, onPersonBCpfInterestOverride,
 }) {
   if (!result) return null
   const {
@@ -38,6 +40,8 @@ export default function SaleResults({
     cashOnCashReturn, totalOutlay, roiOnPrice, roiOnOutlay, annualizedRoiOnPrice, annualizedRoiOnOutlay,
     saleIsInFuture,
     yourSharePct, yourCashProceeds, yourTrueProfitLoss,
+    personBSharePct, personBCashProceeds, personBTrueProfitLoss,
+    personBCpfPrincipalComputed, personBCpfAccruedInterestComputed,
   } = result
   const isJoint = yourSharePct != null && yourSharePct !== 100
 
@@ -84,6 +88,20 @@ export default function SaleResults({
           </div>
           <p style={{ fontSize: C.xs, color: C.muted, margin: '6px 0 0', lineHeight: 1.5 }}>
             Everything else on this page is the full household figure — the property, loan, and stamp duty are real, whole-property numbers either way. This is what the {isProfit ? 'profit' : 'loss'} means for you specifically.
+          </p>
+        </div>
+      )}
+
+      {isJoint && (
+        <div style={{ background: C.surface, border: `1.5px solid ${C.border}`, borderRadius: C.rL, padding: '16px 18px', margin: '20px 0', textAlign: 'center' }}>
+          <div style={{ fontSize: C.xs, fontWeight: 700, color: C.muted, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 6 }}>
+            Person B&apos;s share ({personBSharePct}%)
+          </div>
+          <div style={{ fontFamily: C.fontMono, fontSize: 26, fontWeight: 600, color: personBTrueProfitLoss >= 0 ? C.greenText : C.redText }}>
+            {personBTrueProfitLoss >= 0 ? '+' : '−'}{SGD(Math.abs(personBTrueProfitLoss))}
+          </div>
+          <p style={{ fontSize: C.xs, color: C.muted, margin: '6px 0 0', lineHeight: 1.5 }}>
+            Based on their own CPF entered below — leave it blank and this assumes they put in no CPF at all.
           </p>
         </div>
       )}
@@ -145,6 +163,9 @@ export default function SaleResults({
         {isJoint && (
           <Row label={`Your share (${yourSharePct}%)`} value={SGD(yourCashProceeds)} indent tone={yourCashProceeds >= 0 ? 'green' : 'red'} />
         )}
+        {isJoint && (
+          <Row label={`Person B's share (${personBSharePct}%)`} value={SGD(personBCashProceeds)} indent tone={personBCashProceeds >= 0 ? 'green' : 'red'} />
+        )}
       </div>
 
       <div style={{ marginTop: 28 }}>
@@ -193,6 +214,24 @@ export default function SaleResults({
               overrideValue={ssdOverride} onOverrideChange={onSsdOverride}
               formatValue={SGD}
             />
+          )}
+          {isJoint && (
+            <>
+              <OverrideField
+                id="ov-b-cpf-principal" label="Person B's CPF principal today"
+                computedValue={personBCpfPrincipalComputed}
+                computedHint="Defaults to Person B's CPF used at purchase, assuming it hasn't grown since. If they've been servicing the mortgage via their own CPF OA, their CPF portal's Property panel shows today's real refundable principal."
+                overrideValue={personBCpfPrincipalOverride} onOverrideChange={onPersonBCpfPrincipalOverride}
+                formatValue={SGD}
+              />
+              <OverrideField
+                id="ov-b-cpf-interest" label="Person B's CPF accrued interest today"
+                computedValue={personBCpfAccruedInterestComputed}
+                computedHint="Estimated at a flat 2.5% p.a. compounded since purchase. Their CPF portal's Property panel has today's exact figure."
+                overrideValue={personBCpfInterestOverride} onOverrideChange={onPersonBCpfInterestOverride}
+                formatValue={SGD}
+              />
+            </>
           )}
         </div>
       </div>

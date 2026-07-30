@@ -427,6 +427,90 @@ assert('Household (unscaled) figures are identical regardless of share', approx(
 assert('totalCPFRefund is NOT scaled by share — CPF withdrawals are already personal', approx(soloShare.totalCPFRefund, jointShare.totalCPFRefund, 0.01))
 assert('cashOnCashReturn ratio is unaffected by share (both terms scale together)', approx(soloShare.cashOnCashReturn, jointShare.cashOnCashReturn, 0.0001))
 
+// ─── Two-person joint loan ────────────────────────────────────────────────
+// Both owners have their own CPF: A put in $150k, B put in $100k. A owns
+// 60%, B owns 40%.
+const twoPersonInputs = {
+  propertyType: 'private',
+  purchasePrice: 900_000, purchaseDate: '2018-01-15',
+  cpfOutlay: 150_000, personBCpfOutlay: 100_000,
+  loanTaken: 650_000, mortgageRate: 2.6, loanTenure: 25,
+  salePrice: 1_300_000, saleDate: '2026-06-01',
+  yourSharePct: 60,
+}
+const twoPerson = calcSale(twoPersonInputs)
+const singleOwnerBOnly = calcSale({ ...twoPersonInputs, personBCpfOutlay: 0, yourSharePct: 100 })
+
+assert('personBSharePct is the complement of yourSharePct', twoPerson.personBSharePct === 40)
+assert(
+  "the household's true total CPF refund now includes BOTH owners' CPF — the bug this feature fixes",
+  approx(twoPerson.totalCPFRefund, twoPerson.personATotalCPFRefund + twoPerson.personBTotalCPFRefund, 0.01),
+)
+assert(
+  "adding person B's CPF genuinely increases the household total refund (previously it would have been silently ignored)",
+  twoPerson.totalCPFRefund > singleOwnerBOnly.totalCPFRefund,
+)
+assert(
+  'personACashProceeds matches the legacy yourCashProceeds field exactly (same owner, two names)',
+  approx(twoPerson.personACashProceeds, twoPerson.yourCashProceeds, 0.01),
+)
+assert(
+  "personA's cash proceeds subtract ONLY their own CPF refund, not the household total (no double counting of person B's CPF)",
+  approx(twoPerson.personACashProceeds, 0.6 * (twoPerson.salePrice - twoPerson.outstandingBalance - twoPerson.sellingCosts) - twoPerson.personATotalCPFRefund, 0.01),
+)
+assert(
+  "personB's cash proceeds subtract ONLY their own CPF refund",
+  approx(twoPerson.personBCashProceeds, 0.4 * (twoPerson.salePrice - twoPerson.outstandingBalance - twoPerson.sellingCosts) - twoPerson.personBTotalCPFRefund, 0.01),
+)
+assert(
+  'personA + personB cash proceeds sum to the true household cash proceeds',
+  approx(twoPerson.personACashProceeds + twoPerson.personBCashProceeds, twoPerson.cashProceeds, 0.01),
+)
+assert(
+  'personA + personB true profit/loss sum to the household true profit/loss',
+  approx(twoPerson.personATrueProfitLoss + twoPerson.personBTrueProfitLoss, twoPerson.trueProfitLoss, 0.01),
+)
+assert(
+  'personA + personB outstanding balance sum to the full household loan balance',
+  approx(twoPerson.personAOutstandingBalance + twoPerson.personBOutstandingBalance, twoPerson.outstandingBalance, 0.01),
+)
+assert(
+  "cashOutlay (household) subtracts BOTH owners' CPF, not just person A's — the other half of the same bug fix",
+  approx(twoPerson.cashOutlay, twoPerson.purchasePrice + twoPerson.purchaseFees - twoPerson.loanTaken - 250_000, 0.01),
+)
+
+// personBCpfOutlay defaulting to 0 must reproduce today's single-owner
+// behavior exactly — the whole point of a backward-compatible default.
+const legacyJoint = calcSale({
+  propertyType: 'private',
+  purchasePrice: 900_000, purchaseDate: '2018-01-15',
+  cpfOutlay: 150_000, loanTaken: 650_000, mortgageRate: 2.6, loanTenure: 25,
+  salePrice: 1_300_000, saleDate: '2026-06-01',
+  yourSharePct: 50,
+})
+const explicitZeroB = calcSale({
+  propertyType: 'private',
+  purchasePrice: 900_000, purchaseDate: '2018-01-15',
+  cpfOutlay: 150_000, personBCpfOutlay: 0, loanTaken: 650_000, mortgageRate: 2.6, loanTenure: 25,
+  salePrice: 1_300_000, saleDate: '2026-06-01',
+  yourSharePct: 50,
+})
+assert('personBCpfOutlay=0 (default) reproduces the exact same totalCPFRefund as omitting it entirely', approx(legacyJoint.totalCPFRefund, explicitZeroB.totalCPFRefund, 0.001))
+assert('personBCpfOutlay=0 (default) reproduces the exact same yourCashProceeds as omitting it entirely', approx(legacyJoint.yourCashProceeds, explicitZeroB.yourCashProceeds, 0.001))
+assert('personBCpfOutlay=0 (default) reproduces the exact same cashOutlay as omitting it entirely', approx(legacyJoint.cashOutlay, explicitZeroB.cashOutlay, 0.001))
+
+// Person B's own CPF-principal/accrued-interest overrides work exactly
+// like person A's — checking their own CPF portal for their own number.
+const withBOverrides = calcSale({
+  ...twoPersonInputs,
+  personBCpfPrincipalOverride: 110_000,
+  personBCpfAccruedInterestOverride: 12_000,
+})
+assert('personBCpfPrincipal reflects the override, not the computed default', withBOverrides.personBCpfPrincipal === 110_000)
+assert('personBCpfAccruedInterest reflects the override, not the computed default', withBOverrides.personBCpfAccruedInterest === 12_000)
+assert('personBTotalCPFRefund is exactly the overridden principal + overridden interest', approx(withBOverrides.personBTotalCPFRefund, 122_000, 0.01))
+assert("person A's own figures are untouched by person B's overrides", approx(withBOverrides.personACashProceeds, twoPerson.personACashProceeds, 0.01))
+
 // ─── yearsBetween edge cases ─────────────────────────────────────────────
 assert('yearsBetween returns 0 for missing dates', yearsBetween(null, '2024-01-01') === 0)
 assert('yearsBetween returns 0 when end is before start', yearsBetween('2024-01-01', '2020-01-01') === 0)

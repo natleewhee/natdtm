@@ -97,10 +97,19 @@ export function calcSale(inputs) {
     // yours. Everything above stays a full-household calculation — BSD,
     // SSD, and mortgage amortization all need the real, whole-property
     // figures to be correct — this only scales the handful of "what does
-    // this mean for ME" outputs below. CPF principal is NOT scaled: CPF
-    // withdrawals are tracked per person, so cpfOutlay is assumed to
-    // already be your own contribution, not a household total.
+    // this mean for ME" outputs below. `cpfOutlay` (and its overrides
+    // above) is YOUR own CPF only — CPF withdrawals are tracked per
+    // person, never a household total to be split by share.
     yourSharePct = 100,
+    // A second owner's own CPF, entered the same way as yours — 0 by
+    // default, so a solo sale or a simple-%-share joint sale (no second
+    // person's CPF known/entered) behaves exactly as before. When this
+    // person's own CPF is used, it counts toward the household's true
+    // total CPF refund (see the personCpf() calls below) instead of
+    // being silently missed the way a single cpfOutlay field would.
+    personBCpfOutlay = 0,
+    personBCpfPrincipalOverride = null,
+    personBCpfAccruedInterestOverride = null,
   } = inputs
 
   const yearsHeld = yearsBetween(purchaseDate, saleDate)
@@ -159,23 +168,39 @@ export function calcSale(inputs) {
   // further CPF top-ups modeled) — only its accrued interest keeps
   // compounding — so check back closer to your actual sale for a tighter
   // number if you're still servicing via CPF.
-  const cpfPrincipalAtPurchase = Number(cpfOutlay) || 0
-  const cpfPrincipalAsOfComputed = cpfPrincipalAtPurchase
-  const cpfPrincipalComputed = cpfPrincipalAsOfComputed
-  const cpfPrincipalAsOf = cpfPrincipalOverride ?? cpfPrincipalAsOfComputed
-  const cpfPrincipalTotal = cpfPrincipalAsOf
-  const cpfAccruedInterestAsOfComputed = calcCPFAccruedInterest(cpfPrincipalAsOf, monthsPurchaseToAsOf / 12)
-  const cpfAccruedInterestComputed = cpfAccruedInterestAsOfComputed
-  const cpfAccruedInterestAsOf = cpfAccruedInterestOverride ?? cpfAccruedInterestAsOfComputed
-  // The remaining leg compounds on top of principal + interest ALREADY
-  // accrued as of today, not on bare principal again — otherwise the two
-  // legs just sum linearly and understate the true compound total (the
-  // cross term P·leg1·leg2 gets dropped). E.g. 10yr then 2yr more at
-  // 2.5%: summing the legs separately understates accrued interest by
-  // ~4% versus compounding one continuous period.
-  const cpfAccruedInterestRemaining = calcCPFAccruedInterest(cpfPrincipalAsOf + cpfAccruedInterestAsOf, monthsAsOfToSale / 12)
-  const cpfAccruedInterest = cpfAccruedInterestAsOf + cpfAccruedInterestRemaining
-  const totalCPFRefund = cpfPrincipalTotal + cpfAccruedInterest
+  //
+  // Computed once per person (identical math, different principal/
+  // overrides) and summed for the household — a second owner's own CPF
+  // must count toward the true total refund, not be silently dropped the
+  // way a single household-wide field would drop it.
+  function personCpf(principalAtPurchase, principalOverride, interestOverride) {
+    const principalAsOfComputed = principalAtPurchase
+    const principalAsOf = principalOverride ?? principalAsOfComputed
+    const accruedAsOfComputed = calcCPFAccruedInterest(principalAsOf, monthsPurchaseToAsOf / 12)
+    const accruedAsOf = interestOverride ?? accruedAsOfComputed
+    // The remaining leg compounds on top of principal + interest ALREADY
+    // accrued as of today, not on bare principal again — otherwise the
+    // two legs just sum linearly and understate the true compound total
+    // (the cross term P·leg1·leg2 gets dropped). E.g. 10yr then 2yr more
+    // at 2.5%: summing the legs separately understates accrued interest
+    // by ~4% versus compounding one continuous period.
+    const accruedRemaining = calcCPFAccruedInterest(principalAsOf + accruedAsOf, monthsAsOfToSale / 12)
+    const accrued = accruedAsOf + accruedRemaining
+    return {
+      principalAtPurchase, principalComputed: principalAsOfComputed, principal: principalAsOf,
+      accruedComputed: accruedAsOfComputed, accrued, totalRefund: principalAsOf + accrued,
+    }
+  }
+
+  const personACpf = personCpf(Number(cpfOutlay) || 0, cpfPrincipalOverride, cpfAccruedInterestOverride)
+  const personBCpf = personCpf(Number(personBCpfOutlay) || 0, personBCpfPrincipalOverride, personBCpfAccruedInterestOverride)
+
+  const cpfPrincipalAtPurchase = personACpf.principalAtPurchase + personBCpf.principalAtPurchase
+  const cpfPrincipalComputed = personACpf.principalComputed + personBCpf.principalComputed
+  const cpfPrincipalTotal = personACpf.principal + personBCpf.principal
+  const cpfAccruedInterestComputed = personACpf.accruedComputed + personBCpf.accruedComputed
+  const cpfAccruedInterest = personACpf.accrued + personBCpf.accrued
+  const totalCPFRefund = personACpf.totalRefund + personBCpf.totalRefund
 
   const ssdComputed = propertyType === 'private' ? calcSSD(salePrice, yearsHeld, propertyType).amount : 0
   const ssd = ssdOverride ?? ssdComputed
@@ -185,10 +210,11 @@ export function calcSale(inputs) {
   const cashProceeds = (Number(salePrice) || 0) - outstandingBalance - sellingCosts - totalCPFRefund
 
   // Derived, not asked for — whatever wasn't covered by the loan or CPF
-  // must have been cash. Can go negative if the loan + CPF you entered
-  // add up to more than the price + fees, which usually means one of
-  // those figures was mistyped — surfaced to the UI via cashOutlayUnclear.
-  const cashOutlay = (Number(purchasePrice) || 0) + purchaseFees - (Number(loanTaken) || 0) - (Number(cpfOutlay) || 0)
+  // (either owner's) must have been cash. Can go negative if the loan +
+  // CPF you entered add up to more than the price + fees, which usually
+  // means one of those figures was mistyped — surfaced to the UI via
+  // cashOutlayUnclear.
+  const cashOutlay = (Number(purchasePrice) || 0) + purchaseFees - (Number(loanTaken) || 0) - cpfPrincipalAtPurchase
   const cashOutlayUnclear = cashOutlay < 0
 
   // True profit/loss is a property-economics number, independent of how
@@ -225,31 +251,39 @@ export function calcSale(inputs) {
 
   const mopOk = propertyType !== 'hdb' || yearsHeld >= HDB_MOP_YEARS
 
-  // "Your share" figures — most of the household numbers above scale
-  // cleanly by ownership share, since they never touch CPF: trueProfitLoss,
+  // Per-owner figures — most of the household numbers above scale cleanly
+  // by ownership share, since they never touch CPF: trueProfitLoss,
   // outstandingBalance, and monthlyInstalment are pure property/loan
   // economics. cashProceeds and cashInvested are different — each is
   // already a MIXED figure: joint components (sale price, loan payoff,
   // selling costs / purchase price, fees, loan taken) minus a CPF
-  // component that's already fully yours and unscaled (cpfOutlay/
-  // totalCPFRefund — see the comment above on why CPF isn't scaled).
-  // Naively multiplying the whole mixed figure by share would scale away
-  // part of your own CPF a second time. So each is decomposed back into
-  // its joint slice (scaled) recombined with its already-personal CPF
-  // slice (left alone) — the two are equal at share=100, matching the
-  // unscaled household figures exactly with no behavior change there.
+  // component that's already fully personal and unscaled (see personCpf()
+  // above — CPF isn't split by share, each owner's own CPF is already
+  // theirs alone). Naively multiplying the whole mixed figure by share
+  // would scale away part of a person's own CPF a second time, so each is
+  // decomposed back into its joint slice (scaled) recombined with its
+  // own already-personal CPF slice (left alone) — computed once per
+  // owner via the same formula, since the math is identical either way.
   const share = resolveSharePct(yourSharePct) / 100
+  const personBShare = 1 - share
 
   const jointSaleBase = (Number(salePrice) || 0) - outstandingBalance - sellingCosts // no CPF in this slice
-  const yourCashProceeds = jointSaleBase * share - totalCPFRefund
-
   const jointPurchaseBase = (Number(purchasePrice) || 0) + purchaseFees - (Number(loanTaken) || 0) // no CPF in this slice
-  const yourCashOutlay = jointPurchaseBase * share - (Number(cpfOutlay) || 0)
-  const yourCashInvested = Math.max(0, yourCashOutlay) + (Number(sunkCost) || 0) * share
 
-  const yourTrueProfitLoss = trueProfitLoss * share
-  const yourOutstandingBalance = outstandingBalance * share
-  const yourMonthlyInstalment = monthlyInstalment * share
+  function ownerFigures(ownerShare, ownerCpfOutlay, ownerCpf) {
+    const cashOutlayForOwner = jointPurchaseBase * ownerShare - ownerCpfOutlay
+    return {
+      cashProceeds: jointSaleBase * ownerShare - ownerCpf.totalRefund,
+      cashOutlay: cashOutlayForOwner,
+      cashInvested: Math.max(0, cashOutlayForOwner) + (Number(sunkCost) || 0) * ownerShare,
+      trueProfitLoss: trueProfitLoss * ownerShare,
+      outstandingBalance: outstandingBalance * ownerShare,
+      monthlyInstalment: monthlyInstalment * ownerShare,
+    }
+  }
+
+  const personA = ownerFigures(share, Number(cpfOutlay) || 0, personACpf)
+  const personB = ownerFigures(personBShare, Number(personBCpfOutlay) || 0, personBCpf)
 
   return {
     propertyType, yearsHeld, monthsHeld,
@@ -270,9 +304,29 @@ export function calcSale(inputs) {
     cashInvested, cashOnCashReturn,
     totalOutlay, roiOnPrice, roiOnOutlay, annualizedRoiOnPrice, annualizedRoiOnOutlay,
     mopOk,
+    // "your"/personA are the SAME owner — kept as two names so every
+    // existing caller (FlowState/MyLedger sync, this file's own tests)
+    // that already reads yourCashProceeds/yourSharePct/etc keeps working
+    // unchanged, while the new two-person UI can read the same numbers
+    // under person-labeled names for symmetry with personB below.
     yourSharePct: resolveSharePct(yourSharePct),
-    yourCashProceeds, yourCashInvested, yourTrueProfitLoss,
-    yourOutstandingBalance, yourMonthlyInstalment,
+    yourCashProceeds: personA.cashProceeds, yourCashInvested: personA.cashInvested, yourTrueProfitLoss: personA.trueProfitLoss,
+    yourOutstandingBalance: personA.outstandingBalance, yourMonthlyInstalment: personA.monthlyInstalment,
+    personACpfOutlay: Number(cpfOutlay) || 0,
+    personACpfPrincipalAtPurchase: personACpf.principalAtPurchase, personACpfPrincipalComputed: personACpf.principalComputed,
+    personACpfPrincipal: personACpf.principal,
+    personACpfAccruedInterestComputed: personACpf.accruedComputed, personACpfAccruedInterest: personACpf.accrued,
+    personATotalCPFRefund: personACpf.totalRefund,
+    personACashProceeds: personA.cashProceeds, personACashOutlay: personA.cashOutlay, personACashInvested: personA.cashInvested,
+    personATrueProfitLoss: personA.trueProfitLoss, personAOutstandingBalance: personA.outstandingBalance, personAMonthlyInstalment: personA.monthlyInstalment,
+    personBSharePct: resolveSharePct(100 - resolveSharePct(yourSharePct)),
+    personBCpfOutlay: Number(personBCpfOutlay) || 0,
+    personBCpfPrincipalAtPurchase: personBCpf.principalAtPurchase, personBCpfPrincipalComputed: personBCpf.principalComputed,
+    personBCpfPrincipal: personBCpf.principal,
+    personBCpfAccruedInterestComputed: personBCpf.accruedComputed, personBCpfAccruedInterest: personBCpf.accrued,
+    personBTotalCPFRefund: personBCpf.totalRefund,
+    personBCashProceeds: personB.cashProceeds, personBCashOutlay: personB.cashOutlay, personBCashInvested: personB.cashInvested,
+    personBTrueProfitLoss: personB.trueProfitLoss, personBOutstandingBalance: personB.outstandingBalance, personBMonthlyInstalment: personB.monthlyInstalment,
   }
 }
 
