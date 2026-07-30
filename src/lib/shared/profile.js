@@ -355,9 +355,15 @@ export function clearEtfNumbers() {
   save(data)
 }
 
+// Auto-recomputed metrics (called continuously while FlowState is open,
+// not just on an explicit save) — merges onto whatever's already in the
+// flow slot so it never clobbers a saved `inputs` blob written by
+// saveFlowInputs below.
 export function saveFlowNumbers({ livingExpenses, monthlySurplus, trueSavingsRate, cashSavingsRate, source = 'auto' }) {
   const data = loadMyNumbers()
+  const existing = data.flow || {}
   data.flow = {
+    ...existing,
     source,
     livingExpenses: Number(livingExpenses) || 0,
     monthlySurplus: monthlySurplus != null ? Number(monthlySurplus) || 0 : null,
@@ -372,6 +378,31 @@ export function clearFlowNumbers() {
   const data = loadMyNumbers()
   data.flow = null
   save(data)
+}
+
+// FlowState's own raw form inputs (every field on the page — age,
+// mortgage, insurance, living-expense mode, lumpy items, all of it) —
+// distinct from the auto-recomputed metrics above, which other tools
+// (MyLedger) actually consume. Nothing else reads this; it exists so
+// "Save" on the FlowState page can restore exactly what you typed,
+// scoped to whichever profile is active, the next time you open it.
+// Written only on an explicit save, never automatically — merges onto
+// the flow slot so it doesn't clobber the metrics saveFlowNumbers keeps
+// current in the background.
+export function saveFlowInputs(inputs) {
+  const data = loadMyNumbers()
+  const existing = data.flow || {}
+  data.flow = {
+    ...existing,
+    inputs,
+    inputsSavedAt: Date.now(),
+  }
+  save(data)
+}
+
+export function loadFlowInputs() {
+  const data = loadMyNumbers()
+  return data.flow?.inputs || null
 }
 
 export function clearInsureNumbers() {

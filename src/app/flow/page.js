@@ -9,7 +9,7 @@ import {
   DEFAULT_MA_HEALTH_PREMIUM,
 } from '@/lib/flow/calc'
 import { CPF_OW_CEILING, CPF_ANNUAL_CEILING } from '@/lib/retire/cpf'
-import { loadMyNumbers, saveFlowNumbers } from '@/lib/shared/profile'
+import { loadMyNumbers, saveFlowNumbers, saveFlowInputs, loadFlowInputs } from '@/lib/shared/profile'
 import { MoneyInput, NumberInput, PercentInput, SectionDivider, Segmented, Toggle } from '@/components/flow/ui'
 import FlowResults from '@/components/flow/Results'
 import ShellHeader from '@/components/shared/ShellHeader'
@@ -98,13 +98,61 @@ export default function FlowStatePage() {
   const [lumpyItems, setLumpyItems] = useState([])
 
   const [calculated, setCalculated] = useState(false)
+  const [restoredFromSave, setRestoredFromSave] = useState(false)
+  const [justSaved, setJustSaved] = useState(false)
 
-  // One-time prefill from the shared "My Numbers" store — nothing is
-  // sent anywhere; see src/lib/shared/profile.js.
+  // On mount: if this profile has a saved FlowState session (see the
+  // Save button below), restore it exactly as typed and skip the
+  // cross-tool auto-fill entirely — a save represents a deliberate
+  // choice (including any manual overrides of a synced figure) and
+  // should win over guessing fresh from other tools every time. Only a
+  // profile that's never been saved here before falls through to the
+  // original auto-fill-from-other-tools behavior. Nothing is sent
+  // anywhere; see src/lib/shared/profile.js.
   useEffect(() => {
     /* eslint-disable react-hooks/set-state-in-effect -- one-time read from
        localStorage on mount; unavailable during SSR so can't happen during
        render without a hydration mismatch */
+    const saved = loadFlowInputs()
+    if (saved) {
+      if (saved.age != null) setAge(saved.age)
+      if (saved.salary != null) setSalary(saved.salary)
+      setSalaryPrefilled(!!saved.salaryPrefilled)
+      setHasHouse(!!saved.hasHouse)
+      setHouseSource(saved.houseSource || 'manual')
+      setOutstandingBalance(saved.outstandingBalance || '')
+      setRate(saved.rate || '2.60')
+      setMonthlyInstalment(saved.monthlyInstalment || '')
+      setCpfServicing(saved.cpfServicing || '')
+      setHasJointLoan(!!saved.hasJointLoan)
+      setYourSharePct(saved.yourSharePct || '50')
+      setHasCar(!!saved.hasCar)
+      setCarSource(saved.carSource || 'manual')
+      setCarInstalment(saved.carInstalment || '')
+      setInsuranceSource(saved.insuranceSource || 'manual')
+      setInsurancePremium(saved.insurancePremium || '')
+      setInsuranceFrequency(saved.insuranceFrequency || 'monthly')
+      setMaHealthPremium(saved.maHealthPremium ?? String(DEFAULT_MA_HEALTH_PREMIUM))
+      setMaHealthFrequency(saved.maHealthFrequency || 'monthly')
+      setInvestSource(saved.investSource || 'manual')
+      setInvestMonthly(saved.investMonthly || '')
+      setTaxSource(saved.taxSource || 'manual')
+      setAnnualTax(saved.annualTax || '')
+      setLivingMode(saved.livingMode || 'quick')
+      setQuickAmount(saved.quickAmount || '')
+      setCategories(saved.categories || Object.fromEntries(CATEGORY_FIELDS.map(f => [f.key, ''])))
+      setBackStart(saved.backStart || '')
+      setBackEnd(saved.backEnd || '')
+      setBackMonths(saved.backMonths || '12')
+      setShowReconcile(!!saved.showReconcile)
+      setLiquidSavings(saved.liquidSavings || '')
+      setTaxPaymentMode(saved.taxPaymentMode || 'lump')
+      setTaxDueMonth(saved.taxDueMonth || '3')
+      setLumpyItems(Array.isArray(saved.lumpyItems) ? saved.lumpyItems : [])
+      setRestoredFromSave(true)
+      return
+    }
+
     const myNumbers = loadMyNumbers()
     const { house, drive, retire, insure, tax, etf } = myNumbers
 
@@ -140,6 +188,27 @@ export default function FlowStatePage() {
     }
     /* eslint-enable react-hooks/set-state-in-effect */
   }, [])
+
+  const handleSaveInputs = () => {
+    saveFlowInputs({
+      age, salary, salaryPrefilled,
+      hasHouse, houseSource, outstandingBalance, rate, monthlyInstalment, cpfServicing, hasJointLoan, yourSharePct,
+      hasCar, carSource, carInstalment,
+      insuranceSource, insurancePremium, insuranceFrequency, maHealthPremium, maHealthFrequency,
+      investSource, investMonthly,
+      taxSource, annualTax,
+      livingMode, quickAmount, categories, backStart, backEnd, backMonths, showReconcile,
+      liquidSavings,
+      taxPaymentMode, taxDueMonth, lumpyItems,
+    })
+    setJustSaved(true)
+  }
+
+  useEffect(() => {
+    if (!justSaved) return
+    const t = setTimeout(() => setJustSaved(false), 2200)
+    return () => clearTimeout(t)
+  }, [justSaved])
 
   const isReady = num(age) > 0 && num(salary) > 0
 
@@ -287,6 +356,11 @@ export default function FlowStatePage() {
       </div>
 
       <div style={{ maxWidth: 720, margin: '0 auto', padding: '40px 20px 80px' }}>
+        {restoredFromSave && (
+          <p style={{ margin: '0 0 14px', fontSize: C.xs, color: C.faint, textAlign: 'center' }}>
+            Restored what you last saved to this profile — edit freely.
+          </p>
+        )}
         <div style={{ background: C.surface, border: `1px solid ${C.border}`, borderRadius: C.rXL, padding: '28px 24px', boxShadow: C.shadow }}>
 
           <SectionDivider label="You" />
@@ -549,19 +623,30 @@ export default function FlowStatePage() {
             fontSize: C.xs, fontWeight: 700, color: C.muted, cursor: 'pointer', fontFamily: C.fontBody,
           }}>+ Add a lumpy item</button>
 
-          <div style={{ marginTop: 24 }}>
-            <Button variant="accent" fullWidth onClick={() => setCalculated(true)} disabled={!isReady}>
+          <div style={{ marginTop: 24, display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+            <Button variant="accent" onClick={() => setCalculated(true)} disabled={!isReady} style={{ flex: '1 1 220px' }}>
               {isReady ? 'Show me where it goes' : 'Enter your age and salary above'}
             </Button>
+            <Button variant="outline" onClick={handleSaveInputs} style={{ flex: '0 0 auto' }}>
+              {justSaved ? 'Saved to this profile ✓' : 'Save my inputs'}
+            </Button>
           </div>
+          <p style={{ marginTop: 10, fontSize: C.xs, color: C.faint, lineHeight: 1.5 }}>
+            Everything above stays on this device until you press Save — then it&apos;s tied to whichever profile is active, so it&apos;s here next time you open FlowState.
+          </p>
         </div>
 
         {calculated && flow && (
-          <FlowResults
-            flow={flow} metrics={metrics} primarySchedule={primarySchedule} altSchedule={altSchedule} taxPaymentMode={taxPaymentMode}
-            liquidSavings={num(liquidSavings)} gap={gap}
-            house={house} annualBonus={annualBonusTotal} salary={num(salary)} age={num(age)}
-          />
+          <>
+            <p style={{ margin: '20px 0 0', fontSize: C.xs, color: C.faint, textAlign: 'center' }}>
+              This report updates live as you edit anything above — no need to press the button again.
+            </p>
+            <FlowResults
+              flow={flow} metrics={metrics} primarySchedule={primarySchedule} altSchedule={altSchedule} taxPaymentMode={taxPaymentMode}
+              liquidSavings={num(liquidSavings)} gap={gap}
+              house={house} annualBonus={annualBonusTotal} salary={num(salary)} age={num(age)}
+            />
+          </>
         )}
       </div>
     </div>

@@ -17,7 +17,7 @@ global.window = { localStorage: makeStorage() }
 
 const {
   loadMyNumbers, saveHouseNumbers, saveDriveNumbers, saveRetireNumbers,
-  saveInsureNumbers, saveTaxNumbers, saveEtfNumbers, saveFlowNumbers,
+  saveInsureNumbers, saveTaxNumbers, saveEtfNumbers, saveFlowNumbers, saveFlowInputs, loadFlowInputs,
   clearHouseNumbers, clearDriveNumbers, clearRetireNumbers, clearEtfNumbers, clearFlowNumbers,
   listProfiles, createProfile, renameProfile, deleteProfile, setActiveProfile, getActiveProfileId,
   MAX_PROFILES,
@@ -135,6 +135,46 @@ test('saveFlowNumbers round-trips independently', () => {
   assert.equal(data.flow.cashSavingsRate, 0.29)
   assert.equal(data.flow.source, 'auto')
   assert.equal(typeof data.flow.savedAt, 'number')
+})
+
+test('saveFlowInputs and saveFlowNumbers do not clobber each other', () => {
+  window.localStorage.removeItem('ndtm_my_numbers_v1')
+  // Metrics saved first (as the auto-recompute effect does continuously)...
+  saveFlowNumbers({ livingExpenses: 3200, monthlySurplus: 1739 })
+  // ...then an explicit input save happens.
+  saveFlowInputs({ age: '35', salary: '8000' })
+  let data = loadMyNumbers()
+  assert.equal(data.flow.livingExpenses, 3200, 'metrics survive an inputs save')
+  assert.deepEqual(data.flow.inputs, { age: '35', salary: '8000' })
+
+  // Now the auto-recompute effect fires again (as it does on every
+  // render while the page is open) — the saved inputs must survive it.
+  saveFlowNumbers({ livingExpenses: 4000, monthlySurplus: 1500 })
+  data = loadMyNumbers()
+  assert.equal(data.flow.livingExpenses, 4000, 'metrics still update normally')
+  assert.deepEqual(data.flow.inputs, { age: '35', salary: '8000' }, 'inputs survive a later metrics save')
+})
+
+test('loadFlowInputs returns null when nothing has been saved', () => {
+  window.localStorage.removeItem('ndtm_my_numbers_v1')
+  assert.equal(loadFlowInputs(), null)
+})
+
+test('saveFlowInputs / loadFlowInputs round-trips an arbitrary inputs object', () => {
+  window.localStorage.removeItem('ndtm_my_numbers_v1')
+  const inputs = { age: '40', lumpyItems: [{ id: 'x', label: 'Road tax', amount: '500', type: 'expense' }] }
+  saveFlowInputs(inputs)
+  assert.deepEqual(loadFlowInputs(), inputs)
+})
+
+test('saveFlowInputs is scoped per profile, same as everything else', () => {
+  window.localStorage.removeItem('ndtm_my_numbers_v1')
+  saveFlowInputs({ age: '35' })
+  const other = createProfile('Other')
+  assert.equal(loadFlowInputs(), null, 'a fresh profile has no saved inputs')
+  saveFlowInputs({ age: '50' })
+  setActiveProfile(other) // no-op, already active, but exercise the API
+  assert.deepEqual(loadFlowInputs(), { age: '50' })
 })
 
 test('clearFlowNumbers nulls only the flow slot', () => {
