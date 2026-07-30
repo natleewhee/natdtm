@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react'
 import { C, SGD, parseMoney } from '@/lib/ledger/theme'
 import { buildBaselineState, compareScenarios, resolveHouseModule } from '@/lib/ledger/calc'
-import { loadMyNumbers } from '@/lib/shared/profile'
+import { loadMyNumbers, saveToolInputs, loadToolInputs } from '@/lib/shared/profile'
 import { MoneyInput, PercentInput, NumberInput, SectionDivider } from '@/components/ledger/ui'
 import ScenarioCard from '@/components/ledger/ScenarioCard'
 import ComparisonTable from '@/components/ledger/ComparisonTable'
@@ -138,9 +138,16 @@ export default function MyLedgerPage() {
   const [investmentReturn, setInvestmentReturn] = useState('3.0')
 
   const [calculated, setCalculated] = useState(false)
+  const [restoredFromSave, setRestoredFromSave] = useState(false)
+  const [justSaved, setJustSaved] = useState(false)
 
   // Pull in whatever the other tools last saved locally as the starting
   // baseline — nothing is sent anywhere. See src/lib/shared/profile.js.
+  // Scenarios (the baseline + any what-if variants) are always rebuilt
+  // fresh from the other tools' latest numbers, since a stale saved
+  // scenario would silently disagree with what those tools now show —
+  // only the retirement-assumption fields below (which are MyLedger's
+  // own, not derived from anywhere else) are restored from a save.
   useEffect(() => {
     /* eslint-disable react-hooks/set-state-in-effect -- one-time read from
        localStorage on mount; unavailable during SSR so can't happen during
@@ -149,8 +156,32 @@ export default function MyLedgerPage() {
     const baseline = buildBaselineState(myNumbers)
     setScenarios([stateToScenario(baseline, 'baseline', 'Baseline')])
     setSynced(!!(myNumbers.house || myNumbers.drive || myNumbers.retire || myNumbers.insure || myNumbers.tax || myNumbers.etf || myNumbers.flow))
+    const saved = loadToolInputs('ledger')
+    if (saved) {
+      setCurrentAge(saved.currentAge ?? '')
+      setRetirementAge(saved.retirementAge ?? '65')
+      setLifeExpectancy(saved.lifeExpectancy ?? '95')
+      setDesiredMonthlyWithdrawal(saved.desiredMonthlyWithdrawal ?? '')
+      setInflationRate(saved.inflationRate ?? '2.5')
+      setSwr(saved.swr ?? '3')
+      setInvestmentReturn(saved.investmentReturn ?? '3.0')
+      setRestoredFromSave(true)
+    }
     /* eslint-enable react-hooks/set-state-in-effect */
   }, [])
+
+  const handleSaveInputs = () => {
+    saveToolInputs('ledger', {
+      currentAge, retirementAge, lifeExpectancy, desiredMonthlyWithdrawal, inflationRate, swr, investmentReturn,
+    })
+    setJustSaved(true)
+  }
+
+  useEffect(() => {
+    if (!justSaved) return
+    const t = setTimeout(() => setJustSaved(false), 2200)
+    return () => clearTimeout(t)
+  }, [justSaved])
 
   const updateScenario = (id, next) => setScenarios(s => s.map(sc => sc.id === id ? next : sc))
   const removeScenario = (id) => setScenarios(s => s.filter(sc => sc.id !== id))
@@ -206,6 +237,11 @@ export default function MyLedgerPage() {
             Baseline prefilled from whatever the other ndtm tools last had saved on this browser. Everything below is editable — nothing here changes what those tools have saved.
           </div>
         )}
+        {restoredFromSave && (
+          <div style={{ background: C.accentBg, border: `1px solid ${C.accent}55`, borderRadius: C.rL, padding: '12px 16px', marginBottom: 20, fontSize: C.xs, color: C.accent, fontWeight: 600 }}>
+            Restored the retirement assumptions you last saved to this profile — edit freely.
+          </div>
+        )}
 
         <SectionDivider label="Retirement assumptions (shared across every scenario)" />
         <div style={{ background: C.surface, border: `1px solid ${C.border}`, borderRadius: C.rXL, padding: '22px', boxShadow: C.shadow, marginBottom: 8 }}>
@@ -238,11 +274,17 @@ export default function MyLedgerPage() {
           </div>
         )}
 
-        <div style={{ marginTop: 28 }}>
-          <Button variant="accent" fullWidth onClick={handleCalc} disabled={!isReady}>
+        <div style={{ marginTop: 28, display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+          <Button variant="accent" onClick={handleCalc} disabled={!isReady} style={{ flex: '1 1 220px' }}>
             {isReady ? 'Check my full picture' : 'Fill in age, salary, and desired withdrawal above'}
           </Button>
+          <Button variant="outline" onClick={handleSaveInputs} style={{ flex: '0 0 auto' }}>
+            {justSaved ? 'Saved to this profile ✓' : 'Save my assumptions'}
+          </Button>
         </div>
+        <p style={{ marginTop: 10, fontSize: C.xs, color: C.faint, lineHeight: 1.5 }}>
+          Saves the retirement assumptions above to whichever profile is active — scenarios always rebuild fresh from your other tools&apos; latest numbers.
+        </p>
 
         {comparison && (
           <div style={{ marginTop: 32 }}>

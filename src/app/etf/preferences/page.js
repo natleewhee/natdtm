@@ -21,13 +21,17 @@ function PreferencesForm() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const [prefs, setPrefs] = useState({ risk: 'Balanced', simplicity: '2-3 ETFs', tilts: [], monthlyInvestment: '' })
+  const [restoredFromSave, setRestoredFromSave] = useState(false)
 
-  // A shared link takes priority; otherwise restore prefs from the last visit.
+  // A shared link takes priority; otherwise restore prefs from the last
+  // visit — durably saved (scoped to the active profile) whenever
+  // "Generate My Portfolio" was last submitted, see savePrefs in
+  // components/etf/shared.js.
   useEffect(() => {
     const fromUrl = decodePrefsFromParams(searchParams)
     if (fromUrl) { setPrefs(fromUrl); return }
     const saved = loadPrefs()
-    if (saved) setPrefs(saved)
+    if (saved) { setPrefs(saved); setRestoredFromSave(true) }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
@@ -50,6 +54,9 @@ function PreferencesForm() {
         <div className={styles.content}>
           <h1 className={styles.title}>Your Preferences</h1>
           <p className={styles.subtitle}>Help us understand your investing style. No personal data is collected.</p>
+          {restoredFromSave && (
+            <p className={styles.sectionNote}>Restored what you last submitted for this profile — edit freely.</p>
+          )}
 
           <div className={styles.sections}>
 

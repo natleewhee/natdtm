@@ -1,5 +1,6 @@
 'use client'
 
+import { saveToolInputs, loadToolInputs } from '@/lib/shared/profile'
 import styles from './shared.module.css'
 
 // Shared design tokens, components and constants used across all WhatETF routes
@@ -37,10 +38,18 @@ export const TILT_OPTIONS = ['United States', 'Japan', 'China / Hong Kong', 'Eme
 export const PREFS_KEY = 'whatetf_prefs'
 export const PORTFOLIO_KEY = 'whatetf_portfolio'
 
+// Prefs are saved durably (scoped to the active profile, via
+// saveToolInputs — survives closing the browser) whenever "Generate My
+// Portfolio" is submitted, in addition to sessionStorage for same-tab
+// back/forward. Durable takes priority on load since it's the stronger,
+// deliberate signal — session is just a same-visit convenience.
 export function savePrefs(prefs) {
   try { sessionStorage.setItem(PREFS_KEY, JSON.stringify(prefs)) } catch {}
+  saveToolInputs('etf', prefs)
 }
 export function loadPrefs() {
+  const durable = loadToolInputs('etf')
+  if (durable) return durable
   try {
     const raw = sessionStorage.getItem(PREFS_KEY)
     return raw ? JSON.parse(raw) : null

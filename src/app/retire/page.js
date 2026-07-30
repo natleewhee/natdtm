@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react'
 import { C, SGD, parseMoney } from '@/lib/retire/theme'
 import { calcRetirement } from '@/lib/retire/calc'
 import { monthlyCpfContribution, CPF_OW_CEILING } from '@/lib/retire/cpf'
-import { loadMyNumbers, saveRetireNumbers } from '@/lib/shared/profile'
+import { loadMyNumbers, saveRetireNumbers, saveToolInputs, loadToolInputs } from '@/lib/shared/profile'
 import { MoneyInput, PercentInput, NumberInput, SectionDivider, Segmented } from '@/components/retire/ui'
 import RetireResults from '@/components/retire/Results'
 import ShellHeader from '@/components/shared/ShellHeader'
@@ -67,6 +67,56 @@ export default function RetireWellPage() {
     setStartingOA(String(Math.round(houseNumbers.totalCPFRefund)))
     setHouseApplied(true)
   }
+
+  const [restoredFromSave, setRestoredFromSave] = useState(false)
+  const [justSaved, setJustSaved] = useState(false)
+
+  useEffect(() => {
+    const saved = loadToolInputs('retire')
+    if (!saved) return
+    /* eslint-disable react-hooks/set-state-in-effect */
+    setCurrentAge(saved.currentAge ?? '')
+    setRetirementAge(saved.retirementAge ?? '65')
+    setLifeExpectancy(saved.lifeExpectancy ?? '95')
+    setSalary(saved.salary ?? '')
+    setSalaryGrowthRate(saved.salaryGrowthRate ?? '3.0')
+    setAnnualBonus(saved.annualBonus ?? '')
+    setStartingOA(saved.startingOA ?? '')
+    setStartingSA(saved.startingSA ?? '')
+    setStartingMA(saved.startingMA ?? '')
+    setHasHousingDraw(!!saved.hasHousingDraw)
+    setHousingOaMonthly(saved.housingOaMonthly ?? '')
+    setHousingOaUntilAge(saved.housingOaUntilAge ?? '')
+    setHasRstu(!!saved.hasRstu)
+    setRstuAmount(saved.rstuAmount ?? '')
+    setRstuFrequency(saved.rstuFrequency ?? 'monthly')
+    setInvestmentStart(saved.investmentStart ?? '')
+    setInvestmentMonthly(saved.investmentMonthly ?? '')
+    setInvestmentReturn(saved.investmentReturn ?? '3.0')
+    setDesiredMonthlyWithdrawal(saved.desiredMonthlyWithdrawal ?? '')
+    setInflationRate(saved.inflationRate ?? '2.5')
+    setSwr(saved.swr ?? '3')
+    setRestoredFromSave(true)
+    /* eslint-enable react-hooks/set-state-in-effect */
+  }, [])
+
+  const handleSaveInputs = () => {
+    saveToolInputs('retire', {
+      currentAge, retirementAge, lifeExpectancy,
+      salary, salaryGrowthRate, annualBonus, startingOA, startingSA, startingMA,
+      hasHousingDraw, housingOaMonthly, housingOaUntilAge,
+      hasRstu, rstuAmount, rstuFrequency,
+      investmentStart, investmentMonthly, investmentReturn,
+      desiredMonthlyWithdrawal, inflationRate, swr,
+    })
+    setJustSaved(true)
+  }
+
+  useEffect(() => {
+    if (!justSaved) return
+    const t = setTimeout(() => setJustSaved(false), 2200)
+    return () => clearTimeout(t)
+  }, [justSaved])
 
   const isReady = num(currentAge) > 0 && num(retirementAge) > num(currentAge) && num(desiredMonthlyWithdrawal) > 0
 
@@ -150,6 +200,12 @@ export default function RetireWellPage() {
         )}
 
         <div style={{ background: C.surface, border: `1px solid ${C.border}`, borderRadius: C.rXL, padding: '28px 24px', boxShadow: C.shadow }}>
+
+          {restoredFromSave && (
+            <div style={{ marginBottom: 16, padding: '10px 14px', background: C.accentBg, border: `1px solid ${C.accent}55`, borderRadius: C.r, fontSize: C.xs, color: C.accent, fontWeight: 600 }}>
+              Restored what you last saved to this profile — edit freely.
+            </div>
+          )}
 
           <SectionDivider label="You" />
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 16 }}>
@@ -258,11 +314,17 @@ export default function RetireWellPage() {
             <PercentInput id="swr" label="Safe withdrawal rate" hint="3% is a conservative default — see the math" value={swr} onChange={e => setSwr(e.target.value)} />
           </div>
 
-          <div style={{ marginTop: 24 }}>
-            <Button variant="accent" fullWidth onClick={handleCalc} disabled={!isReady}>
+          <div style={{ marginTop: 24, display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+            <Button variant="accent" onClick={handleCalc} disabled={!isReady} style={{ flex: '1 1 220px' }}>
               {isReady ? 'Check my retirement readiness' : 'Fill in the fields above'}
             </Button>
+            <Button variant="outline" onClick={handleSaveInputs} style={{ flex: '0 0 auto' }}>
+              {justSaved ? 'Saved to this profile ✓' : 'Save my inputs'}
+            </Button>
           </div>
+          <p style={{ marginTop: 10, fontSize: C.xs, color: C.faint, lineHeight: 1.5 }}>
+            Everything above stays on this device until you press Save — then it&apos;s tied to whichever profile is active, so it&apos;s here next time you open RetireWell.
+          </p>
         </div>
 
         {result && <RetireResults result={result} />}

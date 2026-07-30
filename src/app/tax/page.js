@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react'
 import { C, SGD, parseMoney } from '@/lib/tax/theme'
 import { calcTax, NSMAN_RELIEF, SRS_CAP_CITIZEN_PR, SRS_CAP_FOREIGNER, RSTU_RELIEF_CAP_SELF, RSTU_RELIEF_CAP_FAMILY, COURSE_FEES_CAP } from '@/lib/tax/calc'
-import { loadMyNumbers, saveTaxNumbers } from '@/lib/shared/profile'
+import { loadMyNumbers, saveTaxNumbers, saveToolInputs, loadToolInputs } from '@/lib/shared/profile'
 import { MoneyInput, NumberInput, SectionDivider, Segmented } from '@/components/tax/ui'
 import TaxResults from '@/components/tax/Results'
 import ShellHeader from '@/components/shared/ShellHeader'
@@ -33,13 +33,37 @@ export default function TaxWisePage() {
   const [calculated, setCalculated] = useState(false)
   const [prefilled, setPrefilled] = useState(false)
 
-  // Salary is already known if you've used RetireWell or DriveReady —
-  // no reason to ask a third time. Nothing is sent anywhere; see
-  // src/lib/shared/profile.js.
+  const [restoredFromSave, setRestoredFromSave] = useState(false)
+  const [justSaved, setJustSaved] = useState(false)
+
+  // Restored inputs (explicit Save) take priority over the cross-tool
+  // salary prefill below — if you've saved a full form here before,
+  // that's a stronger signal than a salary borrowed from another tool.
   useEffect(() => {
-    /* eslint-disable react-hooks/set-state-in-effect -- one-time read from
-       localStorage on mount; unavailable during SSR so can't happen during
-       render without a hydration mismatch */
+    /* eslint-disable react-hooks/set-state-in-effect */
+    const saved = loadToolInputs('tax')
+    if (saved) {
+      setAge(saved.age ?? '')
+      setResidency(saved.residency ?? 'citizen')
+      setMonthlySalary(saved.monthlySalary ?? '')
+      setAnnualBonus(saved.annualBonus ?? '')
+      setOtherIncome(saved.otherIncome ?? '')
+      setSrsContribution(saved.srsContribution ?? '')
+      setRstuSelf(saved.rstuSelf ?? '')
+      setRstuFamily(saved.rstuFamily ?? '')
+      setCourseFees(saved.courseFees ?? '')
+      setNsmanStatus(saved.nsmanStatus ?? 'none')
+      setChildCount(saved.childCount ?? '')
+      setParentLivingWith(saved.parentLivingWith ?? '')
+      setParentNotLivingWith(saved.parentNotLivingWith ?? '')
+      setOtherReliefs(saved.otherReliefs ?? '')
+      setShowMoreReliefs(!!saved.showMoreReliefs)
+      setRestoredFromSave(true)
+      return
+    }
+    // Salary is already known if you've used RetireWell or DriveReady —
+    // no reason to ask a third time. Nothing is sent anywhere; see
+    // src/lib/shared/profile.js.
     const { retire, drive } = loadMyNumbers()
     const knownSalary = retire?.salary || drive?.salary || 0
     if (knownSalary > 0) {
@@ -48,6 +72,21 @@ export default function TaxWisePage() {
     }
     /* eslint-enable react-hooks/set-state-in-effect */
   }, [])
+
+  const handleSaveInputs = () => {
+    saveToolInputs('tax', {
+      age, residency, monthlySalary, annualBonus, otherIncome,
+      srsContribution, rstuSelf, rstuFamily, courseFees, nsmanStatus,
+      childCount, parentLivingWith, parentNotLivingWith, otherReliefs, showMoreReliefs,
+    })
+    setJustSaved(true)
+  }
+
+  useEffect(() => {
+    if (!justSaved) return
+    const t = setTimeout(() => setJustSaved(false), 2200)
+    return () => clearTimeout(t)
+  }, [justSaved])
 
   const isReady = num(age) > 0 && num(monthlySalary) > 0
 
@@ -108,6 +147,12 @@ export default function TaxWisePage() {
 
       <div style={{ maxWidth: 720, margin: '0 auto', padding: '40px 20px 80px' }}>
         <div style={{ background: C.surface, border: `1px solid ${C.border}`, borderRadius: C.rXL, padding: '28px 24px', boxShadow: C.shadow }}>
+
+          {restoredFromSave && (
+            <div style={{ marginBottom: 16, padding: '10px 14px', background: C.accentBg, border: `1px solid ${C.accent}55`, borderRadius: C.r, fontSize: C.xs, color: C.accent, fontWeight: 600 }}>
+              Restored what you last saved to this profile — edit freely.
+            </div>
+          )}
 
           <SectionDivider label="You" />
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 16 }}>
@@ -197,11 +242,17 @@ export default function TaxWisePage() {
             )}
           </div>
 
-          <div style={{ marginTop: 24 }}>
-            <Button variant="accent" fullWidth onClick={() => setCalculated(true)} disabled={!isReady}>
+          <div style={{ marginTop: 24, display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+            <Button variant="accent" onClick={() => setCalculated(true)} disabled={!isReady} style={{ flex: '1 1 220px' }}>
               {isReady ? 'Work out my tax' : 'Enter your age and salary above'}
             </Button>
+            <Button variant="outline" onClick={handleSaveInputs} style={{ flex: '0 0 auto' }}>
+              {justSaved ? 'Saved to this profile ✓' : 'Save my inputs'}
+            </Button>
           </div>
+          <p style={{ marginTop: 10, fontSize: C.xs, color: C.faint, lineHeight: 1.5 }}>
+            Everything above stays on this device until you press Save — then it&apos;s tied to whichever profile is active, so it&apos;s here next time you open TaxWise.
+          </p>
         </div>
 
         {result && <TaxResults result={result} />}

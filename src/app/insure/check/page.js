@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { BENCHMARKS, RISK_PROFILES, getProfileBenchmarks } from '@/lib/insure/engine/scorer'
+import { saveToolInputs, loadToolInputs } from '@/lib/shared/profile'
 import ShellHeader from '@/components/shared/ShellHeader'
 
 // ─── Shared styles ───────────────────────────────────────────────────────────
@@ -402,6 +403,7 @@ export default function CheckPage() {
   const [mounted, setMounted] = useState(false)
   const [step, setStep] = useState(1)
   const [form, setForm] = useState(INITIAL)
+  const [restoredFromSave, setRestoredFromSave] = useState(false)
 
   useEffect(() => {
     try {
@@ -439,6 +441,15 @@ export default function CheckPage() {
           primaryConcern: parsed.primaryConcern ?? null,
         })
         sessionStorage.removeItem('iga_recheck')
+      } else {
+        // No in-session recheck handoff — fall back to whatever was
+        // durably saved (scoped to the active profile) the last time
+        // this check was submitted.
+        const savedInputs = loadToolInputs('insure')
+        if (savedInputs) {
+          setForm({ ...INITIAL, ...savedInputs })
+          setRestoredFromSave(true)
+        }
       }
     } catch {}
     setMounted(true)
@@ -533,6 +544,7 @@ export default function CheckPage() {
   function handleSubmit() {
     const inputs = buildInputs()
     sessionStorage.setItem('iga_inputs', JSON.stringify(inputs))
+    saveToolInputs('insure', form)
     router.push('/insure/loading')
   }
 
@@ -1075,6 +1087,15 @@ export default function CheckPage() {
         marginTop: '24px',
         width: 'calc(100% - 32px)',
       }}>
+        {restoredFromSave && step === 1 && (
+          <div style={{
+            marginBottom: 16, padding: '10px 14px', background: 'var(--color-accent-bg)',
+            border: '1px solid var(--color-accent)', borderRadius: '6px',
+            fontSize: '12px', color: 'var(--color-accent)', fontWeight: 600,
+          }}>
+            Restored what you last submitted for this profile — edit freely.
+          </div>
+        )}
         {renderStep()}
 
         <button
