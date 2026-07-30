@@ -20,6 +20,16 @@ const num = parseMoney
 let lumpyCounter = 0
 const nextLumpyId = () => { lumpyCounter += 1; return `lumpy-${lumpyCounter}` }
 
+// Clamps a typed share % into [0,100], defaulting to 100 (i.e. "the whole
+// thing") on anything unparseable — same safe pattern as HouseMuch's own
+// resolveSharePct, using Number.isFinite rather than `|| 100` so an
+// explicit 0% isn't silently coerced back up to 100%.
+function resolveSharePct(pct) {
+  const n = Number(pct)
+  if (!Number.isFinite(n)) return 100
+  return Math.min(100, Math.max(0, n))
+}
+
 const CATEGORY_FIELDS = [
   { key: 'food', label: 'Food & groceries' },
   { key: 'transport', label: 'Transport' },
@@ -43,10 +53,12 @@ export default function FlowStatePage() {
   // ─── Housing ─────────────────────────────────────────────────────────
   const [hasHouse, setHasHouse] = useState(false)
   const [houseSource, setHouseSource] = useState('manual')
-  const [outstandingBalance, setOutstandingBalance] = useState('')
+  const [outstandingBalance, setOutstandingBalance] = useState('') // the FULL loan, before any joint-loan share
   const [rate, setRate] = useState('2.60')
-  const [monthlyInstalment, setMonthlyInstalment] = useState('')
-  const [cpfServicing, setCpfServicing] = useState('')
+  const [monthlyInstalment, setMonthlyInstalment] = useState('') // the FULL instalment, before any joint-loan share
+  const [cpfServicing, setCpfServicing] = useState('') // YOUR share only — CPF is never split by the ratio below
+  const [hasJointLoan, setHasJointLoan] = useState(false)
+  const [yourSharePct, setYourSharePct] = useState('50')
 
   // ─── Car ─────────────────────────────────────────────────────────────
   const [hasCar, setHasCar] = useState(false)
@@ -56,7 +68,9 @@ export default function FlowStatePage() {
   // ─── Insurance ───────────────────────────────────────────────────────
   const [insuranceSource, setInsuranceSource] = useState('manual')
   const [insurancePremium, setInsurancePremium] = useState('')
+  const [insuranceFrequency, setInsuranceFrequency] = useState('monthly') // 'monthly' | 'annual'
   const [maHealthPremium, setMaHealthPremium] = useState(String(DEFAULT_MA_HEALTH_PREMIUM))
+  const [maHealthFrequency, setMaHealthFrequency] = useState('monthly')
 
   // ─── Investing ───────────────────────────────────────────────────────
   const [investSource, setInvestSource] = useState('manual')
@@ -114,6 +128,7 @@ export default function FlowStatePage() {
     if (insure?.monthlyPremium) {
       setInsuranceSource('auto')
       setInsurancePremium(String(Math.round(insure.monthlyPremium)))
+      setInsuranceFrequency('monthly') // InsureCheck always syncs a monthly figure
     }
     if (etf?.monthlyContribution) {
       setInvestSource('auto')
@@ -128,12 +143,23 @@ export default function FlowStatePage() {
 
   const isReady = num(age) > 0 && num(salary) > 0
 
+  // A joint loan's FULL balance/instalment get scaled down to your share
+  // here — cpfServicing is deliberately NEVER scaled, since CPF is
+  // tracked per-person and is already meant to be entered as your own
+  // share (the same reasoning HouseMuch and MyLedger use for their own
+  // joint-loan handling).
+  const houseShare = hasJointLoan ? resolveSharePct(yourSharePct) / 100 : 1
   const house = useMemo(() => hasHouse ? {
-    outstandingBalance: num(outstandingBalance), rate: num(rate),
-    monthlyInstalment: num(monthlyInstalment), cpfServicing: num(cpfServicing),
-  } : null, [hasHouse, outstandingBalance, rate, monthlyInstalment, cpfServicing])
+    outstandingBalance: num(outstandingBalance) * houseShare, rate: num(rate),
+    monthlyInstalment: num(monthlyInstalment) * houseShare, cpfServicing: num(cpfServicing),
+  } : null, [hasHouse, outstandingBalance, rate, monthlyInstalment, cpfServicing, houseShare])
 
   const car = useMemo(() => hasCar ? { monthlyInstalment: num(carInstalment) } : null, [hasCar, carInstalment])
+
+  // Insurance is very often billed annually, not monthly — enter either
+  // and the flow always works off the monthly-equivalent.
+  const insurancePremiumMonthly = insuranceFrequency === 'annual' ? num(insurancePremium) / 12 : num(insurancePremium)
+  const maHealthPremiumMonthly = maHealthFrequency === 'annual' ? num(maHealthPremium) / 12 : num(maHealthPremium)
 
   // Claimed living expenses, from whichever mode is active.
   const claimedLiving = useMemo(() => {
@@ -151,10 +177,10 @@ export default function FlowStatePage() {
     if (!isReady) return null
     return buildMonthlyFlow({
       age: num(age), salary: num(salary), annualTax: taxSource === 'auto' ? num(annualTax) : null,
-      house, car, insurancePremium: num(insurancePremium), maHealthPremium: num(maHealthPremium),
+      house, car, insurancePremium: insurancePremiumMonthly, maHealthPremium: maHealthPremiumMonthly,
       investMonthly: num(investMonthly), livingExpenses: 0,
     })
-  }, [isReady, age, salary, taxSource, annualTax, house, car, insurancePremium, maHealthPremium, investMonthly])
+  }, [isReady, age, salary, taxSource, annualTax, house, car, insurancePremiumMonthly, maHealthPremiumMonthly, investMonthly])
 
   // At zero living expenses, surplus = cash − every other cash outflow,
   // so the outflow itself is just their difference.
@@ -177,10 +203,10 @@ export default function FlowStatePage() {
     if (!isReady) return null
     return buildMonthlyFlow({
       age: num(age), salary: num(salary), annualTax: taxSource === 'auto' ? num(annualTax) : null,
-      house, car, insurancePremium: num(insurancePremium), maHealthPremium: num(maHealthPremium),
+      house, car, insurancePremium: insurancePremiumMonthly, maHealthPremium: maHealthPremiumMonthly,
       investMonthly: num(investMonthly), livingExpenses,
     })
-  }, [isReady, age, salary, taxSource, annualTax, house, car, insurancePremium, maHealthPremium, investMonthly, livingExpenses])
+  }, [isReady, age, salary, taxSource, annualTax, house, car, insurancePremiumMonthly, maHealthPremiumMonthly, investMonthly, livingExpenses])
 
   const metrics = flow ? {
     trueSavings: trueSavingsRate(flow),
@@ -277,14 +303,47 @@ export default function FlowStatePage() {
           {hasHouse && (
             <>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(170px, 1fr))', gap: 14, marginTop: 14 }}>
-                <MoneyInput id="flow-house-balance" label="Outstanding balance" value={outstandingBalance} onChange={e => setOutstandingBalance(e.target.value)} />
+                <MoneyInput id="flow-house-balance" label="Full outstanding balance" hint="The whole loan, even if it's joint — the share toggle below scales it down" value={outstandingBalance} onChange={e => setOutstandingBalance(e.target.value)} />
                 <PercentInput id="flow-house-rate" label="Interest rate (p.a.)" value={rate} onChange={e => setRate(e.target.value)} />
-                <MoneyInput id="flow-house-instalment" label="Monthly instalment" value={monthlyInstalment} onChange={e => setMonthlyInstalment(e.target.value)} />
-                <MoneyInput id="flow-house-cpf" label="...of which, paid from CPF-OA" hint="Leave blank if you're not sure — this is the whole reason the flow looks different from a naive budget" value={cpfServicing} onChange={e => setCpfServicing(e.target.value)} />
+                <MoneyInput id="flow-house-instalment" label="Full monthly instalment" value={monthlyInstalment} onChange={e => setMonthlyInstalment(e.target.value)} />
+                <MoneyInput id="flow-house-cpf" label="...of YOUR instalment, paid from CPF-OA" hint="Your own share only — CPF is tracked per-person and isn't split by the joint-loan ratio below" value={cpfServicing} onChange={e => setCpfServicing(e.target.value)} />
               </div>
               {houseSource === 'auto' && (
                 <p style={{ marginTop: 8, fontSize: C.xs, color: C.faint }}>Synced from HouseMuch — edit freely, this won&apos;t change what&apos;s saved there.</p>
               )}
+
+              <div style={{ marginTop: 14 }}>
+                <Toggle active={hasJointLoan} onClick={() => setHasJointLoan(j => !j)}>This is a joint loan</Toggle>
+                {hasJointLoan && houseSource === 'auto' && (
+                  <p style={{ marginTop: 8, fontSize: C.xs, color: C.redText, lineHeight: 1.5 }}>
+                    These figures were synced from HouseMuch, where they may already be scaled down to your share of a joint loan — turning this on could scale them down a second time. Only use this if the numbers above are the FULL household loan.
+                  </p>
+                )}
+                {hasJointLoan && (
+                  <div style={{ marginTop: 10, maxWidth: 320 }}>
+                    <Segmented
+                      value={yourSharePct === '50' ? '50' : 'custom'}
+                      onChange={v => setYourSharePct(v === '50' ? '50' : (yourSharePct === '50' ? '60' : yourSharePct))}
+                      options={[{ value: '50', label: '50 / 50' }, { value: 'custom', label: 'Custom' }]}
+                    />
+                    {yourSharePct !== '50' && (
+                      <div style={{ marginTop: 10, maxWidth: 160 }}>
+                        <PercentInput id="flow-house-share" label="Your share" value={yourSharePct} onChange={e => setYourSharePct(e.target.value)} />
+                      </div>
+                    )}
+                    {(num(yourSharePct) < 0 || num(yourSharePct) > 100) && (
+                      <p style={{ marginTop: 8, fontSize: C.xs, color: C.redText, lineHeight: 1.5 }}>
+                        A share has to be between 0% and 100% — this will be treated as {num(yourSharePct) > 100 ? '100%' : '0%'}.
+                      </p>
+                    )}
+                    {num(outstandingBalance) > 0 && (
+                      <p style={{ marginTop: 8, fontSize: C.xs, color: C.muted, lineHeight: 1.5 }}>
+                        Your share: {SGD(num(outstandingBalance) * houseShare)} balance, {SGD(num(monthlyInstalment) * houseShare)}/mo instalment.
+                      </p>
+                    )}
+                  </div>
+                )}
+              </div>
             </>
           )}
 
@@ -302,9 +361,29 @@ export default function FlowStatePage() {
           )}
 
           <SectionDivider label="Insurance" />
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(170px, 1fr))', gap: 14 }}>
-            <MoneyInput id="flow-insurance" label="Life & CI premiums (cash)" value={insurancePremium} onChange={e => setInsurancePremium(e.target.value)} />
-            <MoneyInput id="flow-ma-health" label="Health insurance (from MediSave)" hint="An estimate — most Integrated Shield Plan premiums are paid from MediSave, not cash" value={maHealthPremium} onChange={e => setMaHealthPremium(e.target.value)} />
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 20 }}>
+            <div>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10, flexWrap: 'wrap', gap: 8 }}>
+                <span style={{ fontSize: C.sm, fontWeight: 600, color: C.primary }}>Life & CI premiums (cash)</span>
+                <Segmented value={insuranceFrequency} onChange={setInsuranceFrequency} options={[{ value: 'monthly', label: 'Monthly' }, { value: 'annual', label: 'Annual' }]} />
+              </div>
+              <MoneyInput
+                id="flow-insurance" label={insuranceFrequency === 'annual' ? 'Annual amount' : 'Monthly amount'}
+                hint={insuranceFrequency === 'annual' && num(insurancePremium) > 0 ? `≈ ${SGD(num(insurancePremium) / 12)}/month` : undefined}
+                value={insurancePremium} onChange={e => setInsurancePremium(e.target.value)}
+              />
+            </div>
+            <div>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10, flexWrap: 'wrap', gap: 8 }}>
+                <span style={{ fontSize: C.sm, fontWeight: 600, color: C.primary }}>Health insurance (from MediSave)</span>
+                <Segmented value={maHealthFrequency} onChange={setMaHealthFrequency} options={[{ value: 'monthly', label: 'Monthly' }, { value: 'annual', label: 'Annual' }]} />
+              </div>
+              <MoneyInput
+                id="flow-ma-health" label={maHealthFrequency === 'annual' ? 'Annual amount' : 'Monthly amount'}
+                hint={maHealthFrequency === 'annual' && num(maHealthPremium) > 0 ? `≈ ${SGD(num(maHealthPremium) / 12)}/month` : "An estimate — most Integrated Shield Plan premiums are paid from MediSave, not cash"}
+                value={maHealthPremium} onChange={e => setMaHealthPremium(e.target.value)}
+              />
+            </div>
           </div>
           {insuranceSource === 'auto' && (
             <p style={{ marginTop: 8, fontSize: C.xs, color: C.faint }}>Cash premium synced from InsureCheck — edit freely.</p>
