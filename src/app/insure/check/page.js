@@ -404,6 +404,7 @@ export default function CheckPage() {
   const [step, setStep] = useState(1)
   const [form, setForm] = useState(INITIAL)
   const [restoredFromSave, setRestoredFromSave] = useState(false)
+  const [justSaved, setJustSaved] = useState(false)
 
   useEffect(() => {
     try {
@@ -454,6 +455,19 @@ export default function CheckPage() {
     } catch {}
     setMounted(true)
   }, [])
+
+  // Autosave every keystroke through the wizard, same as DriveReady's own
+  // persistence, just scoped to whichever profile is active. Gated on
+  // `mounted` so this can't fire (with blank defaults) before the restore
+  // effect above has had a chance to apply.
+  useEffect(() => {
+    if (!mounted) return
+    saveToolInputs('insure', form)
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- flashes the "Saved" indicator; not a render-affecting state sync
+    setJustSaved(true)
+    const t = setTimeout(() => setJustSaved(false), 1400)
+    return () => clearTimeout(t)
+  }, [mounted, form])
 
   if (!mounted) return null
 
@@ -544,7 +558,6 @@ export default function CheckPage() {
   function handleSubmit() {
     const inputs = buildInputs()
     sessionStorage.setItem('iga_inputs', JSON.stringify(inputs))
-    saveToolInputs('insure', form)
     router.push('/insure/loading')
   }
 
@@ -1093,7 +1106,7 @@ export default function CheckPage() {
             border: '1px solid var(--color-accent)', borderRadius: '6px',
             fontSize: '12px', color: 'var(--color-accent)', fontWeight: 600,
           }}>
-            Restored what you last submitted for this profile — edit freely.
+            Restored what you last had for this profile — edit freely.
           </div>
         )}
         {renderStep()}
@@ -1105,6 +1118,14 @@ export default function CheckPage() {
         >
           {isLastStep ? 'Get my score \u2192' : 'Next \u2192'}
         </button>
+
+        <p style={{
+          marginTop: '10px', fontSize: '11px', textAlign: 'center',
+          color: justSaved ? 'var(--color-accent)' : 'var(--color-faint)',
+          fontWeight: justSaved ? 700 : 400, transition: 'color 0.4s ease',
+        }}>
+          {justSaved ? 'Saved to this profile \u2713' : 'Autosaved to this profile as you go \u2014 nothing to press.'}
+        </p>
 
         {isOptional && (
           <button style={s.skipLink} onClick={next}>

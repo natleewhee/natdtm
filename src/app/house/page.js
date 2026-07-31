@@ -10,6 +10,7 @@ import NextPurchase from '@/components/house/NextPurchase'
 import ShellHeader from '@/components/shared/ShellHeader'
 import TrustBadges from '@/components/shared/TrustBadges'
 import Button from '@/components/shared/Button'
+import AutosaveIndicator from '@/components/shared/AutosaveIndicator'
 import ExploreSection from '@/components/shared/ExploreSection'
 
 const num = parseMoney
@@ -64,47 +65,55 @@ export default function HouseMuchPage() {
   const [calculated, setCalculated] = useState(false)
 
   const [restoredFromSave, setRestoredFromSave] = useState(false)
+  const [hasRestored, setHasRestored] = useState(false)
   const [justSaved, setJustSaved] = useState(false)
 
-  // Restore whatever was last explicitly saved to this profile — scoped
-  // per-profile, same as every other tool's Save button. Nothing else
-  // reads this; it's purely for "here's what I typed last time."
+  // Restore whatever was last autosaved to this profile — scoped
+  // per-profile, same as every other tool. Nothing else reads this;
+  // it's purely for "here's what I typed last time."
   useEffect(() => {
     const saved = loadToolInputs('house')
-    if (!saved) return
     /* eslint-disable react-hooks/set-state-in-effect */
-    setPropertyType(saved.propertyType ?? 'private')
-    setIsJointLoan(!!saved.isJointLoan)
-    setYourSharePct(saved.yourSharePct ?? '50')
-    setPersonBCpfOutlay(saved.personBCpfOutlay ?? '')
-    setPersonBCpfPrincipalOverride(saved.personBCpfPrincipalOverride ?? '')
-    setPersonBCpfInterestOverride(saved.personBCpfInterestOverride ?? '')
-    setCashProceedsSplitMode(saved.cashProceedsSplitMode ?? 'share')
-    setPurchasePrice(saved.purchasePrice ?? '')
-    setPurchaseDate(saved.purchaseDate ?? '')
-    setCpfOutlay(saved.cpfOutlay ?? '')
-    setLoanTaken(saved.loanTaken ?? '')
-    setMortgageRate(saved.mortgageRate ?? '2.60')
-    setLoanTenure(saved.loanTenure ?? '25')
-    setLegalFeesAtPurchase(saved.legalFeesAtPurchase ?? '')
-    setAgentFeeAtPurchaseMode(saved.agentFeeAtPurchaseMode ?? 'manual')
-    setAgentFeeAtPurchaseRaw(saved.agentFeeAtPurchaseRaw ?? '')
-    setSunkCost(saved.sunkCost ?? '')
-    setSalePrice(saved.salePrice ?? '')
-    setSaleDate(saved.saleDate ?? '')
-    setAgentFeeAtSaleMode(saved.agentFeeAtSaleMode ?? '1pct')
-    setAgentFeeAtSaleRaw(saved.agentFeeAtSaleRaw ?? '')
-    setLegalFeesAtSale(saved.legalFeesAtSale ?? '')
-    setOutstandingOverride(saved.outstandingOverride ?? '')
-    setTotalInterestOverride(saved.totalInterestOverride ?? '')
-    setCpfPrincipalOverride(saved.cpfPrincipalOverride ?? '')
-    setCpfInterestOverride(saved.cpfInterestOverride ?? '')
-    setSsdOverride(saved.ssdOverride ?? '')
-    setRestoredFromSave(true)
+    if (saved) {
+      setPropertyType(saved.propertyType ?? 'private')
+      setIsJointLoan(!!saved.isJointLoan)
+      setYourSharePct(saved.yourSharePct ?? '50')
+      setPersonBCpfOutlay(saved.personBCpfOutlay ?? '')
+      setPersonBCpfPrincipalOverride(saved.personBCpfPrincipalOverride ?? '')
+      setPersonBCpfInterestOverride(saved.personBCpfInterestOverride ?? '')
+      setCashProceedsSplitMode(saved.cashProceedsSplitMode ?? 'share')
+      setPurchasePrice(saved.purchasePrice ?? '')
+      setPurchaseDate(saved.purchaseDate ?? '')
+      setCpfOutlay(saved.cpfOutlay ?? '')
+      setLoanTaken(saved.loanTaken ?? '')
+      setMortgageRate(saved.mortgageRate ?? '2.60')
+      setLoanTenure(saved.loanTenure ?? '25')
+      setLegalFeesAtPurchase(saved.legalFeesAtPurchase ?? '')
+      setAgentFeeAtPurchaseMode(saved.agentFeeAtPurchaseMode ?? 'manual')
+      setAgentFeeAtPurchaseRaw(saved.agentFeeAtPurchaseRaw ?? '')
+      setSunkCost(saved.sunkCost ?? '')
+      setSalePrice(saved.salePrice ?? '')
+      setSaleDate(saved.saleDate ?? '')
+      setAgentFeeAtSaleMode(saved.agentFeeAtSaleMode ?? '1pct')
+      setAgentFeeAtSaleRaw(saved.agentFeeAtSaleRaw ?? '')
+      setLegalFeesAtSale(saved.legalFeesAtSale ?? '')
+      setOutstandingOverride(saved.outstandingOverride ?? '')
+      setTotalInterestOverride(saved.totalInterestOverride ?? '')
+      setCpfPrincipalOverride(saved.cpfPrincipalOverride ?? '')
+      setCpfInterestOverride(saved.cpfInterestOverride ?? '')
+      setSsdOverride(saved.ssdOverride ?? '')
+      setRestoredFromSave(true)
+    }
+    setHasRestored(true)
     /* eslint-enable react-hooks/set-state-in-effect */
   }, [])
 
-  const handleSaveInputs = () => {
+  // Autosave every keystroke — same as DriveReady's own persistence, just
+  // scoped to whichever profile is active instead of one global browser
+  // key. Gated on hasRestored so this can't fire (with blank defaults)
+  // before the restore effect above has had a chance to apply.
+  useEffect(() => {
+    if (!hasRestored) return
     saveToolInputs('house', {
       propertyType, isJointLoan, yourSharePct,
       personBCpfOutlay, personBCpfPrincipalOverride, personBCpfInterestOverride, cashProceedsSplitMode,
@@ -113,12 +122,20 @@ export default function HouseMuchPage() {
       salePrice, saleDate, agentFeeAtSaleMode, agentFeeAtSaleRaw, legalFeesAtSale,
       outstandingOverride, totalInterestOverride, cpfPrincipalOverride, cpfInterestOverride, ssdOverride,
     })
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- flashes the "Saved" indicator; not a render-affecting state sync
     setJustSaved(true)
-  }
+  }, [
+    hasRestored, propertyType, isJointLoan, yourSharePct,
+    personBCpfOutlay, personBCpfPrincipalOverride, personBCpfInterestOverride, cashProceedsSplitMode,
+    purchasePrice, purchaseDate, cpfOutlay, loanTaken, mortgageRate, loanTenure,
+    legalFeesAtPurchase, agentFeeAtPurchaseMode, agentFeeAtPurchaseRaw, sunkCost,
+    salePrice, saleDate, agentFeeAtSaleMode, agentFeeAtSaleRaw, legalFeesAtSale,
+    outstandingOverride, totalInterestOverride, cpfPrincipalOverride, cpfInterestOverride, ssdOverride,
+  ])
 
   useEffect(() => {
     if (!justSaved) return
-    const t = setTimeout(() => setJustSaved(false), 2200)
+    const t = setTimeout(() => setJustSaved(false), 1400)
     return () => clearTimeout(t)
   }, [justSaved])
 
@@ -345,17 +362,12 @@ export default function HouseMuchPage() {
             <MoneyInput id="legal-fees-sale" label="Legal fees at sale" value={legalFeesAtSale} onChange={e => setLegalFeesAtSale(e.target.value)} />
           </div>
 
-          <div style={{ marginTop: 24, display: 'flex', gap: 10, flexWrap: 'wrap' }}>
-            <Button variant="accent" onClick={handleCalc} disabled={!isReady} style={{ flex: '1 1 220px' }}>
+          <div style={{ marginTop: 24 }}>
+            <Button variant="accent" fullWidth onClick={handleCalc} disabled={!isReady}>
               {isReady ? 'Calculate my true profit/loss' : 'Fill in the fields above'}
             </Button>
-            <Button variant="outline" onClick={handleSaveInputs} style={{ flex: '0 0 auto' }}>
-              {justSaved ? 'Saved to this profile ✓' : 'Save my inputs'}
-            </Button>
           </div>
-          <p style={{ marginTop: 10, fontSize: C.xs, color: C.faint, lineHeight: 1.5 }}>
-            Everything above stays on this device until you press Save — then it&apos;s tied to whichever profile is active, so it&apos;s here next time you open HouseMuch.
-          </p>
+          <AutosaveIndicator justSaved={justSaved} C={C} />
         </div>
 
         {result && (

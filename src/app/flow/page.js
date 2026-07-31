@@ -15,6 +15,7 @@ import FlowResults from '@/components/flow/Results'
 import ShellHeader from '@/components/shared/ShellHeader'
 import TrustBadges from '@/components/shared/TrustBadges'
 import Button from '@/components/shared/Button'
+import AutosaveIndicator from '@/components/shared/AutosaveIndicator'
 
 const num = parseMoney
 let lumpyCounter = 0
@@ -99,16 +100,17 @@ export default function FlowStatePage() {
 
   const [calculated, setCalculated] = useState(false)
   const [restoredFromSave, setRestoredFromSave] = useState(false)
+  const [hasRestored, setHasRestored] = useState(false)
   const [justSaved, setJustSaved] = useState(false)
 
-  // On mount: if this profile has a saved FlowState session (see the
-  // Save button below), restore it exactly as typed and skip the
-  // cross-tool auto-fill entirely — a save represents a deliberate
-  // choice (including any manual overrides of a synced figure) and
-  // should win over guessing fresh from other tools every time. Only a
-  // profile that's never been saved here before falls through to the
-  // original auto-fill-from-other-tools behavior. Nothing is sent
-  // anywhere; see src/lib/shared/profile.js.
+  // On mount: if this profile has an autosaved FlowState session,
+  // restore it exactly as typed and skip the cross-tool auto-fill
+  // entirely — an autosave represents a deliberate edit (including any
+  // manual overrides of a synced figure) and should win over guessing
+  // fresh from other tools every time. Only a profile that's never had
+  // FlowState open before falls through to the original
+  // auto-fill-from-other-tools behavior. Nothing is sent anywhere; see
+  // src/lib/shared/profile.js.
   useEffect(() => {
     /* eslint-disable react-hooks/set-state-in-effect -- one-time read from
        localStorage on mount; unavailable during SSR so can't happen during
@@ -150,6 +152,7 @@ export default function FlowStatePage() {
       setTaxDueMonth(saved.taxDueMonth || '3')
       setLumpyItems(Array.isArray(saved.lumpyItems) ? saved.lumpyItems : [])
       setRestoredFromSave(true)
+      setHasRestored(true)
       return
     }
 
@@ -186,10 +189,16 @@ export default function FlowStatePage() {
       setTaxSource('auto')
       setAnnualTax(String(Math.round(tax.annualTax)))
     }
+    setHasRestored(true)
     /* eslint-enable react-hooks/set-state-in-effect */
   }, [])
 
-  const handleSaveInputs = () => {
+  // Autosave every keystroke, same as DriveReady's own persistence, just
+  // scoped to whichever profile is active. Gated on hasRestored so this
+  // can't fire (with blank defaults) before the restore effect above has
+  // had a chance to apply.
+  useEffect(() => {
+    if (!hasRestored) return
     saveFlowInputs({
       age, salary, salaryPrefilled,
       hasHouse, houseSource, outstandingBalance, rate, monthlyInstalment, cpfServicing, hasJointLoan, yourSharePct,
@@ -201,12 +210,23 @@ export default function FlowStatePage() {
       liquidSavings,
       taxPaymentMode, taxDueMonth, lumpyItems,
     })
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- flashes the "Saved" indicator; not a render-affecting state sync
     setJustSaved(true)
-  }
+  }, [
+    hasRestored, age, salary, salaryPrefilled,
+    hasHouse, houseSource, outstandingBalance, rate, monthlyInstalment, cpfServicing, hasJointLoan, yourSharePct,
+    hasCar, carSource, carInstalment,
+    insuranceSource, insurancePremium, insuranceFrequency, maHealthPremium, maHealthFrequency,
+    investSource, investMonthly,
+    taxSource, annualTax,
+    livingMode, quickAmount, categories, backStart, backEnd, backMonths, showReconcile,
+    liquidSavings,
+    taxPaymentMode, taxDueMonth, lumpyItems,
+  ])
 
   useEffect(() => {
     if (!justSaved) return
-    const t = setTimeout(() => setJustSaved(false), 2200)
+    const t = setTimeout(() => setJustSaved(false), 1400)
     return () => clearTimeout(t)
   }, [justSaved])
 
@@ -623,17 +643,12 @@ export default function FlowStatePage() {
             fontSize: C.xs, fontWeight: 700, color: C.muted, cursor: 'pointer', fontFamily: C.fontBody,
           }}>+ Add a lumpy item</button>
 
-          <div style={{ marginTop: 24, display: 'flex', gap: 10, flexWrap: 'wrap' }}>
-            <Button variant="accent" onClick={() => setCalculated(true)} disabled={!isReady} style={{ flex: '1 1 220px' }}>
+          <div style={{ marginTop: 24 }}>
+            <Button variant="accent" fullWidth onClick={() => setCalculated(true)} disabled={!isReady}>
               {isReady ? 'Show me where it goes' : 'Enter your age and salary above'}
             </Button>
-            <Button variant="outline" onClick={handleSaveInputs} style={{ flex: '0 0 auto' }}>
-              {justSaved ? 'Saved to this profile ✓' : 'Save my inputs'}
-            </Button>
           </div>
-          <p style={{ marginTop: 10, fontSize: C.xs, color: C.faint, lineHeight: 1.5 }}>
-            Everything above stays on this device until you press Save — then it&apos;s tied to whichever profile is active, so it&apos;s here next time you open FlowState.
-          </p>
+          <AutosaveIndicator justSaved={justSaved} C={C} />
         </div>
 
         {calculated && flow && (

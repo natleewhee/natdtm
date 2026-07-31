@@ -22,24 +22,41 @@ function PreferencesForm() {
   const searchParams = useSearchParams()
   const [prefs, setPrefs] = useState({ risk: 'Balanced', simplicity: '2-3 ETFs', tilts: [], monthlyInvestment: '' })
   const [restoredFromSave, setRestoredFromSave] = useState(false)
+  const [hasRestored, setHasRestored] = useState(false)
+  const [justSaved, setJustSaved] = useState(false)
 
   // A shared link takes priority; otherwise restore prefs from the last
-  // visit — durably saved (scoped to the active profile) whenever
-  // "Generate My Portfolio" was last submitted, see savePrefs in
-  // components/etf/shared.js.
+  // visit — durably saved (scoped to the active profile), see savePrefs
+  // in components/etf/shared.js.
   useEffect(() => {
     const fromUrl = decodePrefsFromParams(searchParams)
-    if (fromUrl) { setPrefs(fromUrl); return }
-    const saved = loadPrefs()
-    if (saved) { setPrefs(saved); setRestoredFromSave(true) }
+    /* eslint-disable react-hooks/set-state-in-effect */
+    if (fromUrl) {
+      setPrefs(fromUrl)
+    } else {
+      const saved = loadPrefs()
+      if (saved) { setPrefs(saved); setRestoredFromSave(true) }
+    }
+    setHasRestored(true)
+    /* eslint-enable react-hooks/set-state-in-effect */
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   const isSingle = prefs.simplicity === '1 ETF'
   const preview = useMemo(() => generatePortfolio(prefs), [prefs])
 
-  const handleSubmit = () => {
+  // Autosave every change, same as DriveReady's own persistence — no
+  // need to wait for "Generate My Portfolio" before this is remembered.
+  useEffect(() => {
+    if (!hasRestored) return
     savePrefs(prefs)
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- flashes the "Saved" indicator; not a render-affecting state sync
+    setJustSaved(true)
+    const t = setTimeout(() => setJustSaved(false), 1400)
+    return () => clearTimeout(t)
+  }, [hasRestored, prefs])
+
+  const handleSubmit = () => {
     const portfolio = generatePortfolio(prefs)
     savePortfolio({ portfolio, prefs })
     const params = encodePrefsToParams(prefs)
@@ -55,8 +72,11 @@ function PreferencesForm() {
           <h1 className={styles.title}>Your Preferences</h1>
           <p className={styles.subtitle}>Help us understand your investing style. No personal data is collected.</p>
           {restoredFromSave && (
-            <p className={styles.sectionNote}>Restored what you last submitted for this profile — edit freely.</p>
+            <p className={styles.sectionNote}>Restored what you last had for this profile — edit freely.</p>
           )}
+          <p className={styles.sectionNote} style={{ color: justSaved ? 'var(--color-accent)' : undefined, fontWeight: justSaved ? 700 : undefined }}>
+            {justSaved ? 'Saved to this profile ✓' : 'Autosaved to this profile as you go — nothing to press.'}
+          </p>
 
           <div className={styles.sections}>
 

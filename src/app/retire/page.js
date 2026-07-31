@@ -10,6 +10,7 @@ import RetireResults from '@/components/retire/Results'
 import ShellHeader from '@/components/shared/ShellHeader'
 import TrustBadges from '@/components/shared/TrustBadges'
 import Button from '@/components/shared/Button'
+import AutosaveIndicator from '@/components/shared/AutosaveIndicator'
 
 const num = parseMoney
 
@@ -69,38 +70,44 @@ export default function RetireWellPage() {
   }
 
   const [restoredFromSave, setRestoredFromSave] = useState(false)
+  const [hasRestored, setHasRestored] = useState(false)
   const [justSaved, setJustSaved] = useState(false)
 
   useEffect(() => {
     const saved = loadToolInputs('retire')
-    if (!saved) return
     /* eslint-disable react-hooks/set-state-in-effect */
-    setCurrentAge(saved.currentAge ?? '')
-    setRetirementAge(saved.retirementAge ?? '65')
-    setLifeExpectancy(saved.lifeExpectancy ?? '95')
-    setSalary(saved.salary ?? '')
-    setSalaryGrowthRate(saved.salaryGrowthRate ?? '3.0')
-    setAnnualBonus(saved.annualBonus ?? '')
-    setStartingOA(saved.startingOA ?? '')
-    setStartingSA(saved.startingSA ?? '')
-    setStartingMA(saved.startingMA ?? '')
-    setHasHousingDraw(!!saved.hasHousingDraw)
-    setHousingOaMonthly(saved.housingOaMonthly ?? '')
-    setHousingOaUntilAge(saved.housingOaUntilAge ?? '')
-    setHasRstu(!!saved.hasRstu)
-    setRstuAmount(saved.rstuAmount ?? '')
-    setRstuFrequency(saved.rstuFrequency ?? 'monthly')
-    setInvestmentStart(saved.investmentStart ?? '')
-    setInvestmentMonthly(saved.investmentMonthly ?? '')
-    setInvestmentReturn(saved.investmentReturn ?? '3.0')
-    setDesiredMonthlyWithdrawal(saved.desiredMonthlyWithdrawal ?? '')
-    setInflationRate(saved.inflationRate ?? '2.5')
-    setSwr(saved.swr ?? '3')
-    setRestoredFromSave(true)
+    if (saved) {
+      setCurrentAge(saved.currentAge ?? '')
+      setRetirementAge(saved.retirementAge ?? '65')
+      setLifeExpectancy(saved.lifeExpectancy ?? '95')
+      setSalary(saved.salary ?? '')
+      setSalaryGrowthRate(saved.salaryGrowthRate ?? '3.0')
+      setAnnualBonus(saved.annualBonus ?? '')
+      setStartingOA(saved.startingOA ?? '')
+      setStartingSA(saved.startingSA ?? '')
+      setStartingMA(saved.startingMA ?? '')
+      setHasHousingDraw(!!saved.hasHousingDraw)
+      setHousingOaMonthly(saved.housingOaMonthly ?? '')
+      setHousingOaUntilAge(saved.housingOaUntilAge ?? '')
+      setHasRstu(!!saved.hasRstu)
+      setRstuAmount(saved.rstuAmount ?? '')
+      setRstuFrequency(saved.rstuFrequency ?? 'monthly')
+      setInvestmentStart(saved.investmentStart ?? '')
+      setInvestmentMonthly(saved.investmentMonthly ?? '')
+      setInvestmentReturn(saved.investmentReturn ?? '3.0')
+      setDesiredMonthlyWithdrawal(saved.desiredMonthlyWithdrawal ?? '')
+      setInflationRate(saved.inflationRate ?? '2.5')
+      setSwr(saved.swr ?? '3')
+      setRestoredFromSave(true)
+    }
+    setHasRestored(true)
     /* eslint-enable react-hooks/set-state-in-effect */
   }, [])
 
-  const handleSaveInputs = () => {
+  // Autosave every keystroke, same as DriveReady's own persistence, just
+  // scoped to whichever profile is active.
+  useEffect(() => {
+    if (!hasRestored) return
     saveToolInputs('retire', {
       currentAge, retirementAge, lifeExpectancy,
       salary, salaryGrowthRate, annualBonus, startingOA, startingSA, startingMA,
@@ -109,12 +116,20 @@ export default function RetireWellPage() {
       investmentStart, investmentMonthly, investmentReturn,
       desiredMonthlyWithdrawal, inflationRate, swr,
     })
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- flashes the "Saved" indicator; not a render-affecting state sync
     setJustSaved(true)
-  }
+  }, [
+    hasRestored, currentAge, retirementAge, lifeExpectancy,
+    salary, salaryGrowthRate, annualBonus, startingOA, startingSA, startingMA,
+    hasHousingDraw, housingOaMonthly, housingOaUntilAge,
+    hasRstu, rstuAmount, rstuFrequency,
+    investmentStart, investmentMonthly, investmentReturn,
+    desiredMonthlyWithdrawal, inflationRate, swr,
+  ])
 
   useEffect(() => {
     if (!justSaved) return
-    const t = setTimeout(() => setJustSaved(false), 2200)
+    const t = setTimeout(() => setJustSaved(false), 1400)
     return () => clearTimeout(t)
   }, [justSaved])
 
@@ -314,17 +329,12 @@ export default function RetireWellPage() {
             <PercentInput id="swr" label="Safe withdrawal rate" hint="3% is a conservative default — see the math" value={swr} onChange={e => setSwr(e.target.value)} />
           </div>
 
-          <div style={{ marginTop: 24, display: 'flex', gap: 10, flexWrap: 'wrap' }}>
-            <Button variant="accent" onClick={handleCalc} disabled={!isReady} style={{ flex: '1 1 220px' }}>
+          <div style={{ marginTop: 24 }}>
+            <Button variant="accent" fullWidth onClick={handleCalc} disabled={!isReady}>
               {isReady ? 'Check my retirement readiness' : 'Fill in the fields above'}
             </Button>
-            <Button variant="outline" onClick={handleSaveInputs} style={{ flex: '0 0 auto' }}>
-              {justSaved ? 'Saved to this profile ✓' : 'Save my inputs'}
-            </Button>
           </div>
-          <p style={{ marginTop: 10, fontSize: C.xs, color: C.faint, lineHeight: 1.5 }}>
-            Everything above stays on this device until you press Save — then it&apos;s tied to whichever profile is active, so it&apos;s here next time you open RetireWell.
-          </p>
+          <AutosaveIndicator justSaved={justSaved} C={C} />
         </div>
 
         {result && <RetireResults result={result} />}

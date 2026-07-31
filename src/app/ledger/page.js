@@ -10,6 +10,7 @@ import ComparisonTable from '@/components/ledger/ComparisonTable'
 import ShellHeader from '@/components/shared/ShellHeader'
 import TrustBadges from '@/components/shared/TrustBadges'
 import Button from '@/components/shared/Button'
+import AutosaveIndicator from '@/components/shared/AutosaveIndicator'
 
 const num = parseMoney
 const MAX_SCENARIOS = 3 // baseline + up to 2 what-ifs
@@ -139,6 +140,7 @@ export default function MyLedgerPage() {
 
   const [calculated, setCalculated] = useState(false)
   const [restoredFromSave, setRestoredFromSave] = useState(false)
+  const [hasRestored, setHasRestored] = useState(false)
   const [justSaved, setJustSaved] = useState(false)
 
   // Pull in whatever the other tools last saved locally as the starting
@@ -167,19 +169,25 @@ export default function MyLedgerPage() {
       setInvestmentReturn(saved.investmentReturn ?? '3.0')
       setRestoredFromSave(true)
     }
+    setHasRestored(true)
     /* eslint-enable react-hooks/set-state-in-effect */
   }, [])
 
-  const handleSaveInputs = () => {
+  // Autosave every keystroke, same as DriveReady's own persistence, just
+  // scoped to whichever profile is active — only the retirement
+  // assumptions, per the comment above (scenarios always rebuild fresh).
+  useEffect(() => {
+    if (!hasRestored) return
     saveToolInputs('ledger', {
       currentAge, retirementAge, lifeExpectancy, desiredMonthlyWithdrawal, inflationRate, swr, investmentReturn,
     })
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- flashes the "Saved" indicator; not a render-affecting state sync
     setJustSaved(true)
-  }
+  }, [hasRestored, currentAge, retirementAge, lifeExpectancy, desiredMonthlyWithdrawal, inflationRate, swr, investmentReturn])
 
   useEffect(() => {
     if (!justSaved) return
-    const t = setTimeout(() => setJustSaved(false), 2200)
+    const t = setTimeout(() => setJustSaved(false), 1400)
     return () => clearTimeout(t)
   }, [justSaved])
 
@@ -274,16 +282,14 @@ export default function MyLedgerPage() {
           </div>
         )}
 
-        <div style={{ marginTop: 28, display: 'flex', gap: 10, flexWrap: 'wrap' }}>
-          <Button variant="accent" onClick={handleCalc} disabled={!isReady} style={{ flex: '1 1 220px' }}>
+        <div style={{ marginTop: 28 }}>
+          <Button variant="accent" fullWidth onClick={handleCalc} disabled={!isReady}>
             {isReady ? 'Check my full picture' : 'Fill in age, salary, and desired withdrawal above'}
           </Button>
-          <Button variant="outline" onClick={handleSaveInputs} style={{ flex: '0 0 auto' }}>
-            {justSaved ? 'Saved to this profile ✓' : 'Save my assumptions'}
-          </Button>
         </div>
-        <p style={{ marginTop: 10, fontSize: C.xs, color: C.faint, lineHeight: 1.5 }}>
-          Saves the retirement assumptions above to whichever profile is active — scenarios always rebuild fresh from your other tools&apos; latest numbers.
+        <AutosaveIndicator justSaved={justSaved} C={C} style={{ textAlign: 'left' }} />
+        <p style={{ marginTop: 4, fontSize: C.xs, color: C.faint, lineHeight: 1.5 }}>
+          Only the retirement assumptions above are saved — scenarios always rebuild fresh from your other tools&apos; latest numbers.
         </p>
 
         {comparison && (
