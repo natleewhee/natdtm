@@ -139,11 +139,15 @@ export function taxOnChargeableIncome(chargeableIncome) {
 }
 
 // The marginal rate that applies to the next dollar earned — this is
-// what makes a relief worth what it's worth.
+// what makes a relief worth what it's worth. Uses a strict `<` against
+// each band's upper bound: at exactly a boundary (e.g. chargeableIncome
+// === 20,000), that whole $20,000 is still taxed at the band below it,
+// but the NEXT dollar earned (dollar 20,001) falls into the band above —
+// `<=` would wrongly return the band-below's rate at every boundary.
 export function marginalRate(chargeableIncome) {
   const ci = Math.max(0, Number(chargeableIncome) || 0)
   for (const band of TAX_BANDS) {
-    if (ci <= band.upTo) return band.rate
+    if (ci < band.upTo) return band.rate
   }
   return TAX_BANDS[TAX_BANDS.length - 1].rate
 }

@@ -132,7 +132,10 @@ export function generatePortfolio(prefs) {
     description = 'Granular control over global, regional, and factor exposures.'
     let bondW=0, gW=40, usW=30, emW=15, scW=10, otW=5
     if (prefs.risk === 'Conservative') { bondW=25; gW=40; usW=15; emW=10; scW=5; otW=5 }
-    if (prefs.risk === 'Growth')       { bondW=0;  gW=30; usW=40; emW=20; scW=10; otW=0 }
+    // otW must stay > 0 here too, or a Growth-risk user's Japan/China tilt
+    // selection is silently dropped entirely below (the otW > 0 gate never
+    // runs) while a Balanced/Conservative user's identical selection is honored.
+    if (prefs.risk === 'Growth')       { bondW=0;  gW=25; usW=40; emW=20; scW=10; otW=5 }
     if (bondW > 0) allocations.push({ etf: ETFS.AGGU, percentage: bondW })
     allocations.push({ etf: ETFS.VWRA, percentage: gW })
     allocations.push({ etf: ETFS.CSPX, percentage: usW })

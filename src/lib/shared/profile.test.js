@@ -473,3 +473,42 @@ test('setActiveProfile ignores an unknown id', () => {
   setActiveProfile('not-a-real-id')
   assert.equal(getActiveProfileId(), original)
 })
+
+// ─── Save functions report write success/failure ──────────────────────────
+// The autosave indicator flashes "Saved" based on this return value — it
+// must not report true when the underlying localStorage write silently
+// failed (private browsing quota, etc.), or the UI would lie about whether
+// the user's inputs will actually be there next time.
+
+test('saveToolInputs returns true when the write succeeds', () => {
+  window.localStorage.removeItem('ndtm_my_numbers_v1')
+  assert.equal(saveToolInputs('house', { purchasePrice: '1000000' }), true)
+})
+
+test('saveToolInputs returns false for an unrecognized tool, without touching storage', () => {
+  window.localStorage.removeItem('ndtm_my_numbers_v1')
+  assert.equal(saveToolInputs('not-a-real-tool', {}), false)
+})
+
+test('saveHouseNumbers/saveDriveNumbers/etc. return false when the underlying localStorage write throws', () => {
+  window.localStorage.removeItem('ndtm_my_numbers_v1')
+  const real = window.localStorage.setItem
+  window.localStorage.setItem = () => { throw new Error('QuotaExceededError') }
+  try {
+    assert.equal(saveHouseNumbers({ cashProceeds: 1, totalCPFRefund: 1, salePrice: 1, saleDate: '2026-01-01' }), false)
+    assert.equal(saveToolInputs('house', { purchasePrice: '1000000' }), false)
+  } finally {
+    window.localStorage.setItem = real
+  }
+})
+
+test('save functions return false when window is unavailable (SSR)', async () => {
+  const savedWindow = global.window
+  delete global.window
+  try {
+    // Re-import isn't needed — the functions check `typeof window` at call time.
+    assert.equal(saveToolInputs('house', { purchasePrice: '1000000' }), false)
+  } finally {
+    global.window = savedWindow
+  }
+})

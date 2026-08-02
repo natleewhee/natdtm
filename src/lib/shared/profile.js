@@ -133,12 +133,17 @@ function isWrapped(parsed) {
   return !!parsed && typeof parsed === 'object' && Array.isArray(parsed.profiles)
 }
 
+// Returns whether the write actually landed — callers (autosave
+// indicators) use this to only claim "Saved" when it's true, rather than
+// showing success on a silently-swallowed quota/private-browsing failure.
 function saveStore(store) {
-  if (typeof window === 'undefined') return
+  if (typeof window === 'undefined') return false
   try {
     window.localStorage.setItem(STORAGE_KEY, JSON.stringify(store))
+    return true
   } catch {
     // localStorage unavailable (private browsing, quota) — fail silently
+    return false
   }
 }
 
@@ -209,12 +214,12 @@ export function loadMyNumbers() {
 // clearXNumbers function below is unchanged from before profiles
 // existed; only what this function does underneath them changed.
 function save(data) {
-  if (typeof window === 'undefined') return
+  if (typeof window === 'undefined') return false
   const store = loadStore()
   const idx = store.profiles.findIndex(p => p.id === store.activeProfileId)
-  if (idx === -1) return
+  if (idx === -1) return false
   store.profiles[idx] = { ...store.profiles[idx], data, updatedAt: Date.now() }
-  saveStore(store)
+  return saveStore(store)
 }
 
 // ─── Profile management ─────────────────────────────────────────────────
@@ -297,7 +302,7 @@ export function saveHouseNumbers({
     propertyType: propertyType || 'private',
     savedAt: Date.now(),
   }
-  save(data)
+  return save(data)
 }
 
 // Merges onto whatever's already in the drive slot — see saveHouseNumbers.
@@ -320,7 +325,7 @@ export function saveDriveNumbers({
     carValue: carValue != null ? Number(carValue) || 0 : null,
     savedAt: Date.now(),
   }
-  save(data)
+  return save(data)
 }
 
 // Merges onto whatever's already in the retire slot — see saveHouseNumbers.
@@ -341,7 +346,7 @@ export function saveRetireNumbers({
     monthlyContribution: Number(monthlyContribution) || 0,
     savedAt: Date.now(),
   }
-  save(data)
+  return save(data)
 }
 
 // Merges onto whatever's already in the insure slot — see saveHouseNumbers.
@@ -355,7 +360,7 @@ export function saveInsureNumbers({ monthlyPremium, score, source = 'auto' }) {
     score: score != null ? Number(score) || 0 : null,
     savedAt: Date.now(),
   }
-  save(data)
+  return save(data)
 }
 
 // Merges onto whatever's already in the tax slot — see saveHouseNumbers.
@@ -371,7 +376,7 @@ export function saveTaxNumbers({ monthlyTakeHome, annualTax, marginalRate, age, 
     age: Number(age) || 0,
     savedAt: Date.now(),
   }
-  save(data)
+  return save(data)
 }
 
 // The portfolio page (DCA plan) and rebalance page (actual holdings) each
@@ -387,13 +392,13 @@ export function saveEtfNumbers({ portfolioValue, monthlyContribution, source = '
     monthlyContribution: monthlyContribution != null ? Number(monthlyContribution) || 0 : (existing.monthlyContribution ?? 0),
     savedAt: Date.now(),
   }
-  save(data)
+  return save(data)
 }
 
 export function clearEtfNumbers() {
   const data = loadMyNumbers()
   data.etf = null
-  save(data)
+  return save(data)
 }
 
 // Auto-recomputed metrics (called continuously while FlowState is open,
@@ -412,13 +417,13 @@ export function saveFlowNumbers({ livingExpenses, monthlySurplus, trueSavingsRat
     cashSavingsRate: cashSavingsRate != null ? Number(cashSavingsRate) || 0 : null,
     savedAt: Date.now(),
   }
-  save(data)
+  return save(data)
 }
 
 export function clearFlowNumbers() {
   const data = loadMyNumbers()
   data.flow = null
-  save(data)
+  return save(data)
 }
 
 // FlowState's own raw form inputs (every field on the page — age,
@@ -438,7 +443,7 @@ export function saveFlowInputs(inputs) {
     inputs,
     inputsSavedAt: Date.now(),
   }
-  save(data)
+  return save(data)
 }
 
 export function loadFlowInputs() {
@@ -456,11 +461,11 @@ export function loadFlowInputs() {
 const TOOLS_WITH_INPUTS = ['house', 'drive', 'retire', 'insure', 'tax', 'etf', 'ledger']
 
 export function saveToolInputs(tool, inputs) {
-  if (!TOOLS_WITH_INPUTS.includes(tool)) return
+  if (!TOOLS_WITH_INPUTS.includes(tool)) return false
   const data = loadMyNumbers()
   const existing = data[tool] || {}
   data[tool] = { ...existing, inputs, inputsSavedAt: Date.now() }
-  save(data)
+  return save(data)
 }
 
 export function loadToolInputs(tool) {
@@ -472,29 +477,29 @@ export function loadToolInputs(tool) {
 export function clearInsureNumbers() {
   const data = loadMyNumbers()
   data.insure = null
-  save(data)
+  return save(data)
 }
 
 export function clearTaxNumbers() {
   const data = loadMyNumbers()
   data.tax = null
-  save(data)
+  return save(data)
 }
 
 export function clearHouseNumbers() {
   const data = loadMyNumbers()
   data.house = null
-  save(data)
+  return save(data)
 }
 
 export function clearDriveNumbers() {
   const data = loadMyNumbers()
   data.drive = null
-  save(data)
+  return save(data)
 }
 
 export function clearRetireNumbers() {
   const data = loadMyNumbers()
   data.retire = null
-  save(data)
+  return save(data)
 }

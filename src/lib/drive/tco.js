@@ -57,6 +57,14 @@ export function estimateInsurance(omv, pureEV) {
   return pureEV ? Math.round(base * 1.1) : base
 }
 
+// Sub-brand/model names that don't contain their parent brand's key or
+// label as a substring, so the generic match below would miss them and
+// silently fall back to the (much cheaper) 'toyota' tier — e.g. "Range
+// Rover Sport" contains neither "landrover" nor "land rover".
+const BRAND_ALIASES = {
+  'range rover': 'landrover',
+}
+
 // Guess a maintenance brand key from a car's display name by matching
 // against the known brands in MAINTENANCE_BY_BRAND (reusing the
 // renew-or-replace tool's data rather than duplicating it) — falls back to
@@ -64,6 +72,9 @@ export function estimateInsurance(omv, pureEV) {
 // getAnnualMaintenance already uses for an unknown key.
 export function guessBrandKey(carName) {
   const lower = (carName || '').toLowerCase()
+  for (const alias of Object.keys(BRAND_ALIASES)) {
+    if (lower.includes(alias)) return BRAND_ALIASES[alias]
+  }
   for (const key of Object.keys(MAINTENANCE_BY_BRAND)) {
     const label = MAINTENANCE_BY_BRAND[key].label.toLowerCase()
     if (lower.includes(key) || lower.includes(label)) return key

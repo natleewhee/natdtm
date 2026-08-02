@@ -4,7 +4,7 @@ import { useRouter } from 'next/navigation'
 import { C, SGD } from '@/lib/flow/theme'
 import { CPF_CONTRIBUTION_TABLE, CPF_OW_CEILING, CPF_ANNUAL_CEILING } from '@/lib/retire/cpf'
 import { CPF_EMPLOYEE_SHARE } from '@/lib/tax/calc'
-import { DEFAULT_MA_HEALTH_PREMIUM } from '@/lib/flow/calc'
+import { DEFAULT_MA_HEALTH_PREMIUM, DEFAULT_EMERGENCY_FUND_MONTHS } from '@/lib/flow/calc'
 import ShellHeader from '@/components/shared/ShellHeader'
 import MathTOC from '@/components/shared/MathTOC'
 
@@ -105,6 +105,14 @@ Fixed-cost ratio  = (cash-funded mortgage + car + insurance) ÷ cash reaching th
 Runway            = liquid savings ÷ (cash-funded mortgage + car + insurance + living expenses)`}</Formula>
           <P>&quot;Kept&quot; means CPF that&apos;s still growing, principal that became equity, and any cash left over at month&apos;s end — every dollar still yours in some form, whether or not you can spend it today. True savings rate is the honest number; cash savings rate is the one that matches what your bank balance actually shows.</P>
           <P>A health insurance premium (Integrated Shield Plan) is estimated as a fixed MediSave-funded figure, defaulting to {SGD(DEFAULT_MA_HEALTH_PREMIUM)}/month, and is editable since it varies enormously by plan and age.</P>
+        </Section>
+
+        <Section title="Emergency fund sizing">
+          <P>Whenever your liquid savings fall short of {DEFAULT_EMERGENCY_FUND_MONTHS} months of the same real cash burn runway uses, the results page flags the shortfall and estimates how long it&apos;d take to close:</P>
+          <Formula>{`Target        = ${DEFAULT_EMERGENCY_FUND_MONTHS} × (cash-funded mortgage + car + insurance + living expenses)
+Gap           = max(0, target − liquid savings)
+Months to close = ceil(gap ÷ this month's cash surplus)`}</Formula>
+          <Caveat>{DEFAULT_EMERGENCY_FUND_MONTHS} months is a general rule of thumb, not tailored to your situation — a dual-income household can often run leaner, while a single income or variable/commission-based one may want more. &quot;Months to close&quot; assumes this exact month&apos;s cash surplus repeats every month, which real life rarely does — treat it as a rough pace-setter, not a plan.</Caveat>
         </Section>
 
         <Section title="The twelve-month trough">

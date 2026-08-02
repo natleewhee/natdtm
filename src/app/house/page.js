@@ -14,6 +14,12 @@ import AutosaveIndicator from '@/components/shared/AutosaveIndicator'
 import ExploreSection from '@/components/shared/ExploreSection'
 
 const num = parseMoney
+// parseMoney strips any leading "-" (it's built for money fields, which are
+// never negative), so a share typed as "-20" would come out as +20 instead
+// of being caught and clamped to 0% — Number() preserves the sign so the
+// warning below and the value handed to calcSale agree with what
+// resolveSharePct (house/calc.js) actually clamps.
+const numSigned = (v) => { const n = Number(v); return Number.isFinite(n) ? n : 0 }
 
 export default function HouseMuchPage() {
   const [propertyType, setPropertyType] = useState('private')
@@ -129,7 +135,7 @@ export default function HouseMuchPage() {
   // before the restore effect above has had a chance to apply.
   useEffect(() => {
     if (!hasRestored) return
-    saveToolInputs('house', {
+    const ok = saveToolInputs('house', {
       propertyType, isJointLoan, yourSharePct,
       personBCpfOutlay, personBCpfPrincipalOverride, personBCpfInterestOverride, cashProceedsSplitMode,
       purchasePrice, purchaseDate, cpfOutlay, loanTaken, mortgageRate, loanTenure,
@@ -137,8 +143,11 @@ export default function HouseMuchPage() {
       salePrice, saleDate, agentFeeAtSaleMode, agentFeeAtSaleRaw, legalFeesAtSale,
       outstandingOverride, totalInterestOverride, cpfPrincipalOverride, cpfInterestOverride, ssdOverride,
     })
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- flashes the "Saved" indicator; not a render-affecting state sync
-    setSavedTick(t => t + 1)
+    // Only flash "Saved" when the write actually landed — see tax/page.js.
+    if (ok) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- flashes the "Saved" indicator; not a render-affecting state sync
+      setSavedTick(t => t + 1)
+    }
   }, [
     hasRestored, propertyType, isJointLoan, yourSharePct,
     personBCpfOutlay, personBCpfPrincipalOverride, personBCpfInterestOverride, cashProceedsSplitMode,
@@ -182,7 +191,7 @@ export default function HouseMuchPage() {
     cpfPrincipalOverride: cpfPrincipalOverride !== '' ? num(cpfPrincipalOverride) : null,
     cpfAccruedInterestOverride: cpfInterestOverride !== '' ? num(cpfInterestOverride) : null,
     ssdOverride: ssdOverride !== '' ? num(ssdOverride) : null,
-    yourSharePct: isJointLoan ? num(yourSharePct) : 100,
+    yourSharePct: isJointLoan ? numSigned(yourSharePct) : 100,
     personBCpfOutlay: isJointLoan ? num(personBCpfOutlay) : 0,
     personBCpfPrincipalOverride: isJointLoan && personBCpfPrincipalOverride !== '' ? num(personBCpfPrincipalOverride) : null,
     personBCpfAccruedInterestOverride: isJointLoan && personBCpfInterestOverride !== '' ? num(personBCpfInterestOverride) : null,
@@ -333,9 +342,9 @@ export default function HouseMuchPage() {
                   <p style={{ marginTop: 6, fontSize: C.xs, color: C.redText, lineHeight: 1.5 }}>
                     Empty is treated as a 0% share — your cash and profit/loss figures below will come out as zero until you enter a number.
                   </p>
-                ) : (num(yourSharePct) < 0 || num(yourSharePct) > 100) && (
+                ) : (numSigned(yourSharePct) < 0 || numSigned(yourSharePct) > 100) && (
                   <p style={{ marginTop: 6, fontSize: C.xs, color: C.redText, lineHeight: 1.5 }}>
-                    A share has to be between 0% and 100% — this will be treated as {num(yourSharePct) > 100 ? '100%' : '0%'}.
+                    A share has to be between 0% and 100% — this will be treated as {numSigned(yourSharePct) > 100 ? '100%' : '0%'}.
                   </p>
                 )}
                 <p style={{ marginTop: 8, fontSize: C.xs, color: C.muted, lineHeight: 1.5 }}>

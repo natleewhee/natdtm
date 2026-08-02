@@ -462,7 +462,9 @@ export default function CheckPage() {
   // effect above has had a chance to apply.
   useEffect(() => {
     if (!mounted) return
-    saveToolInputs('insure', form)
+    const ok = saveToolInputs('insure', form)
+    // Only flash "Saved" when the write actually landed — see tax/page.js.
+    if (!ok) return
     // eslint-disable-next-line react-hooks/set-state-in-effect -- flashes the "Saved" indicator; not a render-affecting state sync
     setJustSaved(true)
     const t = setTimeout(() => setJustSaved(false), 1400)

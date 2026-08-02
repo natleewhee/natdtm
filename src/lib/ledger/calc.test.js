@@ -154,10 +154,23 @@ test('resolveHouseModule scales a purchase-mode house by yourSharePct too', () =
   approx(half.resolved.propertyValue, full.resolved.propertyValue * 0.5)
   approx(half.resolved.outstandingBalance, full.resolved.outstandingBalance * 0.5)
   approx(half.resolved.monthlyInstalment, full.resolved.monthlyInstalment * 0.5)
-  // cashImpact (what you actually pay upfront) is NOT scaled — the
-  // downpayment/BSD/fees required from cash savings stay the real,
-  // full amount regardless of ownership split.
-  approx(half.cashImpact, full.cashImpact)
+  // cashImpact is scaled too — a joint purchase only draws down YOUR
+  // share of the cash required, same as your share of the equity credited.
+  approx(half.cashImpact, full.cashImpact * 0.5)
+})
+
+test('resolveHouseModule scales an upgrade-mode cashImpact by yourSharePct too', () => {
+  const full = resolveHouseModule({
+    mode: 'upgrade', cashProceeds: 500000, totalCPFRefund: 150000,
+    price: 1500000, downpaymentPct: 25, rate: 2.6, tenureYears: 25, otherFees: 5000,
+  })
+  const half = resolveHouseModule({
+    mode: 'upgrade', cashProceeds: 500000, totalCPFRefund: 150000,
+    price: 1500000, downpaymentPct: 25, rate: 2.6, tenureYears: 25, otherFees: 5000,
+    yourSharePct: 50,
+  })
+  approx(half.resolved.propertyValue, full.resolved.propertyValue * 0.5)
+  approx(half.cashImpact, full.cashImpact * 0.5)
 })
 
 test('resolveHouseModule handles a null house', () => {

@@ -71,12 +71,12 @@ export default function RenewOrReplaceTheMath() {
         <P>PARF (Preferential Additional Registration Fee) rebate is returned when you deregister a car under 10 years old. It is calculated as a percentage of the ARF (Additional Registration Fee) you paid when registering the car.</P>
         <Table rows={[
           ['Car Age at Deregistration', 'PARF Rebate (% of ARF paid)', 'Cap'],
-          ['≤ 5 years', '75%', 'S$30,000'],
-          ['6 years', '70%', 'S$30,000'],
-          ['7 years', '65%', 'S$30,000'],
-          ['8 years', '60%', 'S$30,000'],
-          ['9 years', '55%', 'S$30,000'],
-          ['10 years', '50%', 'S$30,000'],
+          ['≤ 5 years', '75%', 'S$60,000'],
+          ['6 years', '70%', 'S$60,000'],
+          ['7 years', '65%', 'S$60,000'],
+          ['8 years', '60%', 'S$60,000'],
+          ['9 years', '55%', 'S$60,000'],
+          ['10 years', '50%', 'S$60,000'],
           ['> 10 years', '0%', '—'],
         ]} />
         <P>ARF is calculated using the current tiered structure (effective Feb 2023): 100% of first S$20,000 OMV, 140% of next S$20,000, 190% of next S$20,000, 250% of next S$20,000, 320% above S$80,000.</P>

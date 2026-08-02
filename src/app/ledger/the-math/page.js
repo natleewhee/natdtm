@@ -90,8 +90,8 @@ Applies to HDB only. Does not apply to private property.`}</Formula>
         </Section>
 
         <Section title="Investment capacity, and why it rises">
-          <P>What&apos;s realistically left to invest each month, after take-home pay covers every commitment — this replaces the guessed monthly-contribution figure RetireWell would otherwise ask for:</P>
-          <Formula>{`Investment capacity = max(0, take-home pay − total commitments)`}</Formula>
+          <P>What&apos;s realistically left to invest each month, after take-home pay covers every commitment AND your living expenses — this replaces the guessed monthly-contribution figure RetireWell would otherwise ask for:</P>
+          <Formula>{`Investment capacity = max(0, take-home pay − total commitments − living expenses)`}</Formula>
           <P>Take-home comes from TaxWise when you&apos;ve run it, which nets off both your age-banded CPF employee share and income tax. Without it, a flat approximation is used:</P>
           <Formula>{`Exact (TaxWise):  gross − employee CPF − income tax
 Fallback:         gross × ${(TAKE_HOME_RATE * 100).toFixed(0)}%`}</Formula>
@@ -100,8 +100,9 @@ Fallback:         gross × ${(TAKE_HOME_RATE * 100).toFixed(0)}%`}</Formula>
   capacity(m) = take-home
               − (mortgage, if m < months left on the mortgage)
               − (car instalment, if m < months left on the car loan)
-              − insurance premiums   (no tenure — assumed ongoing)`}</Formula>
-          <Caveat>Leaving a &quot;years left&quot; field blank means that loan is assumed to run all the way to retirement — the conservative reading. Insurance premiums are assumed to continue indefinitely, which is right for whole-life and hospitalisation cover but overstates the cost of a term policy that expires.</Caveat>
+              − insurance premiums   (no tenure — assumed ongoing)
+              − living expenses     (no tenure — assumed ongoing)`}</Formula>
+          <Caveat>Leaving a &quot;years left&quot; field blank means that loan is assumed to run all the way to retirement — the conservative reading. Insurance premiums and living expenses are assumed to continue indefinitely — right for whole-life/hospitalisation cover and for baseline living costs, but it overstates the cost of a term policy that expires, and doesn&apos;t model living expenses changing over time (e.g. after a mortgage is paid off). Living expenses come from FlowState when you&apos;ve run it; otherwise this assumes zero, which overstates capacity.</Caveat>
         </Section>
 
         <Section title="Retirement projection">

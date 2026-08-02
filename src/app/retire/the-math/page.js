@@ -10,6 +10,7 @@ import {
   CPF_EXTRA_55_TIER2_RATE, CPF_EXTRA_55_TIER2_CAP, CPF_FRS_BASE, CPF_FRS_BASE_YEAR, CPF_FRS_GROWTH_RATE,
   CPF_BHS_BASE, CPF_BHS_BASE_YEAR, CPF_BHS_GROWTH_RATE,
 } from '@/lib/retire/cpf'
+import { SRS_RETIREMENT_AGE, SRS_WITHDRAWAL_TAXABLE_FRACTION, SRS_MAX_WITHDRAWAL_YEARS, SRS_EARLY_WITHDRAWAL_PENALTY_PCT } from '@/lib/retire/srs'
 
 function slug(title) {
   return title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '')
@@ -62,6 +63,7 @@ export default function RetireTheMathPage() {
           { id: 'accumulation-now-retirement-age', label: 'Accumulation' },
           { id: 'the-retirement-target', label: 'Retirement target' },
           { id: 'depletion-simulation', label: 'Depletion simulation' },
+          { id: 'supplementary-retirement-scheme-srs', label: 'SRS' },
           { id: 'limitations', label: 'Limitations' },
         ]} />
 
@@ -157,8 +159,18 @@ This year's withdrawal escalates by inflation every year, same as above.`}</Form
           <Caveat>The assumed return applied here is your money-market rate, applied to the <em>whole</em> combined balance — including the CPF portion. That&apos;s a conservative simplification: CPF&apos;s guaranteed rates (2.5% OA, 4% SA, plus extra interest tiers) typically run higher than money market funds, so this likely understates how long your CPF portion alone would actually last.</Caveat>
         </Section>
 
+        <Section title="Supplementary Retirement Scheme (SRS)">
+          <P>SRS is modeled separately from the CPF/investment accumulation above, since its withdrawal rules are entirely different. Your SRS balance grows the same way your investment balance does — monthly contributions compounding at your assumed investment return — but to age {SRS_RETIREMENT_AGE}, the statutory retirement age that determines penalty-free withdrawal (locked in at the age that applied when you made your <em>first</em> SRS contribution, not whatever&apos;s prevailing when you withdraw):</P>
+          <Formula>{`SRS(t+1) = SRS(t) × (1 + monthly return) + monthly contribution, up to age ${SRS_RETIREMENT_AGE}`}</Formula>
+          <P>From {SRS_RETIREMENT_AGE} on, only {(SRS_WITHDRAWAL_TAXABLE_FRACTION * 100).toFixed(0)}% of whatever you withdraw each year counts as chargeable income — the rest is tax-exempt. Spread the balance over more years (up to {SRS_MAX_WITHDRAWAL_YEARS}) and each year&apos;s taxable slice shrinks, which matters because Singapore&apos;s income tax is progressive — a smaller slice often lands in a lower band, or the tax-free band entirely:</P>
+          <Formula>{`Annual withdrawal = SRS balance at ${SRS_RETIREMENT_AGE} ÷ years chosen (up to ${SRS_MAX_WITHDRAWAL_YEARS})
+Taxable portion    = annual withdrawal × ${(SRS_WITHDRAWAL_TAXABLE_FRACTION * 100).toFixed(0)}%
+Tax owed           = tax on (other taxable income + taxable portion) − tax on (other taxable income alone)`}</Formula>
+          <Caveat>Withdrawing before age {SRS_RETIREMENT_AGE} is 100% taxable AND carries a {SRS_EARLY_WITHDRAWAL_PENALTY_PCT}% penalty — neither is modeled here, since this tool only compares withdrawal strategies from the penalty-free age onward. The balance is assumed to stop growing once withdrawals begin (a conservative simplification — in reality it can stay invested while being drawn down) and &quot;other taxable income&quot; defaults to zero, since CPF LIFE payouts themselves aren&apos;t taxable in Singapore and this tool doesn&apos;t currently collect other retirement income (rental, part-time work).</Caveat>
+        </Section>
+
         <Section title="Limitations">
-          <P>This calculator doesn&apos;t model: wage growth or bonus timing beyond the simplified annual assumptions above, the CPF Retirement Account sweep and Retirement Sum mechanics at age 55, CPF LIFE&apos;s actual lifetime-annuity payout (approximated instead by treating OA+SA as a self-managed pot — see above), Supplementary Retirement Scheme (SRS) contributions, RSTU income tax relief, sequence-of-returns risk (a bad run of returns early in retirement is riskier than the same average return spread evenly — this simulation uses one constant assumed return throughout), or taxes (moot in Singapore anyway — CPF withdrawals and capital gains aren&apos;t taxed). The money-market return and inflation rate are both single constant assumptions for the entire horizon, which in reality will fluctuate with interest-rate cycles.</P>
+          <P>This calculator doesn&apos;t model: wage growth or bonus timing beyond the simplified annual assumptions above, the CPF Retirement Account sweep and Retirement Sum mechanics at age 55, CPF LIFE&apos;s actual lifetime-annuity payout (approximated instead by treating OA+SA as a self-managed pot — see above), RSTU income tax relief, sequence-of-returns risk (a bad run of returns early in retirement is riskier than the same average return spread evenly — this simulation uses one constant assumed return throughout), or taxes on anything besides SRS withdrawals (moot in Singapore anyway — CPF withdrawals and capital gains aren&apos;t taxed). The money-market return and inflation rate are both single constant assumptions for the entire horizon, which in reality will fluctuate with interest-rate cycles.</P>
           <Caveat>MediSave is tracked but never counted in the combined portfolio — it&apos;s earmarked for healthcare, not living expenses, even though its balance is capped and overflows into SA the same way real CPF does.</Caveat>
         </Section>
 

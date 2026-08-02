@@ -45,7 +45,7 @@ export const PORTFOLIO_KEY = 'whatetf_portfolio'
 // deliberate signal — session is just a same-visit convenience.
 export function savePrefs(prefs) {
   try { sessionStorage.setItem(PREFS_KEY, JSON.stringify(prefs)) } catch {}
-  saveToolInputs('etf', prefs)
+  return saveToolInputs('etf', prefs)
 }
 export function loadPrefs() {
   const durable = loadToolInputs('etf')

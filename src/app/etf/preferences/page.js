@@ -60,7 +60,10 @@ function PreferencesForm() {
   useEffect(() => {
     if (!hasRestored) return
     if (suppressNextAutosave.current) { suppressNextAutosave.current = false; return }
-    savePrefs(prefs)
+    const ok = savePrefs(prefs)
+    // Only flash "Saved" when the write actually landed — see tax/page.js.
+    if (!ok) return
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- flashes the "Saved" indicator; not a render-affecting state sync
     setJustSaved(true)
     const t = setTimeout(() => setJustSaved(false), 1400)
     return () => clearTimeout(t)

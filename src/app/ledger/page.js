@@ -187,11 +187,14 @@ export default function MyLedgerPage() {
   // assumptions, per the comment above (scenarios always rebuild fresh).
   useEffect(() => {
     if (!hasRestored) return
-    saveToolInputs('ledger', {
+    const ok = saveToolInputs('ledger', {
       currentAge, retirementAge, lifeExpectancy, desiredMonthlyWithdrawal, inflationRate, swr, investmentReturn,
     })
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- flashes the "Saved" indicator; not a render-affecting state sync
-    setSavedTick(t => t + 1)
+    // Only flash "Saved" when the write actually landed — see tax/page.js.
+    if (ok) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- flashes the "Saved" indicator; not a render-affecting state sync
+      setSavedTick(t => t + 1)
+    }
   }, [hasRestored, currentAge, retirementAge, lifeExpectancy, desiredMonthlyWithdrawal, inflationRate, swr, investmentReturn])
 
   useEffect(() => {

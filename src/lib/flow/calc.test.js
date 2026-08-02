@@ -5,6 +5,7 @@ import {
   monthlyCpfSplit, splitMortgagePayment, quickLivingExpenses, detailedLivingExpenses,
   backSolveLivingExpenses, reconciliationGap, monthlyTaxProvision, buildMonthlyFlow,
   trueSavingsRate, cashSavingsRate, fixedCostRatio, runwayMonths,
+  emergencyFundTarget, monthsToCloseEmergencyFundGap, DEFAULT_EMERGENCY_FUND_MONTHS,
   buildTwelveMonthSchedule, findTightestMonth, compareGiroToLump, FATE,
 } from './calc.js'
 
@@ -244,6 +245,53 @@ test('runwayMonths: liquid savings divided by real monthly cash burn', () => {
 test('runwayMonths: zero burn returns Infinity rather than dividing by zero', () => {
   const flow = buildMonthlyFlow({ age: 35, salary: 8000, annualTax: 0, livingExpenses: 0 })
   assert.equal(runwayMonths(flow, 5000), Infinity)
+})
+
+// ─── Emergency fund sizing ──────────────────────────────────────────────
+
+test('emergencyFundTarget: target is burn × targetMonths, default 6', () => {
+  const flow = buildMonthlyFlow(PERSONA)
+  const { burn, targetAmount } = emergencyFundTarget(flow, 0)
+  approx(targetAmount, burn * DEFAULT_EMERGENCY_FUND_MONTHS)
+})
+
+test('emergencyFundTarget: gap is target minus current liquid savings, floored at zero', () => {
+  const flow = buildMonthlyFlow(PERSONA)
+  const under = emergencyFundTarget(flow, 0)
+  assert.ok(under.gap > 0)
+  approx(under.gap, under.targetAmount)
+
+  const over = emergencyFundTarget(flow, under.targetAmount * 2)
+  assert.equal(over.gap, 0, 'gap should floor at zero once savings exceed the target, not go negative')
+})
+
+test('emergencyFundTarget: honors a custom targetMonths', () => {
+  const flow = buildMonthlyFlow(PERSONA)
+  const threeMonth = emergencyFundTarget(flow, 0, 3)
+  const sixMonth = emergencyFundTarget(flow, 0, 6)
+  approx(sixMonth.targetAmount, threeMonth.targetAmount * 2)
+})
+
+test('emergencyFundTarget: zero burn returns a null target rather than 0 (nothing to insure against)', () => {
+  const flow = buildMonthlyFlow({ age: 35, salary: 8000, annualTax: 0, livingExpenses: 0 })
+  const result = emergencyFundTarget(flow, 5000)
+  assert.equal(result.burn, 0)
+  assert.equal(result.targetAmount, null)
+  assert.equal(result.gap, 0)
+})
+
+test('monthsToCloseEmergencyFundGap: rounds up to the next whole month', () => {
+  assert.equal(monthsToCloseEmergencyFundGap(2500, 1000), 3)
+})
+
+test('monthsToCloseEmergencyFundGap: zero gap needs zero months regardless of contribution', () => {
+  assert.equal(monthsToCloseEmergencyFundGap(0, 500), 0)
+  assert.equal(monthsToCloseEmergencyFundGap(0, 0), 0)
+})
+
+test('monthsToCloseEmergencyFundGap: a gap with zero/negative contribution never closes', () => {
+  assert.equal(monthsToCloseEmergencyFundGap(1000, 0), Infinity)
+  assert.equal(monthsToCloseEmergencyFundGap(1000, -50), Infinity)
 })
 
 // ─── Twelve-month schedule ──────────────────────────────────────────────

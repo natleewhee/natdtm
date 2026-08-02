@@ -4,7 +4,7 @@ import { useRouter } from 'next/navigation'
 import { C } from '@/lib/house/theme'
 import ShellHeader from '@/components/shared/ShellHeader'
 import MathTOC from '@/components/shared/MathTOC'
-import { BSD_AS_OF, ABSD_AS_OF, SSD_AS_OF, HDB_MOP_YEARS } from '@/lib/house/stampDuty'
+import { BSD_AS_OF, ABSD_AS_OF, SSD_AS_OF, SSD_REGIME_CUTOVER_DATE, HDB_MOP_YEARS } from '@/lib/house/stampDuty'
 import { CPF_OA_RATE } from '@/lib/house/calc'
 
 function slug(title) {
@@ -147,12 +147,20 @@ Remaining amount   → 6%`}</Formula>
         </Section>
 
         <Section title="Seller's Stamp Duty (SSD)">
-          <P>Private residential property only — HDB flats are governed by the Minimum Occupation Period instead, not SSD. Applied to sale price based on how long you held the property:</P>
-          <Formula>{`Held ≤ 1 year   → 12%
-Held 1–2 years  → 8%
-Held 2–3 years  → 4%
-Held > 3 years  → 0%`}</Formula>
-          <Caveat>Rates as of {SSD_AS_OF}, the last confirmed private-property SSD schedule. This is exactly the kind of rate that gets revised in cooling measures — verify against IRAS, especially for a recent purchase.</Caveat>
+          <P>Private residential property only — HDB flats are governed by the Minimum Occupation Period instead, not SSD. Applied to sale price based on how long you held the property, and which schedule applies depends on your <em>purchase</em> date, not your sale date:</P>
+          <Formula>{`Bought on/after ${SSD_REGIME_CUTOVER_DATE} (current):
+  Held ≤ 1 year   → 16%
+  Held 1–2 years  → 12%
+  Held 2–3 years  → 8%
+  Held 3–4 years  → 4%
+  Held > 4 years  → 0%
+
+Bought before ${SSD_REGIME_CUTOVER_DATE} (old schedule):
+  Held ≤ 1 year   → 12%
+  Held 1–2 years  → 8%
+  Held 2–3 years  → 4%
+  Held > 3 years  → 0%`}</Formula>
+          <Caveat>Rates as of {SSD_AS_OF}. The government extended the SSD holding period from 3 to 4 years and raised every tier effective {SSD_REGIME_CUTOVER_DATE} — this is exactly the kind of rate that gets revised in cooling measures, so verify against IRAS, especially for a recent purchase.</Caveat>
         </Section>
 
         <Section title="Additional Buyer's Stamp Duty (ABSD)">
@@ -172,13 +180,19 @@ Entity (company / trustee)         → 65%`}</Formula>
         </Section>
 
         <Section title="Joint loans">
-          <P>For a loan taken out with someone else, everything above — purchase price, BSD, the loan amount, mortgage amortization, SSD — stays the real, whole-property figure, because that math needs the actual numbers to be correct. A single &quot;your share&quot; percentage is applied only at the end, to the handful of figures that answer &quot;what does this mean for me&quot;:</P>
-          <Formula>{`Your cash proceeds     = cash proceeds     × your share
-Your cash invested     = cash invested     × your share
-Your true profit/loss  = true profit/loss  × your share
+          <P>For a loan taken out with someone else, everything above — purchase price, BSD, the loan amount, mortgage amortization, SSD — stays the real, whole-property figure, because that math needs the actual numbers to be correct. A single &quot;your share&quot; percentage scales the figures that are pure property/loan economics (they never touch CPF, so they scale cleanly):</P>
+          <Formula>{`Your true profit/loss    = true profit/loss    × your share
 Your outstanding balance = outstanding balance × your share
 Your monthly instalment  = monthly instalment  × your share`}</Formula>
-          <Caveat>CPF principal is NOT scaled by your share — CPF withdrawals are tracked per person by CPF Board, so &quot;CPF used at purchase&quot; is assumed to already be your own contribution, not a household total. If you and your co-borrower each used CPF, enter only your own withdrawal in that field. This also doesn&apos;t model unequal cost-sharing (e.g. one person covering more of the downpayment than their ownership share) — the same percentage is applied to every figure.</Caveat>
+          <P>Cash outlay (at purchase) is different — it&apos;s each owner&apos;s own real contribution, so it&apos;s computed per-owner rather than just scaled:</P>
+          <Formula>{`Your cash outlay = (purchase price + fees − loan taken) × your share − your own CPF used`}</Formula>
+          <P>Cash proceeds (at sale) split two ways, toggled at the top of the results:</P>
+          <Formula>{`By ownership share (default):
+  Your cash proceeds = cash proceeds × your share
+
+By cash outlay at purchase:
+  Your cash proceeds = cash proceeds × (your cash outlay ÷ total cash outlay of both owners)`}</Formula>
+          <Caveat>CPF principal is NOT scaled by your share — CPF withdrawals are tracked per person by CPF Board, so each owner enters their own CPF used at purchase separately. Cash proceeds are the household total AFTER both owners&apos; CPF has already been refunded off the top — CPF is never counted twice and never pooled with cash. The &quot;by cash outlay&quot; split mode falls back to the ownership-share split if either owner&apos;s cash outlay comes out negative or zero (e.g. CPF + loan already covered their full share).</Caveat>
         </Section>
 
         <Section title="Buying your next place">
@@ -191,7 +205,7 @@ Gap ≤ 0  → surplus (money left over)`}</Formula>
         </Section>
 
         <Section title="Limitations">
-          <P>This calculator doesn&apos;t account for: resale levies (if applicable to your HDB situation), rental income if the property was ever tenanted, changes in property tax during your holding period, or agent commission on the purchase side if you used one to buy. The mortgage-rate assumption is a single constant rate for the whole holding period — refinancing isn&apos;t modelled, which is exactly what the outstanding-balance override field on the results page is for. Both ROI figures are simple total returns, not annualized — they don&apos;t account for how long you held the property, so a 20% return over 2 years and a 20% return over 10 years show identically even though the first is a much better outcome per year.</P>
+          <P>This calculator doesn&apos;t account for: resale levies (if applicable to your HDB situation), rental income if the property was ever tenanted, changes in property tax during your holding period, or agent commission on the purchase side if you used one to buy. The mortgage-rate assumption is a single constant rate for the whole holding period — refinancing isn&apos;t modelled, which is exactly what the outstanding-balance override field on the results page is for. Both ROI figures are shown as simple total returns AND as an annualized (CAGR-style) rate alongside them, so a 20% return over 2 years and a 20% return over 10 years read very differently once you look at the per-year figure.</P>
         </Section>
 
         <div style={{ marginTop: 40, padding: 20, background: C.surface, borderRadius: C.rL, border: `1px solid ${C.border}`, fontSize: C.xs, color: C.faint, lineHeight: 1.7 }}>

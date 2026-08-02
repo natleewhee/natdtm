@@ -31,7 +31,7 @@ export default function SaleResults({
   const {
     propertyType, yearsHeld, mopOk,
     purchasePrice, bsdAtPurchase, legalFeesAtPurchase, agentFeesAtPurchase, purchaseFees, sunkCost,
-    loanTaken, cpfOutlay, cashOutlay, cashOutlayUnclear,
+    loanTaken, cashOutlay, cashOutlayUnclear,
     outstandingBalance, outstandingBalanceComputed,
     totalInterestPaidComputed, totalInterestPaid,
     cpfPrincipalAtPurchase, cpfPrincipalComputed, cpfPrincipalTotal,
@@ -260,7 +260,7 @@ export default function SaleResults({
           <div style={{ height: 10 }} />
           <Row label="Purchase price + fees" value={SGD(purchasePrice + purchaseFees)} />
           {loanTaken > 0 && <Row label="− Loan taken" value={`−${SGD(loanTaken)}`} indent />}
-          {cpfOutlay > 0 && <Row label="− CPF used" value={`−${SGD(cpfOutlay)}`} indent />}
+          {cpfPrincipalAtPurchase > 0 && <Row label="− CPF used (both of you, incl. any grant)" value={`−${SGD(cpfPrincipalAtPurchase)}`} indent />}
           <Row label="= Cash outlay (derived)" value={SGD(cashOutlay)} bold tone={cashOutlayUnclear ? 'red' : undefined} />
           {cashOutlayUnclear && (
             <p style={{ fontSize: C.xs, color: C.redText, lineHeight: 1.6, margin: '4px 0 0' }}>

@@ -168,29 +168,30 @@ Verdicts:
         {/* ARF */}
         <Section title="ARF — Additional Registration Fee">
           <BodyText>ARF is a tax paid at registration, calculated as a percentage of the car&apos;s OMV. It&apos;s part of what you pay at purchase and what you recover (partly) at deregistration.</BodyText>
-          <Formula>{`ARF tiers (tiered on OMV):
-  OMV up to S$20,000:            100% of OMV
-  OMV S$20,001 – S$50,000:      140% on the excess
-  OMV S$50,001 – S$80,000:      180% on the excess
-  OMV above S$80,000:           220% on the excess
+          <Formula>{`ARF tiers (tiered on OMV, effective Feb 2023):
+  OMV up to S$20,000:           100% of OMV
+  OMV S$20,001 – S$40,000:      140% on the excess
+  OMV S$40,001 – S$60,000:      190% on the excess
+  OMV S$60,001 – S$80,000:      250% on the excess
+  OMV above S$80,000:           320% on the excess
 
-Example (OMV = S$28,000):
-  ARF = (20,000 × 100%) + (8,000 × 140%)
-      = S$20,000 + S$11,200 = S$31,200`}</Formula>
+Example (OMV = S$50,000):
+  ARF = (20,000 × 100%) + (20,000 × 140%) + (10,000 × 190%)
+      = S$20,000 + S$28,000 + S$19,000 = S$67,000`}</Formula>
         </Section>
 
         {/* PARF */}
         <Section title="PARF — Preferential Additional Registration Fee rebate">
           <BodyText>When you deregister your car (scrap or export), you get back a portion of the ARF you paid. This is the PARF rebate. It decreases the longer you keep the car.</BodyText>
-          <Formula>{`Budget 2026 PARF schedule (effective 13 Feb 2026):
-  Deregistered at year 1–5:   30% of ARF paid (capped at S$30,000)
-  Deregistered at year 6:     25% of ARF paid (capped at S$30,000)
-  Deregistered at year 7:     20% of ARF paid (capped at S$30,000)
-  Deregistered at year 8:     15% of ARF paid (capped at S$30,000)
-  Deregistered at year 9:     10% of ARF paid (capped at S$30,000)
-  Deregistered at year 10:     5% of ARF paid (capped at S$30,000)
-  After year 10:               0% (no PARF rebate)`}</Formula>
-          <Caveat>DriveReady applies the S$30,000 cap introduced in Budget 2026. Cars deregistered before 13 Feb 2026 used an earlier schedule. Always verify current rates on the LTA website.</Caveat>
+          <Formula>{`PARF schedule:
+  Deregistered at year ≤5:    75% of ARF paid (capped at S$60,000)
+  Deregistered at year 6:     70% of ARF paid (capped at S$60,000)
+  Deregistered at year 7:     65% of ARF paid (capped at S$60,000)
+  Deregistered at year 8:     60% of ARF paid (capped at S$60,000)
+  Deregistered at year 9:     55% of ARF paid (capped at S$60,000)
+  Deregistered at year 10:    50% of ARF paid (capped at S$60,000)
+  After year 10:                0% (no PARF rebate)`}</Formula>
+          <Caveat>The S$60,000 PARF cap applies to cars registered with COEs from the February 2023 second bidding exercise onwards (Budget 2023). Always verify current rates on the LTA website.</Caveat>
         </Section>
 
         {/* COE */}

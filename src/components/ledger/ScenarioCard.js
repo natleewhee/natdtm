@@ -1,10 +1,15 @@
 'use client'
 
 import { C, SGD, parseMoney } from '@/lib/ledger/theme'
-import { calcHousePurchase, calcHouseUpgrade } from '@/lib/ledger/calc'
+import { calcHousePurchase, calcHouseUpgrade, resolveSharePct } from '@/lib/ledger/calc'
 import { MoneyInput, PercentInput, NumberInput, SectionDivider, Segmented } from './ui'
 
 const num = parseMoney
+// parseMoney strips a leading "-" (built for money fields, never negative),
+// so a share typed as "-20" reads as +20 and the "< 0" warning below never
+// fires even though resolveSharePct correctly clamps it to 0% — Number()
+// preserves the sign so the warning agrees with what's actually applied.
+const numSigned = (v) => { const n = Number(v); return Number.isFinite(n) ? n : 0 }
 
 function Toggle({ active, onClick, children }) {
   return (
@@ -49,22 +54,35 @@ export default function ScenarioCard({ scenario, onChange, onRemove, onLabelChan
     return setHouse({ mode })
   }
 
-  const purchasePreview = scenario.hasHouse && houseMode === 'purchase'
+  // A joint loan only draws down YOUR share of the cash required — mirrors
+  // the scaling resolveHouseModule applies to cashImpact, so this preview
+  // (compared against your personal cashSavings) doesn't overstate the
+  // shortfall by counting your co-owner's share of the cash outlay too.
+  const previewShare = scenario.house.isJointLoan && scenario.house.source !== 'auto'
+    ? resolveSharePct(scenario.house.yourSharePct) / 100 : 1
+
+  const purchasePreviewRaw = scenario.hasHouse && houseMode === 'purchase'
     ? calcHousePurchase({
         price: num(scenario.house.price), downpaymentPct: num(scenario.house.downpaymentPct) || 25,
         rate: num(scenario.house.rate), tenureYears: num(scenario.house.tenureYears) || 25,
         otherFees: num(scenario.house.otherFees),
       })
     : null
+  const purchasePreview = purchasePreviewRaw
+    ? { ...purchasePreviewRaw, cashNeeded: purchasePreviewRaw.cashNeeded * previewShare }
+    : null
   const purchaseShortfall = purchasePreview ? purchasePreview.cashNeeded - num(scenario.cashSavings) : 0
 
-  const upgradePreview = scenario.hasHouse && houseMode === 'upgrade'
+  const upgradePreviewRaw = scenario.hasHouse && houseMode === 'upgrade'
     ? calcHouseUpgrade({
         cashProceeds: num(scenario.house.cashProceeds), totalCPFRefund: num(scenario.house.totalCPFRefund),
         price: num(scenario.house.price), downpaymentPct: num(scenario.house.downpaymentPct) || 25,
         rate: num(scenario.house.rate), tenureYears: num(scenario.house.tenureYears) || 25,
         otherFees: num(scenario.house.otherFees), absd: num(scenario.house.absd),
       })
+    : null
+  const upgradePreview = upgradePreviewRaw
+    ? { ...upgradePreviewRaw, gap: upgradePreviewRaw.gap * previewShare }
     : null
   // Only a gap beyond what the sale itself covers draws on cash savings.
   const upgradeShortfall = upgradePreview && upgradePreview.gap > 0 ? upgradePreview.gap - num(scenario.cashSavings) : 0
@@ -119,9 +137,9 @@ export default function ScenarioCard({ scenario, onChange, onRemove, onLabelChan
             <p style={{ marginTop: 6, fontSize: C.xs, color: C.redText, lineHeight: 1.5 }}>
               Empty is treated as a 0% share — nothing from this house will count toward your net worth, TDSR, or MSR until you enter a number.
             </p>
-          ) : (num(scenario.house.yourSharePct) < 0 || num(scenario.house.yourSharePct) > 100) && (
+          ) : (numSigned(scenario.house.yourSharePct) < 0 || numSigned(scenario.house.yourSharePct) > 100) && (
             <p style={{ marginTop: 6, fontSize: C.xs, color: C.redText, lineHeight: 1.5 }}>
-              A share has to be between 0% and 100% — this will be treated as {num(scenario.house.yourSharePct) > 100 ? '100%' : '0%'}.
+              A share has to be between 0% and 100% — this will be treated as {numSigned(scenario.house.yourSharePct) > 100 ? '100%' : '0%'}.
             </p>
           )}
           <p style={{ marginTop: 8, fontSize: C.xs, color: C.muted, lineHeight: 1.5 }}>

@@ -1,5 +1,19 @@
+import { getActiveProfileId } from '../shared/profile.js'
+
 const HISTORY_KEY = 'iga_score_history'
 const MAX_ENTRIES = 24
+
+// Scoped per active profile, same as every other tool's saved numbers —
+// otherwise switching profiles would show one household's score history
+// mixed into another's.
+function scopedKey() {
+  try {
+    const profileId = getActiveProfileId()
+    return profileId ? `${HISTORY_KEY}:${profileId}` : HISTORY_KEY
+  } catch {
+    return HISTORY_KEY
+  }
+}
 
 /**
  * Append a score entry to the persisted history (localStorage), capped at
@@ -12,7 +26,7 @@ export function appendScoreHistory(score) {
     const history = loadScoreHistory()
     history.push({ score, date: new Date().toISOString() })
     const trimmed = history.slice(-MAX_ENTRIES)
-    localStorage.setItem(HISTORY_KEY, JSON.stringify(trimmed))
+    localStorage.setItem(scopedKey(), JSON.stringify(trimmed))
   } catch {}
 }
 
@@ -21,7 +35,7 @@ export function appendScoreHistory(score) {
  */
 export function loadScoreHistory() {
   try {
-    const raw = localStorage.getItem(HISTORY_KEY)
+    const raw = localStorage.getItem(scopedKey())
     if (!raw) return []
     const parsed = JSON.parse(raw)
     return Array.isArray(parsed) ? parsed : []
@@ -31,5 +45,5 @@ export function loadScoreHistory() {
 }
 
 export function clearScoreHistory() {
-  try { localStorage.removeItem(HISTORY_KEY) } catch {}
+  try { localStorage.removeItem(scopedKey()) } catch {}
 }

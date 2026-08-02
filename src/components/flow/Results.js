@@ -1,7 +1,7 @@
 'use client'
 
 import { C, SGD } from '@/lib/flow/theme'
-import { findTightestMonth } from '@/lib/flow/calc'
+import { findTightestMonth, monthsToCloseEmergencyFundGap, DEFAULT_EMERGENCY_FUND_MONTHS } from '@/lib/flow/calc'
 import { CPF_OW_CEILING, CPF_ANNUAL_CEILING } from '@/lib/retire/cpf'
 import { calcInvestmentCapacity } from '@/lib/ledger/calc'
 import Sankey from './Sankey'
@@ -95,7 +95,12 @@ export default function FlowResults({ flow, metrics, primarySchedule, altSchedul
           <Metric label="True savings rate" value={trueSavingsPct} tone="green" note={`${SGD(metrics.trueSavings * (flow.nodes.salary.value + flow.nodes.employer.value))} of ${SGD(flow.nodes.salary.value + flow.nodes.employer.value)} total comp kept or invested`} />
           <Metric label="Cash savings rate" value={cashSavingsPct} tone="amber" note={`${SGD(Math.max(0, flow.surplus))} of ${SGD(flow.cash)} take-home`} />
           <Metric label="Fixed costs" value={fixedCostPct} tone="amber" note="of take-home, cash only" />
-          <Metric label="Runway" value={runwayText} tone={metrics.runway < 3 ? 'red' : metrics.runway < 6 ? 'amber' : 'green'} note={`${SGD(liquidSavings)} liquid`} />
+          <Metric
+            label="Runway" value={runwayText} tone={metrics.runway < 3 ? 'red' : metrics.runway < 6 ? 'amber' : 'green'}
+            note={metrics.emergencyFund.targetAmount != null
+              ? `${SGD(liquidSavings)} liquid · ${DEFAULT_EMERGENCY_FUND_MONTHS}mo target ${SGD(metrics.emergencyFund.targetAmount)}`
+              : `${SGD(liquidSavings)} liquid`}
+          />
           {primaryTrough && (
             <Metric label="Tightest month" value={isTight ? `−${SGD(primaryTrough.shortfall)}` : SGD(primaryTrough.balance)} tone={isTight ? 'red' : 'green'} note={MONTHS[primaryTrough.month]} />
           )}
@@ -107,6 +112,19 @@ export default function FlowResults({ flow, metrics, primarySchedule, altSchedul
           What you said you spend and what your bank balance implies you actually spend don&apos;t match by <strong style={{ color: C.text }}>{SGD(gap)}</strong> a month. That&apos;s usually the single most useful number here — it&apos;s going somewhere real.
         </Callout>
       )}
+
+      {metrics.emergencyFund.targetAmount != null && metrics.emergencyFund.gap > 0 && (() => {
+        const settable = Math.max(0, flow.surplus)
+        const monthsToClose = monthsToCloseEmergencyFundGap(metrics.emergencyFund.gap, settable)
+        return (
+          <Callout tone="watch" title={`${SGD(metrics.emergencyFund.gap)} short of a ${DEFAULT_EMERGENCY_FUND_MONTHS}-month emergency fund`}>
+            {DEFAULT_EMERGENCY_FUND_MONTHS} months of your real cash burn (mortgage&apos;s cash leg + car + insurance + living expenses) is <strong style={{ color: C.text }}>{SGD(metrics.emergencyFund.targetAmount)}</strong>. You have {SGD(metrics.emergencyFund.current)} liquid today.
+            {settable > 0
+              ? <> Putting aside this month&apos;s <strong style={{ color: C.text }}>{SGD(settable)}</strong> cash surplus every month would close the gap in about <strong style={{ color: C.text }}>{monthsToClose}</strong> {monthsToClose === 1 ? 'month' : 'months'}.</>
+              : <> There&apos;s no cash surplus this month to put toward it — closing this gap will need either lower spending or extra income.</>}
+          </Callout>
+        )
+      })()}
 
       <div style={{ marginTop: 28 }}>
         <h2 style={{ fontFamily: C.fontDisplay, fontSize: 22, color: C.primary, margin: '0 0 8px' }}>Two pipes, and they cross</h2>

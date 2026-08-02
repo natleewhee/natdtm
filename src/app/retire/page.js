@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import { C, SGD, parseMoney } from '@/lib/retire/theme'
 import { calcRetirement } from '@/lib/retire/calc'
 import { monthlyCpfContribution, CPF_OW_CEILING } from '@/lib/retire/cpf'
+import { projectSrsBalance, compareSrsWithdrawalPlans, SRS_RETIREMENT_AGE } from '@/lib/retire/srs'
 import { loadMyNumbers, saveRetireNumbers, saveToolInputs, loadToolInputs } from '@/lib/shared/profile'
 import { MoneyInput, PercentInput, NumberInput, SectionDivider, Segmented } from '@/components/retire/ui'
 import RetireResults from '@/components/retire/Results'
@@ -37,6 +38,10 @@ export default function RetireWellPage() {
   const [investmentStart, setInvestmentStart] = useState('')
   const [investmentMonthly, setInvestmentMonthly] = useState('')
   const [investmentReturn, setInvestmentReturn] = useState('3.0')
+
+  const [hasSrs, setHasSrs] = useState(false)
+  const [srsBalance, setSrsBalance] = useState('')
+  const [srsMonthly, setSrsMonthly] = useState('')
 
   const [desiredMonthlyWithdrawal, setDesiredMonthlyWithdrawal] = useState('')
   const [inflationRate, setInflationRate] = useState('2.5')
@@ -99,6 +104,9 @@ export default function RetireWellPage() {
       setInvestmentStart(saved.investmentStart ?? '')
       setInvestmentMonthly(saved.investmentMonthly ?? '')
       setInvestmentReturn(saved.investmentReturn ?? '3.0')
+      setHasSrs(!!saved.hasSrs)
+      setSrsBalance(saved.srsBalance ?? '')
+      setSrsMonthly(saved.srsMonthly ?? '')
       setDesiredMonthlyWithdrawal(saved.desiredMonthlyWithdrawal ?? '')
       setInflationRate(saved.inflationRate ?? '2.5')
       setSwr(saved.swr ?? '3')
@@ -112,22 +120,27 @@ export default function RetireWellPage() {
   // scoped to whichever profile is active.
   useEffect(() => {
     if (!hasRestored) return
-    saveToolInputs('retire', {
+    const ok = saveToolInputs('retire', {
       currentAge, retirementAge, lifeExpectancy,
       salary, salaryGrowthRate, annualBonus, startingOA, startingSA, startingMA,
       hasHousingDraw, housingOaMonthly, housingOaUntilAge,
       hasRstu, rstuAmount, rstuFrequency,
       investmentStart, investmentMonthly, investmentReturn,
+      hasSrs, srsBalance, srsMonthly,
       desiredMonthlyWithdrawal, inflationRate, swr,
     })
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- flashes the "Saved" indicator; not a render-affecting state sync
-    setSavedTick(t => t + 1)
+    // Only flash "Saved" when the write actually landed — see tax/page.js.
+    if (ok) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- flashes the "Saved" indicator; not a render-affecting state sync
+      setSavedTick(t => t + 1)
+    }
   }, [
     hasRestored, currentAge, retirementAge, lifeExpectancy,
     salary, salaryGrowthRate, annualBonus, startingOA, startingSA, startingMA,
     hasHousingDraw, housingOaMonthly, housingOaUntilAge,
     hasRstu, rstuAmount, rstuFrequency,
     investmentStart, investmentMonthly, investmentReturn,
+    hasSrs, srsBalance, srsMonthly,
     desiredMonthlyWithdrawal, inflationRate, swr,
   ])
 
@@ -156,6 +169,27 @@ export default function RetireWellPage() {
     investmentStart: num(investmentStart), investmentMonthly: num(investmentMonthly), investmentReturn: num(investmentReturn),
     desiredMonthlyWithdrawal: num(desiredMonthlyWithdrawal), inflationRate: num(inflationRate), swr: num(swr),
   }) : null
+
+  // SRS withdrawal-side modeling — additive to the main accumulation/
+  // depletion engine above, not folded into it, since SRS has its own
+  // withdrawal rules entirely distinct from the money-market investment
+  // balance that engine already tracks. Years to retirement here uses
+  // SRS_RETIREMENT_AGE (the statutory age that unlocks penalty-free
+  // withdrawal), not your chosen retirementAge above — those two ages
+  // can differ (e.g. retiring at 55 doesn't unlock SRS at 55).
+  const srsResult = calculated && isReady && hasSrs ? (() => {
+    const yearsToSrsAge = Math.max(0, SRS_RETIREMENT_AGE - num(currentAge))
+    const balanceAtRetirement = projectSrsBalance({
+      startBalance: num(srsBalance), monthlyContribution: num(srsMonthly),
+      annualReturnPct: num(investmentReturn), yearsToRetirement: yearsToSrsAge,
+    })
+    // CPF LIFE payouts are not taxable in Singapore, so they're never
+    // stacked into otherTaxableIncome here — only genuinely taxable
+    // retirement income (rental, part-time work, etc.) would belong,
+    // and this tool doesn't currently collect that, so it defaults to 0.
+    const plans = compareSrsWithdrawalPlans(balanceAtRetirement, 0, [1, 5, 10])
+    return { balanceAtRetirement, plans, yearsToSrsAge }
+  })() : null
 
   const handleCalc = () => setCalculated(true)
 
@@ -326,6 +360,31 @@ export default function RetireWellPage() {
             </p>
           )}
 
+          <div style={{ marginTop: 20 }}>
+            <button
+              type="button" onClick={() => setHasSrs(h => !h)} aria-pressed={hasSrs}
+              style={{
+                display: 'flex', alignItems: 'center', gap: 8, padding: '9px 14px',
+                background: hasSrs ? C.accentBg : C.bg, border: `1.5px solid ${hasSrs ? C.accent : C.border}`,
+                borderRadius: 100, cursor: 'pointer', fontSize: C.xs, fontWeight: 700,
+                color: hasSrs ? C.accent : C.muted, fontFamily: C.fontBody,
+              }}
+            >
+              {hasSrs ? '✓ ' : ''} I have an SRS (Supplementary Retirement Scheme) account
+            </button>
+            {hasSrs && (
+              <div style={{ marginTop: 12, display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 16 }}>
+                <MoneyInput id="srs-balance" label="Current SRS balance" value={srsBalance} onChange={e => setSrsBalance(e.target.value)} />
+                <MoneyInput id="srs-monthly" label="Monthly SRS contribution" hint={`Tax relief — see TaxWise for exactly how much this saves you now`} value={srsMonthly} onChange={e => setSrsMonthly(e.target.value)} />
+              </div>
+            )}
+            {hasSrs && (
+              <p style={{ marginTop: 8, fontSize: C.xs, color: C.muted, lineHeight: 1.5 }}>
+                Grown at the same {investmentReturn || 0}% return assumed for your investments above, to age {SRS_RETIREMENT_AGE} — the statutory retirement age that unlocks penalty-free withdrawal.
+              </p>
+            )}
+          </div>
+
           <SectionDivider label="Retirement target" />
           <p style={{ marginTop: -8, marginBottom: 16, fontSize: C.xs, color: C.muted, lineHeight: 1.5 }}>
             Checked against your combined portfolio at retirement — investments plus CPF Ordinary and Special Account (MediSave excluded, since it&apos;s earmarked for healthcare, not withdrawals).
@@ -344,7 +403,7 @@ export default function RetireWellPage() {
           <AutosaveIndicator justSaved={justSaved} C={C} />
         </div>
 
-        {result && <RetireResults result={result} />}
+        {result && <RetireResults result={result} srs={srsResult} />}
       </div>
     </div>
   )

@@ -8,12 +8,26 @@
 // are thin, deliberately untested IO wrappers, following the same split as
 // src/lib/persist.js.
 
+import { getActiveProfileId } from '../shared/profile.js'
+
 export const GARAGE_STORAGE_KEY = 'driveready:garage:v1'
 export const MAX_GARAGE_ENTRIES = 20
 
+// Scoped per active profile, same as every other tool's saved numbers —
+// otherwise switching profiles would show one household's garage of saved
+// scenarios while editing another's inputs.
+function scopedKey() {
+  try {
+    const profileId = getActiveProfileId()
+    return profileId ? `${GARAGE_STORAGE_KEY}:${profileId}` : GARAGE_STORAGE_KEY
+  } catch {
+    return GARAGE_STORAGE_KEY
+  }
+}
+
 export function loadGarage() {
   try {
-    const raw = window.localStorage.getItem(GARAGE_STORAGE_KEY)
+    const raw = window.localStorage.getItem(scopedKey())
     if (!raw) return []
     const parsed = JSON.parse(raw)
     return Array.isArray(parsed) ? parsed.filter(isValidEntry) : []
@@ -24,7 +38,7 @@ export function loadGarage() {
 
 export function saveGarage(entries) {
   try {
-    window.localStorage.setItem(GARAGE_STORAGE_KEY, JSON.stringify(entries))
+    window.localStorage.setItem(scopedKey(), JSON.stringify(entries))
   } catch {
     // localStorage unavailable (private browsing quota, etc.) — silently no-op,
     // matches the pattern already used for input persistence.

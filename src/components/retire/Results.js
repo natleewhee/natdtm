@@ -1,6 +1,7 @@
 'use client'
 
 import { C, SGD } from '@/lib/retire/theme'
+import { SRS_RETIREMENT_AGE } from '@/lib/retire/srs'
 import ResultHero from '@/components/shared/ResultHero'
 import InsightPill from '@/components/shared/InsightPill'
 import ExploreSection from '@/components/shared/ExploreSection'
@@ -15,7 +16,7 @@ function Row({ label, value, tone, bold, indent }) {
   )
 }
 
-export default function RetireResults({ result }) {
+export default function RetireResults({ result, srs }) {
   if (!result) return null
   const { retirementAge, lifeExpectancy, accumulation, target, depletion } = result
   const {
@@ -120,6 +121,28 @@ export default function RetireResults({ result }) {
           {' '}This is your Basic Healthcare Sum — it rises each year until you turn 65, then locks in for life at whatever it was that year.
         </div>
       </div>
+
+      {srs && srs.balanceAtRetirement > 0 && (
+        <div style={{ marginTop: 28 }}>
+          <div style={{ fontSize: C.xs, fontWeight: 700, color: C.muted, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 10 }}>
+            SRS withdrawal — spreading it out beats a lump sum
+          </div>
+          <p style={{ fontSize: C.xs, color: C.muted, lineHeight: 1.6, marginBottom: 10 }}>
+            Projected SRS balance at age {SRS_RETIREMENT_AGE}: <strong style={{ color: C.text }}>{SGD(srs.balanceAtRetirement)}</strong>. Only half of whatever you withdraw each year counts as taxable income — spread over more years, each year&apos;s taxable slice is smaller, which matters because Singapore&apos;s tax bands are progressive.
+          </p>
+          {srs.plans.map(plan => (
+            <Row
+              key={plan.years}
+              label={`Over ${plan.years} year${plan.years === 1 ? '' : 's'} (${SGD(plan.annualWithdrawal)}/yr)`}
+              value={plan.totalTax === 0 ? 'S$0 tax' : `${SGD(plan.totalTax)} total tax`}
+              tone={plan.totalTax === 0 ? 'green' : undefined}
+            />
+          ))}
+          <p style={{ fontSize: C.xs, color: C.faint, lineHeight: 1.6, marginTop: 10 }}>
+            Assumes no other taxable income in retirement (CPF LIFE payouts aren&apos;t taxable, so they&apos;re not counted here) and that the balance doesn&apos;t keep growing while it&apos;s being drawn down — a conservative simplification. Withdrawing before age {SRS_RETIREMENT_AGE} is 100% taxable and carries a 5% penalty, neither of which this models.
+          </p>
+        </div>
+      )}
 
       <ExploreSection title="Show the math" defaultOpen={false}>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>

@@ -35,6 +35,19 @@ test('guessBrandKey falls back to toyota for an unrecognized name', () => {
   assert.equal(guessBrandKey(''), 'toyota')
 })
 
+test('guessBrandKey matches "Range Rover" to the landrover tier, not the toyota fallback', () => {
+  // "Range Rover Sport" contains neither "landrover" nor "land rover" as a
+  // substring, so the generic key/label match alone misses it and used to
+  // silently fall back to toyota (~5x cheaper annual service).
+  assert.equal(guessBrandKey('Range Rover Sport'), 'landrover')
+  assert.equal(guessBrandKey('Land Rover Defender'), 'landrover')
+})
+
+test('guessBrandKey matches Chery sub-brands Omoda and Jaecoo', () => {
+  assert.equal(guessBrandKey('Omoda 5 EV'), 'omoda')
+  assert.equal(guessBrandKey('Jaecoo 7'), 'jaecoo')
+})
+
 test('estimateAnnualRunningCosts sums road tax + insurance + maintenance + parking into total, and total/12 into monthly', () => {
   const car = { name: 'Toyota Corolla Altis', omv: 18000, type: 'Petrol', rateTier: 'toyota' }
   const result = estimateAnnualRunningCosts(car)

@@ -37,3 +37,18 @@ test('buildRecheckIcs produces a distinct UID each time `now` changes', () => {
   const uidOf = (ics) => ics.match(/UID:(\S+)/)[1]
   assert.notEqual(uidOf(a), uidOf(b))
 })
+
+test('buildRecheckIcs uses the SGT date, not the UTC date, near the UTC day boundary', () => {
+  // 2026-03-16T00:30:00Z is 08:30 SGT on 2026-03-16 — same SGT day as UTC.
+  // 2026-03-15T17:30:00Z is 01:30 SGT on 2026-03-16 — a day AHEAD of UTC.
+  const ics = buildRecheckIcs(50, new Date('2026-03-15T17:30:00Z'))
+  assert.ok(ics.includes('DTSTART;VALUE=DATE:20270316'), 'target date should follow SGT (16th), not UTC (15th)')
+})
+
+test('buildRecheckIcs escapes RFC5545-significant characters in the description', () => {
+  const ics = buildRecheckIcs(72, new Date('2026-03-15T10:00:00Z'))
+  const descLine = ics.split('\r\n').find(l => l.startsWith('DESCRIPTION:'))
+  // Real content contains a comma (after the score sentence's "and") —
+  // confirm it's backslash-escaped as RFC5545 TEXT requires.
+  assert.ok(descLine.includes('income\\, debt\\, and life events'))
+})

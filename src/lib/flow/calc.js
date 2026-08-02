@@ -306,6 +306,44 @@ export function runwayMonths(flow, liquidSavings) {
   return burn > 0 ? Math.max(0, Number(liquidSavings) || 0) / burn : Infinity
 }
 
+// Default emergency-fund target, in months of burn. 6 is the usual
+// personal-finance rule of thumb for a single income earner in Singapore;
+// exposed as a param (not hardcoded into the function below) so a future
+// UI could let someone dial it up/down for their own risk tolerance (e.g.
+// dual income households often target less, freelancers more).
+export const DEFAULT_EMERGENCY_FUND_MONTHS = 6
+
+// How much liquid cash you'd need sitting in the bank to cover
+// `targetMonths` of the SAME monthly cash burn runwayMonths already
+// computes (cash mortgage leg + car + insurance + living expenses) —
+// and the gap between that target and what's actually there today.
+// targetAmount is null when burn is 0 (nothing to insure against).
+export function emergencyFundTarget(flow, liquidSavings, targetMonths = DEFAULT_EMERGENCY_FUND_MONTHS) {
+  const { nodes, mortgage } = flow
+  const cashMortgage = mortgage ? mortgage.cashInterest + mortgage.cashPrincipal : 0
+  const car = nodes.car ? nodes.car.value : 0
+  const insurance = nodes.insurance ? nodes.insurance.value : 0
+  const living = nodes.living.value
+  const burn = cashMortgage + car + insurance + living
+  const current = Math.max(0, Number(liquidSavings) || 0)
+  if (burn <= 0) return { burn: 0, targetAmount: null, current, gap: 0, monthsToClose: null }
+  const targetAmount = burn * targetMonths
+  const gap = Math.max(0, targetAmount - current)
+  return { burn, targetAmount, current, gap, monthsToClose: null }
+}
+
+// Given a monthly amount you can realistically set aside toward the
+// emergency fund gap, how many months until the fund is fully topped up.
+// Kept separate from emergencyFundTarget so the UI can recompute this
+// live as someone adjusts a "how much can I set aside" slider without
+// re-deriving the burn/target/gap figures each time.
+export function monthsToCloseEmergencyFundGap(gap, monthlyContribution) {
+  const contribution = Number(monthlyContribution) || 0
+  if (gap <= 0) return 0
+  if (contribution <= 0) return Infinity
+  return Math.ceil(gap / contribution)
+}
+
 // ─── Twelve-month timeline: the trough finder ──────────────────────────
 
 // A lumpy annual item: { label, amount, month } (0-indexed, Jan=0), or a

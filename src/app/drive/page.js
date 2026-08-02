@@ -20,6 +20,7 @@ import { GaragePanel } from '@/components/drive/GaragePanel'
 import ShellHeader from '@/components/shared/ShellHeader'
 import TrustBadges from '@/components/shared/TrustBadges'
 import Button from '@/components/shared/Button'
+import AutosaveIndicator from '@/components/shared/AutosaveIndicator'
 
 // Car prices come from /public/data/cars.json (edit that file to update prices)
 // COE premiums come from /api/coe (live from LTA DataMall)
@@ -139,6 +140,11 @@ export default function DriveReadyPage() {
   // before the restore effect has had a chance to apply it.
   const [hasRestored, setHasRestored] = useState(false)
   const [pendingCarIds, setPendingCarIds] = useState(null)
+  const [justSaved, setJustSaved] = useState(false)
+  // Increments on every autosave, unlike the justSaved boolean below —
+  // a boolean set to `true` while already `true` is a no-op that wouldn't
+  // re-arm the fade-out timer for back-to-back keystrokes.
+  const [savedTick, setSavedTick] = useState(0)
 
   // Fully replaces the form state from a restored/loaded input snapshot —
   // shared by the mount-time restore effect below and the garage "load"
@@ -200,11 +206,25 @@ export default function DriveReadyPage() {
   useEffect(() => {
     if (!hasRestored) return
     const state = { salaryRaw, downRaw, existingDebtRaw, tenure, mode, carAId: carA?.id ?? null, carBId: carB?.id ?? null, customPriceA, customPriceB, calculated }
-    saveToolInputs('drive', state)
+    const ok = saveToolInputs('drive', state)
+    // Only flash "Saved" when the write actually landed — saveToolInputs
+    // returns false on a silently-swallowed quota/private-browsing failure.
+    if (ok) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- flashes the "Saved" indicator; not a render-affecting state sync
+      setSavedTick(t => t + 1)
+    }
     const params = serializeToParams(state)
     const qs = params.toString()
     window.history.replaceState(null, '', qs ? `?${qs}` : window.location.pathname)
   }, [hasRestored, salaryRaw, downRaw, existingDebtRaw, tenure, mode, carA?.id, carB?.id, customPriceA, customPriceB, calculated])
+
+  useEffect(() => {
+    if (savedTick === 0) return
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- flashes the "Saved" indicator; not a render-affecting state sync
+    setJustSaved(true)
+    const t = setTimeout(() => setJustSaved(false), 1400)
+    return () => clearTimeout(t)
+  }, [savedTick])
 
   const dSalary = useDebounce(parseInt(salaryRaw||'0', 10), 120)
   const dDown   = useDebounce(parseInt(downRaw||'0',   10), 120)
@@ -502,6 +522,7 @@ export default function DriveReadyPage() {
                   : 'Fill in all fields above to continue'}
               </Button>
               {calculated && <p style={{marginTop:8,textAlign:'center',fontSize:C.xs,color:C.muted}}>Results update live as you drag the tenure slider</p>}
+              <AutosaveIndicator justSaved={justSaved} C={C} style={{ textAlign: 'center' }} />
               {/* COE used in calculation */}
               <div style={{marginTop:8,padding:'8px 12px',background:C.bg,borderRadius:C.r,border:`1px solid ${C.border}`,display:'flex',alignItems:'center',justifyContent:'center',gap:12,flexWrap:'wrap'}}>
                 <span style={{fontSize:C.xs,color:C.faint}}>COE used in calculations:</span>

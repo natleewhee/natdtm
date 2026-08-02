@@ -6,7 +6,7 @@ import {
   buildMonthlyFlow, quickLivingExpenses, detailedLivingExpenses,
   backSolveLivingExpenses, reconciliationGap, buildTwelveMonthSchedule,
   trueSavingsRate, cashSavingsRate, fixedCostRatio, runwayMonths,
-  DEFAULT_MA_HEALTH_PREMIUM,
+  emergencyFundTarget, DEFAULT_MA_HEALTH_PREMIUM,
 } from '@/lib/flow/calc'
 import { CPF_OW_CEILING, CPF_ANNUAL_CEILING } from '@/lib/retire/cpf'
 import { loadMyNumbers, saveFlowNumbers, saveFlowInputs, loadFlowInputs } from '@/lib/shared/profile'
@@ -18,6 +18,11 @@ import Button from '@/components/shared/Button'
 import AutosaveIndicator from '@/components/shared/AutosaveIndicator'
 
 const num = parseMoney
+// parseMoney strips a leading "-" (built for money fields, never negative),
+// so a share typed as "-20" reads as +20 and the "< 0" warning below never
+// fires even though resolveSharePct correctly clamps it to 0% — Number()
+// preserves the sign so the warning agrees with what's actually applied.
+const numSigned = (v) => { const n = Number(v); return Number.isFinite(n) ? n : 0 }
 let lumpyCounter = 0
 const nextLumpyId = () => { lumpyCounter += 1; return `lumpy-${lumpyCounter}` }
 
@@ -203,7 +208,7 @@ export default function FlowStatePage() {
   // had a chance to apply.
   useEffect(() => {
     if (!hasRestored) return
-    saveFlowInputs({
+    const ok = saveFlowInputs({
       age, salary, salaryPrefilled,
       hasHouse, houseSource, outstandingBalance, rate, monthlyInstalment, cpfServicing, hasJointLoan, yourSharePct,
       hasCar, carSource, carInstalment,
@@ -214,8 +219,11 @@ export default function FlowStatePage() {
       liquidSavings,
       taxPaymentMode, taxDueMonth, lumpyItems,
     })
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- flashes the "Saved" indicator; not a render-affecting state sync
-    setSavedTick(t => t + 1)
+    // Only flash "Saved" when the write actually landed — see tax/page.js.
+    if (ok) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- flashes the "Saved" indicator; not a render-affecting state sync
+      setSavedTick(t => t + 1)
+    }
   }, [
     hasRestored, age, salary, salaryPrefilled,
     hasHouse, houseSource, outstandingBalance, rate, monthlyInstalment, cpfServicing, hasJointLoan, yourSharePct,
@@ -308,6 +316,7 @@ export default function FlowStatePage() {
     cashSavings: cashSavingsRate(flow),
     fixedCost: fixedCostRatio(flow),
     runway: runwayMonths(flow, liquidSavings),
+    emergencyFund: emergencyFundTarget(flow, num(liquidSavings)),
   } : null
 
   // Twelve-month schedule: base surplus is this typical month's, plus
@@ -444,9 +453,9 @@ export default function FlowStatePage() {
                       <p style={{ marginTop: 8, fontSize: C.xs, color: C.redText, lineHeight: 1.5 }}>
                         Empty is treated as a 0% share — this house won&apos;t count toward your mortgage figures below until you enter a number.
                       </p>
-                    ) : (num(yourSharePct) < 0 || num(yourSharePct) > 100) && (
+                    ) : (numSigned(yourSharePct) < 0 || numSigned(yourSharePct) > 100) && (
                       <p style={{ marginTop: 8, fontSize: C.xs, color: C.redText, lineHeight: 1.5 }}>
-                        A share has to be between 0% and 100% — this will be treated as {num(yourSharePct) > 100 ? '100%' : '0%'}.
+                        A share has to be between 0% and 100% — this will be treated as {numSigned(yourSharePct) > 100 ? '100%' : '0%'}.
                       </p>
                     )}
                     {num(outstandingBalance) > 0 && (

@@ -12,7 +12,7 @@ import { calcRetirement } from '../retire/calc.js'
 import { TDSR_LIMIT } from '../drive/calc.js'
 import { calcMonthlyInstalment, calcBSD, calcNextPurchase, resolveSharePct } from '../house/calc.js'
 
-export { TDSR_LIMIT }
+export { TDSR_LIMIT, resolveSharePct }
 
 // Fraction of gross salary treated as take-home after CPF — mirrors the
 // 80% assumption already used in drive/calc.js's affordability check.
@@ -163,7 +163,14 @@ export function resolveHouseModule(house) {
         outstandingBalance: purchase.loanAmount, monthlyInstalment: purchase.monthlyInstalment,
         propertyValue: purchase.price, tenureRemaining: Number(house.tenureYears) || 25, propertyType,
       }),
-      cashImpact: -purchase.cashNeeded,
+      // Scaled by share, same as outstandingBalance/monthlyInstalment/
+      // propertyValue above — cashNeeded is the FULL household cash
+      // required, and a joint purchase means each owner only draws down
+      // THEIR OWN cash savings for their own share of it. Leaving this
+      // unscaled would credit you your share of the equity while
+      // draining your full household's worth of cash, silently
+      // understating net worth by the co-owner's share.
+      cashImpact: -purchase.cashNeeded * share,
       detail: purchase,
     }
   }
@@ -175,7 +182,10 @@ export function resolveHouseModule(house) {
         outstandingBalance: upgrade.loanAmount, monthlyInstalment: upgrade.monthlyInstalment,
         propertyValue: upgrade.price, tenureRemaining: Number(house.tenureYears) || 25, propertyType,
       }),
-      cashImpact: -upgrade.gap, // gap > 0: shortfall draws cash; gap < 0: leftover proceeds top it up
+      // Scaled by share — see the purchase-mode comment above. gap > 0:
+      // shortfall draws (your share of) cash; gap < 0: leftover proceeds
+      // top up (your share of) cash.
+      cashImpact: -upgrade.gap * share,
       detail: upgrade,
     }
   }

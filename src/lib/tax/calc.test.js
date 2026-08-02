@@ -51,6 +51,16 @@ test('marginalRate returns the rate on the next dollar', () => {
   assert.equal(marginalRate(2_000_000), 0.24)
 })
 
+test('marginalRate at exactly a band boundary returns the rate on the band ABOVE, not the one that dollar was taxed in', () => {
+  // At chargeableIncome === 20,000, that whole $20,000 is taxed at 0% —
+  // but the next dollar earned (20,001) is taxed at 2%, so that's what
+  // marginalRate must report.
+  assert.equal(marginalRate(20_000), 0.02)
+  assert.equal(marginalRate(30_000), 0.035)
+  assert.equal(marginalRate(80_000), 0.115)
+  assert.equal(marginalRate(320_000), 0.22)
+})
+
 // ─── Reliefs ─────────────────────────────────────────────────────────────
 
 test('earnedIncomeRelief scales with age', () => {

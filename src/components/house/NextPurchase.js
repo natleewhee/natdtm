@@ -92,6 +92,8 @@ export default function NextPurchase({ saleResult }) {
               <div style={{ fontSize: C.xs, fontWeight: 700, color: C.muted, textTransform: 'uppercase', letterSpacing: '0.08em', margin: '4px 0 8px' }}>Funds required</div>
               <div style={{ display: 'flex', justifyContent: 'space-between', padding: '6px 0', fontSize: C.sm, color: C.text }}><span>Downpayment</span><span style={{ fontFamily: C.fontMono }}>{SGD(result.downpayment)}</span></div>
               <div style={{ display: 'flex', justifyContent: 'space-between', padding: '6px 0', fontSize: C.sm, color: C.text }}><span>BSD (auto-computed)</span><span style={{ fontFamily: C.fontMono }}>{SGD(result.bsd)}</span></div>
+              {num(absd) > 0 && <div style={{ display: 'flex', justifyContent: 'space-between', padding: '6px 0', fontSize: C.sm, color: C.text }}><span>ABSD</span><span style={{ fontFamily: C.fontMono }}>{SGD(num(absd))}</span></div>}
+              {num(otherFees) > 0 && <div style={{ display: 'flex', justifyContent: 'space-between', padding: '6px 0', fontSize: C.sm, color: C.text }}><span>Other fees</span><span style={{ fontFamily: C.fontMono }}>{SGD(num(otherFees))}</span></div>}
               <div style={{ display: 'flex', justifyContent: 'space-between', padding: '6px 0', fontSize: C.sm, color: C.text, fontWeight: 700, borderTop: `1px solid ${C.border}` }}><span>Total required</span><span style={{ fontFamily: C.fontMono }}>{SGD(result.fundsRequired)}</span></div>
               <div style={{ fontSize: C.xs, fontWeight: 700, color: C.muted, textTransform: 'uppercase', letterSpacing: '0.08em', margin: '16px 0 8px' }}>Funds available</div>
               <div style={{ display: 'flex', justifyContent: 'space-between', padding: '6px 0', fontSize: C.sm, color: C.text }}><span>Cash proceeds from sale</span><span style={{ fontFamily: C.fontMono }}>{SGD(saleResult?.cashProceeds || 0)}</span></div>
@@ -99,6 +101,11 @@ export default function NextPurchase({ saleResult }) {
               {num(extraCash) > 0 && <div style={{ display: 'flex', justifyContent: 'space-between', padding: '6px 0', fontSize: C.sm, color: C.text }}><span>Extra cash added</span><span style={{ fontFamily: C.fontMono }}>{SGD(num(extraCash))}</span></div>}
               {num(extraCPF) > 0 && <div style={{ display: 'flex', justifyContent: 'space-between', padding: '6px 0', fontSize: C.sm, color: C.text }}><span>Extra CPF added</span><span style={{ fontFamily: C.fontMono }}>{SGD(num(extraCPF))}</span></div>}
               <div style={{ display: 'flex', justifyContent: 'space-between', padding: '6px 0', fontSize: C.sm, color: C.text, fontWeight: 700, borderTop: `1px solid ${C.border}` }}><span>Total available</span><span style={{ fontFamily: C.fontMono }}>{SGD(result.fundsAvailable)}</span></div>
+              {saleResult && (saleResult.personBCashProceeds > 0 || saleResult.personBOutstandingBalance > 0) && (
+                <p style={{ fontSize: C.xs, color: C.faint, lineHeight: 1.6, margin: '4px 0 0' }}>
+                  This carries forward the <strong style={{ color: C.text }}>full household</strong> sale proceeds and CPF refund, on the assumption the next purchase is also joint with the same person. If you&apos;re buying solo, use only your own share of the proceeds and your own CPF refund here instead.
+                </p>
+              )}
               <div style={{ fontSize: C.xs, fontWeight: 700, color: C.muted, textTransform: 'uppercase', letterSpacing: '0.08em', margin: '16px 0 8px' }}>New monthly instalment</div>
               <div style={{ display: 'flex', justifyContent: 'space-between', padding: '6px 0', fontSize: C.sm, color: C.text }}><span>At {newMortgageRate || 0}% over {newLoanTenure || 0} years</span><span style={{ fontFamily: C.fontMono, fontWeight: 700 }}>{SGD(result.newMonthlyInstalment)}/mo</span></div>
             </div>

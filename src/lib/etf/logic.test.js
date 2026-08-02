@@ -66,6 +66,17 @@ test('generatePortfolio: Precision honors a single tilt (regression check)', () 
   approx(sumPct(p.allocations), 100)
 })
 
+test('generatePortfolio: Precision honors a Japan/China tilt under a Growth risk profile too (otW must not be zero)', () => {
+  // Growth's otW used to be 0, so the `otW > 0` gate below never ran and
+  // a Japan/China tilt selection was silently dropped entirely for
+  // Growth users, even though the identical selection worked fine under
+  // Balanced/Conservative.
+  const p = generatePortfolio({ simplicity: '4-5 ETFs', risk: 'Growth', tilts: ['Japan'] })
+  const jp = p.allocations.find(a => a.etf.ticker === 'VJPW')
+  assert.ok(jp && jp.percentage > 0, 'Japan tilt must not be dropped under a Growth risk profile')
+  approx(sumPct(p.allocations), 100)
+})
+
 test('generatePortfolio: Precision splits its tilt slice across MULTIPLE selected tilts (bug fix)', () => {
   // Previously an if/else-if chain gave the whole "other tilt" slice to
   // only the first matched tilt (priority order Japan > China > US > EM),

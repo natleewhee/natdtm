@@ -85,13 +85,19 @@ export default function TaxWisePage() {
   // scoped to whichever profile is active.
   useEffect(() => {
     if (!hasRestored) return
-    saveToolInputs('tax', {
+    const ok = saveToolInputs('tax', {
       age, residency, monthlySalary, annualBonus, otherIncome,
       srsContribution, rstuSelf, rstuFamily, courseFees, nsmanStatus,
       childCount, parentLivingWith, parentNotLivingWith, otherReliefs, showMoreReliefs,
     })
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- flashes the "Saved" indicator; not a render-affecting state sync
-    setSavedTick(t => t + 1)
+    // Only flash "Saved" when the write actually landed — saveToolInputs
+    // returns false on a silently-swallowed quota/private-browsing failure,
+    // and claiming success there would mislead the user into thinking their
+    // inputs will be there next time when they won't be.
+    if (ok) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- flashes the "Saved" indicator; not a render-affecting state sync
+      setSavedTick(t => t + 1)
+    }
   }, [
     hasRestored, age, residency, monthlySalary, annualBonus, otherIncome,
     srsContribution, rstuSelf, rstuFamily, courseFees, nsmanStatus,
