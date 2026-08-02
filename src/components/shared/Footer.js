@@ -26,6 +26,8 @@ const DISCLAIMERS = {
   '/tax': 'TaxWise: educational tool only, not tax advice. Rates and relief caps are entered by hand from public IRAS schedules and may not reflect the latest Budget changes or any Personal Income Tax Rebate. Non-residents are not modeled. Verify at iras.gov.sg or consult a tax adviser before filing. Not affiliated with IRAS or CPF Board.',
   '/ledger': 'MyLedger: educational tool only, not financial advice. Net worth, TDSR, and retirement projections are estimates built from figures you enter or sync from the other tools, and may not reflect your actual financial position. Consult a MAS-licensed financial adviser before making any financial decision.',
   '/flow': 'FlowState: educational tool only, not financial advice. CPF contribution rates, wage ceilings, and income tax are estimates based on public formulas and may not reflect the latest rates or your actual payslip. Living expenses and lumpy items are figures you enter and are only as accurate as your input. Not affiliated with CPF Board or IRAS.',
+  '/child': 'Children\'s Cost Planner: educational tool only, not financial advice. Cost-by-stage and subsidy figures are rough, good-faith estimates of typical Singapore household spending, not pulled from a single official source, and may not reflect your actual costs. Not affiliated with MSF, ECDA, or MOE.',
+  '/propinvest': 'Investment Property Calculator: educational tool only, not financial or legal advice. Stamp duty and non-owner-occupied property tax figures are estimates based on public IRAS formulas and may not reflect the latest rates — verify with IRAS and a conveyancing lawyer before making any property decision. Not affiliated with IRAS or HDB.',
 }
 
 export default function Footer() {

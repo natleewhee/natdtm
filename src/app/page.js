@@ -49,6 +49,18 @@ const TOOLS = [
     title: 'FlowState',
     desc: 'Where your salary actually goes — CPF split from cash automatically, your mortgage split into what is paid from CPF vs cash, and the one month a year your account runs dry.',
   },
+  {
+    href: '/child',
+    eyebrow: 'Family',
+    title: "Children's Cost Planner",
+    desc: 'What raising a child actually costs in Singapore — childcare subsidies, school fees, tuition, projected year by year to age 18, with a monthly savings plan.',
+  },
+  {
+    href: '/propinvest',
+    eyebrow: 'Property',
+    title: 'Investment Property Calculator',
+    desc: 'Does the rent actually cover it? Upfront cost, monthly instalment, real IRAS non-owner-occupied property tax, and your true monthly cash flow.',
+  },
 ]
 
 export default function HomePage() {
@@ -60,7 +72,7 @@ export default function HomePage() {
         fontFamily: 'var(--l-font-mono)', fontSize: 12, letterSpacing: '.12em',
         textTransform: 'uppercase', color: 'var(--l-sub)', margin: '0 0 14px',
       }}>
-        Seven calculators, one household
+        Nine calculators, one household
       </p>
       <h1 style={{
         fontFamily: 'var(--l-font-display)', fontWeight: 600, fontSize: 'clamp(28px,4vw,42px)',
