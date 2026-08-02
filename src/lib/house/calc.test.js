@@ -494,6 +494,36 @@ assert(
   "cashOutlay (household) subtracts BOTH owners' CPF, not just person A's — the other half of the same bug fix",
   approx(twoPerson.cashOutlay, twoPerson.purchasePrice + twoPerson.purchaseFees - twoPerson.loanTaken - 250_000, 0.01),
 )
+assert(
+  "totalOutlay (for ROI) adds back BOTH owners' CPF, not just person A's — cashOutlay above already subtracted the full household CPF, so adding back only your own would understate the denominator and inflate roiOnOutlay",
+  approx(twoPerson.totalOutlay, Math.max(0, twoPerson.cashOutlay) + 250_000, 0.01),
+)
+assert(
+  "roiOnOutlay matches the hand-computed value using the full household CPF as the outlay base",
+  approx(twoPerson.roiOnOutlay, twoPerson.trueProfitLoss / twoPerson.totalOutlay, 0.0001),
+)
+
+// Reproduces the adversarial-review finding directly: $1.0M purchase,
+// $700k loan, $100k CPF from EACH owner, sold at $1.5M after 10 years.
+// Before the fix, roiOnOutlay came out to ~143% because only person A's
+// $100k CPF was added back to totalOutlay while cashOutlay had already
+// subtracted BOTH owners' $200k combined — the true ROI is ~99%.
+const reviewCase = calcSale({
+  propertyType: 'private',
+  purchasePrice: 1_000_000, purchaseDate: '2016-01-01',
+  cpfOutlay: 100_000, personBCpfOutlay: 100_000,
+  loanTaken: 700_000, mortgageRate: 2.6, loanTenure: 25,
+  salePrice: 1_500_000, saleDate: '2026-01-01',
+  yourSharePct: 50,
+})
+assert(
+  "reviewer's reproduction: totalOutlay includes both owners' $100k CPF (not just $100k total)",
+  approx(reviewCase.totalOutlay, Math.max(0, reviewCase.cashOutlay) + 200_000, 0.01),
+)
+assert(
+  "reviewer's reproduction: roiOnOutlay is NOT inflated to ~143% by a missing $100k of CPF in the denominator",
+  reviewCase.roiOnOutlay < 1.1,
+)
 
 // personBCpfOutlay defaulting to 0 must reproduce today's single-owner
 // behavior exactly — the whole point of a backward-compatible default.

@@ -26,12 +26,26 @@ export const CPF_ANNUAL_CEILING = 102_000
 // sub-account; the three always sum to `total`. Employer/employee split
 // isn't modeled since it doesn't change what lands in CPF, only how much
 // hits your paycheck first.
+//
+// Boundaries are deliberately CONTIGUOUS (each band's minAge equals the
+// previous band's maxAge, not maxAge+1) with no gap between them — a
+// fractional age (this file is fed ages like `currentAge + monthsElapsed/12`
+// by the retirement projection, so most ages ARE fractional) must always
+// match exactly one band. contributionRatesForAge below relies on
+// Array.prototype.find returning the FIRST match in ascending order, so
+// an age sitting exactly on a boundary (e.g. 55, 60) lands in the lower
+// (higher-rate) band, matching CPF Board's own "55 and below" / "above 55
+// to 60" phrasing. Using non-contiguous bounds like 56/61/66/71 (the
+// previous version) left (55,56), (60,61), (65,66), (70,71) matching
+// NOTHING, silently falling through to the 71+ band for anyone in those
+// gaps — a large, silent under-projection for exactly the age range
+// (55+) this table exists to model precisely.
 export const CPF_CONTRIBUTION_TABLE = [
   { minAge: 0, maxAge: 55, total: 0.37, oa: 0.23, sa: 0.06, ma: 0.08 },
-  { minAge: 56, maxAge: 60, total: 0.325, oa: 0.15, sa: 0.055, ma: 0.12 },
-  { minAge: 61, maxAge: 65, total: 0.235, oa: 0.085, sa: 0.02, ma: 0.13 },
-  { minAge: 66, maxAge: 70, total: 0.165, oa: 0.035, sa: 0.025, ma: 0.105 },
-  { minAge: 71, maxAge: 999, total: 0.125, oa: 0.01, sa: 0.01, ma: 0.105 },
+  { minAge: 55, maxAge: 60, total: 0.325, oa: 0.15, sa: 0.055, ma: 0.12 },
+  { minAge: 60, maxAge: 65, total: 0.235, oa: 0.085, sa: 0.02, ma: 0.13 },
+  { minAge: 65, maxAge: 70, total: 0.165, oa: 0.035, sa: 0.025, ma: 0.105 },
+  { minAge: 70, maxAge: 999, total: 0.125, oa: 0.01, sa: 0.01, ma: 0.105 },
 ]
 
 export function contributionRatesForAge(age) {

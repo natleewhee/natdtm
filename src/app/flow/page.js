@@ -321,8 +321,17 @@ export default function FlowStatePage() {
     lumpyItems.filter(i => i.type === 'bonus').reduce((sum, i) => sum + num(i.amount), 0)
   ), [lumpyItems])
 
+  // flow.surplus already has this month's tax provision (flow.tax.monthly)
+  // subtracted — buildTwelveMonthSchedule does its OWN tax accounting
+  // (spreading it via GIRO or dropping it as a lump sum in one month), so
+  // the schedule needs a baseline with tax added back first. Passing
+  // flow.surplus directly would double-subtract a full year of tax: once
+  // already baked into every month's base, and again via the schedule's
+  // own taxByMonth.
+  const preTaxMonthlyBase = flow ? flow.surplus + flow.tax.monthly : 0
+
   const primarySchedule = flow ? buildTwelveMonthSchedule({
-    baseMonthlySurplus: flow.surplus, annualTax: flow.tax.monthly * 12,
+    baseMonthlySurplus: preTaxMonthlyBase, annualTax: flow.tax.monthly * 12,
     taxMode: taxPaymentMode === 'monthly' ? 'giro' : 'lump',
     taxDueMonth: num(taxDueMonth), lumpyItems: items, startBalance: num(liquidSavings),
   }) : null
@@ -330,7 +339,7 @@ export default function FlowStatePage() {
   // Only worth showing an alternative when the primary plan is lump-sum
   // — someone already on GIRO has nothing to switch to.
   const altSchedule = (flow && taxPaymentMode === 'lump') ? buildTwelveMonthSchedule({
-    baseMonthlySurplus: flow.surplus, annualTax: flow.tax.monthly * 12,
+    baseMonthlySurplus: preTaxMonthlyBase, annualTax: flow.tax.monthly * 12,
     taxMode: 'giro', lumpyItems: items, startBalance: num(liquidSavings),
   }) : null
 

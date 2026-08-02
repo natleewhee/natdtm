@@ -60,7 +60,7 @@ export function calcCPFAccruedInterest(cpfPrincipal, yearsHeld, rate = CPF_OA_RA
 // become 100%, crediting a co-borrower with zero stake in the full
 // household profit/loss instead of none. Also clamps > 100 / negative
 // entries, since nothing upstream validates the input field.
-function resolveSharePct(pct) {
+export function resolveSharePct(pct) {
   const n = Number(pct)
   if (!Number.isFinite(n)) return 100
   return Math.min(100, Math.max(0, n))
@@ -243,7 +243,12 @@ export function calcSale(inputs) {
   // - against what you actually put in (cash + CPF), which is usually a
   //   much bigger % because the loan portion means your own capital was
   //   leveraged — the same profit spread over a smaller base
-  const totalOutlay = Math.max(0, cashOutlay) + (Number(cpfOutlay) || 0)
+  // Both owners' CPF, not just yours — cashOutlay above already subtracted
+  // the full household cpfPrincipalAtPurchase (both owners' CPF), so
+  // adding back only your own cpfOutlay here would leave a co-owner's CPF
+  // permanently missing from the denominator, understating totalOutlay
+  // and inflating roiOnOutlay.
+  const totalOutlay = Math.max(0, cashOutlay) + cpfPrincipalAtPurchase
   const roiOnPrice = purchasePrice > 0 ? trueProfitLoss / purchasePrice : null
   const roiOnOutlay = totalOutlay > 0 ? trueProfitLoss / totalOutlay : null
 

@@ -70,6 +70,17 @@ test('cpfEmployeeRateForAge steps down through the age bands', () => {
   assert.equal(cpfEmployeeRateForAge(75), 0.05)
 })
 
+test('cpfEmployeeRateForAge has no gap at fractional ages on any boundary (age field is free-text and accepts e.g. "55.5")', () => {
+  assert.equal(cpfEmployeeRateForAge(55), 0.20, 'exactly 55 stays in the below-55 band')
+  assert.equal(cpfEmployeeRateForAge(55.5), 0.17, '55.5 must not fall through to the 71+ band')
+  assert.equal(cpfEmployeeRateForAge(60), 0.17)
+  assert.equal(cpfEmployeeRateForAge(60.5), 0.115, '60.5 must not fall through to the 71+ band')
+  assert.equal(cpfEmployeeRateForAge(65), 0.115)
+  assert.equal(cpfEmployeeRateForAge(65.5), 0.075, '65.5 must not fall through to the 71+ band')
+  assert.equal(cpfEmployeeRateForAge(70), 0.075)
+  assert.equal(cpfEmployeeRateForAge(70.5), 0.05)
+})
+
 test('monthlyEmployeeCpf caps at the Ordinary Wage ceiling', () => {
   approx(monthlyEmployeeCpf(5_000, 30), 1_000)
   approx(monthlyEmployeeCpf(20_000, 30), CPF_OW_CEILING * 0.20)

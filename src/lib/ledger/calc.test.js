@@ -127,6 +127,27 @@ test('a joint-loan scenario nets the same equity fraction as a sole-loan one', (
   approx(jointEquity, soleEquity * 0.5)
 })
 
+test('resolveHouseModule: an explicit 0% share is genuinely 0%, not silently coerced to 100% (falsy-coercion trap)', () => {
+  const { resolved } = resolveHouseModule({ outstandingBalance: 400000, monthlyInstalment: 2500, propertyValue: 1200000, yourSharePct: 0 })
+  approx(resolved.outstandingBalance, 0)
+  approx(resolved.monthlyInstalment, 0)
+  approx(resolved.propertyValue, 0)
+})
+
+test('resolveHouseModule clamps a share above 100% down to 100%, not leaving it unclamped', () => {
+  const { resolved } = resolveHouseModule({ outstandingBalance: 400000, monthlyInstalment: 2500, propertyValue: 1200000, yourSharePct: 150 })
+  approx(resolved.outstandingBalance, 400000)
+  approx(resolved.monthlyInstalment, 2500)
+  approx(resolved.propertyValue, 1200000)
+})
+
+test('resolveHouseModule clamps a negative share up to 0%, not leaving it negative', () => {
+  const { resolved } = resolveHouseModule({ outstandingBalance: 400000, monthlyInstalment: 2500, propertyValue: 1200000, yourSharePct: -20 })
+  approx(resolved.outstandingBalance, 0)
+  approx(resolved.monthlyInstalment, 0)
+  approx(resolved.propertyValue, 0)
+})
+
 test('resolveHouseModule scales a purchase-mode house by yourSharePct too', () => {
   const full = resolveHouseModule({ mode: 'purchase', price: 1000000, downpaymentPct: 25, rate: 2.6, tenureYears: 25 })
   const half = resolveHouseModule({ mode: 'purchase', price: 1000000, downpaymentPct: 25, rate: 2.6, tenureYears: 25, yourSharePct: 50 })

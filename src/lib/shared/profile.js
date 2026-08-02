@@ -369,6 +369,7 @@ export function saveEtfNumbers({ portfolioValue, monthlyContribution, source = '
   const data = loadMyNumbers()
   const existing = data.etf || {}
   data.etf = {
+    ...existing,
     source,
     portfolioValue: portfolioValue != null ? Number(portfolioValue) || 0 : (existing.portfolioValue ?? 0),
     monthlyContribution: monthlyContribution != null ? Number(monthlyContribution) || 0 : (existing.monthlyContribution ?? 0),

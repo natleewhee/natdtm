@@ -72,7 +72,12 @@ function stateToScenario(state, id, label) {
 // applied to cash savings, floored at zero — a shortfall just means
 // savings alone don't cover it, which ScenarioCard surfaces separately.
 function scenarioToState(scenario) {
-  const yourSharePct = scenario.house?.isJointLoan ? (num(scenario.house.yourSharePct) || 100) : 100
+  // No `|| 100` fallback here — that's the exact falsy-coercion trap
+  // resolveHouseModule's resolveSharePct (imported from house/calc.js)
+  // exists to avoid: it would silently turn an explicitly-typed 0% share
+  // into 100%. Pass the raw parsed value through and let resolveSharePct
+  // do the clamping/defaulting, same as house/page.js does.
+  const yourSharePct = scenario.house?.isJointLoan ? num(scenario.house.yourSharePct) : 100
   const houseInput = scenario.hasHouse ? (
     scenario.house.mode === 'purchase'
       ? {

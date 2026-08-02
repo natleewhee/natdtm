@@ -43,6 +43,13 @@ export function parseMoney(raw) {
   let mult = 1
   if (s.endsWith('k')) { mult = 1_000; s = s.slice(0, -1) }
   else if (s.endsWith('m')) { mult = 1_000_000; s = s.slice(0, -1) }
+  // Strip anything that isn't a digit or decimal point — a pasted "$1,500,000"
+  // (comma already stripped above, but the leading $ survives) or a
+  // space-separated "1 500 000" would otherwise make parseFloat choke on
+  // the first non-numeric character and silently return 0 or a truncated
+  // value, with no visible sign anything went wrong.
+  s = s.replace(/[^0-9.]/g, '')
+  if (!s) return 0
   const n = parseFloat(s)
   return Number.isFinite(n) ? n * mult : 0
 }

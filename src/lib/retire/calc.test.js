@@ -29,6 +29,20 @@ assert('Below-55 contribution rate is 37%', contributionRatesForAge(30).total ==
 assert('Age 58 falls in the 56-60 band', contributionRatesForAge(58).total === 0.325)
 assert('Age 100 falls back to the oldest band', contributionRatesForAge(100).total === 0.125)
 
+// Fractional ages fall between EVERY boundary in this table every month
+// (simulateAccumulation projects at currentAge + monthsElapsed/12), so
+// each boundary must be exercised at a half-year fractional age, not
+// just at integers — this is exactly the gap the CPF_CONTRIBUTION_TABLE
+// bug (non-contiguous minAge/maxAge, e.g. 56 instead of 55) hid.
+assert('Age exactly 55 stays in the below-55 band (37%)', contributionRatesForAge(55).total === 0.37)
+assert('Age 55.5 falls in the 55-60 band (32.5%), not the 71+ fallback', contributionRatesForAge(55.5).total === 0.325)
+assert('Age exactly 60 stays in the 55-60 band (32.5%)', contributionRatesForAge(60).total === 0.325)
+assert('Age 60.5 falls in the 60-65 band (23.5%), not the 71+ fallback', contributionRatesForAge(60.5).total === 0.235)
+assert('Age exactly 65 stays in the 60-65 band (23.5%)', contributionRatesForAge(65).total === 0.235)
+assert('Age 65.5 falls in the 65-70 band (16.5%), not the 71+ fallback', contributionRatesForAge(65.5).total === 0.165)
+assert('Age exactly 70 stays in the 65-70 band (16.5%)', contributionRatesForAge(70).total === 0.165)
+assert('Age 70.5 falls in the 70+ band (12.5%)', contributionRatesForAge(70.5).total === 0.125)
+
 const contrib = monthlyCpfContribution(6_000, 30)
 assert('Contribution on $6,000 salary uses the full amount (below OW ceiling)', approx(contrib.total, 6_000 * 0.37, 0.01))
 assert('OA + SA + MA sums to total contribution', approx(contrib.oa + contrib.sa + contrib.ma, contrib.total, 0.01))

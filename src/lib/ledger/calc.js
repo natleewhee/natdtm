@@ -10,7 +10,7 @@
 
 import { calcRetirement } from '../retire/calc.js'
 import { TDSR_LIMIT } from '../drive/calc.js'
-import { calcMonthlyInstalment, calcBSD, calcNextPurchase } from '../house/calc.js'
+import { calcMonthlyInstalment, calcBSD, calcNextPurchase, resolveSharePct } from '../house/calc.js'
 
 export { TDSR_LIMIT }
 
@@ -145,7 +145,10 @@ export function resolveHouseModule(house) {
   if (!house) return { resolved: null, cashImpact: 0, detail: null }
 
   const propertyType = house.propertyType || 'private'
-  const share = (Number(house.yourSharePct) || 100) / 100
+  // resolveSharePct (not `Number(x) || 100`) clamps into [0,100] and
+  // treats an explicit 0% as genuinely 0%, not "unset" — see its own
+  // comment in house/calc.js for why the naive `||` version is a trap.
+  const share = resolveSharePct(house.yourSharePct) / 100
   const scale = (resolved) => ({
     ...resolved,
     outstandingBalance: resolved.outstandingBalance * share,

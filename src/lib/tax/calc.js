@@ -84,12 +84,18 @@ export function earnedIncomeRelief(age) {
 // contribution TABLE in retire/cpf.js models only the combined total
 // (which is all that matters for what lands in CPF); take-home pay
 // depends on the employee half specifically, so it lives here.
+//
+// Boundaries are deliberately CONTIGUOUS (see the matching comment on
+// CPF_CONTRIBUTION_TABLE in retire/cpf.js) — a fractional age like 55.5
+// typed into the age field must still match exactly one band, not fall
+// through the gap between non-contiguous bounds (55,56) etc. into the
+// 71+ band.
 export const CPF_EMPLOYEE_SHARE = [
   { minAge: 0, maxAge: 55, rate: 0.20 },
-  { minAge: 56, maxAge: 60, rate: 0.17 },
-  { minAge: 61, maxAge: 65, rate: 0.115 },
-  { minAge: 66, maxAge: 70, rate: 0.075 },
-  { minAge: 71, maxAge: 999, rate: 0.05 },
+  { minAge: 55, maxAge: 60, rate: 0.17 },
+  { minAge: 60, maxAge: 65, rate: 0.115 },
+  { minAge: 65, maxAge: 70, rate: 0.075 },
+  { minAge: 70, maxAge: 999, rate: 0.05 },
 ]
 
 export function cpfEmployeeRateForAge(age) {

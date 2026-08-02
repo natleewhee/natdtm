@@ -213,6 +213,20 @@ test('saveToolInputs(house) does not clobber saveHouseNumbers metrics, and vice 
   assert.deepEqual(data.house.inputs, { purchasePrice: '900000' }, 'inputs survive a later metrics save')
 })
 
+test('saveToolInputs(etf) does not clobber saveEtfNumbers metrics, and vice versa', () => {
+  window.localStorage.removeItem('ndtm_my_numbers_v1')
+  saveEtfNumbers({ portfolioValue: 25000, monthlyContribution: 800 })
+  saveToolInputs('etf', { risk: 'Growth', simplicity: '4-5 ETFs', tilts: ['Japan'] })
+  let data = loadMyNumbers()
+  assert.equal(data.etf.portfolioValue, 25000, 'metrics survive an inputs save')
+  assert.deepEqual(data.etf.inputs, { risk: 'Growth', simplicity: '4-5 ETFs', tilts: ['Japan'] })
+
+  saveEtfNumbers({ portfolioValue: 30000, monthlyContribution: 900 })
+  data = loadMyNumbers()
+  assert.equal(data.etf.portfolioValue, 30000, 'metrics still update normally')
+  assert.deepEqual(data.etf.inputs, { risk: 'Growth', simplicity: '4-5 ETFs', tilts: ['Japan'] }, 'inputs survive a later metrics save')
+})
+
 test('saveToolInputs is scoped per profile, same as saveFlowInputs', () => {
   window.localStorage.removeItem('ndtm_my_numbers_v1')
   saveToolInputs('drive', { carLabel: 'Toyota Corolla' })

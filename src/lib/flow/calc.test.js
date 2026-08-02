@@ -276,6 +276,41 @@ test('compareGiroToLump: both modes end the year at the identical balance — GI
   approx(cmp.yearEndLump, cmp.yearEndGiro, 0.01)
 })
 
+// ─── Regression: buildMonthlyFlow's surplus feeding buildTwelveMonthSchedule
+// must not double-count tax. flow.surplus already has this month's tax
+// provision (flow.tax.monthly) subtracted — the schedule does its OWN tax
+// accounting (GIRO or lump), so the caller (src/app/flow/page.js) must add
+// tax.monthly back onto the base before handing it to the schedule, or a
+// full year of tax gets subtracted twice: once already baked into every
+// month's base, and again via the schedule's own taxByMonth.
+test('flow.surplus fed into buildTwelveMonthSchedule without adding tax back double-counts a full year of tax (documents the bug the page.js fix avoids)', () => {
+  const flow = buildMonthlyFlow(PERSONA)
+  const buggySchedule = buildTwelveMonthSchedule({
+    baseMonthlySurplus: flow.surplus, annualTax: flow.tax.monthly * 12,
+    taxMode: 'lump', taxDueMonth: 3,
+  })
+  const correctSchedule = buildTwelveMonthSchedule({
+    baseMonthlySurplus: flow.surplus + flow.tax.monthly, annualTax: flow.tax.monthly * 12,
+    taxMode: 'lump', taxDueMonth: 3,
+  })
+  const buggyYearEnd = buggySchedule[11].balance
+  const correctYearEnd = correctSchedule[11].balance
+  // The buggy version is short by exactly one year of tax vs the correct one.
+  approx(correctYearEnd - buggyYearEnd, flow.tax.monthly * 12, 0.01)
+})
+
+test('flow.surplus + tax.monthly fed into buildTwelveMonthSchedule reproduces the true annual surplus exactly once (no double-count)', () => {
+  const flow = buildMonthlyFlow(PERSONA)
+  const schedule = buildTwelveMonthSchedule({
+    baseMonthlySurplus: flow.surplus + flow.tax.monthly, annualTax: flow.tax.monthly * 12,
+    taxMode: 'giro', startBalance: 0,
+  })
+  // GIRO mode: every month nets to exactly flow.surplus (tax fully
+  // smoothed away), so twelve months should sum to 12x the true monthly
+  // surplus, not 12x surplus minus an extra year of tax.
+  approx(schedule[11].balance, flow.surplus * 12, 0.05)
+})
+
 test('compareGiroToLump: GIRO never has a deeper trough than lump-sum for the same inputs', () => {
   const cmp = compareGiroToLump({ baseMonthlySurplus: 500, annualTax: 8000, taxDueMonth: 3, startBalance: 2000 })
   assert.ok(cmp.giroTrough.shortfall <= cmp.lumpTrough.shortfall)
