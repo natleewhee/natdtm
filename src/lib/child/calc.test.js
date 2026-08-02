@@ -20,10 +20,12 @@ test('bandForAge: returns the correct band for boundary ages', () => {
   assert.equal(bandForAge(16).key, 'secondary')
   assert.equal(bandForAge(17).key, 'postsecondary')
   assert.equal(bandForAge(18).key, 'postsecondary')
+  assert.equal(bandForAge(19).key, 'university')
+  assert.equal(bandForAge(22).key, 'university')
 })
 
 test('bandForAge: returns null past the last band', () => {
-  assert.equal(bandForAge(19), null)
+  assert.equal(bandForAge(23), null)
 })
 
 test('monthlyCostForBand: subsidy only applies to infant/preschool bands', () => {
@@ -97,18 +99,87 @@ test('projectChildCost: numberOfChildren floors at 1 even if given 0 or negative
   assert.equal(projectChildCost({ currentAge: 0, planUntilAge: 5, numberOfChildren: -3 }).children, 1)
 })
 
-test('monthlySavingsPlan: zero return is just total ÷ months', () => {
-  const plan = monthlySavingsPlan(120000, 10, 0)
-  approx(plan, 120000 / 120)
+test('projectChildCost: planUntilAge up to 22 actually adds cost, not just a relabeled total (regression)', () => {
+  // Previously AGE_BANDS stopped at 18, so a planUntilAge of 22 silently
+  // produced the byte-identical total to planUntilAge of 18 while still
+  // claiming to cover the extended horizon.
+  const to18 = projectChildCost({ currentAge: 0, planUntilAge: 18 })
+  const to22 = projectChildCost({ currentAge: 0, planUntilAge: 22 })
+  assert.equal(to22.years.length, 23)
+  assert.ok(to22.totalPerChild > to18.totalPerChild, 'extending to 22 must add real university-year cost')
 })
 
-test('monthlySavingsPlan: a positive return needs LESS saved per month than zero return', () => {
-  const noReturn = monthlySavingsPlan(120000, 10, 0)
-  const withReturn = monthlySavingsPlan(120000, 10, 5)
+test('projectChildCost: a currentAge past every band returns an empty projection, not a fabricated total', () => {
+  const result = projectChildCost({ currentAge: 25, planUntilAge: 30 })
+  assert.equal(result.years.length, 0)
+  assert.equal(result.totalAllChildren, 0)
+})
+
+test('monthlySavingsPlan: matches averageMonthlyPerChild when the assumed return is zero', () => {
+  const projection = projectChildCost({ currentAge: 0, planUntilAge: 18 })
+  const plan = monthlySavingsPlan(projection.years, 0)
+  approx(plan, projection.averageMonthlyPerChild, 1)
+})
+
+test('monthlySavingsPlan: needs MORE saved per month than a naive lump-sum accumulation would suggest (regression)', () => {
+  // Regression for the bug where this solved for the payment that
+  // accumulates the TOTAL as a future lump sum, instead of funding the
+  // real pay-as-you-go outflow stream — which understated the required
+  // monthly figure by a wide margin at a positive assumed return.
+  const projection = projectChildCost({ currentAge: 0, planUntilAge: 18 })
+  const correct = monthlySavingsPlan(projection.years, 3)
+  const naiveLumpSum = (() => {
+    const months = projection.years.length * 12
+    const r = 0.03 / 12
+    const annuityFactor = (Math.pow(1 + r, months) - 1) / r
+    return projection.totalPerChild / annuityFactor
+  })()
+  assert.ok(correct > naiveLumpSum, `correct plan (${correct}) must exceed the naive lump-sum figure (${naiveLumpSum})`)
+})
+
+test('monthlySavingsPlan: satisfies its own definition — level monthly deposits, earning the assumed return, exactly fund the real cost stream to zero', () => {
+  // Direct simulation of the recursion the formula solves:
+  // bal(m+1) = bal(m)·(1+r) + deposit − expense(m). If the level deposit
+  // is right, the running balance should land within a cent of zero
+  // after the last month's expense — never negative along the way (this
+  // schedule happens not to go negative; a front-loaded-enough schedule
+  // legitimately could, which is a real limitation of a single level
+  // deposit, not a bug in the formula).
+  const projection = projectChildCost({ currentAge: 0, planUntilAge: 18 })
+  const monthlySchedule = projection.years.flatMap(y => Array(12).fill(y.monthly.total))
+  const annualReturnPct = 3
+  const deposit = monthlySavingsPlan(projection.years, annualReturnPct)
+  const monthlyReturn = annualReturnPct / 100 / 12
+  let balance = 0
+  for (const expense of monthlySchedule) balance = balance * (1 + monthlyReturn) + deposit - expense
+  approx(balance, 0, 1)
+})
+
+test('monthlySavingsPlan: a back-loaded cost stream needs LESS saved per month at a positive return (the classic accumulation case)', () => {
+  // Confirms the formula still gives the intuitive answer when costs are
+  // concentrated at the end, unlike the real (front/back-mixed) child-cost
+  // schedule above, where a positive return does NOT reliably reduce the
+  // required deposit — that's a genuine property of THIS front-loaded
+  // schedule (infant care costs more per month than primary school), not
+  // a bug: money needed almost immediately for early years can't benefit
+  // from compounding the way a single future lump sum would.
+  const backLoadedYears = [...Array(17).fill(0), 100_000 / 12].map(monthly => ({ monthly: { total: monthly } }))
+  const noReturn = monthlySavingsPlan(backLoadedYears, 0)
+  const withReturn = monthlySavingsPlan(backLoadedYears, 5)
   assert.ok(withReturn < noReturn)
 })
 
-test('SUBSIDY_TIERS: low tier has strictly more subsidy than high tier', () => {
-  assert.ok(SUBSIDY_TIERS.low.additionalSubsidy > SUBSIDY_TIERS.mid.additionalSubsidy)
-  assert.ok(SUBSIDY_TIERS.mid.additionalSubsidy > SUBSIDY_TIERS.high.additionalSubsidy)
+test('SUBSIDY_TIERS: infant Basic Subsidy is the real $600, not the childcare/preschool $300 (regression)', () => {
+  const infant = AGE_BANDS.find(b => b.key === 'infant')
+  const preschool = AGE_BANDS.find(b => b.key === 'preschool')
+  assert.equal(infant.subsidy.basic, 600)
+  assert.equal(preschool.subsidy.basic, 300)
+})
+
+test('AGE_BANDS: low-income tier has strictly more Additional Subsidy than high-income tier, for both infant and preschool', () => {
+  for (const key of ['infant', 'preschool']) {
+    const band = AGE_BANDS.find(b => b.key === key)
+    assert.ok(band.subsidy.additionalByTier.low > band.subsidy.additionalByTier.mid)
+    assert.ok(band.subsidy.additionalByTier.mid > band.subsidy.additionalByTier.high)
+  }
 })

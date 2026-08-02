@@ -10,16 +10,26 @@
 // Singapore household spending, not pulled from any single official
 // source — treat this as a planning starting point, not a budget.
 
+import { levelEquivalentContribution } from '../ledger/calc.js'
+
 // Age bands and their pre-subsidy monthly cost, split by category. Bands
 // are inclusive of both ages (e.g. 'primary' covers ages 7 through 12).
+// `subsidy` (only present on infant/preschool) holds the Basic Subsidy
+// (working-mother rate) plus the income-tested Additional Subsidy cap for
+// each income tier — infant care and childcare/preschool are genuinely
+// different published ECDA figures, not just the same subsidy applied
+// twice, so this lives per-band rather than as one flat rate reused
+// across both.
 export const AGE_BANDS = [
   {
     key: 'infant', label: 'Infant care (0–2)', minAge: 0, maxAge: 2,
     childcare: 1700, tuitionEnrichment: 0, dailyExpenses: 500, schoolFees: 0,
+    subsidy: { basic: 600, additionalByTier: { high: 0, mid: 300, low: 710 } },
   },
   {
     key: 'preschool', label: 'Preschool / kindergarten (3–6)', minAge: 3, maxAge: 6,
     childcare: 1300, tuitionEnrichment: 150, dailyExpenses: 350, schoolFees: 0,
+    subsidy: { basic: 300, additionalByTier: { high: 0, mid: 200, low: 467 } },
   },
   {
     key: 'primary', label: 'Primary school (7–12)', minAge: 7, maxAge: 12,
@@ -33,30 +43,36 @@ export const AGE_BANDS = [
     key: 'postsecondary', label: 'JC / Poly (17–18)', minAge: 17, maxAge: 18,
     childcare: 0, tuitionEnrichment: 300, dailyExpenses: 450, schoolFees: 100,
   },
+  // Local public university (NUS/NTU/SMU/SIT/SUTD/SUSS), MOE-subsidized
+  // rate for a Singapore Citizen — the cheapest realistic path. Private
+  // or overseas university costs multiples of this and isn't modeled;
+  // schoolFees approximates a blended annual subsidized tuition fee
+  // (~S$8,600/yr for most non-medicine courses) spread monthly.
+  {
+    key: 'university', label: 'University (19–22, local, subsidized)', minAge: 19, maxAge: 22,
+    childcare: 0, tuitionEnrichment: 0, dailyExpenses: 500, schoolFees: 717,
+  },
 ]
 
-// Childcare/infant-care subsidy (MSF/ECDA) applies only to the infant and
-// preschool bands, only when the centre is ECDA-registered, and only when
-// `useSubsidy` is on. The basic subsidy is a flat $300/mo (working mother)
-// regardless of income; income-tested Additional Subsidy stacks on top for
-// lower-income households, up to a cap that varies by tier. Modeled as
-// three simplified tiers rather than the real sliding-scale schedule,
-// since that needs an exact gross monthly household income figure this
-// tool doesn't collect.
+// Household-income tier labels — the Additional Subsidy CAP amounts
+// themselves now live per-band (see AGE_BANDS above), since infant care
+// and childcare/preschool have genuinely different published ECDA
+// figures. This is still a simplified three-tier bucket rather than the
+// real continuous sliding scale, which needs an exact gross monthly
+// household income figure this tool doesn't collect.
 export const SUBSIDY_TIERS = {
-  high: { label: 'Above S$12,000/mo household income', basicSubsidy: 300, additionalSubsidy: 0 },
-  mid: { label: 'S$6,000–12,000/mo household income', basicSubsidy: 300, additionalSubsidy: 200 },
-  low: { label: 'Below S$6,000/mo household income', basicSubsidy: 300, additionalSubsidy: 467 },
+  high: { label: 'Above S$12,000/mo household income' },
+  mid: { label: 'S$6,000–12,000/mo household income' },
+  low: { label: 'Below S$6,000/mo household income' },
 }
 
 function subsidyForBand(band, tierKey, useSubsidy) {
-  if (!useSubsidy) return 0
-  if (band.key !== 'infant' && band.key !== 'preschool') return 0
-  const tier = SUBSIDY_TIERS[tierKey] || SUBSIDY_TIERS.high
+  if (!useSubsidy || !band.subsidy) return 0
+  const additional = band.subsidy.additionalByTier[tierKey] ?? band.subsidy.additionalByTier.high
   // Subsidy can't exceed the childcare fee itself — a near-zero childcare
   // bill (e.g. a stay-home parent, no centre) shouldn't produce a
   // negative "subsidised" cost.
-  return Math.min(band.childcare, tier.basicSubsidy + tier.additionalSubsidy)
+  return Math.min(band.childcare, band.subsidy.basic + additional)
 }
 
 // Net monthly cost for a single band, after subsidy (infant/preschool
@@ -68,7 +84,7 @@ export function monthlyCostForBand(band, tierKey = 'high', useSubsidy = true) {
   return { childcare: netChildcare, subsidy, tuitionEnrichment: band.tuitionEnrichment, dailyExpenses: band.dailyExpenses, schoolFees: band.schoolFees, total }
 }
 
-// Which band a given age falls into — null if past the last band (18+).
+// Which band a given age falls into — null if past the last band (22+).
 export function bandForAge(age) {
   return AGE_BANDS.find(b => age >= b.minAge && age <= b.maxAge) || null
 }
@@ -117,15 +133,23 @@ export function projectChildCost({ currentAge = 0, planUntilAge = 18, incomeTier
   }
 }
 
-// How much you'd need to set aside monthly, starting now, invested at
-// `annualReturnPct`, to have `totalAllChildren` saved up by the time the
-// LAST year in the projection ends — a level-savings-plan framing, same
-// spirit as RetireWell's "extra monthly needed to close the gap".
-export function monthlySavingsPlan(totalAllChildren, years, annualReturnPct = 0) {
-  const months = Math.max(1, Math.round((Number(years) || 0) * 12))
-  const total = Math.max(0, Number(totalAllChildren) || 0)
-  const monthlyReturn = (Number(annualReturnPct) || 0) / 100 / 12
-  if (monthlyReturn <= 0) return total / months
-  const annuityFactor = (Math.pow(1 + monthlyReturn, months) - 1) / monthlyReturn
-  return total / annuityFactor
+// The level monthly amount you'd need to set aside to fund the ACTUAL
+// pay-as-you-go cost stream from `projectChildCost`'s `years[]` — NOT the
+// amount that accumulates to the total as a single lump sum at the end.
+// Child costs are an outflow you pay every month starting now, so money
+// you haven't spent yet keeps earning your assumed return right up until
+// the month it's needed, but money already spent in year 1 can't keep
+// compounding for the following 17 years the way a naive "solve for the
+// payment whose future value equals the total" calculation would assume
+// — that naive version understates the required monthly figure by a wide
+// margin (verified: ~40% at a 3% return over an 18-year horizon).
+//
+// Reuses MyLedger's levelEquivalentContribution (src/lib/ledger/calc.js),
+// which solves exactly this problem for RetireWell's own time-varying
+// investment-capacity schedule: the level monthly value whose future
+// value at the end of the horizon equals the future value of the real,
+// varying schedule — outflows compound the same way inflows do.
+export function monthlySavingsPlan(years, annualReturnPct = 0) {
+  const monthlySchedule = years.flatMap(y => Array(12).fill(y.monthly.total))
+  return levelEquivalentContribution(monthlySchedule, annualReturnPct)
 }

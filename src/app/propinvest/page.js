@@ -13,6 +13,12 @@ import AutosaveIndicator from '@/components/shared/AutosaveIndicator'
 import ExploreSection from '@/components/shared/ExploreSection'
 
 const num = parseMoney
+// parseMoney strips a leading "-" (built for money fields, never negative),
+// so a downpayment % typed as "-20" would read as +20 — Number() preserves
+// the sign so an out-of-range value is actually caught below, instead of
+// being silently clamped into [0,100] with no warning (the exact bug class
+// this app already fixed once for joint-ownership share percentages).
+const numSigned = (v) => { const n = Number(v); return Number.isFinite(n) ? n : 0 }
 
 function Row({ label, value, tone, bold, indent }) {
   const color = tone === 'red' ? C.redText : tone === 'green' ? C.greenText : C.text
@@ -86,12 +92,19 @@ export default function PropInvestPage() {
   }, [savedTick])
 
   const isReady = num(price) > 0 && num(monthlyRent) > 0
+  // IRAS bases Annual Value on the estimated annual rent a property could
+  // fetch — a real figure only an existing owner can look up. For this
+  // tool's actual audience (someone deciding whether to BUY), that's
+  // never available, so a blank AV defaults to the annualised rent
+  // they've already entered rather than silently zeroing property tax.
+  const annualValueIsEstimated = annualValue === ''
+  const effectiveAnnualValue = annualValueIsEstimated ? num(monthlyRent) * 12 : num(annualValue)
 
   const result = calculated && isReady ? calcInvestmentProperty({
-    price: num(price), downpaymentPct: num(downpaymentPct) || 25,
+    price: num(price), downpaymentPct: downpaymentPct === '' ? 25 : numSigned(downpaymentPct),
     rate: num(rate), tenureYears: num(tenureYears) || 25,
     absd: num(absd), otherFees: num(otherFees),
-    monthlyRent: num(monthlyRent), annualValue: num(annualValue),
+    monthlyRent: num(monthlyRent), annualValue: effectiveAnnualValue,
     maintenanceMonthly: num(maintenanceMonthly),
     vacancyMonthsPerYear: num(vacancyMonthsPerYear),
     agentCommissionMonths: num(agentCommissionMonths),
@@ -118,7 +131,19 @@ export default function PropInvestPage() {
           <SectionDivider label="The purchase" />
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 16 }}>
             <MoneyInput id="pi-price" label="Purchase price" value={price} onChange={e => setPrice(e.target.value)} />
-            <PercentInput id="pi-downpayment" label="Downpayment" value={downpaymentPct} onChange={e => setDownpaymentPct(e.target.value)} />
+            <div>
+              <PercentInput id="pi-downpayment" label="Downpayment" value={downpaymentPct} onChange={e => setDownpaymentPct(e.target.value)} />
+              {downpaymentPct !== '' && (numSigned(downpaymentPct) < 0 || numSigned(downpaymentPct) > 100) && (
+                <p style={{ marginTop: 6, fontSize: C.xs, color: C.redText, lineHeight: 1.5 }}>
+                  A downpayment has to be between 0% and 100% — this will be treated as {numSigned(downpaymentPct) > 100 ? '100%' : '0%'}.
+                </p>
+              )}
+              {downpaymentPct !== '' && numSigned(downpaymentPct) >= 0 && numSigned(downpaymentPct) < 55 && (
+                <p style={{ marginTop: 6, fontSize: C.xs, color: C.amberText, lineHeight: 1.5 }}>
+                  An investment property is almost always a 2nd+ property, where LTV caps at 45% — you&apos;ll likely need at least 55% down.
+                </p>
+              )}
+            </div>
             <PercentInput id="pi-rate" label="Mortgage rate (p.a.)" value={rate} onChange={e => setRate(e.target.value)} />
             <NumberInput id="pi-tenure" label="Loan tenure" value={tenureYears} onChange={e => setTenureYears(e.target.value)} suffix="years" />
           </div>
@@ -150,7 +175,7 @@ export default function PropInvestPage() {
           <SectionDivider label="Renting it out" />
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 16 }}>
             <MoneyInput id="pi-rent" label="Expected monthly rent" value={monthlyRent} onChange={e => setMonthlyRent(e.target.value)} />
-            <MoneyInput id="pi-av" label="Annual Value (AV)" hint="IRAS's estimate — check your Property Tax bill or myTax Portal" value={annualValue} onChange={e => setAnnualValue(e.target.value)} />
+            <MoneyInput id="pi-av" label="Annual Value (AV)" hint="Leave blank to estimate from your expected rent — check your Property Tax bill or myTax Portal if you already own it" value={annualValue} onChange={e => setAnnualValue(e.target.value)} />
             <MoneyInput id="pi-maintenance" label="Monthly maintenance / conservancy" value={maintenanceMonthly} onChange={e => setMaintenanceMonthly(e.target.value)} />
             <NumberInput id="pi-vacancy" label="Vacancy between tenants" hint="Months per year, spread evenly" value={vacancyMonthsPerYear} onChange={e => setVacancyMonthsPerYear(e.target.value)} suffix="mo/yr" />
             <NumberInput id="pi-commission" label="Agent commission" hint="Months of rent per year of lease, typically 0.5" value={agentCommissionMonths} onChange={e => setAgentCommissionMonths(e.target.value)} suffix="mo" />
@@ -218,7 +243,7 @@ export default function PropInvestPage() {
                 <div style={{ height: 10 }} />
                 <Row label="Effective monthly rent (after vacancy)" value={SGD(result.effectiveMonthlyRent)} />
                 <Row label="− Monthly instalment" value={`−${SGD(result.monthlyInstalment)}`} indent />
-                <Row label="− Property tax (non-owner-occupied)" value={`−${SGD(result.monthlyPropertyTax)}`} indent />
+                <Row label={`− Property tax (non-owner-occupied${annualValueIsEstimated ? ', AV estimated from rent' : ''})`} value={`−${SGD(result.monthlyPropertyTax)}`} indent />
                 <Row label="− Maintenance" value={`−${SGD(num(maintenanceMonthly))}`} indent />
                 <Row label="− Agent commission (amortized)" value={`−${SGD(result.monthlyAgentCommission)}`} indent />
                 <Row label="= Monthly cash flow" value={`${result.cashFlowPositive ? '+' : '−'}${SGD(Math.abs(result.monthlyCashFlow))}`} bold tone={result.cashFlowPositive ? 'green' : 'red'} />

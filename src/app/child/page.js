@@ -12,6 +12,10 @@ import AutosaveIndicator from '@/components/shared/AutosaveIndicator'
 import ExploreSection from '@/components/shared/ExploreSection'
 
 const num = parseMoney
+// parseMoney strips a leading "-" (built for money fields, never negative),
+// so a negative age would read as positive and silently plan from the
+// wrong starting point — Number() preserves the sign so it's actually caught.
+const numSigned = (v) => { const n = Number(v); return Number.isFinite(n) ? n : 0 }
 
 function Row({ label, value, tone, bold, indent }) {
   const color = tone === 'red' ? C.redText : tone === 'green' ? C.greenText : C.text
@@ -69,14 +73,21 @@ export default function ChildCostPlannerPage() {
     return () => clearTimeout(t)
   }, [savedTick])
 
-  const isReady = num(currentAge) >= 0 && num(planUntilAge) > num(currentAge)
+  // numSigned, not num (=parseMoney): parseMoney strips a leading "-", so
+  // a negative age would silently read as positive and plan from the
+  // wrong starting point instead of being caught here.
+  const isReady = numSigned(currentAge) >= 0 && numSigned(planUntilAge) > numSigned(currentAge)
 
   const result = calculated && isReady ? projectChildCost({
-    currentAge: num(currentAge), planUntilAge: num(planUntilAge),
+    currentAge: numSigned(currentAge), planUntilAge: numSigned(planUntilAge),
     incomeTier, useSubsidy, numberOfChildren: num(numberOfChildren) || 1,
   }) : null
+  // AGE_BANDS only covers ages 0–22 (through university) — a currentAge
+  // past that yields an empty years[] rather than a wrong number, so this
+  // is distinguished from a genuine "no cost" result below.
+  const outOfRange = result && result.years.length === 0
 
-  const monthlyPlan = result ? monthlySavingsPlan(result.totalAllChildren, result.years.length, num(assumedReturn)) : 0
+  const monthlyPlan = result && !outOfRange ? monthlySavingsPlan(result.years, num(assumedReturn)) : 0
 
   const handleCalc = () => setCalculated(true)
 
@@ -91,7 +102,7 @@ export default function ChildCostPlannerPage() {
           What will raising your child actually cost?
         </h1>
         <p style={{ color: C.muted, fontSize: 15, margin: '0 0 20px', maxWidth: '58ch', lineHeight: 1.6 }}>
-          Childcare/infant-care subsidies, school fees, tuition, and daily expenses — projected year by year to age 18, so you know what to save for and when the cost actually rises.
+          Childcare/infant-care subsidies, school fees, tuition, and daily expenses — projected year by year, so you know what to save for and when the cost actually rises.
         </p>
         <TrustBadges items={['Singapore-specific', 'Age-banded, not a flat guess', 'Zero data collected', 'Free, forever']} />
 
@@ -99,7 +110,7 @@ export default function ChildCostPlannerPage() {
           <SectionDivider label="Child" />
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 16 }}>
             <NumberInput id="child-current-age" label="Child's current age" hint="0 if not yet born" value={currentAge} onChange={e => setCurrentAge(e.target.value)} suffix="yrs" />
-            <NumberInput id="child-plan-until" label="Plan until age" hint="18 covers school; extend for university" value={planUntilAge} onChange={e => setPlanUntilAge(e.target.value)} suffix="yrs" />
+            <NumberInput id="child-plan-until" label="Plan until age" hint="18 covers school; up to 22 adds local, subsidized university" value={planUntilAge} onChange={e => setPlanUntilAge(e.target.value)} suffix="yrs" />
             <NumberInput id="child-count" label="Number of children" hint="Same age profile assumed for each" value={numberOfChildren} onChange={e => setNumberOfChildren(e.target.value)} />
           </div>
 
@@ -133,7 +144,16 @@ export default function ChildCostPlannerPage() {
           <AutosaveIndicator justSaved={justSaved} C={C} />
         </div>
 
-        {result && (
+        {result && outOfRange && (
+          <div style={{ marginTop: 32, background: C.redBg, border: `1px solid ${C.red}55`, borderRadius: C.rXL, padding: '20px 22px' }}>
+            <p style={{ fontSize: C.sm, color: C.redText, fontWeight: 700, margin: '0 0 4px' }}>This planner only covers ages 0–22</p>
+            <p style={{ fontSize: C.xs, color: C.muted, margin: 0, lineHeight: 1.6 }}>
+              A current age of {result.startAge} is past every stage this tool models (infant care through local university) — there&apos;s nothing to project, not a genuine S$0 cost.
+            </p>
+          </div>
+        )}
+
+        {result && !outOfRange && (
           <div style={{ marginTop: 32 }}>
             <div style={{ background: C.surface, border: `1px solid ${C.border}`, borderRadius: C.rXL, boxShadow: C.shadow, padding: '26px 26px 24px' }}>
               <div style={{ fontFamily: C.fontMono, fontSize: 34, fontWeight: 500, color: C.accentText, marginBottom: 6 }}>
@@ -188,7 +208,7 @@ export default function ChildCostPlannerPage() {
 
             <ExploreSection title="Show the math" defaultOpen={false}>
               <p style={{ fontSize: C.xs, color: C.muted, lineHeight: 1.6, marginBottom: 10 }}>
-                Total = Σ (monthly cost for each year&apos;s age band × 12), from age {result.startAge} to {result.endAge}, × {result.children} {result.children === 1 ? 'child' : 'children'}. Monthly savings plan solves the standard future-value-of-an-annuity formula for the payment, at your assumed return, over {result.years.length * 12} months.
+                Total = Σ (monthly cost for each year&apos;s age band × 12), from age {result.startAge} to {result.endAge}, × {result.children} {result.children === 1 ? 'child' : 'children'}. &quot;To save monthly&quot; is the level monthly amount whose future value (at your assumed return) matches the future value of the real, month-by-month cost stream — not a lump sum accumulated by the end, since you&apos;re paying most of this cost along the way, not all at once at age {result.endAge}.
               </p>
               <p style={{ fontSize: C.xs, color: C.faint, lineHeight: 1.6 }}>
                 These are rough, good-faith 2026 estimates of typical Singapore household spending by stage — not a quote, and not pulled from a single official source. Actual cost varies enormously by lifestyle, school type, and how much tuition/enrichment you use. Subsidy figures approximate MSF/ECDA&apos;s Basic + Additional Subsidy as three simplified income tiers rather than the real sliding scale.
