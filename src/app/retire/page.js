@@ -72,6 +72,10 @@ export default function RetireWellPage() {
   const [restoredFromSave, setRestoredFromSave] = useState(false)
   const [hasRestored, setHasRestored] = useState(false)
   const [justSaved, setJustSaved] = useState(false)
+  // Increments on every autosave — see the matching comment in
+  // src/app/house/page.js for why a plain boolean isn't enough to keep
+  // "Saved ✓" showing continuously through a fast typing burst.
+  const [savedTick, setSavedTick] = useState(0)
 
   useEffect(() => {
     const saved = loadToolInputs('retire')
@@ -117,7 +121,7 @@ export default function RetireWellPage() {
       desiredMonthlyWithdrawal, inflationRate, swr,
     })
     // eslint-disable-next-line react-hooks/set-state-in-effect -- flashes the "Saved" indicator; not a render-affecting state sync
-    setJustSaved(true)
+    setSavedTick(t => t + 1)
   }, [
     hasRestored, currentAge, retirementAge, lifeExpectancy,
     salary, salaryGrowthRate, annualBonus, startingOA, startingSA, startingMA,
@@ -128,10 +132,12 @@ export default function RetireWellPage() {
   ])
 
   useEffect(() => {
-    if (!justSaved) return
+    if (savedTick === 0) return
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- flashes the "Saved" indicator; not a render-affecting state sync
+    setJustSaved(true)
     const t = setTimeout(() => setJustSaved(false), 1400)
     return () => clearTimeout(t)
-  }, [justSaved])
+  }, [savedTick])
 
   const isReady = num(currentAge) > 0 && num(retirementAge) > num(currentAge) && num(desiredMonthlyWithdrawal) > 0
 
@@ -164,7 +170,8 @@ export default function RetireWellPage() {
       investmentBalance: num(investmentStart),
       monthlyContribution: num(investmentMonthly),
     })
-  }, [result, salary, startingOA, startingSA, startingMA, investmentStart, investmentMonthly])
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- keyed off `calculated` (whether result exists at all), not `result` itself (a new object every render, which would re-save on every keystroke); nothing else in the body reads a result field
+  }, [calculated, salary, startingOA, startingSA, startingMA, investmentStart, investmentMonthly])
 
   return (
     <div style={{ minHeight: '100vh', background: C.bg, fontFamily: C.fontBody }}>

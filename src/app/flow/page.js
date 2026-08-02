@@ -102,6 +102,10 @@ export default function FlowStatePage() {
   const [restoredFromSave, setRestoredFromSave] = useState(false)
   const [hasRestored, setHasRestored] = useState(false)
   const [justSaved, setJustSaved] = useState(false)
+  // Increments on every autosave — see the matching comment in
+  // src/app/house/page.js for why a plain boolean isn't enough to keep
+  // "Saved ✓" showing continuously through a fast typing burst.
+  const [savedTick, setSavedTick] = useState(0)
 
   // On mount: if this profile has an autosaved FlowState session,
   // restore it exactly as typed and skip the cross-tool auto-fill
@@ -211,7 +215,7 @@ export default function FlowStatePage() {
       taxPaymentMode, taxDueMonth, lumpyItems,
     })
     // eslint-disable-next-line react-hooks/set-state-in-effect -- flashes the "Saved" indicator; not a render-affecting state sync
-    setJustSaved(true)
+    setSavedTick(t => t + 1)
   }, [
     hasRestored, age, salary, salaryPrefilled,
     hasHouse, houseSource, outstandingBalance, rate, monthlyInstalment, cpfServicing, hasJointLoan, yourSharePct,
@@ -225,10 +229,12 @@ export default function FlowStatePage() {
   ])
 
   useEffect(() => {
-    if (!justSaved) return
+    if (savedTick === 0) return
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- flashes the "Saved" indicator; not a render-affecting state sync
+    setJustSaved(true)
     const t = setTimeout(() => setJustSaved(false), 1400)
     return () => clearTimeout(t)
-  }, [justSaved])
+  }, [savedTick])
 
   const isReady = num(age) > 0 && num(salary) > 0
 
@@ -434,7 +440,11 @@ export default function FlowStatePage() {
                         <PercentInput id="flow-house-share" label="Your share" value={yourSharePct} onChange={e => setYourSharePct(e.target.value)} />
                       </div>
                     )}
-                    {(num(yourSharePct) < 0 || num(yourSharePct) > 100) && (
+                    {yourSharePct === '' ? (
+                      <p style={{ marginTop: 8, fontSize: C.xs, color: C.redText, lineHeight: 1.5 }}>
+                        Empty is treated as a 0% share — this house won&apos;t count toward your mortgage figures below until you enter a number.
+                      </p>
+                    ) : (num(yourSharePct) < 0 || num(yourSharePct) > 100) && (
                       <p style={{ marginTop: 8, fontSize: C.xs, color: C.redText, lineHeight: 1.5 }}>
                         A share has to be between 0% and 100% — this will be treated as {num(yourSharePct) > 100 ? '100%' : '0%'}.
                       </p>

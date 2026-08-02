@@ -7,10 +7,10 @@ import { calcUsed } from '@/lib/drive/used-car'
 import { useDebounce } from '@/lib/drive/hooks'
 import {
   STORAGE_KEY, serializeToParams, deserializeFromParams,
-  serializeToJSON, deserializeFromJSON, mergeRestoredState,
+  sanitizeState, deserializeFromJSON, mergeRestoredState,
 } from '@/lib/drive/persist'
 import { loadGarage, saveGarage, makeGarageEntry, addEntry, removeEntry, renameEntry, defaultEntryName } from '@/lib/drive/garage'
-import { saveDriveNumbers } from '@/lib/shared/profile'
+import { saveDriveNumbers, saveToolInputs, loadToolInputs } from '@/lib/shared/profile'
 import { SectionDivider, MoneyInput } from '@/components/drive/ui'
 import { CarPicker } from '@/components/drive/CarPicker'
 import { UsedCarForm } from '@/components/drive/UsedCarForm'
@@ -163,7 +163,19 @@ export default function DriveReadyPage() {
     /* eslint-disable react-hooks/set-state-in-effect -- one-time restore from
        localStorage/URL on mount; this can't happen during render since both
        are unavailable during SSR and would cause a hydration mismatch */
-    const fromStorage = deserializeFromJSON(window.localStorage.getItem(STORAGE_KEY))
+    // Profile-scoped storage is the source of truth, same as every other
+    // tool — switching profiles must switch DriveReady's data too. A
+    // one-time migration reads (and clears) the OLD global key so a
+    // browser that already had DriveReady inputs doesn't lose them the
+    // first time this ships, then never touches that key again.
+    let fromStorage = sanitizeState(loadToolInputs('drive') || {})
+    if (Object.keys(fromStorage).length === 0) {
+      const legacy = deserializeFromJSON(window.localStorage.getItem(STORAGE_KEY))
+      if (Object.keys(legacy).length > 0) {
+        fromStorage = legacy
+        window.localStorage.removeItem(STORAGE_KEY)
+      }
+    }
     const fromUrl = deserializeFromParams(new URLSearchParams(window.location.search))
     const restored = mergeRestoredState(fromStorage, fromUrl)
     if (Object.keys(restored).length > 0) applyRestoredState(restored)
@@ -183,11 +195,12 @@ export default function DriveReadyPage() {
     /* eslint-enable react-hooks/set-state-in-effect */
   }, [pendingCarIds, allCars])
 
-  // Persist on every change, once initial restore has completed.
+  // Persist on every change, once initial restore has completed — scoped
+  // to whichever profile is active, same as every other tool.
   useEffect(() => {
     if (!hasRestored) return
     const state = { salaryRaw, downRaw, existingDebtRaw, tenure, mode, carAId: carA?.id ?? null, carBId: carB?.id ?? null, customPriceA, customPriceB, calculated }
-    window.localStorage.setItem(STORAGE_KEY, serializeToJSON(state))
+    saveToolInputs('drive', state)
     const params = serializeToParams(state)
     const qs = params.toString()
     window.history.replaceState(null, '', qs ? `?${qs}` : window.location.pathname)
@@ -218,11 +231,20 @@ export default function DriveReadyPage() {
       carLabel: rA.car?.short || rA.car?.name || null,
       salary: rA.salary,
       loanOutstanding: rA.loan,
+      // rA.tier.rate is a FLAT rate (how car loans in Singapore are
+      // actually quoted) — NOT a reducing-balance annual rate like
+      // house.rate. A flat rate applied to reducing-balance amortization
+      // math would understate the effective rate by roughly half; no
+      // current consumer does that (MyLedger only reads
+      // monthlyInstalment for the car module, never this rate), but
+      // don't wire this into amortization logic without converting it
+      // first.
       rate: (rA.tier?.rate || 0) * 100,
       tenureRemaining: rA.tenure,
       carValue: rA.car?.price,
     })
-  }, [rA])
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- intentionally keyed off rA's own primitive fields, not `rA` itself (a new object every render, which would re-save on every keystroke instead of only when these actually change)
+  }, [rA?.monthly, rA?.car?.short, rA?.car?.name, rA?.salary, rA?.loan, rA?.tier?.rate, rA?.tenure, rA?.car?.price])
 
   // Accepts "80k"/"1.2m" shorthand alongside plain digits. The displayed
   // field (salary/down/existingDebt) is left as literal typed text while

@@ -1,6 +1,7 @@
 'use client'
 
 import { C, SGD } from '@/lib/house/theme'
+import { SSD_AS_OF } from '@/lib/house/stampDuty'
 import ResultHero from '@/components/shared/ResultHero'
 import InsightPill from '@/components/shared/InsightPill'
 import ExploreSection from '@/components/shared/ExploreSection'
@@ -216,7 +217,7 @@ export default function SaleResults({
             <OverrideField
               id="ov-ssd" label="Seller's Stamp Duty"
               computedValue={ssdComputed}
-              computedHint={`Estimated from the current holding-period schedule on your sale price. Verify against IRAS — this figure hasn't been rechecked since the schedule that took effect ${'2017-03-11'}.`}
+              computedHint={`Estimated from your sale price and how long you've held the property, using whichever holding-period schedule applied when you BOUGHT (properties bought before 4 Jul 2025 use the old 3-year schedule; on or after, the new 4-year one). Verify against IRAS — last rechecked ${SSD_AS_OF}.`}
               overrideValue={ssdOverride} onOverrideChange={onSsdOverride}
               formatValue={SGD}
             />

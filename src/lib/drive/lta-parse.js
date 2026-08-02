@@ -338,3 +338,31 @@ export const MIN_COVERAGE = 30
 export function isLowCoverage(matchedCars) {
   return matchedCars < MIN_COVERAGE
 }
+
+// Reduces parsed PDF rows (possibly several trims per car) down to one
+// price/OMV/VES entry per car ID — keeping the LOWEST selling price
+// (cheapest trim). Whenever the cheapest-price row for a car CHANGES,
+// omv/ves are reset to that new row's own values rather than left
+// holding a previous, more expensive trim's figures — a row missing
+// OMV/VES must clear any stale value, not silently inherit one from a
+// different trim, or the displayed price ends up paired with another
+// trim's government-cost breakdown.
+export function buildPriceMaps(rows, matchTerms = MATCH_TERMS) {
+  const priceMap = {}
+  const omvMap = {}
+  const vesMap = {}
+
+  for (const row of rows) {
+    const id = matchToId(row.name, matchTerms)
+    if (!id) continue
+    if (!priceMap[id] || row.sellingPrice < priceMap[id]) {
+      priceMap[id] = row.sellingPrice
+      if (row.omv) omvMap[id] = row.omv
+      else delete omvMap[id]
+      if (row.vesAmount) vesMap[id] = row.vesAmount
+      else delete vesMap[id]
+    }
+  }
+
+  return { priceMap, omvMap, vesMap }
+}

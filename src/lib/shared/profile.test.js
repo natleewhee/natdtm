@@ -380,6 +380,42 @@ test('createProfile refuses beyond MAX_PROFILES', () => {
   assert.equal(listProfiles().length, 3)
 })
 
+test('a store with more than MAX_PROFILES (e.g. hand-edited, or a lowered cap) gets truncated AND the truncation is persisted back to localStorage', () => {
+  window.localStorage.removeItem('ndtm_my_numbers_v1')
+  const makeRawProfile = (id, name) => ({ id, name, createdAt: 1, updatedAt: 1, data: { version: 6, house: null, drive: null, retire: null, insure: null, tax: null, etf: null, flow: null, ledger: null } })
+  const rawStore = {
+    schemaVersion: 1,
+    activeProfileId: 'p1',
+    profiles: [makeRawProfile('p1', 'One'), makeRawProfile('p2', 'Two'), makeRawProfile('p3', 'Three'), makeRawProfile('p4', 'Four')],
+  }
+  window.localStorage.setItem('ndtm_my_numbers_v1', JSON.stringify(rawStore))
+
+  // Triggers loadStore() internally, which should truncate to MAX_PROFILES...
+  const profiles = listProfiles()
+  assert.equal(profiles.length, MAX_PROFILES, 'in-memory result is truncated')
+
+  // ...AND persist that truncation back to localStorage, not just return
+  // a truncated view while leaving the 4th profile sitting in storage.
+  const persisted = JSON.parse(window.localStorage.getItem('ndtm_my_numbers_v1'))
+  assert.equal(persisted.profiles.length, MAX_PROFILES, 'truncation is written back to localStorage, not just held in memory')
+  assert.deepEqual(persisted.profiles.map(p => p.id), ['p1', 'p2', 'p3'])
+})
+
+test('a stale activeProfileId pointing at a truncated-away profile falls back to the first surviving profile, and that fallback is persisted', () => {
+  window.localStorage.removeItem('ndtm_my_numbers_v1')
+  const makeRawProfile = (id, name) => ({ id, name, createdAt: 1, updatedAt: 1, data: { version: 6, house: null, drive: null, retire: null, insure: null, tax: null, etf: null, flow: null, ledger: null } })
+  const rawStore = {
+    schemaVersion: 1,
+    activeProfileId: 'p4', // points at the profile that will be truncated away
+    profiles: [makeRawProfile('p1', 'One'), makeRawProfile('p2', 'Two'), makeRawProfile('p3', 'Three'), makeRawProfile('p4', 'Four')],
+  }
+  window.localStorage.setItem('ndtm_my_numbers_v1', JSON.stringify(rawStore))
+
+  assert.equal(getActiveProfileId(), 'p1', 'falls back to the first surviving profile')
+  const persisted = JSON.parse(window.localStorage.getItem('ndtm_my_numbers_v1'))
+  assert.equal(persisted.activeProfileId, 'p1', 'the fallback is persisted, not just returned in memory')
+})
+
 test('renameProfile updates the name without touching data or other profiles', () => {
   window.localStorage.removeItem('ndtm_my_numbers_v1')
   const id = getActiveProfileId()

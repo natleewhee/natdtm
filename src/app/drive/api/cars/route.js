@@ -10,7 +10,7 @@
 // Parsing logic lives in src/lib/lta-parse.js (pure, unit-tested) — this
 // file only owns the fetch/orchestration.
 
-import { getPdfNumbers, extractPdfText, parseLTARows, matchToId, isLowCoverage } from '@/lib/drive/lta-parse'
+import { getPdfNumbers, extractPdfText, parseLTARows, buildPriceMaps, isLowCoverage } from '@/lib/drive/lta-parse'
 
 export const runtime = 'edge'
 export const revalidate = 86400
@@ -70,20 +70,10 @@ export async function GET() {
       })
     }
 
-    // Build price map — keep LOWEST price per car ID (cheapest trim)
-    const priceMap = {}
-    const omvMap = {}
-    const vesMap = {}
-
-    for (const row of rows) {
-      const id = matchToId(row.name)
-      if (!id) continue
-      if (!priceMap[id] || row.sellingPrice < priceMap[id]) {
-        priceMap[id] = row.sellingPrice
-        if (row.omv) omvMap[id] = row.omv
-        if (row.vesAmount) vesMap[id] = row.vesAmount
-      }
-    }
+    // Build price map — keep LOWEST price per car ID (cheapest trim).
+    // See buildPriceMaps in lib/drive/lta-parse.js for why omv/ves reset
+    // whenever the cheapest-price row changes.
+    const { priceMap, omvMap, vesMap } = buildPriceMaps(rows)
 
     const matchedCars = Object.keys(priceMap).length
     const lowCoverage = isLowCoverage(matchedCars)

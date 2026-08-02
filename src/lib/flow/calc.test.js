@@ -197,10 +197,28 @@ test('buildMonthlyFlow: a deficit month produces a negative surplus and drops th
 test('trueSavingsRate: matches hand-computed kept+invested over total comp for the persona', () => {
   const flow = buildMonthlyFlow(PERSONA)
   const totalComp = flow.nodes.salary.value + flow.nodes.employer.value
+  // Uses the RAW surplus (not Math.max(0, ...)) — trueSavingsRate counts a
+  // negative surplus against the rate rather than dropping it, see the
+  // deficit-specific regression test below.
   const kept = flow.nodes.oaGrow.value + flow.nodes.saLock.value + flow.nodes.maGrow.value
-    + flow.nodes.equity.value + Math.max(0, flow.surplus)
+    + flow.nodes.equity.value + flow.surplus
   const invested = flow.nodes.invest.value
   approx(trueSavingsRate(flow), (kept + invested) / totalComp, 0.001)
+})
+
+test('trueSavingsRate: an overspending month is counted AGAINST the rate, not dropped from it entirely', () => {
+  const breakeven = buildMonthlyFlow({ ...PERSONA, livingExpenses: 3200 + PERSONA.investMonthly + 0 })
+  const overspending = buildMonthlyFlow({ ...PERSONA, livingExpenses: 20000 }) // flow.surplus < 0, per the test above
+  assert.ok(overspending.surplus < 0, 'sanity check: this persona really is overspending')
+  const overspendingRate = trueSavingsRate(overspending)
+  const breakevenRate = trueSavingsRate(breakeven)
+  assert.ok(
+    overspendingRate < breakevenRate,
+    `an overspending month (rate ${overspendingRate}) must show a LOWER true savings rate than a roughly-breakeven one (rate ${breakevenRate}) — previously they could come out equal because the negative surplus was silently dropped instead of subtracted`,
+  )
+  // The negative surplus should show up as a genuine subtraction, i.e. the
+  // rate should be measurably less than 0 once spending is that far underwater.
+  assert.ok(overspendingRate < 0, 'a large enough deficit should be able to push the true savings rate negative')
 })
 
 test('cashSavingsRate: is bounded between 0 and 1 even with a large deficit', () => {

@@ -34,6 +34,10 @@ const EMPTY = {
   //   cashProceeds, totalCPFRefund, salePrice, saleDate }
   house: null,
   // { source, savedAt, loanOutstanding, rate, tenureRemaining, monthlyInstalment, carValue, carLabel, salary }
+  // NOTE: drive.rate is a FLAT rate (how car loans are quoted in
+  // Singapore), unlike house.rate above, which is a reducing-balance
+  // annual rate. Don't feed drive.rate into amortization math written
+  // for house.rate's convention without converting it first.
   drive: null,
   // { source, savedAt, salary, oaBalance, saBalance, maBalance, investmentBalance, monthlyContribution }
   retire: null,
@@ -169,7 +173,15 @@ function loadStore() {
     if (profiles.length === 0) profiles.push(makeProfile(DEFAULT_PROFILE_NAME))
     const activeProfileId = profiles.some(p => p.id === parsed.activeProfileId) ? parsed.activeProfileId : profiles[0].id
     const store = { schemaVersion: 1, activeProfileId, profiles }
-    const changed = profiles.some((p, i) => p.id !== parsed.profiles[i]?.id) || activeProfileId !== parsed.activeProfileId
+    // profiles.length !== parsed.profiles.length catches a MAX_PROFILES
+    // truncation (or the "synthesized a profile because there were zero"
+    // case) — without it, every surviving index still lines up with
+    // parsed.profiles[i], so the id-by-id comparison below sees no
+    // change and a truncated store never gets written back, leaving a
+    // 4th+ profile silently un-persisted-away instead of actually gone.
+    const changed = profiles.length !== parsed.profiles.length
+      || profiles.some((p, i) => p.id !== parsed.profiles[i]?.id)
+      || activeProfileId !== parsed.activeProfileId
     if (changed) saveStore(store)
     return store
   }

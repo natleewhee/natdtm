@@ -1,6 +1,6 @@
 'use client'
 
-import { Suspense, useState, useEffect, useMemo } from 'react'
+import { Suspense, useState, useEffect, useMemo, useRef } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { OptionCard, RISK_OPTIONS, SIMPLICITY_OPTIONS, TILT_OPTIONS, savePrefs, loadPrefs, savePortfolio } from '@/components/etf/shared'
 import ShellHeader from '@/components/shared/ShellHeader'
@@ -22,8 +22,16 @@ function PreferencesForm() {
   const searchParams = useSearchParams()
   const [prefs, setPrefs] = useState({ risk: 'Balanced', simplicity: '2-3 ETFs', tilts: [], monthlyInvestment: '' })
   const [restoredFromSave, setRestoredFromSave] = useState(false)
+  const [loadedFromUrl, setLoadedFromUrl] = useState(false)
   const [hasRestored, setHasRestored] = useState(false)
   const [justSaved, setJustSaved] = useState(false)
+  // True only for the ONE render where prefs was just set from a shared
+  // URL — suppresses that single autosave firing so opening someone
+  // else's link doesn't silently overwrite your own saved preferences.
+  // Any subsequent, genuine edit clears it (see the OptionCard/chip
+  // onClicks below), so the link's prefs still save once you actually
+  // start using them.
+  const suppressNextAutosave = useRef(false)
 
   // A shared link takes priority; otherwise restore prefs from the last
   // visit — durably saved (scoped to the active profile), see savePrefs
@@ -33,6 +41,8 @@ function PreferencesForm() {
     /* eslint-disable react-hooks/set-state-in-effect */
     if (fromUrl) {
       setPrefs(fromUrl)
+      setLoadedFromUrl(true)
+      suppressNextAutosave.current = true
     } else {
       const saved = loadPrefs()
       if (saved) { setPrefs(saved); setRestoredFromSave(true) }
@@ -49,12 +59,17 @@ function PreferencesForm() {
   // need to wait for "Generate My Portfolio" before this is remembered.
   useEffect(() => {
     if (!hasRestored) return
+    if (suppressNextAutosave.current) { suppressNextAutosave.current = false; return }
     savePrefs(prefs)
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- flashes the "Saved" indicator; not a render-affecting state sync
     setJustSaved(true)
     const t = setTimeout(() => setJustSaved(false), 1400)
     return () => clearTimeout(t)
   }, [hasRestored, prefs])
+
+  const updatePrefs = (next) => {
+    setLoadedFromUrl(false)
+    setPrefs(next)
+  }
 
   const handleSubmit = () => {
     const portfolio = generatePortfolio(prefs)
@@ -74,8 +89,11 @@ function PreferencesForm() {
           {restoredFromSave && (
             <p className={styles.sectionNote}>Restored what you last had for this profile — edit freely.</p>
           )}
+          {loadedFromUrl && (
+            <p className={styles.sectionNote}>Loaded from a shared link — not saved to this profile until you change something below.</p>
+          )}
           <p className={styles.sectionNote} style={{ color: justSaved ? 'var(--color-accent)' : undefined, fontWeight: justSaved ? 700 : undefined }}>
-            {justSaved ? 'Saved to this profile ✓' : 'Autosaved to this profile as you go — nothing to press.'}
+            {loadedFromUrl ? 'Not yet saved to this profile' : justSaved ? 'Saved to this profile ✓' : 'Autosaved to this profile as you go — nothing to press.'}
           </p>
 
           <div className={styles.sections}>
@@ -89,7 +107,7 @@ function PreferencesForm() {
                 {SIMPLICITY_OPTIONS.map(o => (
                   <OptionCard key={o.value} label={o.label} desc={o.desc}
                     selected={prefs.simplicity === o.value}
-                    onClick={() => setPrefs({ ...prefs, simplicity: o.value })} />
+                    onClick={() => updatePrefs({ ...prefs, simplicity: o.value })} />
                 ))}
               </div>
             </section>
@@ -104,7 +122,7 @@ function PreferencesForm() {
                   <OptionCard key={o.value} label={o.label} desc={o.desc}
                     disabled={isSingle}
                     selected={!isSingle && prefs.risk === o.value}
-                    onClick={() => setPrefs({ ...prefs, risk: o.value })} />
+                    onClick={() => updatePrefs({ ...prefs, risk: o.value })} />
                 ))}
               </div>
               {isSingle && (
@@ -130,7 +148,7 @@ function PreferencesForm() {
                       const next = prefs.tilts.includes(o)
                         ? prefs.tilts.filter(t => t !== o)
                         : [...prefs.tilts, o]
-                      setPrefs({ ...prefs, tilts: next })
+                      updatePrefs({ ...prefs, tilts: next })
                     }} />
                 ))}
               </div>
@@ -152,7 +170,7 @@ function PreferencesForm() {
                 {INVESTMENT_CHIPS.map(amt => (
                   <button key={amt} type="button"
                     className={`${styles.chip}${String(prefs.monthlyInvestment) === String(amt) ? ` ${styles.chipActive}` : ''}`}
-                    onClick={() => setPrefs({ ...prefs, monthlyInvestment: String(amt) })}>
+                    onClick={() => updatePrefs({ ...prefs, monthlyInvestment: String(amt) })}>
                     ${amt.toLocaleString()}
                   </button>
                 ))}
@@ -168,7 +186,7 @@ function PreferencesForm() {
                   onChange={e => {
                     const v = e.target.value
                     // Allow empty (optional field); otherwise clamp to non-negative numbers
-                    if (v === '' || Number(v) >= 0) setPrefs({ ...prefs, monthlyInvestment: v })
+                    if (v === '' || Number(v) >= 0) updatePrefs({ ...prefs, monthlyInvestment: v })
                   }}
                   className={styles.input}
                 />

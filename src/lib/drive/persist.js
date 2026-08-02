@@ -65,23 +65,30 @@ export function serializeToJSON(state) {
   })
 }
 
+// Validates/whitelists a plain restored-state object — shared by
+// deserializeFromJSON (the old global-localStorage path, parsed from a
+// JSON string) and loadToolInputs('drive')'s restore path (already a
+// plain object, no JSON.parse needed) in src/app/drive/page.js.
+export function sanitizeState(parsed) {
+  if (typeof parsed !== 'object' || parsed === null) return {}
+  const out = {}
+  if (typeof parsed.salaryRaw === 'string' && /^\d*$/.test(parsed.salaryRaw)) out.salaryRaw = parsed.salaryRaw
+  if (typeof parsed.downRaw === 'string' && /^\d*$/.test(parsed.downRaw)) out.downRaw = parsed.downRaw
+  if (typeof parsed.existingDebtRaw === 'string' && /^\d*$/.test(parsed.existingDebtRaw)) out.existingDebtRaw = parsed.existingDebtRaw
+  if (Number.isInteger(parsed.tenure) && parsed.tenure >= 1 && parsed.tenure <= 7) out.tenure = parsed.tenure
+  if (parsed.mode === 'single' || parsed.mode === 'compare') out.mode = parsed.mode
+  if (typeof parsed.carAId === 'string') out.carAId = parsed.carAId
+  if (typeof parsed.carBId === 'string') out.carBId = parsed.carBId
+  if (typeof parsed.customPriceA === 'string' && /^\d*$/.test(parsed.customPriceA)) out.customPriceA = parsed.customPriceA
+  if (typeof parsed.customPriceB === 'string' && /^\d*$/.test(parsed.customPriceB)) out.customPriceB = parsed.customPriceB
+  if (typeof parsed.calculated === 'boolean') out.calculated = parsed.calculated
+  return out
+}
+
 export function deserializeFromJSON(raw) {
   if (!raw) return {}
   try {
-    const parsed = JSON.parse(raw)
-    if (typeof parsed !== 'object' || parsed === null) return {}
-    const out = {}
-    if (typeof parsed.salaryRaw === 'string' && /^\d*$/.test(parsed.salaryRaw)) out.salaryRaw = parsed.salaryRaw
-    if (typeof parsed.downRaw === 'string' && /^\d*$/.test(parsed.downRaw)) out.downRaw = parsed.downRaw
-    if (typeof parsed.existingDebtRaw === 'string' && /^\d*$/.test(parsed.existingDebtRaw)) out.existingDebtRaw = parsed.existingDebtRaw
-    if (Number.isInteger(parsed.tenure) && parsed.tenure >= 1 && parsed.tenure <= 7) out.tenure = parsed.tenure
-    if (parsed.mode === 'single' || parsed.mode === 'compare') out.mode = parsed.mode
-    if (typeof parsed.carAId === 'string') out.carAId = parsed.carAId
-    if (typeof parsed.carBId === 'string') out.carBId = parsed.carBId
-    if (typeof parsed.customPriceA === 'string' && /^\d*$/.test(parsed.customPriceA)) out.customPriceA = parsed.customPriceA
-    if (typeof parsed.customPriceB === 'string' && /^\d*$/.test(parsed.customPriceB)) out.customPriceB = parsed.customPriceB
-    if (typeof parsed.calculated === 'boolean') out.calculated = parsed.calculated
-    return out
+    return sanitizeState(JSON.parse(raw))
   } catch {
     return {}
   }

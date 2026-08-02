@@ -251,12 +251,25 @@ export function buildMonthlyFlow(state) {
 // Total comp kept in ANY form (CPF growth, equity, invested, cash
 // surplus) divided by total comp (salary + employer CPF) — the "honest"
 // savings rate the mockup leads with.
+//
+// The surplus node is handled explicitly rather than through the generic
+// KEPT filter below: when surplus < 0 its fate flips to GONE (see
+// buildMonthlyFlow), which would otherwise drop it from BOTH the kept
+// and invested sums entirely — an overspending month contributes nothing
+// to the numerator instead of actively subtracting from it, so someone
+// $500/month underwater would show the same rate as someone at exact
+// breakeven. Excluding it from the generic KEPT loop and adding its
+// (possibly negative) value back in directly fixes that while leaving
+// the positive-surplus case identical to before (it was already fully
+// counted via the KEPT filter in that case).
 export function trueSavingsRate(flow) {
   const { nodes } = flow
-  const kept = Object.values(nodes).filter(n => n && n.fate === FATE.KEPT).reduce((s, n) => s + n.value, 0)
+  const kept = Object.values(nodes)
+    .filter(n => n && n.fate === FATE.KEPT && n !== nodes.surplus)
+    .reduce((s, n) => s + n.value, 0)
   const invested = Object.values(nodes).filter(n => n && n.fate === FATE.INVESTED).reduce((s, n) => s + n.value, 0)
   const totalComp = nodes.salary.value + nodes.employer.value
-  return totalComp > 0 ? (kept + invested) / totalComp : 0
+  return totalComp > 0 ? (kept + invested + nodes.surplus.value) / totalComp : 0
 }
 
 // Cash surplus ÷ cash that actually reached the bank — the number that

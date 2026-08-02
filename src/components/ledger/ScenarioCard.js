@@ -115,7 +115,11 @@ export default function ScenarioCard({ scenario, onChange, onRemove, onLabelChan
               <PercentInput id={`${scenario.id}-house-share`} label="Your share" value={scenario.house.yourSharePct} onChange={e => setHouse({ yourSharePct: e.target.value })} />
             </div>
           )}
-          {(num(scenario.house.yourSharePct) < 0 || num(scenario.house.yourSharePct) > 100) && (
+          {scenario.house.yourSharePct === '' ? (
+            <p style={{ marginTop: 6, fontSize: C.xs, color: C.redText, lineHeight: 1.5 }}>
+              Empty is treated as a 0% share — nothing from this house will count toward your net worth, TDSR, or MSR until you enter a number.
+            </p>
+          ) : (num(scenario.house.yourSharePct) < 0 || num(scenario.house.yourSharePct) > 100) && (
             <p style={{ marginTop: 6, fontSize: C.xs, color: C.redText, lineHeight: 1.5 }}>
               A share has to be between 0% and 100% — this will be treated as {num(scenario.house.yourSharePct) > 100 ? '100%' : '0%'}.
             </p>

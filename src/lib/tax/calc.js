@@ -142,10 +142,8 @@ export function taxOnChargeableIncome(chargeableIncome) {
 // what makes a relief worth what it's worth.
 export function marginalRate(chargeableIncome) {
   const ci = Math.max(0, Number(chargeableIncome) || 0)
-  let lower = 0
   for (const band of TAX_BANDS) {
     if (ci <= band.upTo) return band.rate
-    lower = band.upTo
   }
   return TAX_BANDS[TAX_BANDS.length - 1].rate
 }

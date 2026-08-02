@@ -52,21 +52,48 @@ export const ABSD_REFERENCE = [
   { profile: 'Entity (company / trustee)', rate: '65%' },
 ]
 
-export const SSD_AS_OF = '2017-03-11' // current private-property SSD holding-period schedule
+// On 3 July 2025 the government announced a revised SSD schedule for
+// residential property — a 4th holding-period year added, and each
+// tier's rate raised by 4 percentage points. Verified against IRAS
+// (see calcSSD's own comment) as of this AS_OF date.
+export const SSD_AS_OF = '2025-07-03'
+
+// The revised schedule applies only to property PURCHASED on or after
+// this date — not sold on or after it. A property bought in 2023 and
+// sold in 2026 still uses the OLD (3-year, 12/8/4%) schedule; only a
+// property bought on/after 2025-07-04 uses the NEW (4-year, 16/12/8/4%)
+// one. This is why calcSSD takes purchaseDate, not just yearsHeld.
+export const SSD_REGIME_CUTOVER_DATE = '2025-07-04'
 
 // Seller's Stamp Duty — private residential property only. HDB flats are
 // governed by the Minimum Occupation Period instead (see HDB_MOP_YEARS
 // below), not SSD, so this always returns 0 for HDB.
-export function calcSSD(salePrice, yearsHeld, propertyType) {
+//
+// purchaseDate selects which schedule applies (see SSD_REGIME_CUTOVER_DATE
+// above); yearsHeld selects the tier within that schedule. Omitting
+// purchaseDate defaults to the OLD schedule — the safer default for any
+// existing caller that hasn't been updated to pass it, since assuming
+// the new (worse for the seller) rate by default would understate SSD
+// for anyone who genuinely bought before the cutover.
+export function calcSSD(salePrice, yearsHeld, propertyType, purchaseDate = null) {
   const p = Number(salePrice)
   if (propertyType !== 'private' || !Number.isFinite(p) || p <= 0 || !Number.isFinite(yearsHeld)) {
     return { rate: 0, amount: 0 }
   }
+  const newRegime = !!purchaseDate && purchaseDate >= SSD_REGIME_CUTOVER_DATE
   let rate
-  if (yearsHeld < 1) rate = 0.12
-  else if (yearsHeld < 2) rate = 0.08
-  else if (yearsHeld < 3) rate = 0.04
-  else rate = 0
+  if (newRegime) {
+    if (yearsHeld < 1) rate = 0.16
+    else if (yearsHeld < 2) rate = 0.12
+    else if (yearsHeld < 3) rate = 0.08
+    else if (yearsHeld < 4) rate = 0.04
+    else rate = 0
+  } else {
+    if (yearsHeld < 1) rate = 0.12
+    else if (yearsHeld < 2) rate = 0.08
+    else if (yearsHeld < 3) rate = 0.04
+    else rate = 0
+  }
   return { rate, amount: p * rate }
 }
 

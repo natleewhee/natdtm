@@ -37,6 +37,10 @@ export default function TaxWisePage() {
   const [restoredFromSave, setRestoredFromSave] = useState(false)
   const [hasRestored, setHasRestored] = useState(false)
   const [justSaved, setJustSaved] = useState(false)
+  // Increments on every autosave — see the matching comment in
+  // src/app/house/page.js for why a plain boolean isn't enough to keep
+  // "Saved ✓" showing continuously through a fast typing burst.
+  const [savedTick, setSavedTick] = useState(0)
 
   // Restored inputs (an earlier autosave) take priority over the
   // cross-tool salary prefill below — if this form has been filled in
@@ -87,7 +91,7 @@ export default function TaxWisePage() {
       childCount, parentLivingWith, parentNotLivingWith, otherReliefs, showMoreReliefs,
     })
     // eslint-disable-next-line react-hooks/set-state-in-effect -- flashes the "Saved" indicator; not a render-affecting state sync
-    setJustSaved(true)
+    setSavedTick(t => t + 1)
   }, [
     hasRestored, age, residency, monthlySalary, annualBonus, otherIncome,
     srsContribution, rstuSelf, rstuFamily, courseFees, nsmanStatus,
@@ -95,10 +99,12 @@ export default function TaxWisePage() {
   ])
 
   useEffect(() => {
-    if (!justSaved) return
+    if (savedTick === 0) return
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- flashes the "Saved" indicator; not a render-affecting state sync
+    setJustSaved(true)
     const t = setTimeout(() => setJustSaved(false), 1400)
     return () => clearTimeout(t)
-  }, [justSaved])
+  }, [savedTick])
 
   const isReady = num(age) > 0 && num(monthlySalary) > 0
 

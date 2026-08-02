@@ -5,7 +5,7 @@
 
 import {
   calcMonthlyInstalment, calcOutstandingBalance, calcCPFAccruedInterest,
-  calcSale, calcNextPurchase, yearsBetween,
+  calcSale, calcNextPurchase, yearsBetween, todaySGT,
 } from './calc.js'
 import { calcBSD, calcSSD } from './stampDuty.js'
 
@@ -53,8 +53,20 @@ assert('BSD on $1,000,000 ≈ S$24,600', approx(calcBSD(1_000_000), 24_600, 1))
 assert('BSD is 0 for non-positive price', calcBSD(0) === 0 && calcBSD(-5) === 0)
 
 assert('SSD is 0 for HDB regardless of holding period', calcSSD(700_000, 0.5, 'hdb').amount === 0)
-assert('SSD is 12% for private sold within 1 year', calcSSD(1_000_000, 0.5, 'private').rate === 0.12)
-assert('SSD is 0% for private held over 3 years', calcSSD(1_000_000, 3.5, 'private').rate === 0)
+assert('SSD is 12% for private sold within 1 year (old/no purchaseDate — default is the OLD schedule)', calcSSD(1_000_000, 0.5, 'private').rate === 0.12)
+assert('SSD is 0% for private held over 3 years (old schedule)', calcSSD(1_000_000, 3.5, 'private').rate === 0)
+
+// Regime selection is by PURCHASE date, not sale date — since 3 Jul 2025's
+// announced change (holding period 3yr→4yr, rates +4pp per tier) only
+// applies to property bought on/after 4 Jul 2025.
+assert('SSD stays on the OLD schedule for a property bought well before the 4 Jul 2025 cutover, even sold well after it', calcSSD(1_000_000, 0.5, 'private', '2023-01-01').rate === 0.12)
+assert('SSD is 12% (old schedule) the day before the cutover', calcSSD(1_000_000, 0.5, 'private', '2025-07-03').rate === 0.12)
+assert('SSD switches to the NEW schedule for a property bought exactly on the cutover date', calcSSD(1_000_000, 0.5, 'private', '2025-07-04').rate === 0.16)
+assert('SSD is 16% (new schedule, year 1) for a property bought after the cutover', calcSSD(1_000_000, 0.5, 'private', '2026-01-01').rate === 0.16)
+assert('SSD is 12% (new schedule, year 2) for a property bought after the cutover, sold in year 2', calcSSD(1_000_000, 1.5, 'private', '2026-01-01').rate === 0.12)
+assert('SSD is 8% (new schedule, year 3)', calcSSD(1_000_000, 2.5, 'private', '2026-01-01').rate === 0.08)
+assert('SSD is 4% (new schedule, year 4 — the OLD schedule would already be 0% by year 3)', calcSSD(1_000_000, 3.5, 'private', '2026-01-01').rate === 0.04)
+assert('SSD is 0% (new schedule) once held past 4 years', calcSSD(1_000_000, 4.5, 'private', '2026-01-01').rate === 0)
 
 // ─── Full sale waterfall ─────────────────────────────────────────────────
 // A private property bought for $800k, sold for $1,000k five years later,
@@ -75,6 +87,24 @@ const cleanSale = calcSale({
 // trueProfitLoss = (1,000,000 - 20,000 - 3,000 - ssd) - (800,000 + 20,000)
 // yearsHeld = 5 exactly -> SSD tier is >3yr -> 0
 assert('Clean sale: SSD is 0 after 3+ years held', cleanSale.ssd === 0)
+
+// calcSale threads purchaseDate through to calcSSD (not just calcSSD's own
+// unit tests above) — a property bought after the 4 Jul 2025 cutover and
+// sold quickly still owes SSD under the NEW schedule (4-year window),
+// where the OLD schedule would already show 0%.
+const newRegimeQuickFlip = calcSale({
+  propertyType: 'private',
+  purchasePrice: 800_000, purchaseDate: '2025-08-01',
+  legalFeesAtPurchase: 1_000, agentFeesAtPurchase: 400,
+  cpfOutlay: 400_000,
+  loanTaken: 0, mortgageRate: 0, loanTenure: 0,
+  sunkCost: 0,
+  salePrice: 1_000_000, saleDate: '2029-01-01', // ~3.4 years held
+})
+assert(
+  "calcSale threads purchaseDate through to SSD: a property bought after the cutover still owes 4% SSD at ~3.4 years held (new schedule's year-4 tier), where the OLD schedule would already be 0%",
+  newRegimeQuickFlip.ssd > 0,
+)
 assert('Clean sale: BSD auto-computed on $800k ≈ S$18,600', approx(cleanSale.bsdAtPurchase, 18_600, 1))
 assert('Clean sale: purchase fees = BSD + legal + agent ≈ S$20,000', approx(cleanSale.purchaseFees, 20_000, 1))
 assert('Clean sale: true profit ≈ S$157,000', approx(cleanSale.trueProfitLoss, 157_000, 500))
@@ -600,6 +630,23 @@ assert("person A's cashProceeds DOES move with person B's overrides in share mod
 assert('yearsBetween returns 0 for missing dates', yearsBetween(null, '2024-01-01') === 0)
 assert('yearsBetween returns 0 when end is before start', yearsBetween('2024-01-01', '2020-01-01') === 0)
 assert('yearsBetween ~5 for a 5-year span', approx(yearsBetween('2019-01-01', '2024-01-01'), 5, 0.02))
+
+// ─── todaySGT: Singapore's calendar date, not the runtime's UTC date ─────
+// Singapore is a fixed UTC+8, no DST — between 00:00 and 08:00 SGT, the
+// UTC calendar date is still "yesterday". A naive `new Date().toISOString()`
+// would wrongly report yesterday's date during that window.
+assert(
+  'todaySGT is one day ahead of the raw UTC date at 01:00 SGT (17:00 UTC the previous day)',
+  todaySGT(Date.parse('2026-06-14T17:00:00.000Z')) === '2026-06-15',
+)
+assert(
+  'todaySGT matches the UTC date once it is past 08:00 SGT (i.e. UTC has already rolled over too)',
+  todaySGT(Date.parse('2026-06-15T09:00:00.000Z')) === '2026-06-15',
+)
+assert(
+  'todaySGT at exactly midnight UTC is already well into the SGT day (08:00 SGT)',
+  todaySGT(Date.parse('2026-06-15T00:00:00.000Z')) === '2026-06-15',
+)
 
 // ---------------------------------------------------------------------------
 console.log(`\n${'─'.repeat(40)}`)

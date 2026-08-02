@@ -47,6 +47,12 @@ export default function HouseMuchPage() {
   const [agentFeeAtPurchaseMode, setAgentFeeAtPurchaseMode] = useState('manual')
   const [agentFeeAtPurchaseRaw, setAgentFeeAtPurchaseRaw] = useState('')
   const [sunkCost, setSunkCost] = useState('')
+  // Of your CURRENT monthly instalment (not at purchase), how much is
+  // paid via CPF OA rather than cash — optional, and only meaningful for
+  // a mortgage you're still paying off. Not used in any profit/loss math
+  // here; it exists purely to hand off to FlowState's cash-vs-CPF split
+  // (see saveHouseNumbers below), which otherwise has no way to know.
+  const [monthlyCpfServicing, setMonthlyCpfServicing] = useState('')
 
   // Sale
   const [salePrice, setSalePrice] = useState('')
@@ -67,6 +73,14 @@ export default function HouseMuchPage() {
   const [restoredFromSave, setRestoredFromSave] = useState(false)
   const [hasRestored, setHasRestored] = useState(false)
   const [justSaved, setJustSaved] = useState(false)
+  // Increments on every autosave, unlike the justSaved boolean below —
+  // a boolean can't tell "saved again while already showing Saved ✓"
+  // apart from "no new save happened", since setJustSaved(true) while
+  // already true is a no-op that doesn't re-run the timer effect. That
+  // let the "Saved ✓" flash time out mid-typing during a fast typing
+  // burst, even though saves were still landing. Keying the timer off
+  // this ever-changing counter instead re-arms it on every save.
+  const [savedTick, setSavedTick] = useState(0)
 
   // Restore whatever was last autosaved to this profile — scoped
   // per-profile, same as every other tool. Nothing else reads this;
@@ -92,6 +106,7 @@ export default function HouseMuchPage() {
       setAgentFeeAtPurchaseMode(saved.agentFeeAtPurchaseMode ?? 'manual')
       setAgentFeeAtPurchaseRaw(saved.agentFeeAtPurchaseRaw ?? '')
       setSunkCost(saved.sunkCost ?? '')
+      setMonthlyCpfServicing(saved.monthlyCpfServicing ?? '')
       setSalePrice(saved.salePrice ?? '')
       setSaleDate(saved.saleDate ?? '')
       setAgentFeeAtSaleMode(saved.agentFeeAtSaleMode ?? '1pct')
@@ -118,26 +133,28 @@ export default function HouseMuchPage() {
       propertyType, isJointLoan, yourSharePct,
       personBCpfOutlay, personBCpfPrincipalOverride, personBCpfInterestOverride, cashProceedsSplitMode,
       purchasePrice, purchaseDate, cpfOutlay, loanTaken, mortgageRate, loanTenure,
-      legalFeesAtPurchase, agentFeeAtPurchaseMode, agentFeeAtPurchaseRaw, sunkCost,
+      legalFeesAtPurchase, agentFeeAtPurchaseMode, agentFeeAtPurchaseRaw, sunkCost, monthlyCpfServicing,
       salePrice, saleDate, agentFeeAtSaleMode, agentFeeAtSaleRaw, legalFeesAtSale,
       outstandingOverride, totalInterestOverride, cpfPrincipalOverride, cpfInterestOverride, ssdOverride,
     })
     // eslint-disable-next-line react-hooks/set-state-in-effect -- flashes the "Saved" indicator; not a render-affecting state sync
-    setJustSaved(true)
+    setSavedTick(t => t + 1)
   }, [
     hasRestored, propertyType, isJointLoan, yourSharePct,
     personBCpfOutlay, personBCpfPrincipalOverride, personBCpfInterestOverride, cashProceedsSplitMode,
     purchasePrice, purchaseDate, cpfOutlay, loanTaken, mortgageRate, loanTenure,
-    legalFeesAtPurchase, agentFeeAtPurchaseMode, agentFeeAtPurchaseRaw, sunkCost,
+    legalFeesAtPurchase, agentFeeAtPurchaseMode, agentFeeAtPurchaseRaw, sunkCost, monthlyCpfServicing,
     salePrice, saleDate, agentFeeAtSaleMode, agentFeeAtSaleRaw, legalFeesAtSale,
     outstandingOverride, totalInterestOverride, cpfPrincipalOverride, cpfInterestOverride, ssdOverride,
   ])
 
   useEffect(() => {
-    if (!justSaved) return
+    if (savedTick === 0) return
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- flashes the "Saved" indicator; not a render-affecting state sync
+    setJustSaved(true)
     const t = setTimeout(() => setJustSaved(false), 1400)
     return () => clearTimeout(t)
-  }, [justSaved])
+  }, [savedTick])
 
   const isReady = num(purchasePrice) > 0 && purchaseDate && num(salePrice) > 0 && saleDate
 
@@ -205,8 +222,14 @@ export default function HouseMuchPage() {
       monthlyInstalment: result.yourMonthlyInstalment,
       propertyValue: result.salePrice * share,
       propertyType,
+      cpfServicing: monthlyCpfServicing !== '' ? num(monthlyCpfServicing) : null,
     })
-  }, [result, saleDate, mortgageRate, loanTenure, propertyType, isJointLoan, yourSharePct])
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- intentionally keyed off result's own primitive fields, not `result` itself (a new object every render, which would re-save on every keystroke instead of only when these actually change)
+  }, [
+    result?.yourSharePct, result?.yourCashProceeds, result?.totalCPFRefund, result?.salePrice,
+    result?.yourOutstandingBalance, result?.yearsHeld, result?.yourMonthlyInstalment,
+    saleDate, mortgageRate, loanTenure, propertyType, monthlyCpfServicing,
+  ])
 
   return (
     <div style={{ minHeight: '100vh', background: C.bg, fontFamily: C.fontBody }}>
@@ -275,6 +298,10 @@ export default function HouseMuchPage() {
               value={agentFeeAtPurchaseRaw} onChange={e => setAgentFeeAtPurchaseRaw(e.target.value)}
             />
             <MoneyInput id="sunk-cost" label="Renovation / sunk costs" hint="Optional" value={sunkCost} onChange={e => setSunkCost(e.target.value)} />
+            <MoneyInput
+              id="monthly-cpf-servicing" label="...of your instalment, paid from CPF-OA" hint="Optional — only if you're still paying this mortgage off. Your own share only, same as above. Not used in the profit/loss above; only handed off to FlowState's cash-vs-CPF split."
+              value={monthlyCpfServicing} onChange={e => setMonthlyCpfServicing(e.target.value)}
+            />
           </div>
 
           <div style={{ marginTop: 16 }}>
@@ -302,7 +329,11 @@ export default function HouseMuchPage() {
                     <PercentInput id="your-share-pct" label="Your share" value={yourSharePct} onChange={e => setYourSharePct(e.target.value)} />
                   </div>
                 )}
-                {(num(yourSharePct) < 0 || num(yourSharePct) > 100) && (
+                {yourSharePct === '' ? (
+                  <p style={{ marginTop: 6, fontSize: C.xs, color: C.redText, lineHeight: 1.5 }}>
+                    Empty is treated as a 0% share — your cash and profit/loss figures below will come out as zero until you enter a number.
+                  </p>
+                ) : (num(yourSharePct) < 0 || num(yourSharePct) > 100) && (
                   <p style={{ marginTop: 6, fontSize: C.xs, color: C.redText, lineHeight: 1.5 }}>
                     A share has to be between 0% and 100% — this will be treated as {num(yourSharePct) > 100 ? '100%' : '0%'}.
                   </p>

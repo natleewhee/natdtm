@@ -10,6 +10,17 @@ export { calcBSD, calcSSD, HDB_MOP_YEARS }
 
 const MS_PER_DAY = 86_400_000
 const DAYS_PER_YEAR = 365.25
+const SGT_OFFSET_MS = 8 * 3600 * 1000 // Singapore is fixed UTC+8, no DST
+
+// Today's calendar date in Singapore time, not the server/runtime's own
+// UTC date — `new Date().toISOString().slice(0,10)` is a day behind SGT
+// between 00:00 and 08:00 SGT (that window is still "yesterday" in UTC),
+// which would wrongly flip a same-day sale to saleIsInFuture and shift
+// every "as of today" CPF/interest override anchor by a day right when
+// someone opens this in the morning.
+export function todaySGT(nowMs = Date.now()) {
+  return new Date(nowMs + SGT_OFFSET_MS).toISOString().slice(0, 10)
+}
 
 export function yearsBetween(startISO, endISO) {
   if (!startISO || !endISO) return 0
@@ -92,7 +103,7 @@ export function calcSale(inputs) {
     cpfPrincipalOverride = null,
     cpfAccruedInterestOverride = null,
     ssdOverride = null,
-    today = new Date().toISOString().slice(0, 10),
+    today = todaySGT(),
     // For a joint loan: what fraction of the property (and its loan) is
     // yours. Everything above stays a full-household calculation — BSD,
     // SSD, and mortgage amortization all need the real, whole-property
@@ -209,7 +220,7 @@ export function calcSale(inputs) {
   const cpfAccruedInterest = personACpf.accrued + personBCpf.accrued
   const totalCPFRefund = personACpf.totalRefund + personBCpf.totalRefund
 
-  const ssdComputed = propertyType === 'private' ? calcSSD(salePrice, yearsHeld, propertyType).amount : 0
+  const ssdComputed = propertyType === 'private' ? calcSSD(salePrice, yearsHeld, propertyType, purchaseDate).amount : 0
   const ssd = ssdOverride ?? ssdComputed
 
   const sellingCosts = (Number(agentCommission) || 0) + (Number(legalFeesAtSale) || 0) + ssd

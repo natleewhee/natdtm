@@ -147,6 +147,10 @@ export default function MyLedgerPage() {
   const [restoredFromSave, setRestoredFromSave] = useState(false)
   const [hasRestored, setHasRestored] = useState(false)
   const [justSaved, setJustSaved] = useState(false)
+  // Increments on every autosave — see the matching comment in
+  // src/app/house/page.js for why a plain boolean isn't enough to keep
+  // "Saved ✓" showing continuously through a fast typing burst.
+  const [savedTick, setSavedTick] = useState(0)
 
   // Pull in whatever the other tools last saved locally as the starting
   // baseline — nothing is sent anywhere. See src/lib/shared/profile.js.
@@ -187,14 +191,16 @@ export default function MyLedgerPage() {
       currentAge, retirementAge, lifeExpectancy, desiredMonthlyWithdrawal, inflationRate, swr, investmentReturn,
     })
     // eslint-disable-next-line react-hooks/set-state-in-effect -- flashes the "Saved" indicator; not a render-affecting state sync
-    setJustSaved(true)
+    setSavedTick(t => t + 1)
   }, [hasRestored, currentAge, retirementAge, lifeExpectancy, desiredMonthlyWithdrawal, inflationRate, swr, investmentReturn])
 
   useEffect(() => {
-    if (!justSaved) return
+    if (savedTick === 0) return
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- flashes the "Saved" indicator; not a render-affecting state sync
+    setJustSaved(true)
     const t = setTimeout(() => setJustSaved(false), 1400)
     return () => clearTimeout(t)
-  }, [justSaved])
+  }, [savedTick])
 
   const updateScenario = (id, next) => setScenarios(s => s.map(sc => sc.id === id ? next : sc))
   const removeScenario = (id) => setScenarios(s => s.filter(sc => sc.id !== id))
