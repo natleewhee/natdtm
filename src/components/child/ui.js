@@ -1,73 +1,13 @@
 'use client'
 
 import { useState } from 'react'
-import { C, parseMoney } from '@/lib/child/theme'
+import { C } from '@/lib/child/theme'
 
 export function SectionDivider({ label }) {
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: 12, margin: '28px 0 18px' }}>
       <span style={{ fontSize: C.xs, fontWeight: 700, color: C.accent, textTransform: 'uppercase', letterSpacing: '0.12em', whiteSpace: 'nowrap' }}>{label}</span>
       <div style={{ flex: 1, height: 1, background: C.border }} />
-    </div>
-  )
-}
-
-export function MoneyInput({ id, label, hint, value, onChange, placeholder = '0' }) {
-  const [focused, setFocused] = useState(false)
-  const hintId = hint ? `${id}-hint` : undefined
-  const handleBlur = () => {
-    setFocused(false)
-    const parsed = parseMoney(value)
-    if (parsed && String(parsed) !== String(value ?? '')) {
-      onChange({ target: { value: String(parsed) } })
-    }
-  }
-  return (
-    <div>
-      <label htmlFor={id} style={{ display: 'block', fontSize: C.sm, fontWeight: 600, color: C.primary, marginBottom: 7 }}>{label}</label>
-      <div style={{ position: 'relative' }}>
-        <span aria-hidden="true" style={{ position: 'absolute', left: 13, top: '50%', transform: 'translateY(-50%)', fontSize: C.sm, fontWeight: 600, color: focused || value ? C.accent : C.faint, pointerEvents: 'none', transition: 'color 0.2s' }}>S$</span>
-        <input
-          id={id} type="text" inputMode="text" value={value ?? ''} onChange={onChange}
-          placeholder={placeholder} aria-describedby={hintId}
-          onFocus={() => setFocused(true)} onBlur={handleBlur}
-          style={{
-            width: '100%', boxSizing: 'border-box', background: C.surface,
-            border: `1.5px solid ${focused ? C.accent : C.border}`, borderRadius: C.r,
-            padding: '11px 12px 11px 36px', color: C.primary, fontSize: C.lg,
-            fontFamily: C.fontMono, fontWeight: 500, outline: 'none',
-            boxShadow: focused ? `0 0 0 3px ${C.accentBg}` : 'none',
-            transition: 'border-color 0.2s, box-shadow 0.2s',
-          }}
-        />
-      </div>
-      {hint && <p id={hintId} style={{ marginTop: 5, fontSize: C.xs, color: C.muted, lineHeight: 1.5 }}>{hint}</p>}
-    </div>
-  )
-}
-
-export function PercentInput({ id, label, hint, value, onChange, step = '0.01' }) {
-  const [focused, setFocused] = useState(false)
-  return (
-    <div>
-      <label htmlFor={id} style={{ display: 'block', fontSize: C.sm, fontWeight: 600, color: C.primary, marginBottom: 7 }}>{label}</label>
-      <div style={{ position: 'relative' }}>
-        <input
-          id={id} type="text" inputMode="decimal" value={value ?? ''} onChange={onChange}
-          placeholder="0.00" step={step}
-          onFocus={() => setFocused(true)} onBlur={() => setFocused(false)}
-          style={{
-            width: '100%', boxSizing: 'border-box', background: C.surface,
-            border: `1.5px solid ${focused ? C.accent : C.border}`, borderRadius: C.r,
-            padding: '11px 32px 11px 12px', color: C.primary, fontSize: C.lg,
-            fontFamily: C.fontMono, fontWeight: 500, outline: 'none',
-            boxShadow: focused ? `0 0 0 3px ${C.accentBg}` : 'none',
-            transition: 'border-color 0.2s, box-shadow 0.2s',
-          }}
-        />
-        <span aria-hidden="true" style={{ position: 'absolute', right: 13, top: '50%', transform: 'translateY(-50%)', fontSize: C.sm, fontWeight: 600, color: C.faint, pointerEvents: 'none' }}>%</span>
-      </div>
-      {hint && <p style={{ marginTop: 5, fontSize: C.xs, color: C.muted, lineHeight: 1.5 }}>{hint}</p>}
     </div>
   )
 }
@@ -120,9 +60,8 @@ export function Segmented({ options, value, onChange }) {
   )
 }
 
-// Pill toggle for a boolean setting (e.g. "I have a mortgage") — same
-// shape as ledger/ScenarioCard.js's local Toggle, promoted to a shared
-// component here since FlowState needs several of them.
+// Pill toggle for a boolean setting (e.g. "using a registered childcare
+// centre") — same shape as ledger/ScenarioCard.js's local Toggle.
 export function Toggle({ active, onClick, children }) {
   return (
     <button

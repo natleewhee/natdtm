@@ -8,18 +8,23 @@
 
 import { calcBSD } from '../house/stampDuty.js'
 import { calcMonthlyInstalment } from '../house/calc.js'
+import { tieredTax } from '../shared/tieredTax.js'
+import { TDSR_LIMIT } from '../drive/calc.js'
+import { MSR_LIMIT } from '../ledger/calc.js'
 
-export { calcBSD, calcMonthlyInstalment }
+export { TDSR_LIMIT, MSR_LIMIT }
 
 // Non-owner-occupied residential property tax — a separate, steeper
 // progressive schedule from the owner-occupied one, since this tool is
 // specifically for a property you don't live in. Tiered on Annual Value
 // (AV), which IRAS publishes per property (roughly the estimated annual
 // rent it could fetch) — not the purchase price and not the actual rent
-// you charge. Effective from 1 Jan 2024; verify against IRAS before
-// relying on this for a real purchase, same caveat as BSD/ABSD elsewhere
-// in this app.
-export const PROPERTY_TAX_NOO_AS_OF = '2024-01-01'
+// you charge. Confirmed against IRAS's published schedule (unchanged
+// since 2015 for the non-owner-occupied bands specifically — only the
+// owner-occupied schedule has been revised in recent Budgets); verify
+// against IRAS before relying on this for a real purchase, same caveat
+// as BSD/ABSD elsewhere in this app.
+export const PROPERTY_TAX_NOO_AS_OF = '2026-08-02'
 const PROPERTY_TAX_NOO_TIERS = [
   { upTo: 30_000, rate: 0.12 },
   { upTo: 45_000, rate: 0.20 },
@@ -28,17 +33,7 @@ const PROPERTY_TAX_NOO_TIERS = [
 ]
 
 export function calcAnnualPropertyTaxNonOwnerOccupied(annualValue) {
-  const av = Number(annualValue)
-  if (!Number.isFinite(av) || av <= 0) return 0
-  let tax = 0
-  let lower = 0
-  for (const tier of PROPERTY_TAX_NOO_TIERS) {
-    if (av <= lower) break
-    const taxable = Math.min(av, tier.upTo) - lower
-    tax += taxable * tier.rate
-    lower = tier.upTo
-  }
-  return tax
+  return tieredTax(annualValue, PROPERTY_TAX_NOO_TIERS)
 }
 
 // Full investment-property picture: what it costs to buy, what it costs
@@ -72,8 +67,11 @@ export function calcInvestmentProperty({
 
   // Agent's commission (typically ~half a month's rent per year of lease
   // term in Singapore) is an annual cost, amortized monthly here for the
-  // same "representative month" reasoning as vacancy above.
-  const monthlyAgentCommission = (Number(monthlyRent) || 0) * (Number(agentCommissionMonths) || 0) / 12
+  // same "representative month" reasoning as vacancy above. Scaled by
+  // the same occupied-fraction as effectiveMonthlyRent — at 12 months of
+  // vacancy there's no tenant and no lease to pay an agent to find, so
+  // this must not charge a full commission against zero rental income.
+  const monthlyAgentCommission = (Number(monthlyRent) || 0) * (Number(agentCommissionMonths) || 0) / 12 * (12 - vacancy) / 12
 
   const monthlyOperatingCosts = monthlyPropertyTax + (Number(maintenanceMonthly) || 0) + monthlyAgentCommission
   const monthlyCashFlow = effectiveMonthlyRent - monthlyInstalment - monthlyOperatingCosts
@@ -96,4 +94,27 @@ export function calcInvestmentProperty({
     grossRentalYieldPct, netRentalYieldPct, breakEvenMonthlyRent,
     cashFlowPositive: monthlyCashFlow >= 0,
   }
+}
+
+// Whether a bank would actually approve financing for this — a
+// cash-flow-positive verdict above is meaningless if the loan itself
+// fails TDSR (55% of gross income, across ALL debt) or MSR (30%, HDB
+// only, counting just the mortgage). Reuses the exact limits DriveReady
+// and MyLedger already check against elsewhere in this app, rather than
+// letting this tool imply a property is financeable with no reference to
+// the buyer's income or other obligations at all.
+export function calcTdsrCheck({ salary = 0, existingMonthlyDebt = 0, newMonthlyInstalment = 0, propertyType = 'private' }) {
+  const s = Math.max(0, Number(salary) || 0)
+  const existing = Math.max(0, Number(existingMonthlyDebt) || 0)
+  const instalment = Math.max(0, Number(newMonthlyInstalment) || 0)
+  const totalDebt = existing + instalment
+
+  const tdsr = s > 0 ? totalDebt / s : null
+  const tdsrExceeded = tdsr != null && tdsr > TDSR_LIMIT
+
+  const msrApplicable = propertyType === 'hdb'
+  const msr = msrApplicable && s > 0 ? instalment / s : null
+  const msrExceeded = msr != null && msr > MSR_LIMIT
+
+  return { tdsr, tdsrExceeded, msrApplicable, msr, msrExceeded, totalDebt }
 }

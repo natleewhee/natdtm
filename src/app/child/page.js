@@ -10,22 +10,13 @@ import TrustBadges from '@/components/shared/TrustBadges'
 import Button from '@/components/shared/Button'
 import AutosaveIndicator from '@/components/shared/AutosaveIndicator'
 import ExploreSection from '@/components/shared/ExploreSection'
+import Row from '@/components/shared/Row'
 
 const num = parseMoney
 // parseMoney strips a leading "-" (built for money fields, never negative),
 // so a negative age would read as positive and silently plan from the
 // wrong starting point — Number() preserves the sign so it's actually caught.
 const numSigned = (v) => { const n = Number(v); return Number.isFinite(n) ? n : 0 }
-
-function Row({ label, value, tone, bold, indent }) {
-  const color = tone === 'red' ? C.redText : tone === 'green' ? C.greenText : C.text
-  return (
-    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', padding: '9px 0', borderBottom: `1px solid ${C.border}`, paddingLeft: indent ? 16 : 0 }}>
-      <span style={{ fontSize: C.sm, color: bold ? C.primary : C.muted, fontWeight: bold ? 700 : 400 }}>{label}</span>
-      <span style={{ fontSize: bold ? C.lg : C.sm, fontFamily: C.fontMono, fontWeight: bold ? 700 : 600, color }}>{value}</span>
-    </div>
-  )
-}
 
 export default function ChildCostPlannerPage() {
   const [currentAge, setCurrentAge] = useState('0')
@@ -160,7 +151,8 @@ export default function ChildCostPlannerPage() {
                 {SGD(result.totalAllChildren)}
               </div>
               <p style={{ fontSize: C.sm, color: C.muted, margin: 0 }}>
-                Total estimated cost from age {result.startAge} to {result.endAge}, for {result.children} {result.children === 1 ? 'child' : 'children'}.
+                Total estimated cost from age {result.startAge} to {result.endAge}, for {result.children} {result.children === 1 ? 'child' : 'children'}
+                {result.children > 1 ? ` (assumes all ${result.children} are the same age — real sibling spacing changes both the total and when costs peak)` : ''}.
               </p>
 
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: 1, background: C.border, borderRadius: C.rL, overflow: 'hidden', marginTop: 20 }}>
@@ -188,11 +180,11 @@ export default function ChildCostPlannerPage() {
               <div style={{ fontSize: C.xs, fontWeight: 700, color: C.muted, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 10 }}>
                 Where it goes, per child
               </div>
-              <Row label="Childcare / infant care" value={SGD(result.categoryTotals.childcare)} />
-              <Row label="Tuition & enrichment" value={SGD(result.categoryTotals.tuitionEnrichment)} />
-              <Row label="Daily expenses (food, clothes, misc)" value={SGD(result.categoryTotals.dailyExpenses)} />
-              <Row label="School fees" value={SGD(result.categoryTotals.schoolFees)} />
-              <Row label="Total per child" value={SGD(result.totalPerChild)} bold />
+              <Row C={C} label="Childcare / infant care" value={SGD(result.categoryTotals.childcare)} />
+              <Row C={C} label="Tuition & enrichment" value={SGD(result.categoryTotals.tuitionEnrichment)} />
+              <Row C={C} label="Daily expenses (food, clothes, misc)" value={SGD(result.categoryTotals.dailyExpenses)} />
+              <Row C={C} label="School fees" value={SGD(result.categoryTotals.schoolFees)} />
+              <Row C={C} label="Total per child" value={SGD(result.totalPerChild)} bold />
             </div>
 
             <div style={{ marginTop: 28 }}>
@@ -202,7 +194,7 @@ export default function ChildCostPlannerPage() {
               {AGE_BANDS.filter(b => b.maxAge >= result.startAge && b.minAge <= result.endAge).map(band => {
                 const rowInHorizon = result.years.find(y => y.bandKey === band.key)
                 if (!rowInHorizon) return null
-                return <Row key={band.key} label={band.label} value={`${SGD(rowInHorizon.monthly.total)}/mo`} />
+                return <Row C={C} key={band.key} label={band.label} value={`${SGD(rowInHorizon.monthly.total)}/mo`} />
               })}
             </div>
 
@@ -212,6 +204,9 @@ export default function ChildCostPlannerPage() {
               </p>
               <p style={{ fontSize: C.xs, color: C.faint, lineHeight: 1.6 }}>
                 These are rough, good-faith 2026 estimates of typical Singapore household spending by stage — not a quote, and not pulled from a single official source. Actual cost varies enormously by lifestyle, school type, and how much tuition/enrichment you use. Subsidy figures approximate MSF/ECDA&apos;s Basic + Additional Subsidy as three simplified income tiers rather than the real sliding scale.
+              </p>
+              <p style={{ fontSize: C.xs, color: C.faint, lineHeight: 1.6, marginTop: 10 }}>
+                See <a href="/child/the-math" style={{ color: C.accent }}>the math</a> for the full formulas and every figure&apos;s source behind this page.
               </p>
             </ExploreSection>
           </div>

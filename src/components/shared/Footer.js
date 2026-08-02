@@ -59,6 +59,8 @@ export default function Footer() {
             <a href="/tax/the-math">Tax</a>
             <a href="/ledger/the-math">MyLedger</a>
             <a href="/flow/the-math">FlowState</a>
+            <a href="/child/the-math">Children&apos;s Cost</a>
+            <a href="/propinvest/the-math">Invest Property</a>
           </div>
         </div>
 

@@ -24,7 +24,7 @@ export function MoneyInput({ id, label, hint, value, onChange, placeholder = '0'
   }
   return (
     <div>
-      <label htmlFor={id} style={{ display: 'block', fontSize: C.sm, fontWeight: 600, color: C.primary, marginBottom: 7 }}>{label}</label>
+      {label && <label htmlFor={id} style={{ display: 'block', fontSize: C.sm, fontWeight: 600, color: C.primary, marginBottom: 7 }}>{label}</label>}
       <div style={{ position: 'relative' }}>
         <span aria-hidden="true" style={{ position: 'absolute', left: 13, top: '50%', transform: 'translateY(-50%)', fontSize: C.sm, fontWeight: 600, color: focused || value ? C.accent : C.faint, pointerEvents: 'none', transition: 'color 0.2s' }}>S$</span>
         <input
@@ -98,7 +98,8 @@ export function NumberInput({ id, label, hint, value, onChange, suffix }) {
   )
 }
 
-// Two/three-way pill toggle — same visual shape used across the other tools.
+// Two-way pill toggle — same visual shape used across the other tools,
+// e.g. for property type (HDB / Private).
 export function Segmented({ options, value, onChange }) {
   return (
     <div style={{ display: 'inline-flex', background: C.surface, border: `1.5px solid ${C.border}`, borderRadius: C.r, padding: 3, gap: 2 }}>
@@ -117,24 +118,5 @@ export function Segmented({ options, value, onChange }) {
         </button>
       ))}
     </div>
-  )
-}
-
-// Pill toggle for a boolean setting (e.g. "I have a mortgage") — same
-// shape as ledger/ScenarioCard.js's local Toggle, promoted to a shared
-// component here since FlowState needs several of them.
-export function Toggle({ active, onClick, children }) {
-  return (
-    <button
-      type="button" onClick={onClick} aria-pressed={active}
-      style={{
-        display: 'inline-flex', alignItems: 'center', gap: 8, padding: '9px 14px',
-        background: active ? C.accentBg : C.bg, border: `1.5px solid ${active ? C.accent : C.border}`,
-        borderRadius: 100, cursor: 'pointer', fontSize: C.xs, fontWeight: 700,
-        color: active ? C.accent : C.muted, fontFamily: C.fontBody,
-      }}
-    >
-      {active ? '✓ ' : ''}{children}
-    </button>
   )
 }

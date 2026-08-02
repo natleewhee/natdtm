@@ -7,6 +7,8 @@
 // transaction — the same caveat this app already applies to Drive's
 // COE/PARF constants.
 
+import { tieredTax } from '../shared/tieredTax.js'
+
 export const BSD_AS_OF = '2023-02-15' // last residential BSD tier revision
 
 // Buyer's Stamp Duty — tiered on purchase price / market value, whichever
@@ -21,17 +23,7 @@ const BSD_TIERS = [
 ]
 
 export function calcBSD(price) {
-  const p = Number(price)
-  if (!Number.isFinite(p) || p <= 0) return 0
-  let duty = 0
-  let lower = 0
-  for (const tier of BSD_TIERS) {
-    if (p <= lower) break
-    const taxable = Math.min(p, tier.upTo) - lower
-    duty += taxable * tier.rate
-    lower = tier.upTo
-  }
-  return duty
+  return tieredTax(price, BSD_TIERS)
 }
 
 export const ABSD_AS_OF = '2023-04-27' // last ABSD rate revision

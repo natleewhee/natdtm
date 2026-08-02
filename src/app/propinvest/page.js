@@ -2,15 +2,16 @@
 
 import { useEffect, useState } from 'react'
 import { C, SGD, parseMoney } from '@/lib/propinvest/theme'
-import { calcInvestmentProperty, PROPERTY_TAX_NOO_AS_OF } from '@/lib/propinvest/calc'
+import { calcInvestmentProperty, calcTdsrCheck, PROPERTY_TAX_NOO_AS_OF, TDSR_LIMIT, MSR_LIMIT } from '@/lib/propinvest/calc'
 import { ABSD_REFERENCE, ABSD_AS_OF } from '@/lib/house/stampDuty'
 import { saveToolInputs, loadToolInputs } from '@/lib/shared/profile'
-import { SectionDivider, MoneyInput, PercentInput, NumberInput } from '@/components/propinvest/ui'
+import { SectionDivider, MoneyInput, PercentInput, NumberInput, Segmented } from '@/components/propinvest/ui'
 import ShellHeader from '@/components/shared/ShellHeader'
 import TrustBadges from '@/components/shared/TrustBadges'
 import Button from '@/components/shared/Button'
 import AutosaveIndicator from '@/components/shared/AutosaveIndicator'
 import ExploreSection from '@/components/shared/ExploreSection'
+import Row from '@/components/shared/Row'
 
 const num = parseMoney
 // parseMoney strips a leading "-" (built for money fields, never negative),
@@ -19,16 +20,6 @@ const num = parseMoney
 // being silently clamped into [0,100] with no warning (the exact bug class
 // this app already fixed once for joint-ownership share percentages).
 const numSigned = (v) => { const n = Number(v); return Number.isFinite(n) ? n : 0 }
-
-function Row({ label, value, tone, bold, indent }) {
-  const color = tone === 'red' ? C.redText : tone === 'green' ? C.greenText : C.text
-  return (
-    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', padding: '9px 0', borderBottom: `1px solid ${C.border}`, paddingLeft: indent ? 16 : 0 }}>
-      <span style={{ fontSize: C.sm, color: bold ? C.primary : C.muted, fontWeight: bold ? 700 : 400 }}>{label}</span>
-      <span style={{ fontSize: bold ? C.lg : C.sm, fontFamily: C.fontMono, fontWeight: bold ? 700 : 600, color }}>{value}</span>
-    </div>
-  )
-}
 
 export default function PropInvestPage() {
   const [price, setPrice] = useState('')
@@ -44,6 +35,10 @@ export default function PropInvestPage() {
   const [maintenanceMonthly, setMaintenanceMonthly] = useState('')
   const [vacancyMonthsPerYear, setVacancyMonthsPerYear] = useState('1')
   const [agentCommissionMonths, setAgentCommissionMonths] = useState('0.5')
+
+  const [propertyType, setPropertyType] = useState('private')
+  const [salary, setSalary] = useState('')
+  const [existingMonthlyDebt, setExistingMonthlyDebt] = useState('')
 
   const [hasRestored, setHasRestored] = useState(false)
   const [justSaved, setJustSaved] = useState(false)
@@ -66,6 +61,9 @@ export default function PropInvestPage() {
       setMaintenanceMonthly(saved.maintenanceMonthly ?? '')
       setVacancyMonthsPerYear(saved.vacancyMonthsPerYear ?? '1')
       setAgentCommissionMonths(saved.agentCommissionMonths ?? '0.5')
+      setPropertyType(saved.propertyType ?? 'private')
+      setSalary(saved.salary ?? '')
+      setExistingMonthlyDebt(saved.existingMonthlyDebt ?? '')
     }
     setHasRestored(true)
     /* eslint-enable react-hooks/set-state-in-effect */
@@ -76,12 +74,13 @@ export default function PropInvestPage() {
     const ok = saveToolInputs('propinvest', {
       price, downpaymentPct, rate, tenureYears, absd, otherFees,
       monthlyRent, annualValue, maintenanceMonthly, vacancyMonthsPerYear, agentCommissionMonths,
+      propertyType, salary, existingMonthlyDebt,
     })
     if (ok) {
       // eslint-disable-next-line react-hooks/set-state-in-effect -- flashes the "Saved" indicator; not a render-affecting state sync
       setSavedTick(t => t + 1)
     }
-  }, [hasRestored, price, downpaymentPct, rate, tenureYears, absd, otherFees, monthlyRent, annualValue, maintenanceMonthly, vacancyMonthsPerYear, agentCommissionMonths])
+  }, [hasRestored, price, downpaymentPct, rate, tenureYears, absd, otherFees, monthlyRent, annualValue, maintenanceMonthly, vacancyMonthsPerYear, agentCommissionMonths, propertyType, salary, existingMonthlyDebt])
 
   useEffect(() => {
     if (savedTick === 0) return
@@ -110,6 +109,15 @@ export default function PropInvestPage() {
     agentCommissionMonths: num(agentCommissionMonths),
   }) : null
 
+  // TDSR/MSR — a cash-flow-positive verdict above is meaningless if a
+  // bank wouldn't actually approve this loan. Checked against the same
+  // 55%/30% limits DriveReady and MyLedger already use, so a "financeable"
+  // claim here isn't made with zero reference to income or other debt.
+  const tdsrCheck = result ? calcTdsrCheck({
+    salary: num(salary), existingMonthlyDebt: num(existingMonthlyDebt),
+    newMonthlyInstalment: result.monthlyInstalment, propertyType,
+  }) : null
+
   const handleCalc = () => setCalculated(true)
 
   return (
@@ -129,6 +137,18 @@ export default function PropInvestPage() {
 
         <div style={{ marginTop: 28, background: C.surface, border: `1px solid ${C.border}`, borderRadius: C.rXL, boxShadow: C.shadow, padding: '24px 24px 22px' }}>
           <SectionDivider label="The purchase" />
+          <div style={{ marginBottom: 16 }}>
+            <div style={{ fontSize: C.sm, fontWeight: 600, color: C.primary, marginBottom: 7 }}>Property type</div>
+            <Segmented
+              value={propertyType} onChange={setPropertyType}
+              options={[{ value: 'private', label: 'Private' }, { value: 'hdb', label: 'HDB' }]}
+            />
+            {propertyType === 'hdb' && (
+              <p style={{ marginTop: 7, fontSize: C.xs, color: C.muted, lineHeight: 1.5 }}>
+                HDB loans are also capped by the 30% Mortgage Servicing Ratio, checked below. Note: whole-flat HDB rental has its own MOP and eligibility rules this tool doesn&apos;t model — verify with HDB before relying on rental income from an HDB flat.
+              </p>
+            )}
+          </div>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 16 }}>
             <MoneyInput id="pi-price" label="Purchase price" value={price} onChange={e => setPrice(e.target.value)} />
             <div>
@@ -172,6 +192,12 @@ export default function PropInvestPage() {
             <MoneyInput id="pi-other-fees" label="Other fees (legal, agent, valuation)" hint="Optional" value={otherFees} onChange={e => setOtherFees(e.target.value)} />
           </div>
 
+          <SectionDivider label="Can you actually get this loan?" />
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 16 }}>
+            <MoneyInput id="pi-salary" label="Your gross monthly income" hint="Before CPF/tax — what a bank checks TDSR/MSR against" value={salary} onChange={e => setSalary(e.target.value)} />
+            <MoneyInput id="pi-existing-debt" label="Existing monthly debt" hint="Other loans, credit cards, etc. — optional" value={existingMonthlyDebt} onChange={e => setExistingMonthlyDebt(e.target.value)} />
+          </div>
+
           <SectionDivider label="Renting it out" />
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 16 }}>
             <MoneyInput id="pi-rent" label="Expected monthly rent" value={monthlyRent} onChange={e => setMonthlyRent(e.target.value)} />
@@ -191,6 +217,28 @@ export default function PropInvestPage() {
 
         {result && (
           <div style={{ marginTop: 32 }}>
+            {tdsrCheck && (tdsrCheck.tdsrExceeded || tdsrCheck.msrExceeded) && (
+              <div style={{ background: C.redBg, border: `1px solid ${C.red}55`, borderRadius: C.rL, padding: '16px 18px', marginBottom: 20 }}>
+                <div style={{ fontSize: C.sm, fontWeight: 700, color: C.redText, marginBottom: 4 }}>
+                  A bank likely wouldn&apos;t approve this loan
+                </div>
+                <div style={{ fontSize: C.xs, color: C.muted, lineHeight: 1.6 }}>
+                  {tdsrCheck.tdsrExceeded && <>Total debt (this instalment + your existing debt) is {(tdsrCheck.tdsr * 100).toFixed(0)}% of your gross income — above the {(TDSR_LIMIT * 100).toFixed(0)}% TDSR limit banks apply to every loan. </>}
+                  {tdsrCheck.msrExceeded && <>This instalment alone is {(tdsrCheck.msr * 100).toFixed(0)}% of your gross income — above the {(MSR_LIMIT * 100).toFixed(0)}% MSR limit for HDB loans. </>}
+                  The cash-flow figures below assume you got the loan — worth checking financing before relying on them.
+                </div>
+              </div>
+            )}
+            {tdsrCheck && !tdsrCheck.tdsrExceeded && !tdsrCheck.msrExceeded && tdsrCheck.tdsr != null && (
+              <p style={{ fontSize: C.xs, color: C.faint, textAlign: 'center', marginBottom: 12 }}>
+                TDSR {(tdsrCheck.tdsr * 100).toFixed(0)}% (limit {(TDSR_LIMIT * 100).toFixed(0)}%){tdsrCheck.msrApplicable ? ` · MSR ${(tdsrCheck.msr * 100).toFixed(0)}% (limit ${(MSR_LIMIT * 100).toFixed(0)}%)` : ''} — within bank limits, based on the income and debt you entered.
+              </p>
+            )}
+            {tdsrCheck && tdsrCheck.tdsr == null && (
+              <p style={{ fontSize: C.xs, color: C.faint, textAlign: 'center', marginBottom: 12 }}>
+                Enter your income above to check whether a bank would actually approve this loan (TDSR/MSR).
+              </p>
+            )}
             <div style={{
               background: result.cashFlowPositive ? C.greenBg : C.redBg,
               border: `1px solid ${result.cashFlowPositive ? C.green : C.red}55`,
@@ -201,10 +249,14 @@ export default function PropInvestPage() {
               </div>
               <p style={{ fontSize: C.sm, color: C.muted, margin: 0 }}>
                 {result.cashFlowPositive
-                  ? 'Rent covers the instalment and every holding cost, with room to spare.'
+                  ? 'Rent covers the instalment and the holding costs modeled below, with room to spare.'
                   : 'This shortfall comes out of your own pocket every month, on top of the upfront cost below.'}
               </p>
             </div>
+
+            <p style={{ fontSize: C.xs, color: C.faint, marginTop: 12, lineHeight: 1.6, textAlign: 'center' }}>
+              Not modeled: rental income tax (real money on top of this), fire insurance, repairs. Property tax uses IRAS&apos;s published non-owner-occupied schedule as of {PROPERTY_TAX_NOO_AS_OF} — verify against your actual bill.
+            </p>
 
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: 1, background: C.border, borderRadius: C.rL, overflow: 'hidden', marginTop: 20 }}>
               <div style={{ background: C.surface2 || C.bg, padding: '15px 16px 14px' }}>
@@ -231,25 +283,28 @@ export default function PropInvestPage() {
 
             <ExploreSection title="Show the math" defaultOpen={false}>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-                <Row label="Purchase price" value={SGD(result.price)} />
-                <Row label="− Downpayment" value={`−${SGD(result.downpayment)}`} indent />
-                <Row label="= Loan amount" value={SGD(result.loanAmount)} bold />
+                <Row C={C} label="Purchase price" value={SGD(result.price)} />
+                <Row C={C} label="− Downpayment" value={`−${SGD(result.downpayment)}`} indent />
+                <Row C={C} label="= Loan amount" value={SGD(result.loanAmount)} bold />
                 <div style={{ height: 10 }} />
-                <Row label="Downpayment" value={SGD(result.downpayment)} />
-                <Row label="+ BSD (auto-computed)" value={`+${SGD(result.bsd)}`} indent />
-                {result.absd > 0 && <Row label="+ ABSD (your figure)" value={`+${SGD(result.absd)}`} indent />}
-                {result.otherFees > 0 && <Row label="+ Other fees" value={`+${SGD(result.otherFees)}`} indent />}
-                <Row label="= Upfront cost" value={SGD(result.upfrontCost)} bold />
+                <Row C={C} label="Downpayment" value={SGD(result.downpayment)} />
+                <Row C={C} label="+ BSD (auto-computed)" value={`+${SGD(result.bsd)}`} indent />
+                {result.absd > 0 && <Row C={C} label="+ ABSD (your figure)" value={`+${SGD(result.absd)}`} indent />}
+                {result.otherFees > 0 && <Row C={C} label="+ Other fees" value={`+${SGD(result.otherFees)}`} indent />}
+                <Row C={C} label="= Upfront cost" value={SGD(result.upfrontCost)} bold />
                 <div style={{ height: 10 }} />
-                <Row label="Effective monthly rent (after vacancy)" value={SGD(result.effectiveMonthlyRent)} />
-                <Row label="− Monthly instalment" value={`−${SGD(result.monthlyInstalment)}`} indent />
-                <Row label={`− Property tax (non-owner-occupied${annualValueIsEstimated ? ', AV estimated from rent' : ''})`} value={`−${SGD(result.monthlyPropertyTax)}`} indent />
-                <Row label="− Maintenance" value={`−${SGD(num(maintenanceMonthly))}`} indent />
-                <Row label="− Agent commission (amortized)" value={`−${SGD(result.monthlyAgentCommission)}`} indent />
-                <Row label="= Monthly cash flow" value={`${result.cashFlowPositive ? '+' : '−'}${SGD(Math.abs(result.monthlyCashFlow))}`} bold tone={result.cashFlowPositive ? 'green' : 'red'} />
+                <Row C={C} label="Effective monthly rent (after vacancy)" value={SGD(result.effectiveMonthlyRent)} />
+                <Row C={C} label="− Monthly instalment" value={`−${SGD(result.monthlyInstalment)}`} indent />
+                <Row C={C} label={`− Property tax (non-owner-occupied${annualValueIsEstimated ? ', AV estimated from rent' : ''})`} value={`−${SGD(result.monthlyPropertyTax)}`} indent />
+                <Row C={C} label="− Maintenance" value={`−${SGD(num(maintenanceMonthly))}`} indent />
+                <Row C={C} label="− Agent commission (amortized)" value={`−${SGD(result.monthlyAgentCommission)}`} indent />
+                <Row C={C} label="= Monthly cash flow" value={`${result.cashFlowPositive ? '+' : '−'}${SGD(Math.abs(result.monthlyCashFlow))}`} bold tone={result.cashFlowPositive ? 'green' : 'red'} />
               </div>
               <p style={{ fontSize: C.xs, color: C.faint, lineHeight: 1.6, marginTop: 14 }}>
                 Non-owner-occupied property tax uses IRAS&apos;s real tiered schedule on Annual Value, effective {PROPERTY_TAX_NOO_AS_OF} — verify against your actual bill, which can change if IRAS revises your property&apos;s AV. ABSD is not auto-computed (it depends on citizenship, entity structure, and existing property count) — enter your own figure from the reference table above. This doesn&apos;t model rental income tax, capital appreciation, or refinancing — it&apos;s a monthly cash-flow check, not a full investment return.
+              </p>
+              <p style={{ fontSize: C.xs, color: C.faint, lineHeight: 1.6, marginTop: 10 }}>
+                See <a href="/propinvest/the-math" style={{ color: C.accent }}>the math</a> for the full formulas, TDSR/MSR limits, and every figure&apos;s source behind this page.
               </p>
             </ExploreSection>
           </div>
