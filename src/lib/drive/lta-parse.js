@@ -148,13 +148,18 @@ export const MATCH_TERMS = {
   miteclipse:  ['mitsubishi eclipse'],
 }
 
-// Anchor: M032 = Feb 2026. Increments +1 each month.
+// Anchor: M032 = June 2026, confirmed against the live PDF at
+// onemotoring.lta.gov.sg/.../Car_Cost_Update/M032-Car_Cost_Update.pdf.
+// The anchor here was previously set to Feb 2026, four months early — the
+// PDF fetch was quietly guessing M038/M037 in August 2026 when the real
+// files were M034/M033, so both fetch attempts 404'd every month
+// regardless of anything else being correct. Increments +1 each month.
 // Takes an optional Date (defaults to now) so it can be unit tested without
 // mocking global time.
 export function getPdfNumbers(now = new Date()) {
   const y = now.getUTCFullYear()
   const m = now.getUTCMonth() + 1
-  const monthsSince = (y - 2026) * 12 + (m - 2)
+  const monthsSince = (y - 2026) * 12 + (m - 6)
   const n = 32 + monthsSince
   return [`M${String(n).padStart(3,'0')}`, `M${String(n-1).padStart(3,'0')}`]
 }

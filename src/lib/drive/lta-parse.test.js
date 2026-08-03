@@ -1,7 +1,7 @@
 // src/lib/drive/lta-parse.test.js
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
-import { buildPriceMaps, matchToId, isLowCoverage, MIN_COVERAGE } from './lta-parse.js'
+import { buildPriceMaps, matchToId, isLowCoverage, MIN_COVERAGE, getPdfNumbers } from './lta-parse.js'
 
 test('matchToId resolves a known LTA row name to its car id', () => {
   assert.equal(matchToId('BYD DOLPHIN STANDARD'), 'byddolphin')
@@ -62,4 +62,29 @@ test('buildPriceMaps: a cheaper row that DOES have its own OMV correctly overwri
   const { omvMap, vesMap } = buildPriceMaps(rows)
   assert.equal(omvMap.byddolphin, 19000)
   assert.equal(vesMap.byddolphin, 300)
+})
+
+// ─── getPdfNumbers ─────────────────────────────────────────────────────────
+// Anchor confirmed against the real, live file:
+// onemotoring.lta.gov.sg/.../Car_Cost_Update/M032-Car_Cost_Update.pdf = June
+// 2026. The anchor was previously set to Feb 2026 (four months early), which
+// meant /drive/api/cars guessed M038/M037 in August 2026 when the real files
+// were M034/M033 — every fetch 404'd, every month, regardless of anything
+// else being correct.
+
+test('getPdfNumbers: M032 for June 2026, the confirmed real anchor', () => {
+  const [cur, prev] = getPdfNumbers(new Date('2026-06-15T00:00:00Z'))
+  assert.equal(cur, 'M032')
+  assert.equal(prev, 'M031')
+})
+
+test('getPdfNumbers: August 2026 is M034, not the pre-fix M038', () => {
+  const [cur, prev] = getPdfNumbers(new Date('2026-08-03T00:00:00Z'))
+  assert.equal(cur, 'M034')
+  assert.equal(prev, 'M033')
+})
+
+test('getPdfNumbers: rolls forward a full year correctly', () => {
+  const [cur] = getPdfNumbers(new Date('2027-06-15T00:00:00Z'))
+  assert.equal(cur, 'M044') // 12 months after the June 2026 anchor
 })
