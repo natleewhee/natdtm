@@ -145,9 +145,20 @@ site-wide `ShellHeader` / `Footer`.
 - **PNG manifest icons**: WhatETF's PWA manifest is SVG-icon-only, which
   iOS wants as PNG for home-screen install polish. Unchanged by the merge.
 - **`LTA_API_KEY`**: not configured in every environment, so
-  `/drive/api/coe` correctly 500s when it's missing — DriveReady falls back
-  to hardcoded `COE_FALLBACK` constants in `src/lib/drive/calc.js`, and the
-  calculator page itself still works.
+  `/drive/api/coe` returns `status: 'no_key'` (503) when it's missing —
+  DriveReady falls back to hardcoded `COE_FALLBACK` constants in
+  `src/lib/drive/calc.js`, and the calculator page itself still works.
+  Visit `/drive/data-status` to see whether the key is set, whether LTA
+  accepted it, and which COE figures are actually in use.
+- **LTA Car Cost Update PDF cannot be read**: `extractPdfText` in
+  `src/lib/drive/lta-parse.js` scans raw bytes for parenthesised string
+  literals, which only works on PDFs with *uncompressed* content streams.
+  Real-world PDFs use `/FlateDecode`, so extraction yields zero characters
+  and `/drive/api/cars` always falls back to `public/data/cars.json`
+  (`reason: 'extract_failed'`). Fixing this needs a zlib inflate step —
+  which the edge runtime lacks, so the route likely has to move to the Node
+  runtime. Tracked but not yet fixed; car prices are currently only as
+  fresh as the last committed `cars.json`.
 - **Copy voice pass**: the home-page heroes and footer blurb have been
   rewritten into a casual first-person voice; deeper pages (wizard
   microcopy, results screens, the-math pages) still read in the older,

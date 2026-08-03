@@ -8,6 +8,7 @@ import {
   MAINTENANCE_BY_BRAND
 } from './renew-math'
 import { COE_FALLBACK } from '@/lib/drive/calc'
+import { COE_ENDPOINT } from '@/lib/drive/endpoints'
 import ShellHeader from '@/components/shared/ShellHeader'
 import { C } from '@/lib/drive/theme'
 
@@ -201,7 +202,7 @@ export default function RenewOrReplacePage() {
   const [results, setResults] = useState(null)
 
   useEffect(() => {
-    fetch('/api/coe').then(r=>r.json()).then(d=>{
+    fetch(COE_ENDPOINT).then(r=>r.json()).then(d=>{
       if (d.catA && d.catB) { setPqp({ catA:d.catA.premium, catB:d.catB.premium }); setPqpLive(true) }
     }).catch(()=>{})
   }, [])

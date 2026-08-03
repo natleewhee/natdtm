@@ -1,36 +1,74 @@
-// src/app/api/coe/route.js
+// src/app/drive/api/coe/route.js
 // Fetches latest COE premiums from LTA DataMall
 // Cat A = OMV ≤ S$20,000 | Cat B = OMV > S$20,000
 // LTA updates this after every bidding exercise (~2x per month)
+//
+// Every response carries a machine-readable `status` so the UI (and the
+// /drive/data-status page) can say WHY live data is missing rather than
+// collapsing "no key", "key rejected", and "LTA is down" into one silent
+// fallback. The AccountKey itself is never echoed back — only whether one
+// is configured.
 
 export const runtime = 'edge'
 export const revalidate = 3600 // cache for 1 hour
+
+const ENDPOINT = 'https://datamall2.mytransport.sg/ltaodataservice/COEResult'
+
+// LTA answers an unknown/expired AccountKey with 401, and a key that exists
+// but isn't entitled to the dataset with 403. Both mean "your key is the
+// problem", which is a different fix from "LTA is having a bad day".
+function classifyHttp(status) {
+  if (status === 401) return 'auth_rejected'
+  if (status === 403) return 'auth_forbidden'
+  if (status === 429) return 'rate_limited'
+  return 'upstream_error'
+}
 
 export async function GET() {
   const apiKey = process.env.LTA_API_KEY
 
   if (!apiKey) {
     return Response.json(
-      { error: 'LTA_API_KEY not configured', catA: null, catB: null },
-      { status: 500 }
+      {
+        status: 'no_key',
+        keyConfigured: false,
+        detail: 'LTA_API_KEY is not set in this environment. Set it in your hosting provider\'s environment variables (and as a GitHub Actions secret for the scheduled refresh).',
+        checkedAt: new Date().toISOString(),
+        catA: null,
+        catB: null,
+      },
+      { status: 503 }
     )
   }
 
   try {
-    const res = await fetch(
-      'https://datamall2.mytransport.sg/ltaodataservice/COEResult',
-      {
-        headers: {
-          AccountKey: apiKey,
-          accept: 'application/json',
-        },
-        // Edge runtime cache
-        next: { revalidate: 3600 },
-      }
-    )
+    const res = await fetch(ENDPOINT, {
+      headers: {
+        AccountKey: apiKey,
+        accept: 'application/json',
+      },
+      // Edge runtime cache
+      next: { revalidate: 3600 },
+    })
 
     if (!res.ok) {
-      throw new Error(`LTA API returned ${res.status}`)
+      const status = classifyHttp(res.status)
+      return Response.json(
+        {
+          status,
+          keyConfigured: true,
+          httpStatus: res.status,
+          detail: status === 'auth_rejected' || status === 'auth_forbidden'
+            ? `LTA rejected the AccountKey (HTTP ${res.status}). The key is set but not accepted — regenerate it at datamall.lta.gov.sg and update the environment variable.`
+            : status === 'rate_limited'
+              ? 'LTA is rate-limiting this AccountKey (HTTP 429). Try again shortly.'
+              : `LTA DataMall returned HTTP ${res.status}.`,
+          checkedAt: new Date().toISOString(),
+          catA: null,
+          catB: null,
+        },
+        { status: 502 }
+      )
     }
 
     const data = await res.json()
@@ -45,10 +83,27 @@ export async function GET() {
     const catB = latest.find(r => r.vehicle_class === 'Category B')
 
     if (!catA || !catB) {
-      throw new Error('Could not find Cat A or Cat B results')
+      // A 200 with no Cat A/B rows means the key WORKED — worth saying so,
+      // since it's a completely different problem from an auth failure.
+      return Response.json(
+        {
+          status: 'no_results',
+          keyConfigured: true,
+          keyAccepted: true,
+          rowsReturned: results.length,
+          detail: `LTA accepted the AccountKey and returned ${results.length} row(s), but no Category A/B entry for the latest bidding exercise.`,
+          checkedAt: new Date().toISOString(),
+          catA: null,
+          catB: null,
+        },
+        { status: 502 }
+      )
     }
 
     return Response.json({
+      status: 'live',
+      keyConfigured: true,
+      keyAccepted: true,
       catA: {
         premium: catA.premium,
         quota:   catA.quota,
@@ -62,11 +117,19 @@ export async function GET() {
       month:     catA.month,
       biddingNo: catA.bidding_no,
       fetchedAt: new Date().toISOString(),
+      checkedAt: new Date().toISOString(),
     })
   } catch (err) {
     console.error('COE fetch error:', err)
     return Response.json(
-      { error: err.message, catA: null, catB: null },
+      {
+        status: 'network_error',
+        keyConfigured: true,
+        detail: `Could not reach LTA DataMall: ${err.message}`,
+        checkedAt: new Date().toISOString(),
+        catA: null,
+        catB: null,
+      },
       { status: 502 }
     )
   }

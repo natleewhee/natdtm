@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect } from 'react'
 import { C, SGD, parseMoneyKM } from '@/lib/drive/theme'
 import { calc, calcCeiling, COE_FALLBACK, COE_FALLBACK_AS_OF, isCoeFallbackStale } from '@/lib/drive/calc'
+import { COE_ENDPOINT, CARS_ENDPOINT } from '@/lib/drive/endpoints'
 import { calcUsed } from '@/lib/drive/used-car'
 import { useDebounce } from '@/lib/drive/hooks'
 import {
@@ -34,6 +35,7 @@ export default function DriveReadyPage() {
   const [scrapedAt,   setScrapedAt]   = useState(null)
   const [lowCoverage, setLowCoverage] = useState(false)           // true if the LTA parse matched suspiciously few cars
   const [coeData,     setCoeData]     = useState(null)
+  const [coeStatus,   setCoeStatus]   = useState(null)      // 'live' | 'no_key' | 'auth_rejected' | …
   const [coeLoading,  setCoeLoading]  = useState(true)
 
   // Merge scraped prices onto base car list
@@ -76,7 +78,7 @@ export default function DriveReadyPage() {
       .catch(() => {})
 
     // 2. Fetch prices from LTA PDF via our API route
-    fetch('/api/cars')
+    fetch(CARS_ENDPOINT)
       .then(r => r.json())
       .then(d => {
         if (d.source === 'lta_pdf' && d.prices && Object.keys(d.prices).length > 0) {
@@ -99,10 +101,17 @@ export default function DriveReadyPage() {
       .catch(() => setScrapeStatus('fallback'))
 
     // 3. Fetch live COE from LTA DataMall
-    fetch('/api/coe')
+    // Keep the failure status, don't swallow it — a missing key, a rejected
+    // key and LTA being down are three different problems, and the strip
+    // below (plus /drive/data-status) can only tell them apart if the
+    // status code survives this far.
+    fetch(COE_ENDPOINT)
       .then(r => r.json())
-      .then(d => { if (d.catA && d.catB) setCoeData(d) })
-      .catch(() => {})
+      .then(d => {
+        setCoeStatus(d?.status ?? 'network_error')
+        if (d.catA && d.catB) setCoeData(d)
+      })
+      .catch(() => setCoeStatus('network_error'))
       .finally(() => setCoeLoading(false))
   }, [])
 
@@ -532,6 +541,11 @@ export default function DriveReadyPage() {
                     ? <><span style={{fontSize:C.xs,fontFamily:C.fontMono,fontWeight:700,color:C.primary}}>Cat A: {SGD(coeData.catA.premium)}</span><span style={{fontSize:C.xs,color:C.faint}}>·</span><span style={{fontSize:C.xs,fontFamily:C.fontMono,fontWeight:700,color:C.primary}}>Cat B: {SGD(coeData.catB.premium)}</span><span style={{fontSize:C.xs,color:C.faint,fontSize:'10px'}}> · {coeData.month} · Live from LTA</span></>
                     : <><span style={{fontSize:C.xs,fontFamily:C.fontMono,fontWeight:700,color:C.amberText}}>Cat A: ~{SGD(COE_FALLBACK.catA)}</span><span style={{fontSize:C.xs,color:C.faint}}>·</span><span style={{fontSize:C.xs,fontFamily:C.fontMono,fontWeight:700,color:C.amberText}}>Cat B: ~{SGD(COE_FALLBACK.catB)}</span><span style={{fontSize:C.xs,color:C.amberText,fontSize:'10px'}}> · {isCoeFallbackStale() ? `⚠ Estimate may be outdated, as of ${COE_FALLBACK_AS_OF}` : `Estimated as of ${COE_FALLBACK_AS_OF} — live LTA data temporarily unavailable`}</span></>
                 }
+                {/* Always reachable, whether live or not — "is the feed
+                    actually working?" should never require reading code. */}
+                <a href="/drive/data-status" style={{fontSize:'10px',color:C.faint,textDecoration:'underline'}}>
+                  {coeLoading ? 'Data status' : coeStatus === 'live' ? '✓ Live — data status' : 'Why? — data status'}
+                </a>
               </div>
               <p style={{marginTop:6,textAlign:'center',fontSize:C.xs,color:C.faint}}>Prices indicative incl. COE · Figures based on latest applicable policies · Educational tool only</p>
             </div>
