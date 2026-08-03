@@ -458,7 +458,7 @@ export function loadFlowInputs() {
 // on mount via loadToolInputs(tool). Merges onto whatever's already in
 // that tool's slot so it never clobbers the auto-synced metrics fields
 // (e.g. saveHouseNumbers) that other tools read.
-const TOOLS_WITH_INPUTS = ['house', 'drive', 'retire', 'insure', 'tax', 'etf', 'ledger', 'child', 'propinvest']
+const TOOLS_WITH_INPUTS = ['house', 'drive', 'retire', 'insure', 'tax', 'etf', 'ledger']
 
 export function saveToolInputs(tool, inputs) {
   if (!TOOLS_WITH_INPUTS.includes(tool)) return false
