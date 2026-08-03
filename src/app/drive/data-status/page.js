@@ -17,12 +17,18 @@ import { useEffect, useState } from 'react'
 import ShellHeader from '@/components/shared/ShellHeader'
 import { COE_FALLBACK, COE_FALLBACK_AS_OF } from '@/lib/drive/calc'
 import { COE_ENDPOINT, CARS_ENDPOINT } from '@/lib/drive/endpoints'
+import { C } from '@/lib/drive/theme'
 
-const OK = '#0f7b47'
-const WARN = '#8a5a00'
-const BAD = '#a32020'
-const LINE = '#e2e0dc'
-const SUB = '#6b6862'
+// The site is permanently dark (see the header comment in globals.css —
+// :root[data-theme='light'] is an exact copy of the dark values, so there is
+// no light mode to degrade into). Colors come from the Drive palette rather
+// than fresh literals so this page can't drift out of sync with the rest of
+// the vertical, and so the small 12-13px label text keeps enough contrast.
+const OK = C.greenText
+const WARN = C.amberText
+const BAD = C.redText
+const LINE = C.border
+const SUB = C.muted
 
 function fmtSGD(n) {
   return typeof n === 'number' ? `S$${n.toLocaleString('en-SG')}` : '—'
@@ -101,7 +107,7 @@ function FixNote({ text }) {
   if (!text) return null
   return (
     <p style={{
-      fontSize: 12.5, lineHeight: 1.55, color: '#3d3a35', background: '#faf8f5',
+      fontSize: 12.5, lineHeight: 1.55, color: C.text, background: C.surface,
       border: `1px solid ${LINE}`, borderRadius: 4, padding: '10px 12px', margin: '14px 0 0',
     }}>
       <strong style={{ fontFamily: 'var(--l-font-mono)', fontSize: 11, letterSpacing: '.06em', textTransform: 'uppercase', color: SUB, display: 'block', marginBottom: 4 }}>What to do</strong>
@@ -143,8 +149,18 @@ export default function DataStatusPage() {
 
   const coeState = COE_STATES[coe?.status] ?? COE_STATES.network_error
   const carsReason = cars?.source === 'lta_pdf' ? 'lta_pdf' : (cars?.reason || 'unknown')
-  const carsState = CARS_STATES[carsReason] ?? CARS_STATES.unknown
+  let carsState = CARS_STATES[carsReason] ?? CARS_STATES.unknown
   const carsLive = cars?.source === 'lta_pdf'
+  // A live parse that matched almost nothing is not "Working" — /drive
+  // already shows an amber "this month's update looks incomplete" banner
+  // for it, and a green tick here would contradict that banner.
+  if (carsLive && cars?.lowCoverage) {
+    carsState = {
+      tone: WARN,
+      label: 'Partial',
+      fix: `Only ${cars.matchedCars} cars matched out of ${cars.rowsFound} parsed rows (below MIN_COVERAGE). The LTA PDF's model names have likely drifted — MATCH_TERMS in src/lib/drive/lta-parse.js needs updating.`,
+    }
+  }
 
   return (
     <>
@@ -236,7 +252,7 @@ export default function DataStatusPage() {
               style={{
                 fontFamily: 'var(--l-font-mono)', fontSize: 12, letterSpacing: '.06em',
                 textTransform: 'uppercase', padding: '10px 18px', borderRadius: 4,
-                border: `1px solid ${LINE}`, background: '#fff', cursor: 'pointer',
+                border: `1px solid ${LINE}`, background: C.surface, color: C.text, cursor: 'pointer',
               }}
             >
               Re-check now
