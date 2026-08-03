@@ -54,7 +54,7 @@ const COE_STATES = {
   auth_rejected:  { tone: BAD,  label: 'Key rejected',   fix: 'The key is set but LTA returned 401. Regenerate the AccountKey at datamall.lta.gov.sg and update the environment variable — then redeploy.' },
   auth_forbidden: { tone: BAD,  label: 'Key forbidden',  fix: 'LTA returned 403 — the key exists but is not entitled to the COEResult dataset. Check your DataMall subscription.' },
   rate_limited:   { tone: WARN, label: 'Rate limited',   fix: 'LTA returned 429. This usually clears on its own — retry in a few minutes.' },
-  upstream_error: { tone: WARN, label: 'LTA error',      fix: 'LTA DataMall returned an unexpected status. Nothing to fix on our side; retry later.' },
+  upstream_error: { tone: WARN, label: 'LTA error',      fix: 'See the note above this box — a 404 usually points at the endpoint or key formatting rather than a temporary outage, so it is worth reading before just retrying.' },
   no_results:     { tone: WARN, label: 'No Cat A/B rows',fix: 'The key worked, but the latest bidding exercise had no Category A/B rows. Usually resolves after the next bidding result publishes.' },
   network_error:  { tone: BAD,  label: 'Unreachable',    fix: 'Could not reach datamall2.mytransport.sg at all. Check outbound network access from your deployment.' },
 }
@@ -198,6 +198,7 @@ export default function DataStatusPage() {
               <Row label="AccountKey configured" value={coe?.keyConfigured ? 'Yes' : 'No'} mono />
               <Row label="Accepted by LTA" value={coe?.keyAccepted ? 'Yes' : (coe?.keyConfigured ? 'No' : '—')} mono />
               {coe?.httpStatus && <Row label="HTTP status from LTA" value={coe.httpStatus} mono />}
+              {coe?.keyWasTrimmed && <Row label="Key had stray whitespace/quotes" value="Yes — stripped before sending" mono />}
               {coe?.status === 'live' ? (
                 <>
                   <Row label="Cat A premium" value={fmtSGD(coe.catA?.premium)} mono />

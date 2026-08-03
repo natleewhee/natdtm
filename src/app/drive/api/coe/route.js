@@ -25,7 +25,15 @@ function classifyHttp(status) {
 }
 
 export async function GET() {
-  const apiKey = process.env.LTA_API_KEY
+  // Trimmed defensively: a stray trailing newline or wrapping quotes from
+  // pasting the key into Vercel's env var UI is a common real-world
+  // mistake, and it corrupts the AccountKey header silently — fetch()
+  // doesn't reject a header value with a trailing \n, but some upstream
+  // WAFs answer the resulting malformed request with a generic 404
+  // instead of a clean 401, which reads as "wrong endpoint" rather than
+  // "bad key" and sends whoever's debugging it in the wrong direction.
+  const rawApiKey = process.env.LTA_API_KEY
+  const apiKey = rawApiKey?.trim().replace(/^["']|["']$/g, '')
 
   if (!apiKey) {
     return Response.json(
@@ -53,16 +61,26 @@ export async function GET() {
 
     if (!res.ok) {
       const status = classifyHttp(res.status)
+      const keyWasTrimmed = rawApiKey !== undefined && rawApiKey !== apiKey
       return Response.json(
         {
           status,
           keyConfigured: true,
           httpStatus: res.status,
+          // Never the key itself — only whether we had to clean it up,
+          // which is diagnostic evidence for a 404 specifically: LTA's
+          // own auth failures come back as 401/403, so a 404 with a
+          // correctly-formed request most likely means the ENDPOINT is
+          // wrong, not the key. If the raw env var needed trimming, that
+          // whitespace/quoting corruption is worth ruling out first.
+          keyWasTrimmed,
           detail: status === 'auth_rejected' || status === 'auth_forbidden'
             ? `LTA rejected the AccountKey (HTTP ${res.status}). The key is set but not accepted — regenerate it at datamall.lta.gov.sg and update the environment variable.`
             : status === 'rate_limited'
               ? 'LTA is rate-limiting this AccountKey (HTTP 429). Try again shortly.'
-              : `LTA DataMall returned HTTP ${res.status}.`,
+              : status === 'upstream_error' && res.status === 404
+                ? `LTA returned 404 Not Found for ${ENDPOINT} — a 404 (not 401/403) usually means the request never reached an auth check at all.${keyWasTrimmed ? ' Your LTA_API_KEY had leading/trailing whitespace or quotes that were stripped before this request — if that persists, re-paste the key with no surrounding characters.' : ' Since the key value itself was already clean, the more likely cause is that LTA moved or renamed this endpoint — worth checking the current API User Guide at datamall.lta.gov.sg.'}`
+                : `LTA DataMall returned HTTP ${res.status}.`,
           checkedAt: new Date().toISOString(),
           catA: null,
           catB: null,
