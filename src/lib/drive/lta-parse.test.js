@@ -71,20 +71,35 @@ test('buildPriceMaps: a cheaper row that DOES have its own OMV correctly overwri
 // meant /drive/api/cars guessed M038/M037 in August 2026 when the real files
 // were M034/M033 — every fetch 404'd, every month, regardless of anything
 // else being correct.
+//
+// Fixing the anchor alone was still not enough: as confirmed live in
+// August 2026, M032 (June) is STILL the latest published file — LTA is
+// running ~2 months behind a strict monthly cadence, so a naive
+// current+previous guess (M034/M033) 404s on both even with the anchor
+// right. getPdfNumbers() now returns several months of candidates so a
+// normal publishing delay can't 404 every attempt at once.
 
-test('getPdfNumbers: M032 for June 2026, the confirmed real anchor', () => {
-  const [cur, prev] = getPdfNumbers(new Date('2026-06-15T00:00:00Z'))
-  assert.equal(cur, 'M032')
-  assert.equal(prev, 'M031')
+test('getPdfNumbers: newest candidate is M032 for June 2026, the confirmed real anchor', () => {
+  const candidates = getPdfNumbers(new Date('2026-06-15T00:00:00Z'))
+  assert.equal(candidates[0], 'M032')
+  assert.equal(candidates[1], 'M031')
 })
 
-test('getPdfNumbers: August 2026 is M034, not the pre-fix M038', () => {
-  const [cur, prev] = getPdfNumbers(new Date('2026-08-03T00:00:00Z'))
-  assert.equal(cur, 'M034')
-  assert.equal(prev, 'M033')
+test('getPdfNumbers: August 2026 newest guess is M034, not the pre-fix M038', () => {
+  const candidates = getPdfNumbers(new Date('2026-08-03T00:00:00Z'))
+  assert.equal(candidates[0], 'M034')
+  assert.equal(candidates[1], 'M033')
+})
+
+test('getPdfNumbers: looks back far enough to still include the real M032 from an August "now"', () => {
+  // This is the case that actually broke in production: the anchor was
+  // correct but a 2-candidate guess didn't reach back to the still-latest
+  // June file.
+  const candidates = getPdfNumbers(new Date('2026-08-03T00:00:00Z'))
+  assert.ok(candidates.includes('M032'), `expected M032 among ${candidates.join(', ')}`)
 })
 
 test('getPdfNumbers: rolls forward a full year correctly', () => {
-  const [cur] = getPdfNumbers(new Date('2027-06-15T00:00:00Z'))
-  assert.equal(cur, 'M044') // 12 months after the June 2026 anchor
+  const candidates = getPdfNumbers(new Date('2027-06-15T00:00:00Z'))
+  assert.equal(candidates[0], 'M044') // 12 months after the June 2026 anchor
 })

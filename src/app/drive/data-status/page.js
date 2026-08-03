@@ -62,7 +62,7 @@ const COE_STATES = {
 const CARS_STATES = {
   lta_pdf:       { tone: OK,   label: 'Working',            fix: null },
   extract_failed:{ tone: BAD,  label: 'Cannot read PDF',    fix: 'The PDF downloaded but no text could be extracted — its content streams are compressed (/FlateDecode), which extractPdfText() in src/lib/drive/lta-parse.js does not handle. This needs an inflate step; it is a known bug, not a configuration problem.' },
-  pdf_not_found: { tone: BAD,  label: 'PDF not found (404)',fix: 'Neither the current nor previous month\'s filename exists. getPdfNumbers() extrapolates from a hardcoded anchor (M032 = Feb 2026, +1/month) — if LTA skipped or renamed a release, the anchor needs correcting.' },
+  pdf_not_found: { tone: BAD,  label: 'PDF not found (404)',fix: 'None of the last several months\' filenames exist. getPdfNumbers() extrapolates from a confirmed anchor (M032 = June 2026, +1/month) — if every recent guess 404s, LTA has likely renamed or restructured the release rather than just running behind, and the anchor needs re-confirming against the live directory.' },
   http_error:    { tone: WARN, label: 'OneMotoring error',  fix: 'OneMotoring returned an unexpected status. Retry later.' },
   network_error: { tone: BAD,  label: 'Unreachable',        fix: 'Could not reach onemotoring.lta.gov.sg. Check outbound network access from your deployment.' },
   parse_thin:    { tone: WARN, label: 'Too few rows parsed',fix: 'Text extracted but almost no table rows matched — the PDF layout has likely changed and parseLTARows() needs updating.' },

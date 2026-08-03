@@ -38,12 +38,15 @@ async function fetchAndParse(pdfNum) {
 }
 
 async function main() {
-  const [curPdf, prevPdf] = getPdfNumbers()
+  // LTA doesn't publish on a strict monthly cadence — getPdfNumbers()
+  // returns several months of candidates, newest first, so a normal
+  // publishing delay doesn't 404 every attempt.
+  const candidates = getPdfNumbers()
 
   let pdfText = ''
   let pdfUsed = ''
   const errors = []
-  for (const pdfNum of [curPdf, prevPdf]) {
+  for (const pdfNum of candidates) {
     try {
       pdfText = await fetchAndParse(pdfNum)
       pdfUsed = pdfNum

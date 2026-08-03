@@ -153,15 +153,25 @@ export const MATCH_TERMS = {
 // The anchor here was previously set to Feb 2026, four months early — the
 // PDF fetch was quietly guessing M038/M037 in August 2026 when the real
 // files were M034/M033, so both fetch attempts 404'd every month
-// regardless of anything else being correct. Increments +1 each month.
+// regardless of anything else being correct.
+//
+// LTA does NOT reliably publish on a strict +1-per-calendar-month cadence:
+// as of August 2026, M032 (June) is still the LATEST available file — no
+// M033 or M034 exists yet, a 2-month lag behind what a naive "this month"
+// guess assumes. Trying only the current and previous guess (as this used
+// to) means a normal publishing delay makes BOTH attempts 404, even with a
+// correct anchor. LOOKBACK_MONTHS widens the search instead of assuming a
+// fixed lag, so a slow month self-heals without another anchor chase.
+const LOOKBACK_MONTHS = 6
+
 // Takes an optional Date (defaults to now) so it can be unit tested without
-// mocking global time.
+// mocking global time. Returns candidates newest-first.
 export function getPdfNumbers(now = new Date()) {
   const y = now.getUTCFullYear()
   const m = now.getUTCMonth() + 1
   const monthsSince = (y - 2026) * 12 + (m - 6)
   const n = 32 + monthsSince
-  return [`M${String(n).padStart(3,'0')}`, `M${String(n-1).padStart(3,'0')}`]
+  return Array.from({ length: LOOKBACK_MONTHS }, (_, i) => `M${String(n - i).padStart(3, '0')}`)
 }
 
 // Extract text content from a PDF binary buffer using parenthesised string extraction
