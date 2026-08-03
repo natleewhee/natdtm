@@ -92,6 +92,32 @@ export function isPureEV(car) {
   return type.includes('Electric')
 }
 
+// MAS LTV/COE-category threshold: OMV ≤ S$20,000 → Cat A, 70% max loan;
+// above → Cat B, 60% max loan. This must be the ONLY place that decides
+// loanCap/COE category from OMV — cars.json used to carry loanCap and coe
+// as separately hand-maintained fields that could (and did, for 9 cars)
+// disagree with each other and with the car's own OMV, silently telling a
+// user they qualified for a loan a bank would reject. Every caller that
+// needs either value should derive it from OMV via this function rather
+// than trust a stored field.
+export function omvToLtv(omv) {
+  const catA = (omv ?? 0) <= 20000
+  return { coe: catA ? 'Cat A' : 'Cat B', loanCap: catA ? 70 : 60 }
+}
+
+// Minimum downpayment for a car at its own loanCap, rounded to cents rather
+// than left as price × (1 − cap/100) — that form evaluates to
+// 60000.00000000001 for a $200k car at 70%, which reads as "insufficient"
+// for a downpayment of exactly the minimum. calc() and calcUsed() each
+// inline this same rounding themselves (their return shape carries more
+// than just this number), but every OTHER minDown check in the app —
+// CarPicker's budget filter, coe-explained's demo — should call this
+// instead of re-deriving the un-rounded, untoleranced version.
+export function minDownFor(price, loanCap) {
+  const maxLoan = price * (loanCap / 100)
+  return Math.round((price - maxLoan) * 100) / 100
+}
+
 export function calcNetARF(omv, ves, pureEV) {
   // Gross ARF → minus VES rebate/surcharge → minus EEAI for pure EVs only
   const grossArf = calcARF(omv || 0)
@@ -193,11 +219,7 @@ export function calc(salary, down, tenure, car, liveCOE = null, existingDebt = 0
 
   const tier = RATE_TIERS.find(t => t.id === car.rateTier) ?? RATE_TIERS[0]
   const maxLoan = car.price * (car.loanCap / 100)
-  // Derived by subtraction and rounded to cents, NOT as
-  // price × (1 − cap/100): that form evaluates to 60000.00000000001 for a
-  // $200k car at 70%, so someone entering exactly the minimum
-  // downpayment was told it was insufficient and shown a $0 shortfall.
-  const minDown = Math.round((car.price - maxLoan) * 100) / 100
+  const minDown = minDownFor(car.price, car.loanCap)
   // Half-a-cent tolerance: nobody can be short by less than a cent, and
   // without it a downpayment derived by float arithmetic upstream can
   // land a fraction below the minimum and read as insufficient.

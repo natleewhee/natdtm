@@ -199,10 +199,13 @@ Example (OMV = S$50,000):
           <BodyText>Your COE entitles you to use the vehicle for 10 years. If you deregister early, you get back the unused portion pro-rated by remaining months.</BodyText>
           <Formula>{`COE rebate = (remaining months ÷ 120) × COE paid
 
-Estimated COE paid = price − OMV − ARF − registration fee − GST
-  (Registration fee ≈ S$220, GST ≈ 9% of OMV, dealer margin ≈ 5% of price)
+COE paid is NOT estimated by subtracting costs from price — it's taken
+directly: the live Cat A/B premium from LTA DataMall when available, or
+the last-known fallback premium otherwise, matched to your car's own
+category (Cat A: OMV ≤ S$20,000, Cat B: above).
 
-This is an estimate — actual COE premiums change every bidding exercise.`}</Formula>
+This is an estimate where fallback figures are used — actual COE
+premiums change every bidding exercise.`}</Formula>
         </Section>
 
         {/* Depreciation */}

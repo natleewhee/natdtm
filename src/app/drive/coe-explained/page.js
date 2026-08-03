@@ -2,20 +2,28 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
-import { calcARF, calcPARF, COE_FALLBACK } from '@/lib/drive/calc'
+import { calcARF, calcPARF, COE_FALLBACK, omvToLtv, minDownFor } from '@/lib/drive/calc'
 import { CoeHistoryChart } from '@/components/drive/CoeHistoryChart'
 import { CoeTimingSignal } from '@/components/drive/CoeTimingSignal'
 import ShellHeader from '@/components/shared/ShellHeader'
 import { C, SGD } from '@/lib/drive/theme'
 
-// Short car list for the interactive element
+// Short car list for the interactive element. basePrice is ex-COE — the
+// slider adds COE on top (calcTotal below) — so it must be the real
+// cars.json sticker price MINUS the COE that price already includes,
+// not an independently-guessed number. Two of these previously held the
+// COE-inclusive price, double-counting it once the slider's premium was
+// added back on top (e.g. the Freed rendered as S$297,000 against a real
+// S$167,888 sticker). loanCap is derived from omv via omvToLtv rather
+// than hand-set, for the same reason cars.json's own hand-set loanCap
+// field went stale against its omv (see omvToLtv's comment in calc.js).
 const DEMO_CARS = [
-  { id: 'corolla', name: 'Toyota Corolla Altis', omv: 27000, rateTier: 'green', tenure: 7, loanCap: 70, basePrice: 145000 },
-  { id: 'freed',   name: 'Honda Freed e:HEV',   omv: 20000, rateTier: 'green', tenure: 7, loanCap: 70, basePrice: 168000 },
-  { id: 'sealion', name: 'BYD Sealion 7',        omv: 37500, rateTier: 'green', tenure: 7, loanCap: 60, basePrice: 161000 }, // ex-COE ~161k
-  { id: 'harrier', name: 'Toyota Harrier',       omv: 42000, rateTier: 'green', tenure: 7, loanCap: 60, basePrice: 127000 },
-  { id: 'bmw320',  name: 'BMW 320i',             omv: 42000, rateTier: 'ice',   tenure: 7, loanCap: 60, basePrice: 170000 },
-]
+  { id: 'corolla', name: 'Toyota Corolla Altis', omv: 27152, rateTier: 'green', tenure: 7, basePrice: 214888 - COE_FALLBACK.catB },
+  { id: 'freed',   name: 'Honda Freed e:HEV',    omv: 19973, rateTier: 'green', tenure: 7, basePrice: 167888 - COE_FALLBACK.catA },
+  { id: 'sealion', name: 'BYD Sealion 7',        omv: 37500, rateTier: 'green', tenure: 7, basePrice: 265388 - COE_FALLBACK.catB },
+  { id: 'harrier', name: 'Toyota Harrier',       omv: 42108, rateTier: 'green', tenure: 7, basePrice: 263888 - COE_FALLBACK.catB },
+  { id: 'bmw320',  name: 'BMW 320i',             omv: 42464, rateTier: 'ice',   tenure: 7, basePrice: 312888 - COE_FALLBACK.catB },
+].map(car => ({ ...car, loanCap: omvToLtv(car.omv).loanCap }))
 
 const RATES = { ice: 0.0260, green: 0.0208, tesla: 0.0168 }
 
@@ -27,7 +35,7 @@ function calcTotal(car, coe) {
   const netArf = arf - eeai
   const duty = car.omv * 0.308
   const govtExCOE = car.omv + netArf + duty + 350
-  const minDown = totalPrice * (1 - car.loanCap / 100)
+  const minDown = minDownFor(totalPrice, car.loanCap)
   const loan = totalPrice - minDown
   const rate = RATES[car.rateTier] || 0.026
   const interest = loan * rate * car.tenure

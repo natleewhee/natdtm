@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect } from 'react'
 import { C, SGD, parseMoneyKM } from '@/lib/drive/theme'
-import { calc, calcCeiling, COE_FALLBACK, COE_FALLBACK_AS_OF, isCoeFallbackStale } from '@/lib/drive/calc'
+import { calc, calcCeiling, COE_FALLBACK, COE_FALLBACK_AS_OF, isCoeFallbackStale, omvToLtv } from '@/lib/drive/calc'
 import { COE_ENDPOINT, CARS_ENDPOINT } from '@/lib/drive/endpoints'
 import { calcUsed } from '@/lib/drive/used-car'
 import { useDebounce } from '@/lib/drive/hooks'
@@ -38,12 +38,19 @@ export default function DriveReadyPage() {
   const [coeStatus,   setCoeStatus]   = useState(null)      // 'live' | 'no_key' | 'auth_rejected' | …
   const [coeLoading,  setCoeLoading]  = useState(true)
 
-  // Merge scraped prices onto base car list
+  // Merge scraped prices onto base car list. loanCap/coe are also
+  // re-derived from omv here rather than trusted from cars.json or the
+  // live scrape — those were separately hand-maintained fields that could
+  // (and did, for 9 cars) disagree with the car's own OMV, which silently
+  // told a user they qualified for a 70% loan a bank would only give at
+  // 60%. This is the one point every car — static JSON or freshly scraped
+  // OMV — passes through, so it can't drift again. See omvToLtv in calc.js.
   const allCars = baseCars.map(car => {
+    const ltv = omvToLtv(car.omv)
     if (priceMap[car.id]) {
-      return { ...car, price: priceMap[car.id], priceVerified: true }
+      return { ...car, ...ltv, price: priceMap[car.id], priceVerified: true }
     }
-    return { ...car, priceVerified: scrapeStatus === 'live' ? false : null }
+    return { ...car, ...ltv, priceVerified: scrapeStatus === 'live' ? false : null }
     // priceVerified: true = from LTA PDF live, false = unmatched (show ⚠️), null = data not loaded yet
   })
 
@@ -478,7 +485,7 @@ export default function DriveReadyPage() {
                     {['new','used'].map(cnd => (
                       <button key={cnd} type="button" aria-pressed={conditionA===cnd}
                         onClick={() => { setConditionA(cnd); setCalculated(false) }}
-                        style={{padding:'6px 14px',fontSize:C.xs,fontWeight:700,letterSpacing:'0.04em',textTransform:'uppercase',cursor:'pointer',borderRadius:6,border:'none',fontFamily:C.fontBody,background:conditionA===cnd?C.primary:'transparent',color:conditionA===cnd?'#fff':C.muted,transition:'all 0.2s'}}>
+                        style={{padding:'6px 14px',fontSize:C.xs,fontWeight:700,letterSpacing:'0.04em',textTransform:'uppercase',cursor:'pointer',borderRadius:6,border:'none',fontFamily:C.fontBody,background:conditionA===cnd?C.primary:'transparent',color:conditionA===cnd?C.bg:C.muted,transition:'all 0.2s'}}>
                         {cnd==='new'?'New Car':'Used Car'}
                       </button>
                     ))}
@@ -486,7 +493,7 @@ export default function DriveReadyPage() {
                   {conditionA === 'new' ? (
                     <CarPicker value={carA} onChange={c => { setCarA(c); setCustomPriceA(''); setCalculated(false) }} slot="A"
                       ceiling={calcCeiling(dSalary, dDown, dTenure, dExistingDebt)} down={dDown}
-                      allCars={allCars} top5Cars={top5Cars}
+                      allCars={allCars} top5Cars={top5Cars} coeData={liveCOE}
                       customPrice={customPriceA} onCustomPrice={v => { setCustomPriceA(v); setCalculated(false) }}/>
                   ) : (
                     <>
@@ -501,7 +508,7 @@ export default function DriveReadyPage() {
                       {['new','used'].map(cnd => (
                         <button key={cnd} type="button" aria-pressed={conditionB===cnd}
                           onClick={() => { setConditionB(cnd); setCalculated(false) }}
-                          style={{padding:'6px 14px',fontSize:C.xs,fontWeight:700,letterSpacing:'0.04em',textTransform:'uppercase',cursor:'pointer',borderRadius:6,border:'none',fontFamily:C.fontBody,background:conditionB===cnd?C.primary:'transparent',color:conditionB===cnd?'#fff':C.muted,transition:'all 0.2s'}}>
+                          style={{padding:'6px 14px',fontSize:C.xs,fontWeight:700,letterSpacing:'0.04em',textTransform:'uppercase',cursor:'pointer',borderRadius:6,border:'none',fontFamily:C.fontBody,background:conditionB===cnd?C.primary:'transparent',color:conditionB===cnd?C.bg:C.muted,transition:'all 0.2s'}}>
                           {cnd==='new'?'New Car':'Used Car'}
                         </button>
                       ))}
@@ -509,7 +516,7 @@ export default function DriveReadyPage() {
                     {conditionB === 'new' ? (
                       <CarPicker value={carB} onChange={c => { setCarB(c); setCustomPriceB(''); setCalculated(false) }} slot="B"
                         ceiling={calcCeiling(dSalary, dDown, dTenure, dExistingDebt)} down={dDown}
-                        allCars={allCars} top5Cars={top5Cars}
+                        allCars={allCars} top5Cars={top5Cars} coeData={liveCOE}
                         customPrice={customPriceB} onCustomPrice={v => { setCustomPriceB(v); setCalculated(false) }}/>
                     ) : (
                       <>

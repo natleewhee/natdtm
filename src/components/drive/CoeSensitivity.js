@@ -43,7 +43,7 @@ export function CoeSensitivity({ r, tenure }) {
         <div style={{display:'flex',gap:4,background:C.surface,border:`1.5px solid ${C.border}`,borderRadius:C.r,padding:2}}>
           {SCENARIOS.map(s => (
             <button key={s.key} type="button" onClick={() => setScenario(s.key)} aria-pressed={scenario===s.key}
-              style={{padding:'4px 10px',fontSize:C.xs,fontWeight:700,cursor:'pointer',borderRadius:6,border:'none',fontFamily:C.fontBody,background:scenario===s.key?C.primary:'transparent',color:scenario===s.key?'#fff':C.muted,transition:'all 0.2s'}}>
+              style={{padding:'4px 10px',fontSize:C.xs,fontWeight:700,cursor:'pointer',borderRadius:6,border:'none',fontFamily:C.fontBody,background:scenario===s.key?C.primary:'transparent',color:scenario===s.key?C.bg:C.muted,transition:'all 0.2s'}}>
               {s.label}
             </button>
           ))}

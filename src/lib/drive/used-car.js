@@ -21,7 +21,7 @@
 
 import { C, RATE_TIERS } from './theme.js'
 import {
-  isPureEV, calcNetARF, getCOEPremium, calcPARF, calcCOERebate, TDSR_LIMIT,
+  isPureEV, calcNetARF, getCOEPremium, calcPARF, calcCOERebate, TDSR_LIMIT, omvToLtv, minDownFor,
 } from './calc.js'
 
 export function calcUsedDepr(usedCar, y, liveCOEPremium = null) {
@@ -66,13 +66,12 @@ export function calcUsed(salary, down, tenure, usedCar, liveCOE = null, existing
   tenure = Math.min(tenure, maxTenureFromCoe, 7)
 
   const tier = RATE_TIERS.find(t => t.id === usedCar.rateTier) ?? RATE_TIERS[0]
-  const loanCap = usedCar.omv <= 20000 ? 70 : 60
-  const coeCategory = usedCar.omv <= 20000 ? 'Cat A' : 'Cat B'
+  const { loanCap, coe: coeCategory } = omvToLtv(usedCar.omv)
   const car = { ...usedCar, loanCap, coe: coeCategory, isUsed: true }
 
   const maxLoan = car.price * (loanCap / 100)
-  const minDown = car.price * (1 - loanCap / 100)
-  const canDown = down >= minDown
+  const minDown = minDownFor(car.price, loanCap)
+  const canDown = down >= minDown - 0.005
   const loan = canDown ? Math.min(Math.max(0, car.price - down), maxLoan) : maxLoan
   const reqDown = minDown
   const months = tenure * 12

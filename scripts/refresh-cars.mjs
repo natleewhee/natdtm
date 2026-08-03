@@ -16,8 +16,9 @@ import { readFile, writeFile } from 'node:fs/promises'
 import { fileURLToPath } from 'node:url'
 import path from 'node:path'
 import {
-  getPdfNumbers, extractPdfText, parseLTARows, matchToId, isLowCoverage, MIN_COVERAGE,
+  getPdfNumbers, extractPdfText, parseLTARows, buildPriceMaps, isLowCoverage, MIN_COVERAGE,
 } from '../src/lib/drive/lta-parse.js'
+import { omvToLtv } from '../src/lib/drive/calc.js'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const CARS_JSON_PATH = path.join(__dirname, '..', 'public', 'data', 'cars.json')
@@ -63,18 +64,14 @@ async function main() {
     process.exit(1)
   }
 
-  const priceMap = {}
-  const omvMap = {}
-  const vesMap = {}
-  for (const row of rows) {
-    const id = matchToId(row.name)
-    if (!id) continue
-    if (!priceMap[id] || row.sellingPrice < priceMap[id]) {
-      priceMap[id] = row.sellingPrice
-      if (row.omv) omvMap[id] = row.omv
-      if (row.vesAmount) vesMap[id] = row.vesAmount
-    }
-  }
+  // Shared with the live /drive/api/cars route rather than hand-rolled here:
+  // buildPriceMaps DELETES a car's omv/ves entry whenever a cheaper trim
+  // becomes the matched row for that car and that trim has no OMV/VES of
+  // its own — a hand-rolled version that skips the delete leaves the
+  // PREVIOUS (more expensive) trim's OMV attached to the new cheapest
+  // price, which is how cars.json ended up with loanCap/coe fields that
+  // disagreed with their own omv (see omvToLtv's comment in calc.js).
+  const { priceMap, omvMap, vesMap } = buildPriceMaps(rows)
 
   const matchedCars = Object.keys(priceMap).length
   console.log(`Parsed ${pdfUsed}: ${rows.length} rows, matched ${matchedCars} cars (${((matchedCars / rows.length) * 100).toFixed(0)}% coverage).`)
@@ -100,6 +97,19 @@ async function main() {
     }
     if (vesMap[car.id] !== undefined && vesMap[car.id] !== car.ves) {
       car.ves = vesMap[car.id]
+      changed = true
+    }
+    // loanCap/coe are DERIVED from omv, not independently editable — an
+    // omv update that crosses the S$20,000 Cat A/B threshold without this
+    // is exactly how cars.json ended up with a loanCap that disagreed
+    // with the car's own omv (some cars over-lent by 10 percentage
+    // points as a result). Recomputed on every run, not just when omv
+    // changed, so a car whose fields already drifted apart self-heals
+    // the next time this script runs rather than staying wrong forever.
+    const ltv = omvToLtv(car.omv)
+    if (car.loanCap !== ltv.loanCap || car.coe !== ltv.coe) {
+      car.loanCap = ltv.loanCap
+      car.coe = ltv.coe
       changed = true
     }
     if (changed) updatedCount++

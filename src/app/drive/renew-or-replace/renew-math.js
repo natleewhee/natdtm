@@ -134,9 +134,14 @@ export function calcBuyNewOption(inputs) {
   const coeRebateAtHorizon = calcCOERebate(estCOEPaid, monthsRemainingAtHorizon)
   const recoveryAtEnd = parfAtHorizon + coeRebateAtHorizon
 
+  // startAge is 1, not 0: getAnnualMaintenance floors ageYears-1 into a 0-9
+  // index, so starting at 0 duplicates year-1's cost for both year 0 and
+  // year 1 and never reaches the index-9 (year-10) repair spike — every
+  // other call site here (renewYears, usefulYears below) starts from the
+  // car's real age for exactly this reason.
   const maintenance = customMaintenance != null
     ? customMaintenance * years
-    : getTotalMaintenance(brandKey, 0, years)
+    : getTotalMaintenance(brandKey, 1, years)
 
   const totalCost = totalRepaid + maintenance - recoveryAtEnd
   const annual = annualCost(totalRepaid + maintenance, recoveryAtEnd, years)

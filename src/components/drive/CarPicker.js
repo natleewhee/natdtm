@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect } from 'react'
 import { C, SGD, RATE_TIERS, brandTier, parseMoneyKM } from '@/lib/drive/theme'
-import { calcPriceGap } from '@/lib/drive/calc'
+import { calcPriceGap, minDownFor } from '@/lib/drive/calc'
 
 // Common SG car-shopping shorthand that doesn't literally appear in our
 // `type` strings (e.g. cars are tagged "Electric SUV", not "EV SUV") — map
@@ -32,7 +32,7 @@ function hlMatch(text, query) {
   return <span>{text.slice(0,idx)}<mark style={{background:C.accentBg,color:C.accent,borderRadius:2,padding:'0 1px'}}>{text.slice(idx,idx+query.length)}</mark>{text.slice(idx+query.length)}</span>
 }
 
-export function CarPicker({ value, onChange, slot, ceiling, down, allCars = [], top5Cars = [], customPrice = '', onCustomPrice }) {
+export function CarPicker({ value, onChange, slot, ceiling, down, allCars = [], top5Cars = [], customPrice = '', onCustomPrice, coeData }) {
   const [query, setQuery] = useState('')
   const [focused, setFocused] = useState(false)
   const [hiIdx, setHiIdx] = useState(-1)
@@ -82,7 +82,7 @@ export function CarPicker({ value, onChange, slot, ceiling, down, allCars = [], 
   const hasCeiling = ceiling && (ceiling.catA > 0 || ceiling.catB > 0)
   const budgetCars = hasCeiling ? allCars.filter(car => {
     const cap = car.coe === 'Cat A' ? ceiling.catA : ceiling.catB
-    const minDown = car.price * (1 - car.loanCap / 100)
+    const minDown = minDownFor(car.price, car.loanCap)
     return car.price <= cap && (down||0) >= minDown
   }).sort((a,b) => { if (a.top5 && !b.top5) return -1; if (!a.top5 && b.top5) return 1; if (a.top5&&b.top5) return a.rank-b.rank; return b.price-a.price }).slice(0,5) : []
   const showBudget = budgetFilter && hasCeiling
@@ -284,7 +284,14 @@ export function CarPicker({ value, onChange, slot, ceiling, down, allCars = [], 
           </div>
           {(() => {
             const displayCar = customPrice ? {...value, price: parseInt(customPrice, 10)||value.price} : value
-            const pg = calcPriceGap(displayCar)
+            // Resolve to this car's OWN category, mirroring how calc()
+            // does it — without this, the margin shown here used the
+            // stale COE_FALLBACK even when a live premium was available,
+            // while DepreciationCard (fed the live figure) showed a
+            // completely different margin for the same car on the same
+            // screen.
+            const liveCOEPremium = coeData ? (displayCar.coe === 'Cat A' ? coeData.catA : coeData.catB) : null
+            const pg = calcPriceGap(displayCar, liveCOEPremium)
             return (
               <div style={{display:'flex',alignItems:'center',gap:8}}>
                 <span style={{fontSize:C.xs,color:C.muted}}>{pg.label}:</span>

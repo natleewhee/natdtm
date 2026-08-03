@@ -5,6 +5,7 @@ import {
   calcARF, parfPct, calcPARF, calcCOERebate, isPureEV, calcNetARF,
   getCOEPremium, calcGovtCosts, calcPriceGap, calcDepr, calc, calcCeiling,
   isCoeFallbackStale, PARF_CAP, TDSR_LIMIT, COE_FALLBACK, COE_FALLBACK_AS_OF,
+  omvToLtv, minDownFor,
 } from './calc.js'
 
 function approx(a, b, eps = 0.5) {
@@ -346,4 +347,34 @@ test('isCoeFallbackStale flags a fallback older than the bidding window', () => 
   assert.equal(isCoeFallbackStale(justUpdated), false)
   const longAfter = new Date(new Date(COE_FALLBACK_AS_OF).getTime() + 90 * 86_400_000)
   assert.equal(isCoeFallbackStale(longAfter), true)
+})
+
+// ─── omvToLtv / minDownFor ─────────────────────────────────────────────
+// cars.json used to carry loanCap and coe as independently hand-maintained
+// fields that could (and did, for over 50 cars) disagree with the car's own
+// omv — silently telling a user they qualified for a 70% loan a bank would
+// only give at 60%. omvToLtv is now the ONLY place that decision is made.
+
+test('omvToLtv: Cat A / 70% loan at or below the S$20,000 threshold', () => {
+  assert.deepEqual(omvToLtv(20000), { coe: 'Cat A', loanCap: 70 })
+  assert.deepEqual(omvToLtv(15000), { coe: 'Cat A', loanCap: 70 })
+})
+
+test('omvToLtv: Cat B / 60% loan above the S$20,000 threshold', () => {
+  assert.deepEqual(omvToLtv(20001), { coe: 'Cat B', loanCap: 60 })
+  assert.deepEqual(omvToLtv(27152), { coe: 'Cat B', loanCap: 60 }) // real Corolla Altis omv
+})
+
+test('omvToLtv: missing/nullish omv does not throw and defaults to Cat A', () => {
+  assert.deepEqual(omvToLtv(undefined), { coe: 'Cat A', loanCap: 70 })
+  assert.deepEqual(omvToLtv(null), { coe: 'Cat A', loanCap: 70 })
+})
+
+test('minDownFor: exact minimum is not a fraction of a cent short (float-safety regression)', () => {
+  // price * (1 - cap/100) evaluates to 60000.00000000001 for these inputs —
+  // the bug calc()'s own minDown was fixed away from. minDownFor must not
+  // reintroduce it for any other caller (CarPicker, used-car.js, ...).
+  const minDown = minDownFor(200000, 70)
+  assert.equal(minDown, 60000)
+  assert.ok(60000 >= minDown - 0.005)
 })

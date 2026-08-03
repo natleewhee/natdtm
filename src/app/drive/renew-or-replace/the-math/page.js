@@ -44,7 +44,7 @@ export default function RenewOrReplaceTheMath() {
         <p style={{ fontSize: C.base, color: C.muted, margin: '0 0 8px' }}>All assumptions behind the Renew or Replace calculator.</p>
 
         <MathTOC items={[
-          { id: 'the-5-year-framework', label: 'The 5-Year Framework' },
+          { id: 'comparing-different-horizons', label: 'Comparing different horizons' },
           { id: 'renew-option-cost-components', label: 'Renew costs' },
           { id: 'parf-rebate-calculation', label: 'PARF rebate' },
           { id: 'buy-new-option-cost-components', label: 'Buy new costs' },
@@ -53,8 +53,8 @@ export default function RenewOrReplaceTheMath() {
           { id: 'limitations', label: 'Limitations' },
         ]} />
 
-        <H2>The 5-Year Framework</H2>
-        <P>Both options are compared over a fixed 5-year horizon — the same period as a COE renewal. This makes the comparison apples-to-apples. All costs are in today&apos;s dollars (no inflation adjustment), which is conservative and standard for short-horizon personal finance calculations.</P>
+        <H2>Comparing different horizons</H2>
+        <P>The options on offer don&apos;t share one horizon: a 5-year renewal is compared over 5 years, a 10-year renewal (or buying new) over 10 years, and a used car over however many years its COE has left. Because these differ, we don&apos;t compare total cost directly — every option is reduced to <strong>annual cost</strong> (see below), which normalises them to the same per-year unit so a 5-year and a 10-year option are genuinely comparable. All costs are in today&apos;s dollars (no inflation adjustment), which is conservative and standard for short-horizon personal finance calculations.</P>
 
         <H2>Renew Option — Cost Components</H2>
         <Table rows={[
@@ -83,7 +83,7 @@ export default function RenewOrReplaceTheMath() {
 
         <H2>Buy New Option — Cost Components</H2>
         <P><strong>Loan calculation:</strong> Flat-rate interest. Green/EV rate 2.08%, ICE rate 2.60%, Tesla 1.68% (MAS published rates). Monthly instalment = (loan + total interest) ÷ (tenure × 12).</P>
-        <P><strong>Car value at 5 years:</strong> We estimate approximately 45% of the purchase price is lost in depreciation over the first 5 years. This is conservative — actual depreciation varies significantly by brand and COE level. The full DriveReady calculator gives a more precise figure per car.</P>
+        <P><strong>Recovered value at the horizon (10 years by default):</strong> There is no flat depreciation percentage — recovery is the same PARF-rebate-plus-COE-rebate model used everywhere else on this page, applied at the chosen horizon. PARF is calculated from net ARF (after any EV rebate) at the schedule above; the COE rebate is the unused-months share of the COE premium paid. Actual recovery varies significantly by car, COE level, and how many years you hold it — the main DriveReady calculator gives the precise per-car figure.</P>
 
         <H2>Maintenance Estimates by Brand</H2>
         <P>Annual servicing costs are based on Singapore workshop data (2026) from ValuePenguin, Revol Carz, and authorised dealer published schedules. Age-related repair costs follow a curve based on owner community data — costs accelerate non-linearly after year 5.</P>
@@ -109,7 +109,7 @@ export default function RenewOrReplaceTheMath() {
         <P>For the <strong>used car</strong> option, we also show cost per remaining COE year — simply the purchase price divided by COE years left. This cuts through everything and shows what you are paying purely for the right to drive that car.</P>
 
         <H2>Limitations</H2>
-        <P>This calculator does not account for: resale value (only scrap value), changes in insurance premiums with car age, road tax differences, petrol/EV charging costs, or financing availability changes. The 5-year car value estimate for new cars is approximate — use the main DriveReady calculator for a per-car depreciation figure.</P>
+        <P>This calculator does not account for: resale value (only scrap value), changes in insurance premiums with car age, road tax differences, petrol/EV charging costs, or financing availability changes. Recovered value at the comparison horizon is estimated from the PARF/COE model above — use the main DriveReady calculator for a more precise per-car depreciation figure.</P>
 
         <div style={{ marginTop: 40, padding: 20, background: C.surface, borderRadius: C.rL, border: `1px solid ${C.border}`, fontSize: C.xs, color: C.faint, lineHeight: 1.7 }}>
           This tool is for educational purposes only. It does not constitute financial advice. All figures are estimates. Consult a MAS-licensed financial adviser before making any financial decision. Not affiliated with LTA, any car dealer, or any financial institution.

@@ -108,3 +108,24 @@ test('calcUsedDepr COE rebate reflects the car\'s actual remaining months, not a
   const d0 = calcUsedDepr(car, 0, 120_000)
   approx(d0.coeRebate, (36 / 120) * 120_000)
 })
+
+// ─── minDown float-precision (regression) ─────────────────────────────────
+// price * (1 - loanCap/100) can evaluate to e.g. 30000.000000000004 instead
+// of exactly 30000. A downpayment of exactly the true minimum then read as
+// insufficient with a shortfall that displayed as "S$0" — the same bug
+// calc()'s own minDown was fixed away from; used-car.js had reintroduced it.
+
+test('calcUsed: a downpayment of exactly the float-imprecise minimum is not rejected', () => {
+  const car = { ...USED_CAR, price: 100_000, omv: 19_000 } // Cat A, 70% cap -> minDown = 30000
+  const r = calcUsed(8_000, 30_000, 5, car)
+  assert.equal(r.canDown, true)
+  assert.notEqual(r.verdict, 'Insufficient Downpayment')
+  assert.equal(r.shortfall, 0)
+})
+
+test('omvToLtv drives calcUsed\'s loanCap the same way it drives calc()\'s', () => {
+  const catB = { ...USED_CAR, omv: 25_000 } // > 20000 -> Cat B, 60%
+  const r = calcUsed(8_000, 40_000, 5, catB)
+  assert.equal(r.car.loanCap, 60)
+  assert.equal(r.car.coe, 'Cat B')
+})
