@@ -289,7 +289,7 @@ export default function RenewOrReplacePage() {
           <p style={{fontSize:C.base,color:C.muted,maxWidth:540,margin:'0 auto 12px',lineHeight:1.7}}>Compare every option by annual cost — renewing your COE for 5 or 10 years, buying a new car, or buying used.</p>
           {pqpLive ? (
             <div style={{display:'inline-flex',alignItems:'center',gap:8,padding:'5px 14px',background:C.accentBg,borderRadius:100,border:`1px solid ${C.accent}33`,fontSize:C.xs,color:C.accentText}}>
-              Live COE · Cat A: <strong>{SGD(pqp.catA)}</strong> · Cat B: <strong>{SGD(pqp.catB)}</strong> · from LTA DataMall
+              Live COE · Cat A: <strong>{SGD(pqp.catA)}</strong> · Cat B: <strong>{SGD(pqp.catB)}</strong> · via data.gov.sg
             </div>
           ) : (
             <div style={{display:'inline-flex',alignItems:'center',gap:8,padding:'5px 14px',background:C.amberBg,borderRadius:100,border:`1px solid ${C.amber}33`,fontSize:C.xs,color:C.amberText}}>

@@ -200,9 +200,10 @@ Example (OMV = S$50,000):
           <Formula>{`COE rebate = (remaining months ÷ 120) × COE paid
 
 COE paid is NOT estimated by subtracting costs from price — it's taken
-directly: the live Cat A/B premium from LTA DataMall when available, or
-the last-known fallback premium otherwise, matched to your car's own
-category (Cat A: OMV ≤ S$20,000, Cat B: above).
+directly: the live Cat A/B premium from data.gov.sg's mirror of LTA's
+COE dataset when available, or the last-known fallback premium
+otherwise, matched to your car's own category (Cat A: OMV ≤ S$20,000,
+Cat B: above).
 
 This is an estimate where fallback figures are used — actual COE
 premiums change every bidding exercise.`}</Formula>

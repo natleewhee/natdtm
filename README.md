@@ -144,12 +144,6 @@ site-wide `ShellHeader` / `Footer`.
   testing.
 - **PNG manifest icons**: WhatETF's PWA manifest is SVG-icon-only, which
   iOS wants as PNG for home-screen install polish. Unchanged by the merge.
-- **`LTA_API_KEY`**: not configured in every environment, so
-  `/drive/api/coe` returns `status: 'no_key'` (503) when it's missing —
-  DriveReady falls back to hardcoded `COE_FALLBACK` constants in
-  `src/lib/drive/calc.js`, and the calculator page itself still works.
-  Visit `/drive/data-status` to see whether the key is set, whether LTA
-  accepted it, and which COE figures are actually in use.
 - **LTA Car Cost Update PDF cannot be read**: `extractPdfText` in
   `src/lib/drive/lta-parse.js` scans raw bytes for parenthesised string
   literals, which only works on PDFs with *uncompressed* content streams.
@@ -158,7 +152,11 @@ site-wide `ShellHeader` / `Footer`.
   (`reason: 'extract_failed'`). Fixing this needs a zlib inflate step —
   which the edge runtime lacks, so the route likely has to move to the Node
   runtime. Tracked but not yet fixed; car prices are currently only as
-  fresh as the last committed `cars.json`.
+  fresh as the last committed `cars.json`. The filename-guessing itself
+  (`getPdfNumbers` in the same file) is correct — confirmed against the
+  live PDF directory and covers a multi-month publishing lag — so this is
+  purely a "can't parse what we downloaded" problem now, not a "can't find
+  the file" one. Visit `/drive/data-status` to see the live diagnosis.
 - **Copy voice pass**: the home-page heroes and footer blurb have been
   rewritten into a casual first-person voice; deeper pages (wizard
   microcopy, results screens, the-math pages) still read in the older,
@@ -174,6 +172,7 @@ npm run lint     # eslint
 npm test         # unit tests (node --test)
 ```
 
-Copy `.env.example` to `.env.local` and set `LTA_API_KEY` (from
-[LTA DataMall](https://datamall.lta.gov.sg/)) to enable live COE premiums
-under `/drive`; without it, DriveReady falls back to hardcoded constants.
+No environment variables are required. Live COE premiums (`/drive`) come
+from [data.gov.sg](https://data.gov.sg/)'s public mirror of LTA's COE
+dataset, and car prices come from a public OneMotoring PDF — both keyless.
+See `/drive/data-status` for the live health of each feed.

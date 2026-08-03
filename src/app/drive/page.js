@@ -24,7 +24,7 @@ import Button from '@/components/shared/Button'
 import AutosaveIndicator from '@/components/shared/AutosaveIndicator'
 
 // Car prices come from /public/data/cars.json (edit that file to update prices)
-// COE premiums come from /api/coe (live from LTA DataMall)
+// COE premiums come from /drive/api/coe (live from data.gov.sg's mirror of LTA's COE dataset)
 
 // ─── MAIN APP ─────────────────────────────────────────────────────────────────
 export default function DriveReadyPage() {
@@ -107,7 +107,7 @@ export default function DriveReadyPage() {
       })
       .catch(() => setScrapeStatus('fallback'))
 
-    // 3. Fetch live COE from LTA DataMall
+    // 3. Fetch live COE from data.gov.sg
     // Keep the failure status, don't swallow it — a missing key, a rejected
     // key and LTA being down are three different problems, and the strip
     // below (plus /drive/data-status) can only tell them apart if the

@@ -44,16 +44,14 @@ jobs:
           delete-branch: true
           add-paths: public/data/cars.json
 
-      # COE history can't be backfilled — DataMall only exposes the current +
-      # previous bidding exercise, so this only grows forward from whenever
-      # the workflow starts running. Requires the LTA_API_KEY repo secret;
-      # continue-on-error so a missing secret or a DataMall hiccup here never
-      # blocks the car-price refresh above.
+      # Fetches from data.gov.sg's public mirror of LTA's COE dataset — no
+      # API key needed (previously DataMall, which required an AccountKey
+      # and, in production, kept 404ing even with a valid one; see
+      # scripts/refresh-coe-history.mjs). continue-on-error so a transient
+      # data.gov.sg hiccup here never blocks the car-price refresh above.
       - name: Run COE history refresh script
         id: coe_history
         continue-on-error: true
-        env:
-          LTA_API_KEY: ${{ secrets.LTA_API_KEY }}
         run: node scripts/refresh-coe-history.mjs
 
       - name: Open PR if coe-history.json changed
@@ -64,10 +62,10 @@ jobs:
           title: 'Append latest COE bidding results to history'
           body: |
             Automated via `.github/workflows/refresh-data.yml` and
-            `scripts/refresh-coe-history.mjs`. Requires the `LTA_API_KEY`
-            repository secret — this step is skipped, not failed, if it's
-            missing or the DataMall call errors, so it never blocks the
-            car-price refresh above.
+            `scripts/refresh-coe-history.mjs`, fetched from data.gov.sg
+            (no API key required) — this step is skipped, not failed, if
+            the fetch errors, so it never blocks the car-price refresh
+            above.
           branch: auto/refresh-coe-history
           delete-branch: true
           add-paths: public/data/coe-history.json

@@ -29,7 +29,7 @@ export const TDSR_LIMIT = 0.55
 
 // ─── COE FALLBACK CONSTANTS ──────────────────────────────────────────────────
 // Updated manually after each LTA bidding (~2x/month).
-// Used when the live DataMall fetch hasn't completed yet or fails.
+// Used when the live data.gov.sg fetch hasn't completed yet or fails.
 // Source: 2026-07 1st bidding exercise, from a user-provided LTA export
 // (public/data/coe-history.json has the full series). That export is
 // month-level only, so COE_FALLBACK_AS_OF below is the 1st of that month as
@@ -128,7 +128,7 @@ export function calcNetARF(omv, ves, pureEV) {
 }
 
 export function getCOEPremium(car, liveCOEPremium) {
-  // Use live DataMall value if available, else use hardcoded fallback
+  // Use live value if available, else use hardcoded fallback
   if (liveCOEPremium !== null && liveCOEPremium !== undefined) return liveCOEPremium
   return car.coe === 'Cat A' ? COE_FALLBACK.catA : COE_FALLBACK.catB
 }

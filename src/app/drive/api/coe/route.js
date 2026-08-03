@@ -1,86 +1,54 @@
 // src/app/drive/api/coe/route.js
-// Fetches latest COE premiums from LTA DataMall
+// Fetches latest COE premiums for the calculator.
 // Cat A = OMV ≤ S$20,000 | Cat B = OMV > S$20,000
 // LTA updates this after every bidding exercise (~2x per month)
 //
+// Source: data.gov.sg's mirror of LTA's own "COE Bidding Results / Prices"
+// dataset, via CKAN's public datastore_search API. This REPLACES a direct
+// call to LTA DataMall's COEResult endpoint (datamall2.mytransport.sg),
+// which requires an AccountKey — in production that endpoint kept
+// returning 404 even with a correctly-configured, correctly-formatted key,
+// which a 404 (vs a clean 401/403 "your key is wrong") suggests was an
+// endpoint/routing problem on LTA's side, not anything fixable here.
+// data.gov.sg needs no key at all and mirrors the exact same underlying
+// data, so it sidesteps that whole class of failure.
+//
 // Every response carries a machine-readable `status` so the UI (and the
 // /drive/data-status page) can say WHY live data is missing rather than
-// collapsing "no key", "key rejected", and "LTA is down" into one silent
-// fallback. The AccountKey itself is never echoed back — only whether one
-// is configured.
+// collapsing every failure into one silent fallback.
+
+import { parseCoeResultToEntries, coerceDatastoreRecord, sortEntriesChronologically } from '@/lib/drive/coe-history'
 
 export const runtime = 'edge'
 export const revalidate = 3600 // cache for 1 hour
 
-const ENDPOINT = 'https://datamall2.mytransport.sg/ltaodataservice/COEResult'
-
-// LTA answers an unknown/expired AccountKey with 401, and a key that exists
-// but isn't entitled to the dataset with 403. Both mean "your key is the
-// problem", which is a different fix from "LTA is having a bad day".
-function classifyHttp(status) {
-  if (status === 401) return 'auth_rejected'
-  if (status === 403) return 'auth_forbidden'
-  if (status === 429) return 'rate_limited'
-  return 'upstream_error'
-}
+const DATASET_ID = 'd_69b3380ad7e51aff3a7dcc84eba52b8a'
+// sort is CKAN's documented datastore_search parameter (comma-separated
+// "field direction" pairs) — asking for the newest rows server-side rather
+// than pulling the whole ~2,000-row/16-year dataset every request. Entries
+// are still re-sorted client-side below (parseCoeResultToEntries doesn't
+// assume order), so this is a performance choice, not a correctness one —
+// EXCEPT that with only limit=20 rows requested, if `sort` were ever
+// ignored we'd get an arbitrary 20-row slice (likely the oldest, from
+// 2010, given how the rows were inserted) and our own sorting would just
+// correctly order the wrong subset. The staleness check after parsing
+// below exists specifically to catch that failure mode.
+const ENDPOINT = `https://data.gov.sg/api/action/datastore_search?resource_id=${DATASET_ID}&limit=20&sort=${encodeURIComponent('month desc,bidding_no desc')}`
+const STALE_AFTER_DAYS = 100 // COE bids ~2x/month; 100 days catches a broken sort, not just a slow month
 
 export async function GET() {
-  // Trimmed defensively: a stray trailing newline or wrapping quotes from
-  // pasting the key into Vercel's env var UI is a common real-world
-  // mistake, and it corrupts the AccountKey header silently — fetch()
-  // doesn't reject a header value with a trailing \n, but some upstream
-  // WAFs answer the resulting malformed request with a generic 404
-  // instead of a clean 401, which reads as "wrong endpoint" rather than
-  // "bad key" and sends whoever's debugging it in the wrong direction.
-  const rawApiKey = process.env.LTA_API_KEY
-  const apiKey = rawApiKey?.trim().replace(/^["']|["']$/g, '')
-
-  if (!apiKey) {
-    return Response.json(
-      {
-        status: 'no_key',
-        keyConfigured: false,
-        detail: 'LTA_API_KEY is not set in this environment. Set it in your hosting provider\'s environment variables (and as a GitHub Actions secret for the scheduled refresh).',
-        checkedAt: new Date().toISOString(),
-        catA: null,
-        catB: null,
-      },
-      { status: 503 }
-    )
-  }
-
   try {
     const res = await fetch(ENDPOINT, {
-      headers: {
-        AccountKey: apiKey,
-        accept: 'application/json',
-      },
-      // Edge runtime cache
+      headers: { accept: 'application/json' },
       next: { revalidate: 3600 },
     })
 
     if (!res.ok) {
-      const status = classifyHttp(res.status)
-      const keyWasTrimmed = rawApiKey !== undefined && rawApiKey !== apiKey
       return Response.json(
         {
-          status,
-          keyConfigured: true,
+          status: 'upstream_error',
           httpStatus: res.status,
-          // Never the key itself — only whether we had to clean it up,
-          // which is diagnostic evidence for a 404 specifically: LTA's
-          // own auth failures come back as 401/403, so a 404 with a
-          // correctly-formed request most likely means the ENDPOINT is
-          // wrong, not the key. If the raw env var needed trimming, that
-          // whitespace/quoting corruption is worth ruling out first.
-          keyWasTrimmed,
-          detail: status === 'auth_rejected' || status === 'auth_forbidden'
-            ? `LTA rejected the AccountKey (HTTP ${res.status}). The key is set but not accepted — regenerate it at datamall.lta.gov.sg and update the environment variable.`
-            : status === 'rate_limited'
-              ? 'LTA is rate-limiting this AccountKey (HTTP 429). Try again shortly.'
-              : status === 'upstream_error' && res.status === 404
-                ? `LTA returned 404 Not Found for ${ENDPOINT} — a 404 (not 401/403) usually means the request never reached an auth check at all.${keyWasTrimmed ? ' Your LTA_API_KEY had leading/trailing whitespace or quotes that were stripped before this request — if that persists, re-paste the key with no surrounding characters.' : ' Since the key value itself was already clean, the more likely cause is that LTA moved or renamed this endpoint — worth checking the current API User Guide at datamall.lta.gov.sg.'}`
-                : `LTA DataMall returned HTTP ${res.status}.`,
+          detail: `data.gov.sg returned HTTP ${res.status} for the COE dataset.`,
           checkedAt: new Date().toISOString(),
           catA: null,
           catB: null,
@@ -90,26 +58,48 @@ export async function GET() {
     }
 
     const data = await res.json()
-    const results = data?.value ?? []
+    if (data?.success !== true) {
+      return Response.json(
+        {
+          status: 'upstream_error',
+          detail: `data.gov.sg responded but marked the request unsuccessful: ${data?.error?.message ?? 'no error message given'}.`,
+          checkedAt: new Date().toISOString(),
+          catA: null,
+          catB: null,
+        },
+        { status: 502 }
+      )
+    }
 
-    // LTA returns results for current + previous bidding exercise
-    // bidding_no: 1 = most recent, 2 = previous
-    // vehicle_class: "Category A", "Category B", "Category C", "Category D", "Category E"
-    const latest = results.filter(r => r.bidding_no === 1)
+    const rawRecords = data?.result?.records ?? []
+    const records = rawRecords.map(coerceDatastoreRecord)
+    const entries = sortEntriesChronologically(parseCoeResultToEntries(records))
+    const latest = entries.at(-1)
 
-    const catA = latest.find(r => r.vehicle_class === 'Category A')
-    const catB = latest.find(r => r.vehicle_class === 'Category B')
-
-    if (!catA || !catB) {
-      // A 200 with no Cat A/B rows means the key WORKED — worth saying so,
-      // since it's a completely different problem from an auth failure.
+    if (!latest) {
       return Response.json(
         {
           status: 'no_results',
-          keyConfigured: true,
-          keyAccepted: true,
-          rowsReturned: results.length,
-          detail: `LTA accepted the AccountKey and returned ${results.length} row(s), but no Category A/B entry for the latest bidding exercise.`,
+          rowsReturned: rawRecords.length,
+          detail: `data.gov.sg returned ${rawRecords.length} row(s), but none paired into a full Cat A/Cat B bidding exercise. The dataset may need a larger 'limit' if a bidding round is still incomplete.`,
+          checkedAt: new Date().toISOString(),
+          catA: null,
+          catB: null,
+        },
+        { status: 502 }
+      )
+    }
+
+    // month is "YYYY-MM" — parsed as the 1st of that month is close enough
+    // to catch a genuinely broken sort (which would return 2010-era rows),
+    // not to flag a normal COE bidding cadence.
+    const latestMonthAgeDays = (Date.now() - new Date(`${latest.month}-01T00:00:00Z`).getTime()) / 86_400_000
+    if (latestMonthAgeDays > STALE_AFTER_DAYS) {
+      return Response.json(
+        {
+          status: 'stale_data',
+          latestMonthFound: latest.month,
+          detail: `The newest bidding exercise found was ${latest.month}, which is over ${STALE_AFTER_DAYS} days old — likely means the sort parameter isn't returning the most recent rows, not that LTA has genuinely gone quiet that long.`,
           checkedAt: new Date().toISOString(),
           catA: null,
           catB: null,
@@ -120,20 +110,18 @@ export async function GET() {
 
     return Response.json({
       status: 'live',
-      keyConfigured: true,
-      keyAccepted: true,
       catA: {
-        premium: catA.premium,
-        quota:   catA.quota,
-        bids:    catA.bids_success,
+        premium: latest.catA.premium,
+        quota:   latest.catA.quota,
+        bids:    latest.catA.bids,
       },
       catB: {
-        premium: catB.premium,
-        quota:   catB.quota,
-        bids:    catB.bids_success,
+        premium: latest.catB.premium,
+        quota:   latest.catB.quota,
+        bids:    latest.catB.bids,
       },
-      month:     catA.month,
-      biddingNo: catA.bidding_no,
+      month:     latest.month,
+      biddingNo: latest.biddingNo,
       fetchedAt: new Date().toISOString(),
       checkedAt: new Date().toISOString(),
     })
@@ -142,8 +130,7 @@ export async function GET() {
     return Response.json(
       {
         status: 'network_error',
-        keyConfigured: true,
-        detail: `Could not reach LTA DataMall: ${err.message}`,
+        detail: `Could not reach data.gov.sg: ${err.message}`,
         checkedAt: new Date().toISOString(),
         catA: null,
         catB: null,

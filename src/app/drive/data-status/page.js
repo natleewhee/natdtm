@@ -2,16 +2,18 @@
 
 // src/app/drive/data-status/page.js
 //
-// "Is the LTA data actually working?" — one page that answers it plainly.
+// "Is the live LTA data actually working?" — one page that answers it
+// plainly.
 //
-// DriveReady degrades gracefully when LTA data is unavailable (hardcoded COE
-// constants, cars.json prices), which is good for users but means a broken
-// AccountKey looks identical to a working one from the calculator. This page
-// exists so the answer is one click away instead of a code read: it calls both
-// routes and reports their `status`/`reason` codes verbatim.
+// DriveReady degrades gracefully when live data is unavailable (hardcoded
+// COE constants, cars.json prices), which is good for users but means a
+// broken feed looks identical to a working one from the calculator. This
+// page exists so the answer is one click away instead of a code read: it
+// calls both routes and reports their `status`/`reason` codes verbatim.
 //
-// It never displays the AccountKey — the routes only ever return whether one
-// is configured and whether LTA accepted it.
+// COE premiums come from data.gov.sg's public mirror of LTA's own dataset —
+// no API key involved, so there is nothing secret to withhold here. Car
+// prices come from a public OneMotoring PDF, also keyless.
 
 import { useEffect, useState } from 'react'
 import ShellHeader from '@/components/shared/ShellHeader'
@@ -50,13 +52,10 @@ function fmtWhen(iso) {
 // so the page says what to DO, not just that something is broken.
 const COE_STATES = {
   live:           { tone: OK,   label: 'Working',        fix: null },
-  no_key:         { tone: BAD,  label: 'No API key',     fix: 'Set LTA_API_KEY in your hosting environment variables. For the scheduled COE-history refresh, also add it as a GitHub Actions repository secret.' },
-  auth_rejected:  { tone: BAD,  label: 'Key rejected',   fix: 'The key is set but LTA returned 401. Regenerate the AccountKey at datamall.lta.gov.sg and update the environment variable — then redeploy.' },
-  auth_forbidden: { tone: BAD,  label: 'Key forbidden',  fix: 'LTA returned 403 — the key exists but is not entitled to the COEResult dataset. Check your DataMall subscription.' },
-  rate_limited:   { tone: WARN, label: 'Rate limited',   fix: 'LTA returned 429. This usually clears on its own — retry in a few minutes.' },
-  upstream_error: { tone: WARN, label: 'LTA error',      fix: 'See the note above this box — a 404 usually points at the endpoint or key formatting rather than a temporary outage, so it is worth reading before just retrying.' },
-  no_results:     { tone: WARN, label: 'No Cat A/B rows',fix: 'The key worked, but the latest bidding exercise had no Category A/B rows. Usually resolves after the next bidding result publishes.' },
-  network_error:  { tone: BAD,  label: 'Unreachable',    fix: 'Could not reach datamall2.mytransport.sg at all. Check outbound network access from your deployment.' },
+  upstream_error: { tone: WARN, label: 'data.gov.sg error', fix: 'data.gov.sg returned an unexpected status or marked the request unsuccessful. Usually transient — retry shortly.' },
+  no_results:     { tone: WARN, label: 'No Cat A/B rows',fix: 'The dataset responded, but no row paired into a full Cat A/Cat B bidding exercise within the rows requested.' },
+  stale_data:     { tone: WARN, label: 'Stale sort?',    fix: 'The newest row found looks implausibly old, which usually means the sort parameter isn\'t being honoured — check the note above for the exact month found.' },
+  network_error:  { tone: BAD,  label: 'Unreachable',    fix: 'Could not reach data.gov.sg at all. Check outbound network access from your deployment.' },
 }
 
 const CARS_STATES = {
@@ -179,10 +178,10 @@ export default function DataStatusPage() {
           Is the LTA data feeding into the calculator?
         </h1>
         <p style={{ color: SUB, fontSize: 14.5, lineHeight: 1.6, margin: '0 0 28px', maxWidth: '62ch' }}>
-          DriveReady keeps working when LTA is unreachable — it falls back to saved prices and
-          hardcoded COE constants. That is good for visitors but hides breakage, so this page
-          calls both LTA routes directly and reports exactly what came back. Your AccountKey is
-          never shown here, only whether LTA accepted it.
+          DriveReady keeps working when live data is unreachable — it falls back to saved prices
+          and hardcoded COE constants. That is good for visitors but hides breakage, so this page
+          calls both routes directly and reports exactly what came back. Neither feed needs an
+          API key, so there is nothing secret to withhold here.
         </p>
 
         {loading && <p style={{ fontSize: 14, color: SUB }}>Checking both feeds…</p>}
@@ -190,15 +189,12 @@ export default function DataStatusPage() {
         {!loading && (
           <>
             <Card
-              title="COE premiums — LTA DataMall API"
-              subtitle="Needs the LTA_API_KEY AccountKey. Powers the live Cat A / Cat B premiums used in every calculation."
+              title="COE premiums — data.gov.sg"
+              subtitle="LTA's own COE Bidding Results dataset, mirrored by data.gov.sg — no API key needed. Powers the live Cat A / Cat B premiums used in every calculation."
               tone={coeState.tone}
               verdict={coeState.label}
             >
-              <Row label="AccountKey configured" value={coe?.keyConfigured ? 'Yes' : 'No'} mono />
-              <Row label="Accepted by LTA" value={coe?.keyAccepted ? 'Yes' : (coe?.keyConfigured ? 'No' : '—')} mono />
-              {coe?.httpStatus && <Row label="HTTP status from LTA" value={coe.httpStatus} mono />}
-              {coe?.keyWasTrimmed && <Row label="Key had stray whitespace/quotes" value="Yes — stripped before sending" mono />}
+              {coe?.httpStatus && <Row label="HTTP status from data.gov.sg" value={coe.httpStatus} mono />}
               {coe?.status === 'live' ? (
                 <>
                   <Row label="Cat A premium" value={fmtSGD(coe.catA?.premium)} mono />

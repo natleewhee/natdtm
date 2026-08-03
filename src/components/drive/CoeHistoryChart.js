@@ -39,7 +39,7 @@ export function CoeHistoryChart() {
   if (history.length === 0) {
     return card(
       <p style={{fontSize:C.sm,color:C.muted,lineHeight:1.7,margin:0}}>
-        No bidding history recorded yet. LTA DataMall only exposes the current and previous bidding exercise — not a historical range — so this chart has no way to be backfilled with past premiums. It fills in automatically, one entry per bidding exercise (~2×/month), from whenever this feature started running. Check back after a few cycles.
+        No bidding history recorded yet. It fills in automatically, one entry per bidding exercise (~2×/month), from whenever this feature started running. Check back after a few cycles.
       </p>
     )
   }
@@ -111,7 +111,7 @@ export function CoeHistoryChart() {
         </div>
       </div>
       <p style={{fontSize:'10px',color:C.faint,marginTop:10,lineHeight:1.5}}>
-        {history.length} bidding exercises recorded, {monthLabel(history[0].month)}–{monthLabel(latest.month)}. LTA DataMall&apos;s live API only exposes the current and previous exercise, so beyond that this builds up going forward rather than being fetched fresh each time.
+        {history.length} bidding exercises recorded, {monthLabel(history[0].month)}–{monthLabel(latest.month)}. This builds up going forward, one entry per scheduled refresh, rather than being fetched fresh each time.
       </p>
     </>
   )
