@@ -3,6 +3,7 @@ import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import {
   parseCoeResultToEntries, coerceDatastoreRecord, sortEntriesChronologically, mergeHistoryEntries,
+  dbRowToEntry, entryToDbRow,
 } from './coe-history.js'
 
 test('coerceDatastoreRecord: converts data.gov.sg\'s all-string CKAN fields to numbers', () => {
@@ -84,4 +85,29 @@ test('mergeHistoryEntries: appends a genuinely new entry and keeps chronological
   assert.equal(merged.length, 2)
   assert.equal(merged[0].month, '2026-05')
   assert.equal(merged[1].month, '2026-06')
+})
+
+// ── coe_bidding_results table row <-> entry shape ──────────────────────────
+
+const DB_ROW = {
+  month: '2026-06', bidding_no: 1,
+  cat_a_premium: 90000, cat_a_quota: 1000, cat_a_bids: 900,
+  cat_b_premium: 130000, cat_b_quota: 800, cat_b_bids: 700,
+  recorded_at: '2026-06-15T00:00:00.000Z',
+}
+
+test('dbRowToEntry: maps snake_case DB columns to the app\'s entry shape', () => {
+  const entry = dbRowToEntry(DB_ROW)
+  assert.equal(entry.month, '2026-06')
+  assert.equal(entry.biddingNo, 1)
+  assert.deepEqual(entry.catA, { premium: 90000, quota: 1000, bids: 900 })
+  assert.deepEqual(entry.catB, { premium: 130000, quota: 800, bids: 700 })
+  assert.equal(entry.recordedAt, '2026-06-15T00:00:00.000Z')
+})
+
+test('entryToDbRow: round-trips back to the DB shape (minus recorded_at, a DB-assigned default)', () => {
+  const entry = dbRowToEntry(DB_ROW)
+  const row = entryToDbRow(entry)
+  const { recorded_at, ...expected } = DB_ROW
+  assert.deepEqual(row, expected)
 })

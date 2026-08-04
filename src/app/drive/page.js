@@ -3,7 +3,7 @@
 import { useState, useRef, useEffect } from 'react'
 import { C, SGD, parseMoneyKM } from '@/lib/drive/theme'
 import { calc, calcCeiling, COE_FALLBACK, COE_FALLBACK_AS_OF, isCoeFallbackStale, omvToLtv } from '@/lib/drive/calc'
-import { COE_ENDPOINT, CARS_ENDPOINT } from '@/lib/drive/endpoints'
+import { COE_ENDPOINT, CARS_ENDPOINT, CAR_CATALOG_ENDPOINT } from '@/lib/drive/endpoints'
 import { calcUsed } from '@/lib/drive/used-car'
 import { useDebounce } from '@/lib/drive/hooks'
 import {
@@ -78,8 +78,9 @@ export default function DriveReadyPage() {
     : null
 
   useEffect(() => {
-    // 1. Load base car data (names, OMV, loanCap, emoji etc) from public JSON
-    fetch('/data/cars.json')
+    // 1. Load base car data (names, OMV, price, etc) — Supabase-backed when
+    // configured, bundled JSON snapshot otherwise (see car-catalog/route.js)
+    fetch(CAR_CATALOG_ENDPOINT)
       .then(r => r.json())
       .then(d => { if (d.cars?.length > 0) setBaseCars(d.cars) })
       .catch(() => {})

@@ -71,3 +71,33 @@ export function mergeHistoryEntries(existing, incoming) {
   for (const e of incoming) map.set(key(e), e)
   return sortEntriesChronologically([...map.values()])
 }
+
+// ── coe_bidding_results table row <-> entry shape ──────────────────────────
+// The Postgres table (see supabase/migrations/0001_reference_data.sql)
+// already stores one row per (month, bidding_no) with both categories
+// combined — the same shape parseCoeResultToEntries produces — so this is
+// a flat rename, not a re-grouping. Kept here rather than duplicated in
+// the API route and the refresh script, so both read the same mapping.
+
+export function dbRowToEntry(row) {
+  return {
+    month: row.month,
+    biddingNo: row.bidding_no,
+    catA: { premium: row.cat_a_premium, quota: row.cat_a_quota, bids: row.cat_a_bids },
+    catB: { premium: row.cat_b_premium, quota: row.cat_b_quota, bids: row.cat_b_bids },
+    recordedAt: row.recorded_at,
+  }
+}
+
+export function entryToDbRow(entry) {
+  return {
+    month: entry.month,
+    bidding_no: entry.biddingNo,
+    cat_a_premium: entry.catA.premium,
+    cat_a_quota: entry.catA.quota,
+    cat_a_bids: entry.catA.bids,
+    cat_b_premium: entry.catB.premium,
+    cat_b_quota: entry.catB.quota,
+    cat_b_bids: entry.catB.bids,
+  }
+}

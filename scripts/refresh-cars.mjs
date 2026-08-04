@@ -10,6 +10,15 @@
 // committing directly — a bad parse should be visible and revertable, not
 // silently deployed.
 //
+// Also upserts the same updated rows into Supabase's `cars` table (see
+// supabase/migrations/0001_reference_data.sql) when SUPABASE_URL and
+// SUPABASE_SERVICE_ROLE_KEY are set — a dual write, not a cutover. The
+// JSON file stays the source of truth and the PR-review safety net;
+// Supabase is a read-optimized mirror that src/app/drive/api/car-catalog
+// serves from when configured, falling back to this same JSON file when
+// it isn't. Skipped (not failed) when Supabase env vars are absent, same
+// as scripts/refresh-coe-history.mjs's own COE-history write.
+//
 // Usage: node scripts/refresh-cars.mjs
 
 import { readFile, writeFile } from 'node:fs/promises'
@@ -19,6 +28,8 @@ import {
   getPdfNumbers, extractPdfText, parseLTARows, buildPriceMaps, isLowCoverage, MIN_COVERAGE,
 } from '../src/lib/drive/lta-parse.js'
 import { omvToLtv } from '../src/lib/drive/calc.js'
+import { carToDbRow } from '../src/lib/drive/carCatalog.js'
+import { getSupabaseWriteClient } from '../src/lib/shared/supabase.js'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const CARS_JSON_PATH = path.join(__dirname, '..', 'public', 'data', 'cars.json')
@@ -127,6 +138,21 @@ async function main() {
 
   await writeFile(CARS_JSON_PATH, JSON.stringify(data, null, 2) + '\n', 'utf-8')
   console.log(`Updated ${updatedCount} of ${data.cars.length} cars in ${CARS_JSON_PATH}.`)
+
+  const supabase = getSupabaseWriteClient()
+  if (!supabase) {
+    console.log('SUPABASE_URL/SUPABASE_SERVICE_ROLE_KEY not set — skipping the Supabase mirror write.')
+    return
+  }
+  const { error } = await supabase.from('cars').upsert(data.cars.map(carToDbRow), { onConflict: 'id' })
+  if (error) {
+    // Non-fatal: the JSON file above is already written and is the real
+    // source of truth. A failed mirror write means car-catalog/route.js
+    // falls back to that JSON (or a stale Supabase row) until the next run.
+    console.error(`Supabase upsert failed (JSON file was still written successfully): ${error.message}`)
+    return
+  }
+  console.log(`Upserted ${data.cars.length} cars into Supabase.`)
 }
 
 main().catch(err => {

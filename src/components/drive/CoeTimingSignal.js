@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { C, SGD } from '@/lib/drive/theme'
 import { computeCoeTrend } from '@/lib/drive/coe-trend'
+import { COE_HISTORY_ENDPOINT } from '@/lib/drive/endpoints'
 
 function DirectionBadge({ direction }) {
   const color = direction === 'above' ? C.red : direction === 'below' ? C.accent : C.muted
@@ -35,7 +36,7 @@ export function CoeTimingSignal() {
   const [history, setHistory] = useState(null)
 
   useEffect(() => {
-    fetch('/data/coe-history.json')
+    fetch(COE_HISTORY_ENDPOINT)
       .then(r => r.json())
       .then(d => setHistory(Array.isArray(d?.history) ? d.history : []))
       .catch(() => setHistory([]))

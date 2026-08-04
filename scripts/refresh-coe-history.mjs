@@ -19,12 +19,23 @@
 // enhancement, not attempted here to keep this change to a fix rather than
 // a new feature.
 //
-// Usage: node scripts/refresh-coe-history.mjs (no env vars required)
+// Also upserts the same incoming entries into Supabase's
+// `coe_bidding_results` table (see supabase/migrations/0001_reference_data.sql)
+// when SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY are set — a dual write.
+// The JSON file stays the source of truth; Supabase is a read-optimized
+// mirror that src/app/drive/api/coe-history serves from when configured.
+// Skipped (not failed) when Supabase env vars are absent.
+//
+// Usage: node scripts/refresh-coe-history.mjs (no env vars required for
+// the data.gov.sg fetch itself; Supabase env vars are optional)
 
 import { readFile, writeFile } from 'node:fs/promises'
 import { fileURLToPath } from 'node:url'
 import path from 'node:path'
-import { parseCoeResultToEntries, coerceDatastoreRecord, mergeHistoryEntries } from '../src/lib/drive/coe-history.js'
+import {
+  parseCoeResultToEntries, coerceDatastoreRecord, mergeHistoryEntries, entryToDbRow,
+} from '../src/lib/drive/coe-history.js'
+import { getSupabaseWriteClient } from '../src/lib/shared/supabase.js'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const HISTORY_PATH = path.join(__dirname, '..', 'public', 'data', 'coe-history.json')
@@ -62,6 +73,22 @@ async function main() {
 
   await writeFile(HISTORY_PATH, JSON.stringify(fileData, null, 2) + '\n', 'utf-8')
   console.log(`COE history: ${before} -> ${fileData.history.length} entries (fetched ${incoming.length} from this run).`)
+
+  const supabase = getSupabaseWriteClient()
+  if (!supabase) {
+    console.log('SUPABASE_URL/SUPABASE_SERVICE_ROLE_KEY not set — skipping the Supabase mirror write.')
+    return
+  }
+  const { error } = await supabase
+    .from('coe_bidding_results')
+    .upsert(incoming.map(entryToDbRow), { onConflict: 'month,bidding_no' })
+  if (error) {
+    // Non-fatal: the JSON file above is already written and is the real
+    // source of truth.
+    console.error(`Supabase upsert failed (JSON file was still written successfully): ${error.message}`)
+    return
+  }
+  console.log(`Upserted ${incoming.length} bidding exercises into Supabase.`)
 }
 
 main().catch(err => {

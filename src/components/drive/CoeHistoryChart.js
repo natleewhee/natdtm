@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { C, SGD } from '@/lib/drive/theme'
+import { COE_HISTORY_ENDPOINT } from '@/lib/drive/endpoints'
 
 function monthLabel(month) {
   // LTA's `month` field is typically "YYYY-MM" — fall back to the raw
@@ -17,7 +18,7 @@ export function CoeHistoryChart() {
   const [history, setHistory] = useState(null) // null = still loading
 
   useEffect(() => {
-    fetch('/data/coe-history.json')
+    fetch(COE_HISTORY_ENDPOINT)
       .then(r => r.json())
       .then(d => setHistory(Array.isArray(d?.history) ? d.history : []))
       .catch(() => setHistory([]))

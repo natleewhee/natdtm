@@ -12,3 +12,10 @@
 
 export const COE_ENDPOINT = '/drive/api/coe'
 export const CARS_ENDPOINT = '/drive/api/cars'
+// Reference-data endpoints — served from Supabase when configured, falling
+// back to the bundled public/data/*.json snapshot otherwise. Distinct from
+// COE_ENDPOINT/CARS_ENDPOINT above, which fetch LIVE data (current COE
+// premium, this month's LTA price PDF); these two serve slower-moving
+// catalog/history data.
+export const CAR_CATALOG_ENDPOINT = '/drive/api/car-catalog'
+export const COE_HISTORY_ENDPOINT = '/drive/api/coe-history'

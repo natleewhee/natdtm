@@ -25,7 +25,13 @@ jobs:
 
       - run: npm ci
 
+      # SUPABASE_SERVICE_ROLE_KEY is optional here — both scripts skip the
+      # Supabase mirror write (not fail) when it's unset, so this workflow
+      # keeps working even before those secrets are added to the repo.
       - name: Run car price refresh script
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
         run: node scripts/refresh-cars.mjs
 
       - name: Open PR if cars.json changed
@@ -52,6 +58,9 @@ jobs:
       - name: Run COE history refresh script
         id: coe_history
         continue-on-error: true
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
         run: node scripts/refresh-coe-history.mjs
 
       - name: Open PR if coe-history.json changed
