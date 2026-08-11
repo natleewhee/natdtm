@@ -1,7 +1,24 @@
 // src/lib/drive/lta-parse.test.js
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
-import { buildPriceMaps, matchToId, isLowCoverage, MIN_COVERAGE, getPdfNumbers } from './lta-parse.js'
+import { deflateSync } from 'node:zlib'
+import {
+  buildPriceMaps, matchToId, isLowCoverage, MIN_COVERAGE, getPdfNumbers, extractPdfText,
+} from './lta-parse.js'
+
+// Builds a minimal synthetic PDF with one object whose content stream holds
+// a BT...ET text block, optionally /FlateDecode-compressed the way every
+// real-world PDF (LTA's included) actually ships. Good enough to exercise
+// extractPdfText's parsing without needing a real PDF fixture on disk.
+function makePdf(content, { compressed = false, arrayFilter = false } = {}) {
+  const streamBytes = compressed ? deflateSync(Buffer.from(content)) : Buffer.from(content)
+  const filter = compressed ? (arrayFilter ? '/Filter[/FlateDecode]' : '/Filter/FlateDecode') : ''
+  return Buffer.concat([
+    Buffer.from(`%PDF-1.4\n1 0 obj<</Length ${streamBytes.length}${filter}>>stream\n`),
+    streamBytes,
+    Buffer.from('\nendstream endobj\n'),
+  ])
+}
 
 test('matchToId resolves a known LTA row name to its car id', () => {
   assert.equal(matchToId('BYD DOLPHIN STANDARD'), 'byddolphin')
@@ -102,4 +119,57 @@ test('getPdfNumbers: looks back far enough to still include the real M032 from a
 test('getPdfNumbers: rolls forward a full year correctly', () => {
   const candidates = getPdfNumbers(new Date('2027-06-15T00:00:00Z'))
   assert.equal(candidates[0], 'M044') // 12 months after the June 2026 anchor
+})
+
+// ─── extractPdfText ──────────────────────────────────────────────────────
+// This function had ZERO test coverage before this — the exact gap that
+// let a real bug (inability to read /FlateDecode-compressed PDFs, which is
+// how essentially every real-world PDF is encoded, LTA's included) ship
+// silently: every parse-level test fed it pre-extracted plain text, so the
+// one function that actually touches PDF bytes was never exercised.
+
+const SAMPLE_ROW = '41 BYD ATTO 3 EXTENDED RANGE A 100 E 64 A 28519 8784 31927 -22500 -7500 350 106320 39580 145900 - 246388 - 100488'
+
+test('extractPdfText: reads an uncompressed content stream (pre-existing behavior)', () => {
+  const pdf = makePdf(`BT (${SAMPLE_ROW}) Tj ET`, { compressed: false })
+  const text = extractPdfText(pdf)
+  assert.ok(text.includes(SAMPLE_ROW), `expected row text in: ${text}`)
+})
+
+test('extractPdfText: reads a /FlateDecode-compressed content stream', () => {
+  const pdf = makePdf(`BT (${SAMPLE_ROW}) Tj ET`, { compressed: true })
+  const text = extractPdfText(pdf)
+  assert.ok(text.includes(SAMPLE_ROW), `expected row text in: ${text}`)
+})
+
+test('extractPdfText: reads the array-form filter, /Filter[/FlateDecode]', () => {
+  const pdf = makePdf(`BT (${SAMPLE_ROW}) Tj ET`, { compressed: true, arrayFilter: true })
+  const text = extractPdfText(pdf)
+  assert.ok(text.includes(SAMPLE_ROW), `expected row text in: ${text}`)
+})
+
+test('extractPdfText: concatenates text from multiple compressed objects in one document', () => {
+  const rows = Array.from({ length: 10 }, (_, i) => `BT (ROW ${i} ${SAMPLE_ROW}) Tj ET`)
+  const objs = rows.map((r, i) => makePdf(r, { compressed: true }).toString('latin1'))
+  const pdf = Buffer.from(objs.join(''), 'latin1')
+  const text = extractPdfText(pdf)
+  for (let i = 0; i < 10; i++) assert.ok(text.includes(`ROW ${i} ${SAMPLE_ROW}`), `missing row ${i}`)
+})
+
+test('extractPdfText: a stream chained through an unsupported filter is skipped, not thrown', () => {
+  // Garbage bytes under a /Filter dict this parser doesn't recognise as
+  // plain FlateDecode (e.g. a real ASCII85Decode-then-FlateDecode chain)
+  // must not crash the whole extraction — it should just contribute
+  // nothing from that stream.
+  const garbage = Buffer.from([1, 2, 3, 4, 5, 250, 251, 252])
+  const pdf = Buffer.concat([
+    Buffer.from(`%PDF-1.4\n1 0 obj<</Length ${garbage.length}/Filter[/ASCII85Decode/FlateDecode]>>stream\n`),
+    garbage,
+    Buffer.from('\nendstream endobj\n'),
+  ])
+  assert.doesNotThrow(() => extractPdfText(pdf))
+})
+
+test('extractPdfText: an empty/garbage buffer returns without throwing', () => {
+  assert.doesNotThrow(() => extractPdfText(Buffer.from('not a pdf at all')))
 })

@@ -1,18 +1,24 @@
-// src/app/api/cars/route.js
+// src/app/drive/api/cars/route.js
 //
 // Fetches the LTA Car Cost Update PDF (published monthly, government source).
 // Extracts official selling prices from authorised distributors.
 // Never blocked. No auth. Updates monthly.
 //
 // Coverage: ~80-90 of our 145 cars. Rest fall back to cars.json prices.
-// Cache: 24hr Vercel edge cache.
+// Cache: 24hr Vercel data cache (via fetch's `next.revalidate` below).
 //
-// Parsing logic lives in src/lib/lta-parse.js (pure, unit-tested) — this
-// file only owns the fetch/orchestration.
+// Parsing logic lives in src/lib/drive/lta-parse.js (pure, unit-tested) —
+// this file only owns the fetch/orchestration.
+//
+// Node.js runtime, NOT edge: extractPdfText needs node:zlib to inflate
+// /FlateDecode-compressed PDF content streams (how essentially every
+// real-world PDF, LTA's included, is actually encoded), and zlib isn't
+// available on the edge runtime. This route used to be edge-only and
+// silently could never read a real PDF as a result.
 
 import { getPdfNumbers, extractPdfText, parseLTARows, buildPriceMaps, isLowCoverage } from '@/lib/drive/lta-parse'
 
-export const runtime = 'edge'
+export const runtime = 'nodejs'
 export const revalidate = 86400
 
 const LTA_BASE = 'https://onemotoring.lta.gov.sg/content/dam/onemotoring/Buying/Car_Cost_Update'
@@ -53,7 +59,7 @@ async function fetchAndParse(pdfNum) {
     throw new PdfError(
       'extract_failed',
       `Downloaded ${buf.byteLength} bytes but only extracted ${text.length} characters of text. ` +
-      'The PDF content streams are most likely compressed (/FlateDecode), which extractPdfText cannot read.',
+      'extractPdfText now handles /FlateDecode, so this likely means an unsupported filter chain or a changed PDF structure — see the debug output above.',
       { bytes: buf.byteLength, chars: text.length }
     )
   }

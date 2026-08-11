@@ -144,19 +144,20 @@ site-wide `ShellHeader` / `Footer`.
   testing.
 - **PNG manifest icons**: WhatETF's PWA manifest is SVG-icon-only, which
   iOS wants as PNG for home-screen install polish. Unchanged by the merge.
-- **LTA Car Cost Update PDF cannot be read**: `extractPdfText` in
-  `src/lib/drive/lta-parse.js` scans raw bytes for parenthesised string
-  literals, which only works on PDFs with *uncompressed* content streams.
-  Real-world PDFs use `/FlateDecode`, so extraction yields zero characters
-  and `/drive/api/cars` always falls back to `public/data/cars.json`
-  (`reason: 'extract_failed'`). Fixing this needs a zlib inflate step —
-  which the edge runtime lacks, so the route likely has to move to the Node
-  runtime. Tracked but not yet fixed; car prices are currently only as
-  fresh as the last committed `cars.json`. The filename-guessing itself
-  (`getPdfNumbers` in the same file) is correct — confirmed against the
-  live PDF directory and covers a multi-month publishing lag — so this is
-  purely a "can't parse what we downloaded" problem now, not a "can't find
-  the file" one. Visit `/drive/data-status` to see the live diagnosis.
+- ~~LTA Car Cost Update PDF cannot be read~~ **Fixed.** `extractPdfText` in
+  `src/lib/drive/lta-parse.js` now inflates `/FlateDecode`-compressed
+  content streams (how essentially every real-world PDF, LTA's included, is
+  actually encoded — the old byte-scan only ever worked on uncompressed
+  streams, so it silently extracted nothing from a real LTA PDF). This
+  needed `node:zlib`, which isn't available on the edge runtime, so
+  `/drive/api/cars` moved from `runtime: 'edge'` to `runtime: 'nodejs'`.
+  `getPdfNumbers` in the same file was already confirmed correct against
+  the live PDF directory (covers a multi-month publishing lag). Verified
+  with synthetic `/FlateDecode` PDF fixtures in `lta-parse.test.js`
+  (previously zero test coverage on this function) — not yet verified
+  against a real downloaded LTA PDF, since this environment's network
+  policy blocks `onemotoring.lta.gov.sg`. Visit `/drive/data-status` to
+  confirm live.
 - **Copy voice pass**: the home-page heroes and footer blurb have been
   rewritten into a casual first-person voice; deeper pages (wizard
   microcopy, results screens, the-math pages) still read in the older,

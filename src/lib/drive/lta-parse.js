@@ -1,7 +1,13 @@
 // src/lib/lta-parse.js
 // Pure parsing helpers for the LTA Car Cost Update PDF scraper
-// (src/app/api/cars/route.js). Extracted so the parsing logic can be
-// unit-tested without spinning up the edge route or fetching a real PDF.
+// (src/app/drive/api/cars/route.js). Extracted so the parsing logic can be
+// unit-tested without spinning up the route or fetching a real PDF.
+//
+// Uses node:zlib for /FlateDecode inflation (see extractPdfText below),
+// which is why the route that imports this had to move off the edge
+// runtime to the Node.js runtime — node:zlib isn't available on edge.
+
+import { inflateSync } from 'node:zlib'
 
 // Match terms: our car ID → substrings in lowercased LTA model name.
 // Longest matching term wins (see matchToId) — order here no longer matters
@@ -174,9 +180,12 @@ export function getPdfNumbers(now = new Date()) {
   return Array.from({ length: LOOKBACK_MONTHS }, (_, i) => `M${String(n - i).padStart(3, '0')}`)
 }
 
-// Extract text content from a PDF binary buffer using parenthesised string extraction
-export function extractPdfText(buffer) {
-  const bytes = new Uint8Array(buffer)
+// Maps arbitrary bytes to a string 1:1 (printable ASCII kept, CR/LF folded
+// to \n, everything else — including raw compressed bytes that don't
+// happen to be printable — collapsed to a space). Shared by the
+// uncompressed-stream scan and the post-inflate scan below so both feed
+// the same BT/ET text-object extraction logic.
+function bytesToScanText(bytes) {
   let raw = ''
   for (let i = 0; i < bytes.length; i++) {
     const c = bytes[i]
@@ -184,14 +193,17 @@ export function extractPdfText(buffer) {
     else if (c === 10 || c === 13) raw += '\n'
     else raw += ' '
   }
+  return raw
+}
 
-  // Extract text from BT...ET text objects (standard PDF text blocks)
+// Extracts (string) tokens from BT...ET text objects (standard PDF text
+// blocks) in an already byte-to-char-mapped scan string.
+function extractTextObjects(raw) {
   let out = ''
   const btEt = /BT([\s\S]*?)ET/g
   let m
   while ((m = btEt.exec(raw)) !== null) {
     const block = m[1]
-    // Extract (string) tokens
     const strPat = /\(([^)]*)\)/g
     let sm
     while ((sm = strPat.exec(block)) !== null) {
@@ -199,17 +211,80 @@ export function extractPdfText(buffer) {
     }
     out += '\n'
   }
+  return out
+}
 
-  // Fallback: extract all parenthesised strings if BT/ET gave little
-  if (out.length < 500) {
-    const allStr = /\(([^)]{2,60})\)/g
-    let am
-    while ((am = allStr.exec(raw)) !== null) {
-      out += am[1] + ' '
+// Finds `<< ... /Filter /FlateDecode ... >> stream ... endstream` objects in
+// the RAW PDF BYTES (not the printable-mapped scan text above — that
+// mapping is lossy for binary compressed data, so this has to run on the
+// actual buffer) and returns each stream's still-compressed byte range.
+// Handles the common single-filter case only (`/Filter /FlateDecode` or
+// `/Filter [/FlateDecode]`); a stream chained through an additional filter
+// (e.g. ASCII85Decode) is skipped rather than mis-decoded.
+function findFlateStreams(bytes) {
+  // latin1 maps each byte to one code unit 1:1 — unlike bytesToScanText,
+  // this preserves every byte losslessly so the extracted stream range can
+  // be sliced back out of the original buffer for real decompression.
+  const text = Buffer.isBuffer(bytes) ? bytes.toString('latin1') : Buffer.from(bytes).toString('latin1')
+  const streams = []
+  const dictRe = /<<((?:(?!<<|>>)[\s\S])*?)>>\s*stream\r?\n/g
+  let m
+  while ((m = dictRe.exec(text)) !== null) {
+    const dict = m[1]
+    if (!/\/Filter\s*(\/FlateDecode\b|\[\s*\/FlateDecode\s*\])/.test(dict)) continue
+    const start = m.index + m[0].length
+    const endIdx = text.indexOf('endstream', start)
+    if (endIdx === -1) continue
+    let end = endIdx
+    while (end > start && (text[end - 1] === '\n' || text[end - 1] === '\r')) end--
+    streams.push({ start, end })
+    dictRe.lastIndex = endIdx + 'endstream'.length
+  }
+  return streams
+}
+
+// Extract text content from a PDF binary buffer. Tries the plain
+// (uncompressed-stream) heuristic first — free and works unchanged for any
+// PDF that already worked before this function knew about compression.
+// Real-world PDFs, LTA's included, near-universally use /FlateDecode for
+// their content streams, so that first pass alone yields ~0 characters on
+// them; when it does, every /FlateDecode stream in the document is
+// inflated and scanned the same way.
+export function extractPdfText(buffer) {
+  const bytes = Buffer.isBuffer(buffer) ? buffer : Buffer.from(buffer)
+
+  const plainPool = bytesToScanText(bytes)
+  const plainOut = extractTextObjects(plainPool)
+  if (plainOut.length >= 500) return plainOut
+
+  // Pool the plain scan text together with every successfully-inflated
+  // FlateDecode stream's scan text, so the structured BT/ET pass and the
+  // last-resort fallback below both run once over the combined pool
+  // instead of needing separate fallback logic per source.
+  let pool = plainPool
+  for (const { start, end } of findFlateStreams(bytes)) {
+    let inflated
+    try {
+      inflated = inflateSync(bytes.subarray(start, end))
+    } catch {
+      continue // not plain zlib-wrapped deflate (e.g. chained filters) — skip, don't throw
     }
+    pool += '\n' + bytesToScanText(inflated)
   }
 
-  return out
+  const out = extractTextObjects(pool)
+  if (out.length >= 500) return out
+
+  // Last-resort fallback (unchanged from before compression support was
+  // added): grab any parenthesised string at all, in case the content
+  // isn't organised into BT/ET blocks the way the structured pass expects.
+  let fallback = out
+  const allStr = /\(([^)]{2,60})\)/g
+  let am
+  while ((am = allStr.exec(pool)) !== null) {
+    fallback += am[1] + ' '
+  }
+  return fallback.length > plainOut.length ? fallback : plainOut
 }
 
 // Parse the extracted PDF text into rows with name + selling price.

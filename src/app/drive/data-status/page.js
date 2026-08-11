@@ -60,7 +60,7 @@ const COE_STATES = {
 
 const CARS_STATES = {
   lta_pdf:       { tone: OK,   label: 'Working',            fix: null },
-  extract_failed:{ tone: BAD,  label: 'Cannot read PDF',    fix: 'The PDF downloaded but no text could be extracted — its content streams are compressed (/FlateDecode), which extractPdfText() in src/lib/drive/lta-parse.js does not handle. This needs an inflate step; it is a known bug, not a configuration problem.' },
+  extract_failed:{ tone: BAD,  label: 'Cannot read PDF',    fix: 'The PDF downloaded but no text could be extracted. extractPdfText() in src/lib/drive/lta-parse.js now inflates /FlateDecode content streams (the earlier known-bug case), so this now most likely means the PDF uses a filter chain it does not support (e.g. ASCII85Decode before FlateDecode), or the LTA table layout has drifted from what parseLTARows() expects.' },
   pdf_not_found: { tone: BAD,  label: 'PDF not found (404)',fix: 'None of the last several months\' filenames exist. getPdfNumbers() extrapolates from a confirmed anchor (M032 = June 2026, +1/month) — if every recent guess 404s, LTA has likely renamed or restructured the release rather than just running behind, and the anchor needs re-confirming against the live directory.' },
   http_error:    { tone: WARN, label: 'OneMotoring error',  fix: 'OneMotoring returned an unexpected status. Retry later.' },
   network_error: { tone: BAD,  label: 'Unreachable',        fix: 'Could not reach onemotoring.lta.gov.sg. Check outbound network access from your deployment.' },
