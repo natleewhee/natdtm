@@ -1,0 +1,56 @@
+name: CI
+
+# Lint, unit tests, and production build on every push and PR.
+# Mirrors the setup-node block in refresh-data.yml (Node 22, npm cache).
+#
+# Branch protection must be configured (repo Settings -> Branches) to
+# require the `unit` and `build` checks before merge. The `e2e` job is a
+# placeholder until the Playwright harness lands (plan unit U4); it runs
+# `test:e2e` only if that script exists, so it is a no-op until then and
+# activates automatically once U4 adds the script and its full recipe
+# (playwright install -> build -> serve -> test:e2e).
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  unit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run lint
+      - run: npm test
+
+  build:
+    runs-on: ubuntu-latest
+    needs: unit
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run build
+
+  e2e:
+    runs-on: ubuntu-latest
+    needs: unit
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      # No-op until plan unit U4 adds the `test:e2e` script. U4 replaces
+      # this step with: cache ~/.cache/ms-playwright, `npx playwright
+      # install --with-deps`, `npm run build`, start the server (or rely
+      # on the Playwright webServer config), then `npm run test:e2e`.
+      - run: npm run test:e2e --if-present

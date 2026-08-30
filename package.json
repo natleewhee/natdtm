@@ -8,7 +8,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "test": "node --test 'src/lib/**/*.test.js'"
+    "test": "node --test \"src/lib/**/*.test.js\""
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.112.0",
