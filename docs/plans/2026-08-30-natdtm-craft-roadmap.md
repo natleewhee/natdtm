@@ -385,3 +385,49 @@ flowchart TB
 - M3 (D): DriveReady models EV road tax and shows an insurance range, both with "the math" coverage; reliefs optimizer ranks four reliefs for the current YA, reads the active profile, and matches its worked example.
 
 **Readiness flip:** resolve OQ1 and OQ2, then set `artifact_readiness: implementation-ready`.
+
+---
+
+## Review findings and scope decision (2026-08-30 review)
+
+This block is the output of a `ce-doc-review` pass plus a scope decision by the owner. The plan body above is **not yet rewritten** to match it — do that before flipping to `implementation-ready`.
+
+### Scope decision — narrow the roadmap
+
+The A + D + B breadth was judged too wide for a solo portfolio / craft piece (6 reviewers converged: broad-but-not-exceptional risk). New scope:
+
+- **Keep:** M1 (harden) as the spine + **DriveReady** taken to exceptional depth as the one showpiece vertical.
+- **Defer to a later plan:** all of M2 / B (cross-tool profile layer — no-reload switch, cross-tab sync, export/import, home connected-state, MyLedger verdicts; R11–R16, U8–U12) and the Tax×Retire reliefs optimizer (R19, R20, U15, U16, KTD8).
+- **Drop from M1:** R3 / U3 token codemod (keep only R4 CSS consolidation, with its own screenshot check); R7 / repo-wide React Compiler (keep only R8 lint-debt cleanup); U7 / R9 SEO metadata + JSON-LD + OG images (optionally keep a plain per-route `title`/`description`).
+- **Add to M1:** a correctness-and-currency audit unit — verify every embedded SG rate / bracket / cap in the eight engines against its 2026 authoritative source (IRAS / CPF / LTA) with a dated `_AS_OF` citation per constant; add golden-master tests per engine against published figures; a stale constant fails CI. New Success Criterion: "every embedded statutory constant is current for its stated Year of Assessment." This replaces "trust" resting on render-smoke tests.
+
+OQ1 resolves to DriveReady-only (no reliefs optimizer this plan). OQ2 resolves to "keep `--l-*`, fix comments/docs only".
+
+### Factual corrections to fold in on rewrite
+
+- **U13 / U14 / KTD9 — do not rebuild what exists.** `src/lib/drive/tco.js` already ships `estimateRoadTax(omv, pureEV)` with `ROAD_TAX_BANDS_ICE` / `ROAD_TAX_BANDS_EV`, `estimateInsurance(omv, pureEV)` with `INSURANCE_BANDS` + an EV loading, and `isPureEV(car)` (from `calc.js`), all tested in `tco.test.js` and wired into `estimateAnnualRunningCosts`. Rewrite U13/U14 to modify those functions and route powertrain through the existing `isPureEV` / `car.type` mechanism (extend to `hybrid` if needed). Do not add a parallel `powertrain` enum or a new `src/lib/drive/insurance.js`.
+- **R17 has no data source for power-rating road tax or the EV COE category.** The codebase has no kW/cc data; `cars.json` is refreshed from a parser that extracts price/OMV/VES rows only, and `tco.js` approximates road tax by OMV band for exactly this reason. Either source and commit a kW dataset for EV models, or rescope R17 to an OMV-band EV schedule and state that COE-category-by-power is out of scope. U13 currently also omits any approach step or test for the EV COE category, which R17 names.
+- **R4 / U3 / Sources — `legacy.css` inventory is wrong.** Only three exist: `src/app/drive/legacy.css`, `src/app/etf/legacy.css`, `src/app/insure/legacy.css`. The other five verticals carry styling as JS style objects in `src/lib/<tool>/theme.js` + `src/components/<tool>/ui.js`, which also embed `--l-*` tokens and hex mirrors as string literals — that duplication is the real consolidation target.
+- **U2 / R2 — `coah` de-brand is ~56 files, not seven.** It is in CSS class names (`coah-button`, `coah-button--<variant>` from `src/components/shared/Button.js`; `coah-scroll` in `CarPicker`), CSS custom properties (`--color-coah`, `--font-coah`), theme keys (`C.coah` / `coahMid` / `coahLight` / `fontCoah` across every `src/lib/<tool>/theme.js`), and user-visible strings (`coah.sg` in `PrintSummary.jsx`, a literal "coah / invest" label in `ResultPanel.js`). Class/variable renames carry the same regression risk as R3 and need the same screenshot baseline.
+- **U2 — "Seven calculators" is one occurrence at `src/app/page.js:63`,** not two at lines 54/67. Fix the count and line reference in Problem Frame, Sources, and U2's approach.
+- **U1 / KTD3 — CI e2e job needs `npx playwright install --with-deps`** (cache `~/.cache/ms-playwright`), then build, then serve, before `npm run test:e2e`. Without it every run fails on a missing browser.
+- **HTD CI diagram contradicts the prose.** The mermaid wires `unit → e2e → build → gate`; KTD3/U1 say `build` needs `unit` and `e2e` is a sibling job off `unit`. Redraw: `unit → build`, `unit → e2e`, `lint → e2e`, both `build` and `e2e` → `gate`.
+- **Site URL is load-bearing and unconfirmed.** Promote "confirm `https://natdtm.vercel.app` is the canonical domain" to a blocking Open Question on the readiness-flip checklist; R2 writes it into `site.js`, sitemap, robots, and OG images.
+- **Supabase key-name fix is in scope but owned by no unit** — and may not be a real mismatch (`.env.example` documents both `SUPABASE_ANON_KEY` and `SUPABASE_SERVICE_ROLE_KEY`; `refresh-data.yml` uses the latter, which is present). Verify it is real; if so, give `.env.example` / `refresh-data.yml` to U1 and add a DoD check; otherwise move the item to "Deferred for later".
+- **U6 lint fix must use its standalone path.** With M2 deferred, `src/lib/shared/useActiveProfile.js` does not exist, so the `ProfileSwitcher` `set-state-in-effect` fix must be a lazy initializer / `useSyncExternalStore` against `profile.js` directly, plus one documented ESLint override rule replacing the scattered inline disables.
+- **KTD10 is redundant and brittle.** U2's own approach derives the hero copy from `TOOLS.length`, which makes "Seven"/"eight" drift impossible; a `node --test` case that regex-parses an array length out of JSX is more likely to false-fail. Drop KTD10; if a guard is wanted, assert the rendered home-page text in Playwright smoke.
+- **KTD5 "zero screenshot diff" is unachievable** even for the retained R4 consolidation — the footer build-version stamp and CI-vs-baseline font rendering guarantee a non-zero diff. Use a pixel/ratio tolerance with masked regions for the version stamp; pin the screenshot runner to the CI image; state the tolerance in the Verification Contract. Update the DoD line `rg -- '--l-' src/ returns nothing` (no longer true once R3 is dropped).
+
+### Open decisions still to settle on rewrite
+
+- **DriveReady depth needs UI specs:** powertrain input control type and what happens to the engine-capacity field when EV is selected (segmented control, hide vs disable); insurance range presentation (always-visible assumptions caption; TCO "optional line" — default included or excluded, user toggle or not).
+- **Accessibility:** no unit carries a keyboard-nav / focus / ARIA spec and the Verification Contract has no a11y gate — a gap on exactly the surfaces this plan touches, against the craft-piece bar. Add an a11y line to the DriveReady UI units and a keyboard-path assertion to the E2E gate.
+- **"Consistent craft" (objective clause 3) has no requirement.** Add an A-workstream code-consistency pass: one documented module layout applied to all eight verticals, shared `theme` / `ui` factored out, JSDoc completed on every exported engine function — or narrow the objective.
+- **LTA PDF fixture (R6 / U5):** confirm the LTA publication licence permits redistribution in a public repo before committing a real PDF; if not, generate a `/FlateDecode`-compressed fixture mirroring the layout. Target the assertion at structural parse success + `isLowCoverage`, not a specific price (LTA revises fortnightly).
+- **Branch protection** (R1 "a failure blocks merge") is a repo-admin action outside any PR; give a unit or DoD item the job of verifying it is enforced.
+
+### FYI / residual
+
+- `next.config.mjs` ships a self-only CSP with `'unsafe-inline'` and `'unsafe-eval'` — visible to a code reviewer, currently out of scope.
+- The Unit Index "Files touched" cells are deliberately abbreviated but omit collision-relevant files (U13's `UsedCarForm.js` / `CarPicker.js`); worth adding on rewrite.
+- The portfolio audience (who reviews the repo, against what bar) is never characterised — the payoff of any version of this plan is unmeasurable without it.
