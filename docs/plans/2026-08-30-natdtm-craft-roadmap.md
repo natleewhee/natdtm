@@ -188,7 +188,7 @@ flowchart TB
 
 ### Sequencing
 
-1. M1 / A: U1 (CI) → U2 (brand/URL) → U3 (token rename + CSS consolidation) → U4 (Playwright harness + smoke) → U5 (LTA PDF fixture) → U6 (React Compiler + lint debt) → U7 (SEO metadata + JSON-LD) → U10 (docs). U4 depends on U1; U3 depends on U4's snapshot baseline.
+1. M1 / A: U1 (CI) → U2 (brand/URL) → U4 (Playwright harness + smoke) → U3 (token rename + CSS consolidation) → U5 (LTA PDF fixture) → U6 (React Compiler + lint debt) → U7 (SEO metadata + JSON-LD) → U10 (docs). U4 depends on U1; U3 depends on U4's snapshot baseline.
 2. M2 / B: U8 (no-reload switch + cross-tab) → U9 (export/import) → U11 (home connected-state) → U12 (ledger headline verdicts). U11/U12 depend on U8.
 3. M3 / D: U13 (DriveReady EV) → U14 (DriveReady insurance range) → U15 (reliefs optimizer logic) → U16 (reliefs optimizer UI + the-math). U15 before U16.
 
@@ -359,7 +359,7 @@ flowchart TB
 |---|---|---|---|
 | Lint | `npm run lint` | all units | zero errors, zero inline `set-state-in-effect` disables after U6 |
 | Unit | `npm test` (`node --test`) | U2, U5, U7, U9, U10, U12, U13, U14, U15, U16 | all pass |
-| E2E | `npm run test:e2e` (Playwright) | U3, U4, U6, U8, U11, U12, U16 | all specs pass; U3 screenshot diff empty |
+| E2E | `npm run test:e2e` (Playwright) | U3, U4, U6, U8, U9, U11, U12, U16 | all specs pass; U3 screenshot diff empty |
 | Build | `npm run build` | all units | succeeds; sitemap shows `natdtm.vercel.app` |
 | CI | `.github/workflows/ci.yml` | M1 onward | required checks green on the PR |
 
