@@ -78,3 +78,10 @@ output and is a product decision. Each needs a follow-up.
 1. **`CPF_CONTRIBUTION_TABLE`, age band "above 55 to 60"** — `total: 0.325`. The rate from 1 Jan 2026 is **34%** (18% employee + 16% employer). The sub-account allocation (`oa`/`sa`/`ma`) for this band also needs re-deriving from the 1 Jan 2026 CPF Allocation Rates table. Effect: RetireWell under-projects CPF accumulation for members aged 55–60.
 2. **`CPF_CONTRIBUTION_TABLE`, age band "above 60 to 65"** — `total: 0.235`. The rate from 1 Jan 2026 is **25%** (12.5% + 12.5%). Same allocation re-derivation needed. Effect: under-projection for members aged 60–65.
 3. **`SRS_RETIREMENT_AGE = 63`** — the statutory retirement age rises to **64 on 1 Jul 2026**. The SRS 10-year penalty-free withdrawal window keys off the retirement age *at first contribution*, so this is a minor imprecision for anyone whose first SRS contribution is in H2 2026 or later. Decide whether to bump to 64 or model the mid-year change.
+
+When fixing discrepancies 1 and 2, the characterization assertions in
+`src/lib/retire/calc.test.js` (`contributionRatesForAge(58).total === 0.325`,
+`contributionRatesForAge(60.5).total === 0.235`, and the boundary cases
+around them) pin the current values and must be updated in the same change.
+`src/lib/shared/golden-masters.test.js` deliberately golden-masters only the
+below-55 band, so it needs no change.
