@@ -25,6 +25,7 @@ export default function ProfileSwitcher() {
   const [creating, setCreating] = useState(false)
   const [newName, setNewName] = useState('')
   const menuRef = useRef(null)
+  const triggerRef = useRef(null)
 
   useEffect(() => {
     /* eslint-disable-next-line react-hooks/set-state-in-effect -- one-time
@@ -44,11 +45,15 @@ export default function ProfileSwitcher() {
 
   if (!profiles) return null // nothing to show before the client-only profile list has loaded
 
-  function closeMenu() {
+  // returnFocus is set when the menu was dismissed from the keyboard
+  // (Escape) so focus lands back on the trigger rather than being lost;
+  // an outside click already moves focus elsewhere and passes nothing.
+  function closeMenu({ returnFocus = false } = {}) {
     setOpen(false)
     setEditingId(null)
     setCreating(false)
     setNewName('')
+    if (returnFocus) triggerRef.current?.focus()
   }
 
   const active = profiles.find(p => p.isActive) || profiles[0]
@@ -84,8 +89,19 @@ export default function ProfileSwitcher() {
   }
 
   return (
-    <div className="shell-switcher" ref={menuRef}>
+    <div
+      className="shell-switcher"
+      ref={menuRef}
+      onKeyDown={e => {
+        // Escape anywhere in the switcher (trigger or open menu) closes
+        // it and returns focus to the trigger. A rename/create field
+        // stops propagation on its own Escape so the first press only
+        // exits that sub-mode.
+        if (e.key === 'Escape' && open) closeMenu({ returnFocus: true })
+      }}
+    >
       <button
+        ref={triggerRef}
         type="button"
         className="shell-switcher-btn shell-profile-btn"
         onClick={() => (open ? closeMenu() : setOpen(true))}
@@ -110,7 +126,7 @@ export default function ProfileSwitcher() {
                   onChange={e => setEditingName(e.target.value)}
                   onKeyDown={e => {
                     if (e.key === 'Enter') saveRename()
-                    if (e.key === 'Escape') setEditingId(null)
+                    if (e.key === 'Escape') { e.stopPropagation(); setEditingId(null) }
                   }}
                   onBlur={saveRename}
                 />
@@ -149,7 +165,7 @@ export default function ProfileSwitcher() {
                 onChange={e => setNewName(e.target.value)}
                 onKeyDown={e => {
                   if (e.key === 'Enter') submitCreate()
-                  if (e.key === 'Escape') setCreating(false)
+                  if (e.key === 'Escape') { e.stopPropagation(); setCreating(false) }
                 }}
               />
               <button type="button" className="shell-profile-action" onClick={submitCreate}>Add</button>
