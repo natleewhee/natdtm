@@ -1,4 +1,4 @@
-import './legacy.css'
+import './drive.css'
 
 export const metadata = {
   title: { default: 'DriveReady', template: '%s · DriveReady · nat does the math' },

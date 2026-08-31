@@ -81,6 +81,14 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
 /* Shared loading spinner — avoids a blank white screen while a page rehydrates
    from sessionStorage (results pages) or fetches. */
 @keyframes coah-spin { to { transform: rotate(360deg); } }
+
+/* Product-wide reveal keyframes, identical across verticals — previously
+   copied into drive/ and etf/ legacy.css. Per-vertical variants that
+   differ (e.g. insure's fadeSlideUp uses a different offset) stay in
+   that vertical's own stylesheet. */
+@keyframes fadeUp { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes spin { to { transform: rotate(360deg); } }
+
 .coah-spinner {
   width: 32px; height: 32px; border-radius: 50%;
   border: 3px solid var(--color-border);

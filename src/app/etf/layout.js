@@ -1,4 +1,4 @@
-import './legacy.css'
+import './etf.css'
 import SWRegister from '@/components/etf/SWRegister'
 
 export const metadata = {

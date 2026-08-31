@@ -1,4 +1,4 @@
-import './legacy.css'
+import './insure.css'
 
 const DESCRIPTION = 'Free 3-minute Insurance Score for Singaporeans. See your critical illness, life/TPD, and hospitalisation gaps in real dollars — not jargon.'
 

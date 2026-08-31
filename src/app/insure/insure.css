@@ -1,0 +1,32 @@
+/* InsureCheck-only styles — the fadeSlideUp keyframe (a 6px→8px variant
+   distinct from the shared reveal keyframes) and the print-summary
+   rules. Shared --color / --font tokens and the reset live in
+   app/globals.css. */
+
+@keyframes fadeSlideUp {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Print summary: hidden on screen, shown alone when printing / saving as PDF. */
+.print-summary {
+  display: none;
+}
+
+@media print {
+  body * {
+    visibility: hidden;
+  }
+  .print-summary,
+  .print-summary * {
+    visibility: visible;
+  }
+  .print-summary {
+    display: block !important;
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    padding: 24px;
+  }
+}
