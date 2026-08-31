@@ -82,12 +82,12 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
    from sessionStorage (results pages) or fetches. */
 @keyframes ndtm-spin { to { transform: rotate(360deg); } }
 
-/* Product-wide reveal keyframes, identical across verticals — previously
-   copied into drive/ and etf/ legacy.css. Per-vertical variants that
-   differ (e.g. insure's fadeSlideUp uses a different offset) stay in
-   that vertical's own stylesheet. */
+/* Product-wide reveal keyframe, used by inline `animation: 'fadeUp …'`
+   styles (which can't see CSS-module-scoped keyframes) in drive's
+   renew-or-replace and CarPicker. Previously in drive/etf legacy.css.
+   insure's fadeSlideUp (6px vs 8px) and the etf .module.css spinners
+   keep their own locally-scoped keyframes. */
 @keyframes fadeUp { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
-@keyframes spin { to { transform: rotate(360deg); } }
 
 .ndtm-spinner {
   width: 32px; height: 32px; border-radius: 50%;
