@@ -8,7 +8,9 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "test": "node --test \"src/lib/**/*.test.js\""
+    "test": "node --test \"src/lib/**/*.test.js\"",
+    "test:e2e": "playwright test --project=chromium",
+    "test:e2e:visual": "playwright test --project=visual"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.112.0",
@@ -17,6 +19,7 @@
     "react-dom": "19.2.3"
   },
   "devDependencies": {
+    "@playwright/test": "^1.62.1",
     "eslint": "^9",
     "eslint-config-next": "16.2.1"
   }
