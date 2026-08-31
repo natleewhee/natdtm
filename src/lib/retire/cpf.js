@@ -7,6 +7,9 @@
 // the official CPF contribution rate tables before relying on this for
 // real planning, the same way BSD/SSD/ABSD in HouseMuch carry an AS_OF
 // date rather than being presented as permanently current.
+// Verified against CPF Board in docs/statutory-sources.md (audited
+// 2026-08-31). The 55-60 and 60-65 CPF_CONTRIBUTION_TABLE bands have
+// known open discrepancies recorded there (still at 2025 rates).
 export const CPF_RATES_AS_OF = '2026-01-01'
 
 // Monthly Ordinary Wage ceiling — the salary CPF contributions are capped

@@ -10,12 +10,18 @@
 
 import { taxOnChargeableIncome } from '../tax/calc.js'
 
+// Statutory figures below are verified against their authoritative source
+// in docs/statutory-sources.md (audited 2026-08-31). SRS_RETIREMENT_AGE
+// has a known open discrepancy recorded there.
+export const SRS_AS_OF = '2026-01-01'
+
 // The statutory retirement age effective at the time of your FIRST SRS
 // contribution is what determines penalty-free withdrawal — it's locked
 // in then, not whatever the prevailing age is when you actually withdraw.
 // 63 is the current statutory retirement age (as of 2026) for anyone
 // making their first contribution now; this is a snapshot assumption for
 // anyone already contributing under an earlier (lower) locked-in age.
+// NOTE: rises to 64 from 1 Jul 2026 — see docs/statutory-sources.md.
 export const SRS_RETIREMENT_AGE = 63
 
 // Withdrawals from/after the statutory retirement age are 50% tax-exempt
