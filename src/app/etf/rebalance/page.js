@@ -19,21 +19,22 @@ export default function RebalancePage() {
 function RebalanceContent() {
   const searchParams = useSearchParams()
   const [portfolio, setPortfolio] = useState(undefined) // undefined = loading, null = none found
-
-  useEffect(() => {
-    const fromUrl = decodePrefsFromParams(searchParams)
-    if (fromUrl) { setPortfolio(generatePortfolio(fromUrl)); return }
-    const saved = loadPortfolio()
-    setPortfolio(saved?.portfolio?.allocations?.length ? saved.portfolio : null)
-  }, [searchParams])
-
   const [currentValues, setCurrentValues] = useState({})
   const [contribution, setContribution] = useState('')
 
-  // Reset the current-holdings form whenever the target portfolio changes.
   useEffect(() => {
-    if (portfolio) setCurrentValues(Object.fromEntries(portfolio.allocations.map(a => [a.etf.ticker, ''])))
-  }, [portfolio])
+    /* eslint-disable react-hooks/set-state-in-effect -- restores the
+       target portfolio from the URL params or localStorage (unavailable
+       during SSR) and blanks the holdings form to match it */
+    const fromUrl = decodePrefsFromParams(searchParams)
+    const saved = fromUrl ? null : loadPortfolio()
+    const next = fromUrl
+      ? generatePortfolio(fromUrl)
+      : (saved?.portfolio?.allocations?.length ? saved.portfolio : null)
+    setPortfolio(next)
+    setCurrentValues(next ? Object.fromEntries(next.allocations.map(a => [a.etf.ticker, ''])) : {})
+    /* eslint-enable react-hooks/set-state-in-effect */
+  }, [searchParams])
 
   const result = useMemo(() => {
     if (!portfolio) return null
