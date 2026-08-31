@@ -3,7 +3,7 @@
 // online users always see the latest deploy), cache-first for static
 // build assets. Bump CACHE_VERSION to force clients to drop old caches.
 // Scoped to /etf/ at registration time (see components/etf/SWRegister.js) —
-// this worker must only ever control the WhatETF section of coah, never the
+// this worker must only ever control the WhatETF section of the site, never the
 // Insure/Drive verticals or the shell.
 const CACHE_VERSION = 'v1'
 const CACHE_NAME = `whatetf-${CACHE_VERSION}`

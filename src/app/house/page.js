@@ -245,8 +245,8 @@ export default function HouseMuchPage() {
       <ShellHeader title="HouseMuch" links={[{ href: '/house/the-math', label: 'The Math' }]} />
 
       {/* Hero */}
-      <div style={{ background: C.coah, padding: '48px 32px 52px', textAlign: 'center' }}>
-        <div style={{ fontFamily: C.fontCoah, fontSize: 10, fontWeight: 600, color: 'rgba(255,255,255,0.35)', letterSpacing: '0.18em', textTransform: 'uppercase', marginBottom: 14 }}>
+      <div style={{ background: C.ndtm, padding: '48px 32px 52px', textAlign: 'center' }}>
+        <div style={{ fontFamily: C.fontNdtm, fontSize: 10, fontWeight: 600, color: 'rgba(255,255,255,0.35)', letterSpacing: '0.18em', textTransform: 'uppercase', marginBottom: 14 }}>
           Singapore Property Profit/Loss Calculator
         </div>
         <h1 style={{ fontFamily: C.fontDisplay, fontSize: 'clamp(30px, 5.5vw, 48px)', color: '#fff', marginBottom: 10, lineHeight: 1.2 }}>

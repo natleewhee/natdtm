@@ -1,1 +1,1 @@
-export const SITE_URL = 'https://coah.vercel.app';
+export const SITE_URL = 'https://natdtm.vercel.app';

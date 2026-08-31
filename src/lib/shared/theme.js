@@ -13,7 +13,7 @@
 // positive financial outcomes — keep the two apart. A vertical that
 // needs extra keys spreads this object: `{ ...C, surface2: '#172033' }`.
 export const C = {
-  coah: '#05070c', coahMid: '#05070c', coahLight: '#141b2e',
+  ndtm: '#05070c', ndtmMid: '#05070c', ndtmLight: '#141b2e',
   primary: '#f8fafc', accent: '#eab308', accentBg: '#332b0e', accentText: '#fde68a', accentInk: '#1b1400',
   green: '#10b981', greenBg: '#0f2e23', greenText: '#6ee7b7',
   bg: '#0b1120', surface: '#1e293b', border: '#334155',
@@ -21,7 +21,7 @@ export const C = {
   red: '#ef4444', redBg: '#3a1414', redText: '#fca5a5',
   amber: '#ff5722', amberBg: '#3a1f12', amberText: '#fdba74',
   blue: '#38bdf8', blueBg: '#0f2a38', blueText: '#93d9fb',
-  fontCoah: "'Space Grotesk', 'Inter', -apple-system, sans-serif",
+  fontNdtm: "'Space Grotesk', 'Inter', -apple-system, sans-serif",
   fontDisplay: "'Space Grotesk', 'Inter', -apple-system, sans-serif",
   fontBody: "'Inter', -apple-system, 'Segoe UI', sans-serif",
   fontMono: "'JetBrains Mono', ui-monospace, 'SF Mono', Consolas, monospace",

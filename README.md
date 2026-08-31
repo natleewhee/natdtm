@@ -75,11 +75,11 @@ e2e/                             Playwright: smoke.spec.js, keyboard.spec.js,
 Originally three separate apps (`sginsurecheck`, `sgdriveready`,
 `sgwhatetf`) under a "Coah" brand, later merged and rebranded to a
 personal "ndtm" identity with a permanent dark "Digital Workbench" theme,
-then extended to eight tools. Some source-level names still carry the old
-naming as historical residue — CSS custom properties (`--l-*`,
-`--color-coah`), class names (`.coah-button`), and theme keys (`C.coah`).
-These are harmless and are being retired incrementally; the UI shows only
-"ndtm" / "nat does the math".
+then extended to eight tools. Identifiers and strings have been renamed
+off the old brand; the one remaining trace is the `--l-*` CSS
+custom-property prefix (kept deliberately — a repo-wide rename of every
+token was judged higher risk than value). See `docs/architecture.md` for
+detail.
 
 ## Design system
 
@@ -157,10 +157,8 @@ and the Playwright suite on every push and PR.
 
 - **React Compiler** is enabled only on the original InsureCheck, not
   repo-wide.
-- **`coah` naming residue** in class names, CSS variables, and theme keys
-  (~56 files) is not yet renamed.
-- **`src/lib/shared/site.js`** still returns `https://coah.vercel.app`;
-  the canonical URL is `https://natdtm.vercel.app`.
+- **`--l-*` CSS token prefix** is a deliberate leftover from the "Coah"
+  era; every other brand identifier has been renamed.
 - **Visual baselines** for the Playwright `visual` project must be
   generated on the CI runner image (`ci.yml` `workflow_dispatch`), not a
   dev machine — font rendering differs.

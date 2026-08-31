@@ -1,6 +1,6 @@
 /* nat does the math — "Digital Workbench" design system.
    One theme, permanently dark (see design.md). Governs the shared shell
-   (root layout, header, footer, home page); the three tools' own literal-
+   (root layout, header, footer, home page); the verticals' own literal-
    hex copies of this palette (src/lib/drive/theme.js and its per-page
    duplicates, src/lib/insure/engine/scorer.js's band/severity maps) are
    kept in sync by hand — see the comment in theme.js for why those can't
@@ -80,7 +80,7 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
 
 /* Shared loading spinner — avoids a blank white screen while a page rehydrates
    from sessionStorage (results pages) or fetches. */
-@keyframes coah-spin { to { transform: rotate(360deg); } }
+@keyframes ndtm-spin { to { transform: rotate(360deg); } }
 
 /* Product-wide reveal keyframes, identical across verticals — previously
    copied into drive/ and etf/ legacy.css. Per-vertical variants that
@@ -89,11 +89,11 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
 @keyframes fadeUp { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
 @keyframes spin { to { transform: rotate(360deg); } }
 
-.coah-spinner {
+.ndtm-spinner {
   width: 32px; height: 32px; border-radius: 50%;
   border: 3px solid var(--color-border);
   border-top-color: var(--color-accent);
-  animation: coah-spin 0.8s linear infinite;
+  animation: ndtm-spin 0.8s linear infinite;
 }
 /* Product-wide reduced-motion guard. Shortens rather than removes
    durations: many reveals use `animation ... forwards` from opacity:0, so
@@ -107,21 +107,21 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
   }
-  .coah-spinner { animation-duration: 1.6s !important; }
+  .ndtm-spinner { animation-duration: 1.6s !important; }
 }
 
 /* ── shared primary-action button (src/components/shared/Button.js) ──
-   One button shape across all three tools. Named .coah-button to avoid
-   colliding with the older per-vertical .coah-btn / .coah-btn-primary. */
-.coah-button {
+   One button shape across every vertical. Named .ndtm-button to avoid
+   colliding with the older per-vertical .ndtm-btn / .ndtm-btn-primary. */
+.ndtm-button {
   display: inline-flex; align-items: center; justify-content: center; gap: 10px;
   padding: 16px 40px; border: none; border-radius: var(--radius-md);
   font-family: var(--font-body); font-size: 16px; font-weight: 600; letter-spacing: 0.01em;
   text-decoration: none; cursor: pointer;
   transition: filter 0.15s ease, transform 0.1s ease, box-shadow 0.2s ease;
 }
-.coah-button:hover:not(:disabled) { filter: brightness(1.06); transform: translateY(-1px); }
-.coah-button:active:not(:disabled) {
+.ndtm-button:hover:not(:disabled) { filter: brightness(1.06); transform: translateY(-1px); }
+.ndtm-button:active:not(:disabled) {
   /* Tactile press — a physical button gets shoved in and its shadow
      flattens with it, not just cancels its hover lift. */
   transform: translateY(1px) scale(0.98);
@@ -129,12 +129,12 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
   box-shadow: 0 1px 4px rgba(0,0,0,0.25) !important;
   transition: filter 0.05s ease, transform 0.05s ease, box-shadow 0.05s ease;
 }
-.coah-button:disabled { cursor: not-allowed; }
-.coah-button--full { width: 100%; }
-.coah-button--accent { background: var(--color-accent); color: var(--l-accent-ink); box-shadow: 0 4px 16px rgba(234,179,8,0.16); }
-.coah-button--dark { background: var(--color-coah); color: var(--color-primary); border: 1.5px solid var(--color-border); box-shadow: 0 4px 16px rgba(0,0,0,0.35); }
-.coah-button--dark:disabled { background: var(--color-bg); color: var(--color-faint); box-shadow: none; border: 1.5px solid var(--color-border); }
-.coah-button--outline { background: transparent; border: 2px solid var(--color-primary); color: var(--color-primary); box-shadow: none; }
+.ndtm-button:disabled { cursor: not-allowed; }
+.ndtm-button--full { width: 100%; }
+.ndtm-button--accent { background: var(--color-accent); color: var(--l-accent-ink); box-shadow: 0 4px 16px rgba(234,179,8,0.16); }
+.ndtm-button--dark { background: var(--color-ndtm); color: var(--color-primary); border: 1.5px solid var(--color-border); box-shadow: 0 4px 16px rgba(0,0,0,0.35); }
+.ndtm-button--dark:disabled { background: var(--color-bg); color: var(--color-faint); box-shadow: none; border: 1.5px solid var(--color-border); }
+.ndtm-button--outline { background: transparent; border: 2px solid var(--color-primary); color: var(--color-primary); box-shadow: none; }
 
 /* ── shell shared layout ─────────────────────────────────────────── */
 .shell-wrap { max-width: 1080px; margin: 0 auto; padding: 0 24px; }
@@ -305,13 +305,13 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
    truth for the palette; the JS theme objects mirror it (drive/theme.js
    as literal hex — see the comment there for why it can't use var()).
 
-   --color-coah/-mid/-light are deliberately their OWN dark tone, not
+   --color-ndtm/-mid/-light are deliberately their OWN dark tone, not
    reused from --color-primary/--color-text: those two used to coincide
    by coincidence in the old light palette (both just "the ink color"),
    but --color-text now needs to be light-on-dark for body copy while
-   --color-coah still needs to read as a deep, distinct panel behind
+   --color-ndtm still needs to read as a deep, distinct panel behind
    white hero text — keeping them separate avoids re-deriving every call
-   site that pairs `background: C.coah` with literal white text. */
+   site that pairs `background: C.ndtm` with literal white text. */
 :root {
   --color-primary: var(--l-ink);
   --color-primary-text: var(--l-accent-ink);
@@ -342,11 +342,11 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
   --color-green-bg: #0f2e23;
   --color-green-text: #6ee7b7;
 
-  --color-coah: #05070c;
-  --color-coah-mid: #05070c;
-  --color-coah-light: #141b2e;
+  --color-ndtm: #05070c;
+  --color-ndtm-mid: #05070c;
+  --color-ndtm-light: #141b2e;
 
-  --font-coah: var(--l-font-display);
+  --font-ndtm: var(--l-font-display);
   --font-display: var(--l-font-display);
   --font-body: var(--l-font-body);
   --font-mono: var(--l-font-mono);

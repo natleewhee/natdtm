@@ -17,7 +17,7 @@
 
 .hero { padding-top: 40px; padding-bottom: 8px; }
 .heroHeader { display: flex; align-items: center; gap: 8px; margin-bottom: 16px; }
-.heroLabel { font-family: var(--font-coah); font-size: 13px; font-weight: 600; color: var(--color-primary); letter-spacing: 0.08em; }
+.heroLabel { font-family: var(--font-ndtm); font-size: 13px; font-weight: 600; color: var(--color-primary); letter-spacing: 0.08em; }
 .heroSub { font-size: 12px; color: var(--color-faint); border-left: 1px solid var(--color-border); padding-left: 8px; }
 .heroTitle { font-family: var(--font-display); font-size: clamp(26px,5vw,36px); color: var(--color-primary); margin: 0 0 12px; line-height: 1.2; }
 .heroTags { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 16px; }

@@ -38,7 +38,7 @@ const nextConfig = {
           {
             // Self-only: every font/style asset is now self-hosted (see
             // src/app/globals.css), so — unlike the three source apps —
-            // coah needs no fonts.googleapis.com / api.fontshare.com
+            // ndtm needs no fonts.googleapis.com / api.fontshare.com
             // allowances at all.
             key: 'Content-Security-Policy',
             value: [

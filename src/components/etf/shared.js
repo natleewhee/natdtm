@@ -10,11 +10,11 @@ import styles from './shared.module.css'
 // Safe here (unlike src/lib/drive/theme.js) because nothing in this
 // vertical string-concatenates a hex alpha suffix onto `C.x`.
 export const C = {
-  coah: 'var(--color-coah)', coahMid: 'var(--color-coah-mid)',
+  ndtm: 'var(--color-ndtm)', ndtmMid: 'var(--color-ndtm-mid)',
   primary: 'var(--color-primary)', accent: 'var(--color-accent)', accentBg: 'var(--color-accent-bg)', accentText: 'var(--color-accent-text)',
   bg: 'var(--color-bg)', surface: 'var(--color-surface)', border: 'var(--color-border)',
   text: 'var(--color-text)', muted: 'var(--color-muted)', faint: 'var(--color-faint)',
-  fontCoah: "var(--font-coah), -apple-system, 'Segoe UI', sans-serif",
+  fontNdtm: "var(--font-ndtm), -apple-system, 'Segoe UI', sans-serif",
   fontDisplay: "var(--font-display), -apple-system, 'Segoe UI', sans-serif",
   fontBody: "var(--font-body), -apple-system, 'Segoe UI', sans-serif",
   fontMono: "var(--font-mono), ui-monospace, monospace",

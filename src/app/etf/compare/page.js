@@ -141,7 +141,7 @@ function CompareContent() {
             <PrefsPicker label="Portfolio B" prefs={prefsB} onChange={setPrefsB} />
           </div>
 
-          <button onClick={handleCompare} className={`coah-btn ${styles.compareBtn}`}>
+          <button onClick={handleCompare} className={`ndtm-btn ${styles.compareBtn}`}>
             Compare →
           </button>
 

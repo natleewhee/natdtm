@@ -15,9 +15,9 @@
   --shadow-card: 0 1px 3px rgba(0,0,0,0.06), 0 4px 16px rgba(0,0,0,0.04);
 }
 
-.coah-btn { transition: transform .08s ease, box-shadow .08s ease; }
-.coah-btn:hover:not(:disabled) { filter: brightness(1.08); }
-.coah-btn:active:not(:disabled) { transform: translate(2px,2px); }
+.ndtm-btn { transition: transform .08s ease, box-shadow .08s ease; }
+.ndtm-btn:hover:not(:disabled) { filter: brightness(1.08); }
+.ndtm-btn:active:not(:disabled) { transform: translate(2px,2px); }
 
 .pf-grid { display: grid; grid-template-columns: minmax(0,2fr) minmax(0,1fr); gap: 24px; }
 @media (max-width: 860px) {

@@ -78,7 +78,7 @@ export function CarPicker({ value, onChange, slot, ceiling, down, allCars = [], 
     const parsed = parseMoneyKM(priceText)
     if (parsed != null) setPriceText(parsed.toLocaleString('en-SG'))
   }
-  const slotCol = slot === 'A' ? C.coah : C.blue
+  const slotCol = slot === 'A' ? C.ndtm : C.blue
   const hasCeiling = ceiling && (ceiling.catA > 0 || ceiling.catB > 0)
   const budgetCars = hasCeiling ? allCars.filter(car => {
     const cap = car.coe === 'Cat A' ? ceiling.catA : ceiling.catB
@@ -199,7 +199,7 @@ export function CarPicker({ value, onChange, slot, ceiling, down, allCars = [], 
               style={{position:'absolute',right:2,top:'50%',transform:'translateY(-50%)',width:40,height:40,display:'flex',alignItems:'center',justifyContent:'center',background:'none',border:'none',color:C.faint,cursor:'pointer',fontSize:16,lineHeight:1,padding:0}}>✕</button>
           )}
           {showDrop && (
-            <div id={`car-listbox-${slot}`} role="listbox" className="coah-scroll" style={{position:'absolute',top:'calc(100% + 4px)',left:0,right:0,zIndex:999,background:C.surface,border:`1.5px solid ${C.accent}55`,borderRadius:C.r,boxShadow:C.shadowMd,maxHeight:'min(60vh, 420px)',overflowY:'auto',animation:'expandDown 0.18s ease forwards'}}>
+            <div id={`car-listbox-${slot}`} role="listbox" className="ndtm-scroll" style={{position:'absolute',top:'calc(100% + 4px)',left:0,right:0,zIndex:999,background:C.surface,border:`1.5px solid ${C.accent}55`,borderRadius:C.r,boxShadow:C.shadowMd,maxHeight:'min(60vh, 420px)',overflowY:'auto',animation:'expandDown 0.18s ease forwards'}}>
               {filtered.length === 0
                 ? <div style={{padding:'14px',fontSize:C.sm,color:C.muted,textAlign:'center'}}>No matches for &quot;{query}&quot;</div>
                 : filtered.map((car, i) => {

@@ -72,7 +72,7 @@ export default function TroughChart({ primary, alt, events = {}, troughMonth, to
             <g key={i}>
               <circle cx={px(i)} cy={py(row.balance)} r={isTrough ? 5.5 : 3}
                 fill={isTrough ? C.accent : primaryColor}
-                stroke={isTrough ? C.coah : 'none'} strokeWidth={isTrough ? 2 : 0} />
+                stroke={isTrough ? C.ndtm : 'none'} strokeWidth={isTrough ? 2 : 0} />
               <text x={px(i)} y={H - 48} textAnchor="middle" style={{ fontFamily: C.fontMono, fontSize: 10.5, fill: isTrough ? C.accent : C.faint, fontVariantNumeric: 'tabular-nums' }}>
                 {MONTHS[i]}
               </text>

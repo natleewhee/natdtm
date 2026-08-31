@@ -72,7 +72,7 @@ export default function COEExplainerPage() {
       <div style={{ maxWidth: 720, margin: '0 auto', padding: '48px 24px 80px' }}>
 
         <div style={{ marginBottom: 40 }}>
-          <div style={{ fontFamily: C.fontCoah, fontSize: 10, fontWeight: 600, color: C.accent, letterSpacing: '0.18em', textTransform: 'uppercase', marginBottom: 10 }}>ndtm Explains</div>
+          <div style={{ fontFamily: C.fontNdtm, fontSize: 10, fontWeight: 600, color: C.accent, letterSpacing: '0.18em', textTransform: 'uppercase', marginBottom: 10 }}>ndtm Explains</div>
           <h1 style={{ fontFamily: C.fontDisplay, fontSize: 'clamp(28px,5vw,44px)', color: C.primary, margin: '0 0 16px', lineHeight: 1.2 }}>COE, PARF, and ARF — demystified</h1>
           <p style={{ fontSize: C.lg, color: C.muted, margin: 0, lineHeight: 1.7 }}>You know what a COE is. But do you know what PARF means, why the COE rebate exists, and how it all affects what you actually pay and recover over 10 years?</p>
         </div>
@@ -143,8 +143,8 @@ export default function COEExplainerPage() {
         </p>
 
         {/* Interactive element */}
-        <div style={{ background: C.coah, borderRadius: C.rXL, padding: 32, margin: '40px 0 32px' }}>
-          <div style={{ fontFamily: C.fontCoah, fontSize: 10, fontWeight: 600, color: 'rgba(255,255,255,0.5)', letterSpacing: '0.18em', textTransform: 'uppercase', marginBottom: 8 }}>Interactive</div>
+        <div style={{ background: C.ndtm, borderRadius: C.rXL, padding: 32, margin: '40px 0 32px' }}>
+          <div style={{ fontFamily: C.fontNdtm, fontSize: 10, fontWeight: 600, color: 'rgba(255,255,255,0.5)', letterSpacing: '0.18em', textTransform: 'uppercase', marginBottom: 8 }}>Interactive</div>
           <h2 style={{ fontFamily: C.fontDisplay, fontSize: 22, color: '#fff', margin: '0 0 8px' }}>How does COE price affect what you pay?</h2>
           <p style={{ fontSize: C.sm, color: 'rgba(255,255,255,0.55)', margin: '0 0 24px' }}>Pick a car and drag the COE slider to see how the price and monthly cost change.</p>
 
@@ -196,7 +196,7 @@ export default function COEExplainerPage() {
         <div style={{ textAlign: 'center', padding: '32px 0 0' }}>
           <p style={{ fontSize: C.base, color: C.muted, marginBottom: 20 }}>Ready to run the full numbers for your situation?</p>
           <div style={{ display: 'flex', gap: 12, justifyContent: 'center', flexWrap: 'wrap' }}>
-            <Link href="/drive" style={{ padding: '13px 28px', background: C.coah, color: '#fff', borderRadius: C.rL, fontSize: C.sm, fontWeight: 700, textDecoration: 'none', boxShadow: '0 4px 16px rgba(0,0,0,0.35)' }}>
+            <Link href="/drive" style={{ padding: '13px 28px', background: C.ndtm, color: '#fff', borderRadius: C.rL, fontSize: C.sm, fontWeight: 700, textDecoration: 'none', boxShadow: '0 4px 16px rgba(0,0,0,0.35)' }}>
               Calculate affordability →
             </Link>
             <Link href="/drive/renew-or-replace" style={{ padding: '13px 28px', background: C.surface, color: C.primary, border: `2px solid ${C.primary}`, borderRadius: C.rL, fontSize: C.sm, fontWeight: 700, textDecoration: 'none' }}>

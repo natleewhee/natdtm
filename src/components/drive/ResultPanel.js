@@ -170,7 +170,7 @@ export function ResultPanel({ r, tenure, visible, slim=false }) {
           <div style={{display:'flex',alignItems:'flex-start',gap:12,background:C.accentBg,border:`1px solid ${C.accent}44`,borderRadius:C.r,padding:'12px 14px',marginBottom:14,opacity:metricsIn?1:0,transition:'opacity 0.5s 0.5s'}}>
             <span style={{fontSize:20,flexShrink:0}}>🧭</span>
             <div>
-              <div style={{fontSize:C.xs,fontWeight:700,color:C.accent,textTransform:'uppercase',letterSpacing:'0.08em',marginBottom:4}}>coah / invest</div>
+              <div style={{fontSize:C.xs,fontWeight:700,color:C.accent,textTransform:'uppercase',letterSpacing:'0.08em',marginBottom:4}}>ndtm / invest</div>
               <p style={{fontSize:C.sm,color:C.accentText,lineHeight:1.65,margin:'0 0 8px'}}>
                 This leaves <strong>{SGD(headroom)}/mo</strong> under your 30% comfort limit — untouched by this car.
               </p>

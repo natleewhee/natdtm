@@ -116,8 +116,12 @@ DriveReady is the only vertical with live data.
 keyframes. `src/lib/shared/theme.js` mirrors the palette as a literal-hex
 `C` object plus `SGD` and `parseMoney` helpers, because components build
 alpha-transparent variants by concatenating a hex suffix (`${C.accent}44`),
-which `var()` cannot do. The `--l-*` prefix and `coah`-named identifiers
-are residue from the "Coah" era (see README "Brand history").
+which `var()` cannot do.
+
+**Brand history:** the app was formerly "Coah". All brand identifiers and
+strings have since been renamed to "ndtm" / "nat does the math"; the only
+deliberate leftover is the `--l-*` CSS custom-property prefix, kept
+because a repo-wide token rename was judged higher risk than value.
 
 ## CI
 

@@ -1,9 +1,9 @@
 .page { min-height: 100vh; display: flex; flex-direction: column; background: var(--color-bg); font-family: var(--font-body); }
 .main { flex: 1; }
 
-.hero { background: var(--color-coah); padding: 56px 24px 60px; text-align: center; }
+.hero { background: var(--color-ndtm); padding: 56px 24px 60px; text-align: center; }
 .heroEyebrow {
-  font-family: var(--font-coah); font-size: 10px; font-weight: 600;
+  font-family: var(--font-ndtm); font-size: 10px; font-weight: 600;
   color: rgba(255,255,255,0.4); letter-spacing: 0.18em; text-transform: uppercase; margin-bottom: 14px;
 }
 .heroTitle {
@@ -14,7 +14,7 @@
   font-size: 17px; color: rgba(255,255,255,0.55); margin: 0 0 32px;
   max-width: 480px; margin-left: auto; margin-right: auto; line-height: 1.7;
 }
-/* Hero CTA now uses the shared <Button> primitive (.coah-button). */
+/* Hero CTA now uses the shared <Button> primitive (.ndtm-button). */
 .heroBadges { margin-top: 24px; }
 
 .disclaimerStrip { background: var(--color-soft-bg); border-bottom: 1px solid var(--color-border); padding: 8px 24px; text-align: center; }

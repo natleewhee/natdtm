@@ -348,7 +348,7 @@ export default function DriveReadyPage() {
       {/* ── STRUCTURED DATA ─── */}
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify({
         '@context':'https://schema.org','@type':'WebApplication',
-        name:'DriveReady — nat does the math',url:'https://coah.vercel.app/drive',
+        name:'DriveReady — nat does the math',url:'https://natdtm.vercel.app/drive',
         description:'Singapore car affordability calculator. Know your true monthly cost before you commit.',
         applicationCategory:'FinanceApplication',operatingSystem:'Web',
         offers:{'@type':'Offer',price:'0',priceCurrency:'SGD'},
@@ -376,8 +376,8 @@ export default function DriveReadyPage() {
       />
 
       {/* ── HERO ── */}
-      <div style={{background:C.coah,padding:'48px 32px 52px',textAlign:'center'}}>
-        <div style={{fontFamily:C.fontCoah,fontSize:10,fontWeight:600,color:'rgba(255,255,255,0.35)',letterSpacing:'0.18em',textTransform:'uppercase',marginBottom:14}}>Singapore Car Loan Calculator</div>
+      <div style={{background:C.ndtm,padding:'48px 32px 52px',textAlign:'center'}}>
+        <div style={{fontFamily:C.fontNdtm,fontSize:10,fontWeight:600,color:'rgba(255,255,255,0.35)',letterSpacing:'0.18em',textTransform:'uppercase',marginBottom:14}}>Singapore Car Loan Calculator</div>
         <h1 style={{fontFamily:C.fontDisplay,fontSize:'clamp(30px, 5.5vw, 48px)',color:'#fff',marginBottom:10,lineHeight:1.2}}>Be Ready to Drive.</h1>
         <p style={{fontFamily:C.fontDisplay,fontSize:18,color:'rgba(255,255,255,0.5)',marginBottom:24,fontStyle:'italic'}}>Your salary, your cash, your real number. I&apos;ll do the math.</p>
         <TrustBadges tone="dark" items={['50+ SG models', 'True cost incl. depreciation', 'Zero data collected', 'Free, forever']} />
@@ -424,7 +424,7 @@ export default function DriveReadyPage() {
                 {['single','compare'].map(m => (
                   <button key={m} type="button" onClick={() => { setMode(m); setCalculated(false) }}
                     aria-pressed={mode===m}
-                    style={{padding:'7px 16px',fontSize:C.xs,fontWeight:700,letterSpacing:'0.06em',textTransform:'uppercase',cursor:'pointer',borderRadius:6,border:'none',fontFamily:C.fontBody,background:mode===m?C.coah:'transparent',color:mode===m?'#fff':C.muted,transition:'all 0.2s',boxShadow:mode===m?'0 2px 8px rgba(0,0,0,0.35)':'none'}}>
+                    style={{padding:'7px 16px',fontSize:C.xs,fontWeight:700,letterSpacing:'0.06em',textTransform:'uppercase',cursor:'pointer',borderRadius:6,border:'none',fontFamily:C.fontBody,background:mode===m?C.ndtm:'transparent',color:mode===m?'#fff':C.muted,transition:'all 0.2s',boxShadow:mode===m?'0 2px 8px rgba(0,0,0,0.35)':'none'}}>
                     {m==='single'?'Single Car':'Compare Two'}
                   </button>
                 ))}
@@ -585,7 +585,7 @@ export default function DriveReadyPage() {
                     <div style={{marginTop:12,background:C.surface,border:`1.5px solid ${C.border}`,borderRadius:C.rL,padding:'20px 24px',boxShadow:C.shadowMd}}>
                       <div style={{fontFamily:C.fontDisplay,fontSize:20,color:C.primary,marginBottom:4}}>Total cost over {dTenure} years</div>
                       <p style={{fontSize:C.sm,color:C.muted,marginBottom:18}}>Downpayment + all monthly instalments combined</p>
-                      {[{r:rA,slot:'A',color:C.coah},{r:rB,slot:'B',color:C.blue}].map(({r,slot,color}) => {
+                      {[{r:rA,slot:'A',color:C.ndtm},{r:rB,slot:'B',color:C.blue}].map(({r,slot,color}) => {
                         const maxTco = Math.max(rA.totalCoo, rB.totalCoo)
                         const pct = (r.totalCoo/maxTco)*100
                         const cheaper = r.totalCoo <= Math.min(rA.totalCoo,rB.totalCoo)

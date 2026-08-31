@@ -28,7 +28,7 @@ test('buildRecheckIcs produces a well-formed, parseable VCALENDAR/VEVENT block',
   assert.ok(ics.endsWith('END:VCALENDAR'))
   assert.ok(ics.includes('BEGIN:VEVENT'))
   assert.ok(ics.includes('END:VEVENT'))
-  assert.ok(/UID:insurecheck-recheck-\d+@coah\.sg/.test(ics))
+  assert.ok(/UID:insurecheck-recheck-\d+@natdtm\.vercel\.app/.test(ics))
 })
 
 test('buildRecheckIcs produces a distinct UID each time `now` changes', () => {

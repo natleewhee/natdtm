@@ -460,7 +460,7 @@ export default function ResultsPage() {
       justifyContent: 'center',
       background: 'var(--color-bg)',
     }}>
-      <div className="coah-spinner" role="status" aria-label="Loading your score" />
+      <div className="ndtm-spinner" role="status" aria-label="Loading your score" />
     </div>
   )
 
@@ -760,7 +760,7 @@ export default function ResultsPage() {
             }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '8px' }}>
                 <span style={{
-                  fontFamily: 'var(--font-coah)',
+                  fontFamily: 'var(--font-ndtm)',
                   fontSize: '11px',
                   fontWeight: '600',
                   color: 'var(--color-primary)',

@@ -18,7 +18,7 @@ function Table({ rows }) {
     <div style={{ overflowX: 'auto', marginBottom: 20 }}>
       <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: C.sm }}>
         <thead>
-          <tr style={{ background: C.coah }}>
+          <tr style={{ background: C.ndtm }}>
             {rows[0].map((h, i) => <th key={i} style={{ padding: '10px 14px', color: '#fff', textAlign: 'left', fontWeight: 700 }}>{h}</th>)}
           </tr>
         </thead>
