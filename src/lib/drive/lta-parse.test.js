@@ -2,9 +2,13 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import { deflateSync } from 'node:zlib'
+import { readFileSync } from 'node:fs'
 import {
   buildPriceMaps, matchToId, isLowCoverage, MIN_COVERAGE, getPdfNumbers, extractPdfText,
+  parseLTARows,
 } from './lta-parse.js'
+
+const FIXTURE_PATH = new URL('./__fixtures__/lta-car-cost-update.pdf', import.meta.url)
 
 // Builds a minimal synthetic PDF with one object whose content stream holds
 // a BT...ET text block, optionally /FlateDecode-compressed the way every
@@ -172,4 +176,48 @@ test('extractPdfText: a stream chained through an unsupported filter is skipped,
 
 test('extractPdfText: an empty/garbage buffer returns without throwing', () => {
   assert.doesNotThrow(() => extractPdfText(Buffer.from('not a pdf at all')))
+})
+
+// ─── committed PDF fixture ───────────────────────────────────────────────
+// Exercises the full chain — extractPdfText -> parseLTARows -> buildPriceMaps
+// -> isLowCoverage — against a /FlateDecode-compressed PDF on disk, the way
+// the real OneMotoring Car Cost Update ships. The fixture is synthetic
+// (see src/lib/drive/__fixtures__/lta-car-cost-update.pdf's generator note):
+// real LTA PDFs are not clearly licensed for redistribution and are revised
+// fortnightly, so assertions check structure and coverage, never a price.
+
+test('fixture PDF: extracts and parses to well over the coverage floor', () => {
+  const buf = readFileSync(FIXTURE_PATH)
+  const text = extractPdfText(buf)
+  assert.ok(text.length > 500, 'inflated text should be substantial')
+
+  const rows = parseLTARows(text)
+  assert.ok(rows.length >= MIN_COVERAGE, `expected >= ${MIN_COVERAGE} parsed rows, got ${rows.length}`)
+
+  const first = rows[0]
+  assert.equal(typeof first.name, 'string')
+  assert.ok(first.name.length >= 3)
+  assert.ok(Number.isFinite(first.sellingPrice) && first.sellingPrice >= 80000)
+  assert.ok(first.omv === null || (first.omv >= 5000 && first.omv <= 200000))
+
+  const { priceMap } = buildPriceMaps(rows)
+  const matched = Object.keys(priceMap).length
+  assert.ok(matched >= MIN_COVERAGE, `expected >= ${MIN_COVERAGE} matched cars, got ${matched}`)
+  assert.equal(isLowCoverage(matched), false)
+})
+
+test('fixture PDF: a truncated copy trips isLowCoverage', () => {
+  const buf = readFileSync(FIXTURE_PATH)
+  const truncated = buf.subarray(0, Math.floor(buf.length * 0.35))
+  const matched = Object.keys(buildPriceMaps(parseLTARows(extractPdfText(truncated))).priceMap).length
+  assert.ok(matched < MIN_COVERAGE)
+  assert.equal(isLowCoverage(matched), true)
+})
+
+test('fixture PDF: the plain (uncompressed) scan alone yields almost nothing', () => {
+  // Proves the /FlateDecode inflation path is what does the work here —
+  // strip the zlib stream to raw bytes and the BT/ET scan finds no rows.
+  const buf = readFileSync(FIXTURE_PATH)
+  const rawish = extractPdfText(buf.subarray(0, buf.indexOf(Buffer.from('stream\n')) + 7))
+  assert.ok(parseLTARows(rawish).length < MIN_COVERAGE)
 })

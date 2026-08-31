@@ -1,6 +1,6 @@
 'use client'
 
-import { Suspense, useState, useEffect } from 'react'
+import { Suspense, useState, useMemo } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { RISK_OPTIONS, SIMPLICITY_OPTIONS, TILT_OPTIONS } from '@/components/etf/shared'
 import { summarizePortfolio, encodeComparePrefs, decodeComparePrefs } from '@/lib/etf/logic'
@@ -108,19 +108,16 @@ export default function ComparePage() {
 function CompareContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
-  const [prefsA, setPrefsA] = useState(DEFAULT_A)
-  const [prefsB, setPrefsB] = useState(DEFAULT_B)
-  const [comparison, setComparison] = useState(null)
 
-  useEffect(() => {
-    const decoded = decodeComparePrefs(searchParams)
-    if (decoded) {
-      setPrefsA(decoded.a)
-      setPrefsB(decoded.b)
-      setComparison({ a: summarizePortfolio(decoded.a), b: summarizePortfolio(decoded.b) })
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+  // Seed from a shared/bookmarked link's params, decoded once at mount.
+  // Editing the form afterwards diverges from the URL until Compare is
+  // pressed again (which re-pushes the params), same as before.
+  const initial = useMemo(() => decodeComparePrefs(searchParams), [searchParams])
+  const [prefsA, setPrefsA] = useState(() => initial?.a ?? DEFAULT_A)
+  const [prefsB, setPrefsB] = useState(() => initial?.b ?? DEFAULT_B)
+  const [comparison, setComparison] = useState(() =>
+    initial ? { a: summarizePortfolio(initial.a), b: summarizePortfolio(initial.b) } : null,
+  )
 
   const handleCompare = () => {
     setComparison({ a: summarizePortfolio(prefsA), b: summarizePortfolio(prefsB) })

@@ -1,131 +1,127 @@
 ---
-title: "natdtm: Harden, Connect, Deepen - Plan"
-type: feat
+title: "natdtm Hardening - Plan"
+type: chore
 date: 2026-08-30
 artifact_contract: ce-unified-plan/v1
-artifact_readiness: requirements-only
+artifact_readiness: implementation-ready
 product_contract_source: ce-plan-bootstrap
 execution: code
 ---
 
-# natdtm: Harden, Connect, Deepen - Plan
+# natdtm Hardening - Plan
 
-Roadmap for taking `natleewhee/natdtm` further as a portfolio / craft piece across three workstreams: harden the eight shipped tools (A), finish the cross-tool profile and dashboard layer (B), and deepen two flagship verticals (D).
+Make the eight shipped calculators in `natleewhee/natdtm` demonstrably trustworthy, tested, consistent, and documented — the codebase itself as the craft-piece showcase. No new features, no cross-tool layer, no vertical depth.
 
-This plan stays `requirements-only` until the two launch-blocking questions in Open Questions are resolved. The Planning Contract, Implementation Units, Verification Contract, and Definition of Done are drafted below so the shape is reviewable, but `ce-work` should not execute from them until readiness flips to `implementation-ready`.
+This plan was narrowed from an earlier A+D+B roadmap after a six-persona `ce-doc-review`. The cross-tool profile layer, the Tax×Retire reliefs optimizer, and all DriveReady depth work are deferred (see Scope Boundaries). The EV road-tax and insurance work in the earlier draft was dropped because `src/lib/drive/tco.js` already implements it.
 
 ---
 
 ## Goal Capsule
 
-- **Objective:** A visitor trusts every calculator's number and its "the math" page, moves between the eight tools as one connected product with figures carried across, and a reviewer reading the codebase sees consistent, tested, documented craft.
-- **Means:** Three workstreams run against one branch line — A (harden) lands first because B and D build on the shared shell it cleans up; B (connect) and D (deepen) follow and can interleave. (KTD1, KTD2)
-- **Authority:** User is product owner. Craft-piece bar: when a decision trades speed against clarity, test coverage, or documentation, choose the latter.
-- **Execution profile:** Standard code lifecycle — branch, `npm run lint`, `npm test`, `npm run build`, plus the new CI gate (U1) and Playwright smoke (U4).
-- **Stop conditions:** Stop and re-plan if any unit needs a user-data backend, authentication, or a paid API. The product identity is client-side, account-free, keyless (see `.env.example`); Supabase stays a keyless reference-data mirror only.
-- **Tail ownership:** Implementer opens one PR per milestone (M1, M2, M3), not one giant PR.
+- **Objective:** A developer reading the repository sees eight calculators whose numbers are verified against dated authoritative sources, whose pages and forms are covered by tests, whose eight verticals follow one consistent structure, and whose README and architecture doc describe what actually ships.
+- **Means:** One hardening milestone, landed as a few focused PRs (CI + brand; test harness + correctness audit; consolidation + consistency + docs). No behavioral change to any calculator's output except where the correctness audit finds a wrong constant. (KTD1)
+- **Authority:** User is product owner. Craft-piece bar: when a choice trades speed against test coverage, consistency, or documentation, choose the latter.
+- **Execution profile:** Standard code lifecycle — branch, `npm run lint`, `npm test`, `npm run build`, plus the new CI gate (U1) and Playwright suite (U4). The correctness audit (U17) is characterization-first: pin current behavior, then flag drift.
+- **Stop conditions:** Stop and ask if any unit needs a user-data backend, authentication, a paid API, or a change to a calculator's methodology. Stop if the correctness audit finds a wrong shipping constant — that is a product decision, not a silent fix.
+- **Tail ownership:** Implementer opens focused PRs per KTD1, not one hardening mega-PR.
 
 ---
 
 ## Product Contract
 
-**Product Contract preservation:** bootstrap plan — no upstream Product Contract. Requirements below are derived from the repo state and the user's direction selection (A + D + B, ambition = portfolio / craft piece).
+**Product Contract preservation:** bootstrap plan, enriched in place from `requirements-only`. The earlier draft's R1–R10 are retained where the concept survived; R3 (token rename), R7 (React Compiler repo-wide), R9 (SEO/JSON-LD/OG), and R11–R20 (cross-tool layer, reliefs optimizer, DriveReady depth) are deferred to Scope Boundaries. R-IDs are not renumbered.
 
 ### Summary
 
-natdtm ships eight Singapore money calculators (`insure`, `drive`, `etf`, `house`, `retire`, `tax`, `ledger`, `flow`) in one Next.js 16 app with a shared dark shell, a client-side cross-tool "My Numbers" store, and per-tool methodology pages. The engine layer is well tested (29 `src/lib/**/*.test.js` files); the shell, pages, and profile flows are not. The Coah→ndtm rebrand is unfinished in several shipping surfaces. This plan closes those gaps (A), turns the eight tools into one navigable product by finishing the profile/dashboard layer already stubbed in `src/lib/shared/profile.js` and `/ledger` (B), and adds depth to DriveReady and a Tax×Retire reliefs optimizer (D).
+natdtm ships eight Singapore money calculators (`insure`, `drive`, `etf`, `house`, `retire`, `tax`, `ledger`, `flow`) in one Next.js 16 app. The engine layer has 29 `src/lib/**/*.test.js` files; the shell, pages, and forms have none, and no test checks a calculator's constants against an authoritative 2026 figure. There is no CI workflow that runs lint/test/build. The Coah→ndtm rebrand is unfinished across ~56 files. Each of the eight verticals repeats its own `theme.js` / `ui.js` structure. This plan closes those gaps and adds a correctness-and-currency audit so "trust" rests on evidence rather than file count.
 
 ### Problem Frame
 
-The repo has grown from three tools to eight, but three things did not keep pace:
+The repo grew from three tools to eight; four things did not keep pace.
 
-1. **Docs and brand.** `README.md` still describes only three tools. `src/lib/shared/site.js` hardcodes `https://coah.vercel.app` while the live site is `natdtm.vercel.app`, so canonical URLs, `sitemap.js`, `robots.js`, and social images point at the wrong domain. `src/app/page.js` says "Seven calculators" twice but renders eight. `next.config.mjs` comments and the `--l-*` CSS token prefix are Coah/"Ledger" residue, and `--l-` now collides conceptually with the live `/ledger` (MyLedger) vertical.
-2. **Test altitude.** Every test is a pure-logic unit test under `src/lib/`. No test exercises a rendered page, a form, a "the math" page, or the profile switch. A regression in the shell or in `profile.js` migration would ship silently. There is no CI workflow that runs `lint` / `test` / `build` — only `.github/workflows/refresh-data.yml` (a data cron).
-3. **The product is eight tools, not one.** `src/lib/shared/profile.js` is a 506-line store with a v6 schema, named profiles, and per-tool slots, and `/ledger` is already "the holistic dashboard." But every profile switch calls `window.location.reload()` (`ProfileSwitcher.js` lines 59, 76, 83), there is no cross-tab sync, no profile export/import, and the home page does not surface the connected-ness at all.
+1. **No CI gate.** The only workflow is `.github/workflows/refresh-data.yml` (a data cron). `npm run lint`, `npm test`, and `npm run build` run nowhere on push or PR.
+2. **Tests stop at the engine layer.** All 29 test files are under `src/lib/`. No test renders a page, submits a form, or opens a "the math" page. `src/lib/drive/lta-parse.js`'s PDF path is unverified against a real PDF. And no test checks that an embedded SG tax bracket, CPF rate, stamp-duty table, or relief cap is current for 2026 — "well tested" is inferred from a file count.
+3. **Rebrand unfinished.** `src/lib/shared/site.js` returns `https://coah.vercel.app` while the live site is elsewhere. `src/app/page.js` says "Seven calculators" but renders eight. `coah` appears in ~56 files — CSS class names (`coah-button` from `src/components/shared/Button.js`), CSS custom properties (`--color-coah`, `--font-coah`), theme keys (`C.coah`, `coahMid`, `fontCoah` in every `src/lib/<tool>/theme.js`), and visible strings (`coah.sg`, a literal "coah / invest" label).
+4. **Eight verticals, eight copies of the same structure.** Each carries its own `src/lib/<tool>/theme.js` + `src/components/<tool>/ui.js` (near-identical style objects), three of the eight also carry a `src/app/<tool>/legacy.css`, and engine functions lack JSDoc. A reviewer reads eight slightly different versions of one pattern.
 
 ### Requirements
 
-#### Trust and consolidation (A)
+#### CI and test infrastructure
 
-- R1. CI runs `npm ci`, `npm run lint`, `npm test`, and `npm run build` on every push and pull request, and a failure blocks merge.
-- R2. Every shipping brand/URL surface reads `natdtm`: `src/lib/shared/site.js` returns `https://natdtm.vercel.app`; `sitemap.js`, `robots.js`, and any `opengraph-image.js` / `twitter-image.js` derive from that constant; `src/app/page.js` hero copy matches the number of entries in its `TOOLS` array.
-- R3. The `--l-*` design tokens are renamed to a single ndtm-namespaced prefix across `src/app/globals.css`, all `src/app/*/legacy.css`, all `src/components/**`, and all inline `style={{}}` usages, with no rendered visual change.
-- R4. The eight per-vertical `src/app/*/legacy.css` files are reduced to one shared stylesheet plus only the genuinely per-tool overrides that remain.
-- R5. A rendered-output test suite covers: the home page renders all eight tool cards; each tool's landing page and its "the math" page render without error; the profile switch changes the active profile and the numbers a tool shows.
-- R6. `src/lib/drive/lta-parse.js` has a test that runs against a committed real LTA Car Cost Update PDF fixture (`/FlateDecode` compressed), not only synthetic input.
-- R7. The React Compiler is enabled repo-wide, or a KTD records why a named vertical is excluded.
-- R8. The `react-hooks/set-state-in-effect` findings in `src/app/etf/**` and `ProfileSwitcher.js` are either fixed or governed by one documented ESLint override rule instead of scattered inline disables.
-- R9. Each of the eight verticals has per-route `generateMetadata` (title, description, canonical) and an `opengraph-image.js`; every "the math" page emits `FAQPage` or `HowTo` JSON-LD.
-- R10. `README.md` describes all eight tools; `docs/architecture.md` documents the shell, the profile layer, the DriveReady data pipeline, and the design system.
+- R1. A GitHub Actions workflow runs `npm ci`, `npm run lint`, `npm test`, and `npm run build` on every push and pull request; a failure blocks merge. The workflow includes an end-to-end job that installs the Playwright browser and runs the Playwright suite.
+- R5. A Playwright suite covers: the home page renders all eight tool cards; every tool's landing page and its "the math" page return 200 and render a known heading; a keyboard-only path through one representative form completes.
+- R6. `src/lib/drive/lta-parse.js` has a test that runs its extraction against a committed `/FlateDecode`-compressed PDF fixture, asserting structural parse success and the `isLowCoverage` sanity check rather than a specific price.
 
-#### Cross-tool product layer (B)
+#### Correctness and currency
 
-- R11. Switching, creating, or deleting a profile updates every open tool in the same tab without a full page reload.
-- R12. A profile change in one browser tab is reflected in other open tabs of the same site.
-- R13. A user can export all profiles to a JSON file and import that file back, with a schema-version check on import.
-- R14. The home page surfaces the connected-product model: which tools have saved numbers in the active profile, and a link into `/ledger` when at least one does.
-- R15. `/ledger` (MyLedger) shows a one-line headline verdict and figure sourced from each tool that has data in the active profile, and names any tool whose data is stale (via `src/lib/shared/freshness.js`).
-- R16. The `profile.js` public API (load / save / clear / profile management) is unchanged for existing call sites, or every changed call site is updated in the same unit.
+- R21. Every embedded Singapore statutory constant across the eight engines — tax brackets, CPF contribution and allocation rates, CPF wage ceilings, stamp-duty tables, relief caps, SRS caps — carries a dated `_AS_OF` marker and is verified against its 2026 IRAS / CPF / LTA source, with the source URL recorded. A test fails when a constant's `_AS_OF` year is older than the current Year of Assessment.
+- R22. Each of the eight engine modules that lacks golden-master coverage gains at least one test asserting a computed figure against a published authoritative example (e.g. tax payable for a stated chargeable income against IRAS's own worked example).
 
-#### Vertical depth (D)
+#### Consistency and documentation
 
-- R17. DriveReady models electric vehicles: the EV COE category, road tax on power rating, and the absence of an engine-capacity term, with its own "the math" section.
-- R18. DriveReady estimates a car-insurance premium range from vehicle value, driver age, and NCD, shown as a range with stated assumptions.
-- R19. A reliefs optimizer spanning `/tax` and `/retire` ranks SRS contribution, CPF cash top-up (RSTU), CPF relief, and approved donations by dollars of tax saved per dollar committed, for the current Year of Assessment, reading salary and age from the active profile.
-- R20. The reliefs optimizer has its own "the math" page and a pure-logic test suite covering the relief caps and the marginal-rate boundaries.
+- R2. No shipping surface contains the string `coah` except one history note in `docs/architecture.md`. `src/lib/shared/site.js` returns the confirmed canonical URL; `sitemap.js`, `robots.js`, and the `insure` social images derive from it. The `src/app/page.js` hero copy is computed from the tool list length, not a hard-coded number word.
+- R4. The rules common to the three `src/app/*/legacy.css` files (drive, etf, insure) move into `src/app/globals.css`; the near-identical per-vertical `theme.js` style objects are factored into one shared helper. `--l-*` token names are unchanged. No rendered visual change beyond a stated pixel tolerance.
+- R8. The `react-hooks/set-state-in-effect` findings in `src/app/etf/**` and `src/components/shared/ProfileSwitcher.js` are resolved in code, or governed by one documented ESLint override rule that replaces every scattered inline `eslint-disable`.
+- R10. `README.md` describes all eight tools. `docs/architecture.md` documents the shell (`ShellHeader` / `Footer`), the `src/lib/shared/profile.js` store and its schema history, the DriveReady data pipeline (`scripts/` + `refresh-data.yml` + the Supabase mirror), the design system and the `--l-*` token convention with a one-line Coah history note, the "the math" page convention, and the canonical per-vertical module layout.
+- R22b. Every `src/app/<tool>/` route exports `metadata` with a real `<title>` and description. Every exported function in the engine modules (`src/lib/<tool>/calc.js` and siblings) carries a JSDoc `@param` / `@returns` block.
+- R23. A keyboard-and-screen-reader baseline: the `ProfileSwitcher` menu is fully keyboard operable with Escape-to-close and focus returned to its trigger; the Playwright suite carries one keyboard-path assertion.
 
 ### Key Decisions
 
-- Ship as three milestone PRs (M1 = A, M2 = B, M3 = D), not one. Governs R1–R20 sequencing.
-- Keep the app client-side, account-free, keyless. Governs R11–R16, R19: no server persistence, no auth, no paid data source.
-- D goes deep on DriveReady and a Tax×Retire reliefs optimizer, chosen over widening `house`/`etf`/`flow`, because DriveReady is the most-built vertical (11 of 29 test files) and the reliefs optimizer doubles as a showcase of the profile layer from B. Governs R17–R20.
+- **Hardening only — no new features.** Narrowed from A+D+B after the 2026-08-30 review found the breadth too wide for a solo craft piece. Governs R1–R23; defers R11–R20.
+- **Keep the app client-side, account-free, keyless.** Governs every unit — no server persistence, no auth, no paid data source.
+- **`--l-*` design-token names stay.** OQ2 resolved: the rename buys only conceptual tidiness for the highest-file-count change in the plan. Only comments and docs are corrected. Governs R4.
+- **DriveReady EV work is already done.** `src/lib/drive/tco.js` ships `estimateRoadTax(omv, pureEV)`, `ROAD_TAX_BANDS_EV`, `estimateInsurance(omv, pureEV)`, and `isPureEV`. The earlier R17–R18 are not re-implemented. Governs the DriveReady deferral.
 
 ### Scope Boundaries
 
-**Deferred for later**
+**Deferred to follow-up work** (own plan, own scope)
 
-- Analytics (privacy-friendly or otherwise). Useful for a real-users goal; not for a craft piece.
-- Full-site PWA / installable toolkit. Only `etf` has a service worker today; generalizing it is a separate effort.
-- A content/blog layer around "the math".
-- Promoting Supabase to the store for all SG financial constants (tax brackets, CPF rates, stamp-duty tables). Valuable, but a data-modeling effort of its own; this plan only fixes the `SUPABASE_ANON_KEY` vs `SUPABASE_SERVICE_ROLE_KEY` naming mismatch between `.env.example` and the refresh workflow.
-- TypeScript migration. JSDoc types on the money-math engines are in scope only if U-level effort stays small; otherwise deferred.
+- The cross-tool profile layer: no-reload profile switch, cross-tab sync, profile export/import, home connected-state, MyLedger per-tool verdicts (former R11–R16, U8–U12).
+- The Tax×Retire reliefs optimizer (former R19–R20, U15–U16, KTD8).
+- DriveReady depth: hybrid powertrain, kW-based road tax, EV COE category, insurance-range UI (former R17–R18, U13–U14).
+- SEO: per-route OG images, `FAQPage` / `HowTo` JSON-LD, a shared OG-image generator (former R9, U7). Plain per-route `<title>` / description is kept as R22b.
+- The `--l-*` token codemod (former R3, U3).
+- Enabling the React Compiler repo-wide (former R7). Only the lint-debt cleanup (R8) is kept.
+- Promoting Supabase to the store for all SG financial constants — a data-modeling effort of its own. The correctness audit (U17) records constants and their sources in code, not in Supabase.
+- TypeScript migration.
 
 **Outside this product's identity**
 
-- User accounts, login, server-side profile storage.
-- Any data source that needs an API key or a paid plan.
+- User accounts, login, server-side storage.
+- Any data source needing an API key or paid plan.
 - Personalized financial advice or product recommendations.
 
 ### Open Questions
 
-- OQ1. (Blocking) Confirm the D scope: DriveReady depth + Tax×Retire reliefs optimizer, or a different pair of verticals? R17–R20 depend on the answer.
-- OQ2. (Blocking) Token rename target: `--ndtm-*`, `--n-*`, or keep `--l-*` and only rewrite the comments and docs? R3 depends on the answer.
-- OQ3. (Deferred) Playwright vs `@testing-library/react` + `node:test` for R5. Playwright also gives screenshot snapshots that de-risk R3/R4; `@testing-library` is lighter. Recommend Playwright.
-- OQ4. (Deferred) Whether R11's no-reload switch rewires each tool's mount effect, or a lighter shared subscription hook is introduced. Affects U8 size.
-- OQ5. (Deferred) Whether the reliefs optimizer lives at a new route or extends `/tax`. Recommend a section on `/tax` that deep-links from `/retire`.
+- OQ0. (Blocking U2 only) Confirm the canonical production URL for `src/lib/shared/site.js` — `https://natdtm.vercel.app`, a custom domain, or a different Vercel slug. Recorded as an assumption below; U2 must not land until confirmed. Does not block the rest of the plan.
+- OQ1. (Deferred) Whether the LTA Car Cost Update PDF's publication licence permits committing a copy to a public repo. U5 falls back to a synthetic fixture if not — not plan-blocking.
+- OQ2. (Deferred) Whether U17's audit should also add a machine-checkable "source fetched and compared" step (a script that pulls the IRAS/CPF page and diffs the constant) or stop at a dated manual citation. Recommend: dated manual citation now; the fetch-and-diff script is follow-up.
 
 ### Success Criteria
 
-- A cold reader of the repo can name all eight tools and find the architecture doc within two minutes.
+- CI is a required check on the branch and green on the default branch.
+- `rg -i coah src/` returns nothing.
 - `npm run lint` passes with zero inline `eslint-disable` for `react-hooks/set-state-in-effect`.
-- CI is green on the default branch and required for merge.
-- No shipping surface contains the string `coah` except a one-line note in `docs/architecture.md` explaining the history.
-- Switching profiles on `/ledger` updates every card without the page reloading.
-- The reliefs optimizer's ranked output matches a hand-worked example in its "the math" page for a stated salary.
+- Every embedded SG statutory constant has an `_AS_OF: 2026` (or current-YA) marker and a recorded source URL; the currency test passes.
+- A cold reader finds the tool list and the architecture doc within two minutes of opening the repo.
+- The Playwright suite renders every landing page and "the math" page and one keyboard path, all green.
 
 ### Sources
 
-- `src/lib/shared/profile.js` — 506-line "My Numbers" store, v6 schema, `MAX_PROFILES = 3`, per-tool slots (`house`, `drive`, `retire`, `insure`, `tax`, `etf`, `flow`, `ledger`), `migrateV1`–`migrateV5`, `saveToolInputs` / `loadToolInputs`.
-- `src/components/shared/ProfileSwitcher.js:59,76,83` — `window.location.reload()` on switch / delete / create.
-- `src/lib/shared/site.js:1` — `SITE_URL = 'https://coah.vercel.app'`.
-- `src/app/page.js:54,67` — "Seven calculators" copy vs 8-entry `TOOLS` array; product names InsureCheck, DriveReady, WhatETF, HouseMuch, RetireWell, TaxWise, MyLedger, FlowState.
-- `next.config.mjs` — build-time version stamping, self-only CSP with `script-src 'self' 'unsafe-inline' 'unsafe-eval'`, "coah" in comments.
+- `src/lib/drive/tco.js` — already ships `estimateRoadTax(omv, pureEV)`, `ROAD_TAX_BANDS_ICE` / `ROAD_TAX_BANDS_EV`, `estimateInsurance(omv, pureEV)` with a `× 1.1` EV loading, `isPureEV` (imported from `calc.js`); header comment explains the OMV-band approximation is deliberate (no per-car cc/kW data).
+- `src/lib/shared/site.js` — `SITE_URL = 'https://coah.vercel.app'`.
+- `src/app/page.js` — one "Seven calculators" string near line 63; eight-entry `TOOLS` array (InsureCheck, DriveReady, WhatETF, HouseMuch, RetireWell, TaxWise, MyLedger, FlowState).
+- `src/components/shared/Button.js` — emits `coah-button` / `coah-button--<variant>` class names.
+- `src/lib/<tool>/theme.js` (×8) — `C.coah`, `coahMid`, `coahLight`, `fontCoah` keys; `--color-coah`, `--font-coah` referenced from `src/components/etf/shared.js`.
+- `src/components/insure/PrintSummary.jsx` — `coah.sg`; `src/components/drive/ResultPanel.js` — literal "coah / invest" label.
+- `src/app/{drive,etf,insure}/legacy.css` — the only three `legacy.css` files; the other five verticals style via `theme.js` / `ui.js` objects.
+- `src/lib/tax/calc.js` — `TAX_BANDS`, `taxOnChargeableIncome`, `marginalRate`, `reliefValue`, `totalReliefs`, `PERSONAL_RELIEF_CAP`, `SRS_CAP_*`, `RSTU_RELIEF_CAP_*`; `src/lib/retire/cpf.js` — wage ceilings; `src/lib/shared/tieredTax.js` — generic accumulator.
+- `.github/workflows/refresh-data.yml` — Node 22, `actions/setup-node@v4`, `peter-evans/create-pull-request@v6`; the only workflow.
 - `eslint.config.mjs` — bare `eslint-config-next/core-web-vitals`, no custom rules.
-- `.github/workflows/refresh-data.yml` — the only workflow; Node 22; `peter-evans/create-pull-request@v6`; references `secrets.SUPABASE_SERVICE_ROLE_KEY`.
-- `.env.example` — names `SUPABASE_ANON_KEY` (mismatch with the workflow's `SUPABASE_SERVICE_ROLE_KEY`).
-- `git ls-files 'src/**/*.test.js'` — 29 files, all under `src/lib/`; none under `src/app/` or `src/components/`.
+- `.env.example` — documents both `SUPABASE_ANON_KEY` and `SUPABASE_SERVICE_ROLE_KEY`; `refresh-data.yml` uses the latter, which is present (the "mismatch" from the earlier draft may not be real — U1 verifies before acting).
+- `git ls-files 'src/**/*.test.js'` — 29 files, all under `src/lib/`.
 - `README.md` "Known Limitations" — React Compiler only on original InsureCheck; etf `react-hooks/set-state-in-effect` debt; LTA PDF path unverified against a live PDF.
-- `src/app/*/legacy.css` — eight per-vertical stylesheets; `src/lib/*/theme.js` and `src/components/*/ui.js` repeated per vertical.
 
 ---
 
@@ -133,223 +129,251 @@ The repo has grown from three tools to eight, but three things did not keep pace
 
 ### Key Technical Decisions
 
-- KTD1. **One branch line, three milestone PRs.** M1 (A) merges before M2 (B) and M3 (D) start, because R3/R4 (token rename, CSS consolidation) and R1 (CI) change the surfaces B and D build on. Rationale: rebasing B and D over a token rename is worse than sequencing. Cites Goal Capsule Means.
-- KTD2. **A before B/D; B and D interleave.** After M1, B and D touch mostly disjoint files (`profile.js` / shell vs `src/lib/drive` + `src/lib/tax`), so they need no strict order. Cites Goal Capsule Means.
-- KTD3. **CI via GitHub Actions, Node 22, matching `refresh-data.yml`.** One workflow `.github/workflows/ci.yml`: `npm ci && npm run lint && npm test && npm run build` on `push` and `pull_request`. Adds a `test:e2e` job (U4) gated to run after the unit job. Governs R1.
-- KTD4. **Playwright for rendered-output and cross-tool tests; keep `node --test` for pure logic.** Playwright is the standard Next.js e2e path, runs the real shell, and its screenshot snapshots de-risk the R3/R4 token rename and CSS consolidation. `node --test` stays the engine-layer tool. Governs R5, R6, R20. (Pending OQ3.)
-- KTD5. **Token rename by codemod in one commit, snapshots captured first.** Capture Playwright screenshot baselines of every landing page and "the math" page, run a scripted find-replace `--l-` → chosen prefix across `src/**` and `src/app/**/*.css`, then diff snapshots to prove zero visual change. Governs R3. (Prefix pending OQ2.)
-- KTD6. **Profile change broadcasts via a `storage` event plus a same-tab `CustomEvent`; tools subscribe through one shared hook.** Add `src/lib/shared/useActiveProfile.js` (or extend an existing hook): it returns the active profile id and re-runs its subscribers on change. `ProfileSwitcher` dispatches instead of calling `window.location.reload()`. `storage` events already fire cross-tab for free, covering R12. Governs R11, R12. (U8 size pending OQ4.)
-- KTD7. **`profile.js` public API is frozen; only `ProfileSwitcher` and the new hook change.** Every `saveXNumbers` / `loadMyNumbers` / profile-management export keeps its signature. Export/import (R13) is two new exports (`exportProfiles`, `importProfiles`) plus a UI affordance, not a schema change. Governs R13, R16.
-- KTD8. **Reliefs optimizer is a pure module `src/lib/tax/reliefs.js` consumed by a section on `/tax`, deep-linked from `/retire`.** It imports the existing `src/lib/shared/tieredTax.js` for marginal rates and `src/lib/retire/srs.js` / `src/lib/retire/cpf.js` for caps. No new route. Governs R19, R20. (Placement pending OQ5.)
-- KTD9. **EV modelling extends `src/lib/drive/calc.js` / `tco.js` with a `powertrain` field; no schema break.** Road tax becomes a function of `powertrain` (`ice` | `ev` | `hybrid`) and either engine capacity or power rating. Existing callers default to `ice`. Governs R17.
-- KTD10. **README stays hand-maintained; a test asserts the tool count.** A `node --test` case reads the `TOOLS` array length from `src/app/page.js` (or a shared `src/lib/shared/tools.js` it is refactored into) and asserts the hero copy's number word matches. Prevents R2's "Seven"/"eight" drift from recurring. Governs R2, R10.
+- KTD1. **One hardening milestone, a few focused PRs.** Group: (a) U1 + U2 (CI + brand), (b) U4 + U5 + U17 + U18b (test harness + correctness audit + engine golden-masters), (c) U6 + U19 + U10 + U20 (consolidation + lint + consistency + docs). Rationale: each group is independently reviewable and the correctness audit (b) is the one that may surface a product decision, so it should not be buried in a large PR. Cites Goal Capsule Means.
+- KTD2. **CI mirrors `refresh-data.yml`: GitHub Actions, Node 22, `actions/setup-node@v4` with `cache: npm`.** One workflow `.github/workflows/ci.yml`. Job `unit`: `npm ci` → `npm run lint` → `npm test`. Job `build`: `needs: unit`, runs `npm run build`. Job `e2e`: `needs: unit`, runs `npx playwright install --with-deps` (cache `~/.cache/ms-playwright`) → build → start server → `npm run test:e2e`. Both `build` and `e2e` are required checks. Governs R1.
+- KTD3. **Playwright for rendered-output and keyboard tests; `node --test` stays the engine tool.** Playwright runs the real shell against `npm run build && npm run start` on a fixed port via its `webServer` config. Governs R5, R6, R23.
+- KTD4. **The correctness audit is characterization-first and non-mutating by default.** U17 reads every engine's constants, writes a dated `_AS_OF` marker and a source URL comment beside each, and adds a currency test. It does **not** change a constant's value; a value that disagrees with its 2026 source is reported to the user as a stop-condition finding, not silently corrected. Governs R21, KTD Goal Capsule stop condition.
+- KTD5. **CSS/theme consolidation is visual-neutral within a tolerance, gated on a screenshot baseline.** U18 captures Playwright screenshot baselines first (via U4), then consolidates. The exit gate is a per-page pixel-ratio diff under a stated tolerance with the footer build-version stamp region masked — not a zero-diff assertion, which the footer stamp and CI font rendering make unreachable. Governs R4.
+- KTD6. **The `ProfileSwitcher` lint fix uses a lazy initializer / `useSyncExternalStore` against `src/lib/shared/profile.js` directly.** The shared `useActiveProfile` hook from the deferred cross-tool layer does not exist; U6 must not introduce it. Governs R8.
+- KTD7. **`coah` rename is mechanical but wide, and carries the same visual risk as a token rename.** U2 renames class names (`coah-button*`, `coah-scroll`), CSS custom properties (`--color-coah`, `--font-coah`), theme keys (`C.coah` / `coahMid` / `coahLight` / `fontCoah`), and visible strings, gated on the same U4 screenshot baseline as U18. Governs R2.
 
 ### High-Level Technical Design
 
-The cross-tool profile layer after B:
-
 ```mermaid
 flowchart TB
-  PS[ProfileSwitcher in ShellHeader] -->|setActiveProfile + dispatch| EV[CustomEvent + storage event]
-  EV --> H[useActiveProfile hook]
-  H --> T1[insure page]
-  H --> T2[drive page]
-  H --> T3[tax page]
-  H --> T4[ledger dashboard]
-  H --> TN[... other tools]
-  T1 -->|saveInsureNumbers| PJ[(profile.js localStorage store)]
-  T2 -->|saveDriveNumbers| PJ
-  T3 -->|saveTaxNumbers| PJ
-  PJ --> T4
-  IE[Export / Import JSON] <--> PJ
+  U1[U1 CI workflow] --> U4[U4 Playwright harness + smoke]
+  U4 --> U2[U2 coah / URL rename]
+  U4 --> U18[U18 CSS + theme consolidation]
+  U4 --> U6[U6 lint-debt cleanup]
+  U1 --> U19[U19 Supabase key check]
+  U5[U5 LTA PDF fixture] --> done1[ ]
+  U17[U17 correctness + currency audit] --> U18b[U18b engine golden-masters]
+  U2 --> U20[U20 code-consistency pass]
+  U18 --> U20
+  U20 --> U10[U10 docs rewrite]
+  U17 --> U10
 ```
 
-CI and verification pipeline after A:
+CI job graph (KTD2):
 
 ```mermaid
 flowchart TB
   push[push / pull_request] --> lint[npm run lint]
-  push --> unit[npm test  node --test]
-  lint --> e2e[npm run test:e2e  Playwright]
-  unit --> e2e
-  e2e --> build[npm run build]
-  build --> gate{all green?}
+  push --> unit[npm test]
+  unit --> build[npm run build]
+  unit --> e2e[playwright install -> build -> serve -> test:e2e]
+  lint --> gate{all green?}
+  build --> gate
+  e2e --> gate
   gate -->|yes| merge[merge allowed]
   gate -->|no| block[merge blocked]
 ```
 
 ### Assumptions
 
-- Vercel deploy config (`vercel.json`) needs no change; CI is additive.
-- The live site URL is `https://natdtm.vercel.app` (repo homepage field). Confirm before R2 lands.
-- A real LTA Car Cost Update PDF can be committed as a test fixture (public document, no licensing bar).
-- `MAX_PROFILES = 3` stays; export/import does not raise the cap.
-- Next.js 16 + React 19 React Compiler is stable enough to enable repo-wide (it is already on one vertical).
+- The canonical production URL is `https://natdtm.vercel.app` (repo homepage field). U2 does not land until this is confirmed (OQ0).
+- Node 22 and the current `package.json` scripts (`dev`, `build`, `start`, `lint`, `test`) are unchanged; CI is additive.
+- A real LTA Car Cost Update PDF can be committed as a fixture; if the licence disallows it, U5 uses a synthetic `/FlateDecode` fixture mirroring the layout.
+- The `.env.example` / `refresh-data.yml` Supabase key names are consistent as shipped; U19 confirms before editing and closes as "no change needed" if so.
+- `MAX_PROFILES = 3` and the `profile.js` public API are untouched by this plan.
 
 ### Sequencing
 
-1. M1 / A: U1 (CI) → U2 (brand/URL) → U4 (Playwright harness + smoke) → U3 (token rename + CSS consolidation) → U5 (LTA PDF fixture) → U6 (React Compiler + lint debt) → U7 (SEO metadata + JSON-LD) → U10 (docs). U4 depends on U1; U3 depends on U4's snapshot baseline.
-2. M2 / B: U8 (no-reload switch + cross-tab) → U9 (export/import) → U11 (home connected-state) → U12 (ledger headline verdicts). U11/U12 depend on U8.
-3. M3 / D: U13 (DriveReady EV) → U14 (DriveReady insurance range) → U15 (reliefs optimizer logic) → U16 (reliefs optimizer UI + the-math). U15 before U16.
+1. U1 (CI) and U17 (correctness audit) can start in parallel — neither depends on the other.
+2. U4 (Playwright harness) depends on U1 for the e2e job wiring.
+3. U2, U18, and U6 depend on U4's screenshot baseline.
+4. U18b (engine golden-masters) depends on U17 (the audit establishes which constants and sources to assert).
+5. U19 (Supabase key check) depends on U1 (owns workflow files); trivial, may fold into the U1 PR.
+6. U20 (consistency pass) depends on U2 and U18 (brand and structure settled).
+7. U10 (docs) is last — depends on U2, U17, U20 for accurate content.
 
 ---
 
 ## Implementation Units
 
-### Unit Index
-
-| U-ID | Title | Files touched | Depends on |
-|---|---|---|---|
-| U1 | CI workflow | `.github/workflows/ci.yml` | — |
-| U2 | Brand + URL correctness | `src/lib/shared/site.js`, `src/app/sitemap.js`, `src/app/robots.js`, `src/app/page.js`, `next.config.mjs` | — |
-| U3 | Token rename + CSS consolidation | `src/app/globals.css`, `src/app/*/legacy.css`, `src/components/**`, `src/app/**` inline styles | U4 |
-| U4 | Playwright harness + page smoke | `playwright.config.js`, `e2e/**`, `package.json` | U1 |
-| U5 | Live LTA PDF fixture test | `src/lib/drive/lta-parse.test.js`, `src/lib/drive/__fixtures__/` | — |
-| U6 | React Compiler repo-wide + lint debt | `next.config.mjs`, `eslint.config.mjs`, `src/app/etf/**`, `src/components/shared/ProfileSwitcher.js` | U4 |
-| U7 | Per-route metadata + JSON-LD | `src/app/*/layout.js`, `src/app/*/opengraph-image.js`, `src/app/*/the-math/page.js` | U2 |
-| U8 | No-reload profile switch + cross-tab | `src/lib/shared/useActiveProfile.js`, `src/components/shared/ProfileSwitcher.js`, each `src/app/*/page.js` | U4 |
-| U9 | Profile export / import | `src/lib/shared/profile.js`, `src/components/shared/ProfileSwitcher.js` | U8 |
-| U10 | Docs rewrite | `README.md`, `docs/architecture.md`, `src/lib/shared/tools.js` | U2 |
-| U11 | Home connected-state | `src/app/page.js`, `src/lib/shared/tools.js` | U8 |
-| U12 | Ledger headline verdicts | `src/app/ledger/page.js`, `src/components/ledger/**`, `src/lib/ledger/calc.js` | U8 |
-| U13 | DriveReady EV model | `src/lib/drive/calc.js`, `src/lib/drive/tco.js`, `src/app/drive/the-math/page.js` | — |
-| U14 | DriveReady insurance range | `src/lib/drive/insurance.js`, `src/components/drive/ResultPanel.js` | — |
-| U15 | Reliefs optimizer logic | `src/lib/tax/reliefs.js`, `src/lib/tax/reliefs.test.js` | — |
-| U16 | Reliefs optimizer UI + the-math | `src/app/tax/page.js`, `src/app/tax/the-math/page.js`, `src/app/retire/page.js` | U15 |
-
-### M1 — Harden (A)
-
 ### U1. CI workflow
 
-- **Goal:** `lint`, `test`, `build` run on every push and PR and block merge on failure (R1).
-- **Files:** `.github/workflows/ci.yml` (new).
-- **Approach:** Mirror `refresh-data.yml` setup (checkout, `actions/setup-node@v4` Node 22, `cache: npm`). Job `unit`: `npm ci` → `npm run lint` → `npm test`. Job `build`: needs `unit`, runs `npm run build`. Add `e2e` job after U4 exists. Enable branch protection requiring these checks.
-- **Test scenarios:** PR with a failing `node --test` case shows a red required check. PR with a lint error shows red. Clean PR shows all green.
-- **Verification:** Push the branch; observe checks in the PR.
+- **Goal:** Lint, test, and build run on every push and PR and block merge on failure (R1).
+- **Requirements:** R1.
+- **Dependencies:** none.
+- **Files:** `.github/workflows/ci.yml` (new), `package.json` (add `test:e2e` script in U4; U1 leaves a placeholder job that no-ops until U4 lands, or U1 and U4 land in the same PR).
+- **Approach:**
+  1. New workflow triggered on `push` and `pull_request`.
+  2. Job `unit`: checkout, `actions/setup-node@v4` Node 22 `cache: npm`, `npm ci`, `npm run lint`, `npm test`.
+  3. Job `build`: `needs: unit`, `npm run build`.
+  4. Job `e2e`: `needs: unit`, cache `~/.cache/ms-playwright`, `npx playwright install --with-deps`, `npm run build`, start the server (or rely on Playwright `webServer`), `npm run test:e2e`. Marked `continue-on-error: true` only until U4 lands, then made required.
+  5. Document in the PR body that branch protection must be set to require `unit`, `build`, and `e2e` — a repo-admin action outside the PR.
+- **Patterns to follow:** `.github/workflows/refresh-data.yml` for the setup-node block and Node version.
+- **Test scenarios:**
+  - A PR with a failing `node --test` case shows a red required `unit` check.
+  - A PR with a lint error shows red.
+  - A clean PR shows all jobs green.
+  - `Test expectation: none for the workflow YAML itself` — verified by observing check runs on the PR.
+- **Verification:** Push the branch; the PR shows `unit`, `build`, and `e2e` as checks; branch protection lists them as required.
 
 ### U2. Brand and URL correctness
 
-- **Goal:** No shipping surface says `coah` or "Seven calculators" (R2).
-- **Files:** `src/lib/shared/site.js`, `src/app/sitemap.js`, `src/app/robots.js`, `src/app/page.js`, `src/app/insure/opengraph-image.js`, `src/app/insure/twitter-image.js`, `next.config.mjs` comments.
-- **Approach:** Set `SITE_URL = 'https://natdtm.vercel.app'`. Grep `coah` across the repo and fix every hit. Replace both "Seven calculators" strings in `page.js` with a value derived from `TOOLS.length` (or the `tools.js` module from U10). Confirm `sitemap.js` / `robots.js` build their URLs from `SITE_URL`.
-- **Test scenarios:** `rg -i coah src/` returns nothing. `curl` of the built `/sitemap.xml` shows `natdtm.vercel.app`. Home hero number word equals `TOOLS.length`.
-- **Verification:** `npm run build`; inspect `.next` output for the sitemap; visual check of the home page.
-
-### U3. Token rename and CSS consolidation
-
-- **Goal:** One namespaced token prefix and one shared stylesheet, zero visual change (R3, R4).
-- **Files:** `src/app/globals.css`, all `src/app/*/legacy.css`, `src/components/**/*.css` and `*.module.css`, every inline `style={{}}` referencing `var(--l-...)`.
-- **Approach:** With U4 snapshots as the baseline: scripted replace `--l-` → chosen prefix (OQ2) across `src/**`. Then move the rules common to all eight `legacy.css` files into `globals.css`; keep only the per-tool deltas, renamed `src/app/<tool>/<tool>.css`. Delete emptied `legacy.css` files.
-- **Test scenarios:** Playwright screenshot diff of all 16+ pages shows no pixel change. `rg -- '--l-' src/` returns nothing. `npm run build` succeeds.
-- **Verification:** `npm run test:e2e -- --update-snapshots=none`; review the diff report.
+- **Goal:** No shipping surface says `coah` or a hard-coded tool count (R2).
+- **Requirements:** R2. Blocked by OQ0.
+- **Dependencies:** U4 (screenshot baseline).
+- **Files:** `src/lib/shared/site.js`, `src/app/sitemap.js`, `src/app/robots.js`, `src/app/page.js`, `src/app/insure/opengraph-image.js`, `src/app/insure/twitter-image.js`, `src/components/shared/Button.js`, `src/components/drive/CarPicker.js`, `src/components/drive/ResultPanel.js`, `src/components/insure/PrintSummary.jsx`, `src/components/etf/shared.js`, every `src/lib/<tool>/theme.js`, `src/app/globals.css` and the three `legacy.css` files (for `--color-coah` / `--font-coah` / `coah-*` classes), `next.config.mjs` (comments), `src/lib/shared/tools.js` (new — the `TOOLS` array extracted from `page.js` for reuse).
+- **Approach:**
+  1. Confirm OQ0. Set `SITE_URL` to the confirmed URL. Verify `sitemap.js` / `robots.js` / the insure OG images build their URLs from it.
+  2. `rg -n coah src/` and fix every hit: class names `coah-button` / `coah-button--<variant>` / `coah-scroll` → an `ndtm-` prefix; CSS custom properties `--color-coah` / `--font-coah` → `--color-ndtm` / `--font-ndtm`; theme keys `C.coah` / `coahMid` / `coahLight` / `fontCoah` → `ndtm` equivalents, updating every consumer; visible strings `coah.sg` → the confirmed domain, "coah / invest" → "ndtm / invest".
+  3. Extract `TOOLS` from `src/app/page.js` into `src/lib/shared/tools.js`; import it back; replace the "Seven calculators" string with copy computed from `TOOLS.length`.
+  4. Leave one line in `docs/architecture.md` (added in U10) noting the Coah origin.
+- **Patterns to follow:** the existing `ndtm_` prefix already used for the `localStorage` key in `src/lib/shared/profile.js`.
+- **Test scenarios:**
+  - `rg -i coah src/` returns nothing.
+  - Playwright screenshot diff of all landing + "the math" pages is within the U18 tolerance (no visual change from the class/variable rename).
+  - Built `/sitemap.xml` shows the confirmed domain.
+  - Home hero number word equals `TOOLS.length` (asserted in the Playwright smoke, reading rendered text).
+  - `npm run build` succeeds.
+- **Verification:** `npm run build`; `rg -i coah src/` empty; screenshot diff within tolerance.
 
 ### U4. Playwright harness and page smoke
 
-- **Goal:** Rendered-output tests exist for the home page, every landing page, every "the math" page (R5).
-- **Files:** `playwright.config.js` (new), `e2e/smoke.spec.js` (new), `e2e/profile.spec.js` (new), `package.json` (`test:e2e` script, dep).
-- **Approach:** Config runs against `npm run build && npm run start` on a fixed port. `smoke.spec.js`: for each of the eight tools, assert the landing page and `/{tool}/the-math` return 200 and render a known heading; assert the home page renders eight tool cards. `profile.spec.js`: create a profile, enter a number in one tool, switch profile, assert the number is gone, switch back, assert it returns. Capture screenshot baselines for U3.
-- **Test scenarios:** All smoke specs pass on a clean build. Deleting a tool card from `page.js` fails the "eight cards" assertion.
-- **Verification:** `npm run test:e2e`.
+- **Goal:** Rendered-output tests exist for the home page, every landing page, every "the math" page, plus one keyboard path (R5, R23).
+- **Requirements:** R5, R23.
+- **Dependencies:** U1.
+- **Files:** `playwright.config.js` (new), `e2e/smoke.spec.js` (new), `e2e/keyboard.spec.js` (new), `package.json` (`test:e2e` script, `@playwright/test` devDependency).
+- **Approach:**
+  1. `playwright.config.js` with a `webServer` running `npm run build && npm run start` on a fixed port; screenshot assertions enabled with a project-level `maxDiffPixelRatio` and a mask for the footer version-stamp selector.
+  2. `smoke.spec.js`: for each of the eight tools, assert `/{tool}` and `/{tool}/the-math` return 200 and render a known heading; assert the home page renders eight tool cards and the hero count matches. Capture screenshot baselines for U2 and U18.
+  3. `keyboard.spec.js`: tab to the `ProfileSwitcher` trigger, open with Enter, arrow through entries, Escape to close, assert focus returns to the trigger.
+- **Patterns to follow:** none in-repo; standard Next.js Playwright setup.
+- **Test scenarios:**
+  - All smoke specs pass on a clean build.
+  - Removing a card from `TOOLS` fails the "eight cards" assertion.
+  - The keyboard spec fails if Escape does not restore focus to the trigger.
+  - `Covers R5, R23.`
+- **Verification:** `npm run test:e2e` green locally and in the CI `e2e` job.
 
 ### U5. Live LTA PDF fixture test
 
-- **Goal:** `extractPdfText` is proven against a real `/FlateDecode` PDF (R6).
+- **Goal:** `src/lib/drive/lta-parse.js`'s extraction is proven against a real `/FlateDecode`-compressed PDF (R6).
+- **Requirements:** R6. Related to OQ1.
+- **Dependencies:** none.
 - **Files:** `src/lib/drive/lta-parse.test.js`, `src/lib/drive/__fixtures__/lta-car-cost-update.pdf` (new).
-- **Approach:** Commit one real LTA Car Cost Update PDF. Add a test that runs `extractPdfText` on it and asserts a known make/model/price row parses, plus the coverage sanity check (`isLowCoverage`) passes.
-- **Test scenarios:** Parser extracts the expected row from the real PDF. A truncated copy of the PDF trips `isLowCoverage`.
-- **Verification:** `npm test`.
+- **Approach:**
+  1. Check whether LTA's publication licence permits redistribution. If yes, commit one real Car Cost Update PDF. If no, generate a synthetic `/FlateDecode`-compressed PDF whose text layout mirrors the real one.
+  2. Add a test that runs `extractPdfText` on the fixture and asserts: a known make/model row parses to a `{ name, omv, price }`-shaped object; the coverage check `isLowCoverage` passes on the full fixture and trips on a truncated copy.
+  3. Assert structure, not a specific price (LTA revises fortnightly).
+- **Patterns to follow:** existing `src/lib/drive/lta-parse.test.js` synthetic cases.
+- **Test scenarios:**
+  - Parser extracts the expected row shape from the fixture.
+  - A truncated fixture trips `isLowCoverage`.
+  - `/FlateDecode` decompression path is exercised (fails on a raw-text-only fixture if the code regressed).
+- **Verification:** `npm test` includes the new cases and passes.
 
-### U6. React Compiler repo-wide and lint debt
+### U6. Lint-debt cleanup
 
-- **Goal:** React Compiler on for all verticals; no scattered `eslint-disable` for `react-hooks/set-state-in-effect` (R7, R8).
-- **Files:** `next.config.mjs`, `eslint.config.mjs`, `src/app/etf/**`, `src/components/shared/ProfileSwitcher.js`.
-- **Approach:** Enable the compiler globally in `next.config.mjs`. Fix the `set-state-in-effect` findings (the `ProfileSwitcher` mount read becomes a `useSyncExternalStore` or lazy initializer via the U8 hook). If a genuine case remains, add one rule config in `eslint.config.mjs` with a comment, and remove the inline disables. If a vertical cannot compile cleanly, record it in a KTD and exclude it explicitly.
-- **Test scenarios:** `npm run lint` passes with zero inline disables for that rule. `npm run test:e2e` still green. `npm run build` shows the compiler active.
+- **Goal:** Zero scattered `eslint-disable` for `react-hooks/set-state-in-effect` (R8).
+- **Requirements:** R8.
+- **Dependencies:** U4 (regression check via smoke).
+- **Files:** `src/app/etf/**` (the flagged pages), `src/components/shared/ProfileSwitcher.js`, `eslint.config.mjs`.
+- **Approach:**
+  1. `ProfileSwitcher`: replace the mount-time `setProfiles(listProfiles())` effect with a lazy `useState` initializer guarded for SSR, or a `useSyncExternalStore` reading `getActiveProfileId` / `listProfiles` from `src/lib/shared/profile.js` directly (KTD6). Do not add a shared hook.
+  2. etf pages: fix each `set-state-in-effect` finding in place where a lazy initializer or a derived value works; where a genuine effect-driven state remains, add one rule configuration in `eslint.config.mjs` with a comment explaining why, and remove every inline disable.
+  3. React Compiler is **not** enabled repo-wide (deferred).
+- **Patterns to follow:** the SSR-guard comment already in `ProfileSwitcher.js`.
+- **Test scenarios:**
+  - `npm run lint` passes with zero inline `set-state-in-effect` disables (`rg` check).
+  - Playwright smoke still green (ProfileSwitcher renders, opens, switches).
+  - `npm run build` succeeds.
 - **Verification:** `npm run lint && npm run build && npm run test:e2e`.
-
-### U7. Per-route metadata and JSON-LD
-
-- **Goal:** Every vertical has metadata + an OG image; every "the math" page emits structured data (R9).
-- **Files:** each `src/app/<tool>/layout.js` (or `page.js` `metadata` export), each `src/app/<tool>/opengraph-image.js` (new, seven of eight), each `src/app/<tool>/the-math/page.js`.
-- **Approach:** Factor the `insure` OG image into a shared generator taking title + eyebrow, reused by all eight. Add `generateMetadata` per route with canonical from `SITE_URL`. Add a small `<script type="application/ld+json">` (`FAQPage` for Q&A-shaped math pages, `HowTo` for step-shaped ones).
-- **Test scenarios:** Each `/{tool}` build output has a distinct `<title>` and `og:image`. Each math page's JSON-LD validates against schema.org shape in a unit test.
-- **Verification:** `npm run build`; a `node --test` case asserts the JSON-LD blocks parse and carry required keys.
 
 ### U10. Docs rewrite
 
 - **Goal:** README covers eight tools; an architecture doc exists (R10).
-- **Files:** `README.md`, `docs/architecture.md` (new), `src/lib/shared/tools.js` (new — the `TOOLS` array extracted for reuse by `page.js`, tests, and docs).
-- **Approach:** Rewrite README around the eight tools and the shell. `docs/architecture.md`: the `ShellHeader` / `Footer` shell, `profile.js` store and schema history, the DriveReady data pipeline (`scripts/` + `refresh-data.yml` + Supabase mirror), the design system and token prefix, the "the math" page convention. One line noting the Coah history.
-- **Test scenarios:** README tool list length equals `tools.js` length (asserted in a test). No `coah` outside the history note.
-- **Verification:** `npm test`; manual read.
+- **Requirements:** R10.
+- **Dependencies:** U2, U17, U20.
+- **Files:** `README.md`, `docs/architecture.md` (new).
+- **Approach:**
+  1. Rewrite `README.md` around the eight tools (name, route, one-line purpose from `src/lib/shared/tools.js`), the shell, and the dev commands.
+  2. `docs/architecture.md`: the `ShellHeader` / `Footer` shell; `src/lib/shared/profile.js` — the "My Numbers" store, its v6 schema and `migrateV1`–`migrateV5` history, the named-profile wrapper; the DriveReady data pipeline (`scripts/refresh-*.mjs` + `refresh-data.yml` + the Supabase reference mirror); the design system, the `--l-*` token convention, and a one-line note that the project was formerly "Coah"; the "the math" page convention; the canonical per-vertical module layout that U20 establishes.
+- **Test scenarios:**
+  - A test asserts `README.md`'s tool list length equals `src/lib/shared/tools.js` length.
+  - `rg -i coah .` returns only the single architecture-doc history line.
+- **Verification:** `npm test`; manual read for completeness against the eight `src/app/<tool>/` directories.
 
-### M2 — Connect (B)
+### U17. Correctness and currency audit
 
-### U8. No-reload profile switch and cross-tab sync
+- **Goal:** Every embedded SG statutory constant is dated, sourced, and currency-checked (R21).
+- **Requirements:** R21.
+- **Dependencies:** none.
+- **Files:** `src/lib/tax/calc.js`, `src/lib/retire/cpf.js`, `src/lib/retire/srs.js`, `src/lib/house/stampDuty.js`, `src/lib/insure/engine/scorer.js`, `src/lib/shared/tieredTax.js`, and any other engine module holding a statutory number; `src/lib/shared/statutory-currency.test.js` (new); `docs/statutory-sources.md` (new — the source register).
+- **Approach:**
+  1. Enumerate every hard-coded statutory constant across the engine modules (tax brackets, CPF contribution/allocation rates, CPF Ordinary/Additional Wage ceilings, stamp-duty tiers, `PERSONAL_RELIEF_CAP`, `SRS_CAP_*`, `RSTU_RELIEF_CAP_*`, insurance benchmark figures).
+  2. Beside each, add an `// _AS_OF: 2026` (or the correct YA) marker and the authoritative source URL; collect the same in `docs/statutory-sources.md`.
+  3. Add `statutory-currency.test.js`: parse the `_AS_OF` markers and fail if any is older than the current Year of Assessment; assert the register in `docs/statutory-sources.md` lists every marked constant.
+  4. For any constant whose current value **disagrees** with its 2026 source, do not change it — record it in the PR description as a stop-condition finding for the user to decide (KTD4).
+- **Execution note:** characterization-first — pin the current constants and their `_AS_OF` before touching anything; the audit reports drift, it does not fix values.
+- **Test scenarios:**
+  - The currency test passes with all markers at 2026 / current YA.
+  - Setting one marker to 2024 fails the test with a message naming the constant.
+  - A constant present in code but missing from `docs/statutory-sources.md` fails the register-completeness assertion.
+- **Verification:** `npm test`; the PR description lists every audited constant with its source and any value disagreement.
 
-- **Goal:** Profile changes update open tools in-place and across tabs (R11, R12, R16).
-- **Files:** `src/lib/shared/useActiveProfile.js` (new), `src/components/shared/ProfileSwitcher.js`, each `src/app/<tool>/page.js` that reads `loadMyNumbers()` on mount.
-- **Approach:** New hook built on `useSyncExternalStore`: subscribes to `window` `storage` events and a same-tab `ndtm:profile-change` `CustomEvent`; snapshot is `getActiveProfileId()`. `ProfileSwitcher` calls `setActiveProfile` then dispatches the event — no `window.location.reload()`. Each tool page keys its "load my numbers" effect on the hook's value so it re-reads on change. Keep `profile.js` API frozen (KTD7).
-- **Test scenarios:** `e2e/profile.spec.js`: switch profile on `/ledger`, every card updates, no navigation. Two-tab test: change in tab A reflects in tab B. Existing per-tool save/load still works.
-- **Verification:** `npm run test:e2e`.
+### U18. CSS and theme consolidation
 
-### U9. Profile export / import
+- **Goal:** Common styles live once; the eight `theme.js` objects share one helper; no visual change beyond tolerance (R4).
+- **Requirements:** R4.
+- **Dependencies:** U4 (screenshot baseline).
+- **Files:** `src/app/globals.css`, `src/app/drive/legacy.css`, `src/app/etf/legacy.css`, `src/app/insure/legacy.css`, every `src/lib/<tool>/theme.js`, `src/lib/shared/theme.js` (new shared helper) or `src/lib/shared/site.js` if a smaller home fits.
+- **Approach:**
+  1. Diff the three `legacy.css` files; move the identical rules into `globals.css`; keep only the genuine per-tool deltas, renamed `src/app/<tool>/<tool>.css`. Delete emptied files.
+  2. Diff the eight `theme.js` style objects; extract the shared shape (fonts, spacing scale, semantic color roles) into `src/lib/shared/theme.js`; each vertical's `theme.js` becomes `makeTheme({ accent, ... })` over the shared base.
+  3. `--l-*` token names unchanged.
+- **Patterns to follow:** whichever `theme.js` is most complete becomes the template for the shared helper.
+- **Test scenarios:**
+  - Playwright screenshot diff of every landing + "the math" page is within `maxDiffPixelRatio`, footer stamp masked.
+  - `rg 'legacy\.css' src/app` returns nothing after renames.
+  - `npm run build` succeeds.
+  - `Covers R4.`
+- **Verification:** `npm run test:e2e` screenshot project passes; visual spot-check of two verticals.
 
-- **Goal:** Round-trip all profiles through a JSON file (R13).
-- **Files:** `src/lib/shared/profile.js` (add `exportProfiles`, `importProfiles`), `src/components/shared/ProfileSwitcher.js` (menu affordance).
-- **Approach:** `exportProfiles()` returns the raw wrapper store as a pretty JSON string with a `schemaVersion`. `importProfiles(text)` parses, validates `schemaVersion` and shape, runs the existing `migrateInnerData` per profile, and replaces the store (respecting `MAX_PROFILES`, truncating with a warning). UI: a download button and a file input in the profile menu.
-- **Test scenarios:** Export then import yields an identical store. Importing a v1-era flat payload migrates it. Importing malformed JSON shows an error and leaves the store untouched. Importing 5 profiles keeps 3 and warns.
-- **Verification:** `npm test` (new `profile.test.js` cases) + a Playwright case for the download/upload affordance.
+### U18b. Engine golden-master tests
 
-### U11. Home connected-state
+- **Goal:** Each engine lacking golden-master coverage gains one published-figure assertion (R22).
+- **Requirements:** R22.
+- **Dependencies:** U17.
+- **Files:** `src/lib/tax/calc.test.js`, `src/lib/retire/calc.test.js`, `src/lib/house/calc.test.js`, `src/lib/insure/engine/scorer.test.js`, `src/lib/etf/logic.test.js`, `src/lib/flow/calc.test.js`, `src/lib/ledger/calc.test.js` — whichever lack an authoritative-example assertion.
+- **Approach:** For each engine, add one test that asserts a computed figure against a published worked example, citing the source in a comment (e.g. IRAS's own "tax payable on $80,000 chargeable income" figure; a CPF contribution example from the CPF site). Use the `docs/statutory-sources.md` register from U17.
+- **Test scenarios:**
+  - `tax/calc.test.js`: tax payable for a stated chargeable income matches the IRAS worked example to the dollar.
+  - `retire/calc.test.js`: CPF contribution for a stated wage matches the CPF example.
+  - `house/calc.test.js`: BSD + ABSD for a stated price/profile matches the IRAS stamp-duty calculator.
+  - One per remaining engine, each citing its source.
+- **Verification:** `npm test` includes the new cases; each references a source in `docs/statutory-sources.md`.
 
-- **Goal:** The home page shows the product is connected (R14).
-- **Files:** `src/app/page.js`, `src/lib/shared/tools.js`.
-- **Approach:** Client component reads `loadMyNumbers()` for the active profile; each tool card shows a subtle "saved" marker when its slot has data; a "See your whole picture in MyLedger" link appears when at least one slot is filled. SSR-safe: render the plain grid first, enrich after mount.
-- **Test scenarios:** With no data, cards look as today, no ledger link. After saving numbers in two tools, those two cards show the marker and the ledger link appears. No hydration warning.
-- **Verification:** `npm run test:e2e`.
+### U19. Supabase key-name reconciliation
 
-### U12. Ledger headline verdicts
+- **Goal:** `.env.example` and `refresh-data.yml` agree on the Supabase key names, or the item is closed as already-consistent (R1 adjacency).
+- **Requirements:** none directly; closes a review finding.
+- **Dependencies:** U1.
+- **Files:** `.env.example`, `.github/workflows/refresh-data.yml` — only if a real mismatch exists.
+- **Approach:** Compare the key names `.env.example` documents against those `refresh-data.yml` and `scripts/refresh-*.mjs` read. If consistent (the likely case — `.env.example` documents both `SUPABASE_ANON_KEY` and `SUPABASE_SERVICE_ROLE_KEY`, the workflow uses the latter), close with a one-line PR note and no code change. If a real mismatch exists, align the names and note it.
+- **Test scenarios:** `Test expectation: none -- config-name reconciliation, verified by reading the two files.`
+- **Verification:** PR note states "verified consistent, no change" or names the alignment made.
 
-- **Goal:** `/ledger` shows one verdict + figure per tool with data, and flags stale data (R15).
-- **Files:** `src/app/ledger/page.js`, `src/components/ledger/**`, `src/lib/ledger/calc.js`.
-- **Approach:** For each populated slot, compute a one-line verdict from that tool's own logic module (reuse, do not re-derive) and a headline figure. Use `src/lib/shared/freshness.js` to mark a slot stale past its threshold. Order by "needs attention" first.
-- **Test scenarios:** `ledger/calc.test.js`: given a fixture profile with drive + tax + retire data, the verdicts and figures match expected. A slot with an old `savedAt` renders as stale.
-- **Verification:** `npm test` + a Playwright render check.
+### U20. Code-consistency pass
 
-### M3 — Deepen (D)
-
-### U13. DriveReady EV model
-
-- **Goal:** EVs are modelled correctly end to end (R17).
-- **Files:** `src/lib/drive/calc.js`, `src/lib/drive/tco.js`, `src/lib/drive/calc.test.js`, `src/lib/drive/tco.test.js`, `src/app/drive/the-math/page.js`, `src/components/drive/UsedCarForm.js` / `CarPicker.js` (powertrain input).
-- **Approach:** Add `powertrain: 'ice' | 'ev' | 'hybrid'`, defaulting to `ice` for all existing callers (KTD9). Road tax: power-rating formula for EV/hybrid, engine-capacity formula for ICE. Drop the engine-capacity term from the EV path. Add an EV section to the "the math" page.
-- **Test scenarios:** Road tax for a stated EV kW matches the LTA schedule. An ICE car's result is unchanged from the pre-U13 snapshot. A hybrid uses the power-based path.
-- **Verification:** `npm test`.
-
-### U14. DriveReady insurance range
-
-- **Goal:** A premium range with stated assumptions (R18).
-- **Files:** `src/lib/drive/insurance.js` (new), `src/lib/drive/insurance.test.js` (new), `src/components/drive/ResultPanel.js`.
-- **Approach:** Pure function of car value, driver age band, and NCD band → low/high annual premium using published market rate-of-value bands. Show as a range with a visible "assumptions" note; feed the midpoint into TCO as an optional line.
-- **Test scenarios:** A 35-year-old with 50% NCD on a stated car value gets a range whose bounds match the rate bands. A young driver band widens the range. Zero NCD raises both bounds.
-- **Verification:** `npm test`.
-
-### U15. Reliefs optimizer logic
-
-- **Goal:** Rank reliefs by tax saved per dollar committed for the current YA (R19).
-- **Files:** `src/lib/tax/reliefs.js` (new), `src/lib/tax/reliefs.test.js` (new).
-- **Approach:** Input: assessable income, age, existing reliefs, cash available. For SRS, RSTU (CPF cash top-up), CPF relief, and approved donations, compute marginal tax saved for the next dollar and the cap remaining, using `src/lib/shared/tieredTax.js` for the bracket and `src/lib/retire/srs.js` / `cpf.js` for caps. Output an ordered list with `reliefType`, `capRemaining`, `marginalRateAtEntry`, `taxSavedIfMaxed`, `ratio`. Handle the bracket crossing when a contribution drops income into a lower band.
-- **Test scenarios:** At a stated income in the 15% band, SRS ranks above donations (donations give 250% deduction but the worked case shows the ratio order). Contribution that crosses a bracket boundary uses the blended rate. Age 55+ raises the SRS cap. A fully-used relief drops out of the ranking.
-- **Verification:** `npm test`.
-
-### U16. Reliefs optimizer UI and the-math
-
-- **Goal:** The optimizer is usable and explained (R20).
-- **Files:** `src/app/tax/page.js`, `src/app/tax/the-math/page.js`, `src/app/retire/page.js` (deep link), `src/components/tax/Results.js`.
-- **Approach:** A section on `/tax` (KTD8, pending OQ5) that reads salary + age from the active profile, shows the ranked table from U15, and links to `/tax/the-math#reliefs`. `/retire` gets a "See which reliefs pay you back most" link into it. The "the math" page carries a full hand-worked example matching a stated salary.
-- **Test scenarios:** With profile data present, the section pre-fills. The ranked table matches the "the math" worked example for that salary. Changing age to 55+ reorders the table.
-- **Verification:** `npm run test:e2e` + `npm test`.
+- **Goal:** Eight verticals follow one documented structure; engine functions are JSDoc'd; every route has real metadata (R22b).
+- **Requirements:** R22b.
+- **Dependencies:** U2, U18.
+- **Files:** every `src/lib/<tool>/calc.js` and sibling engine module (JSDoc); every `src/app/<tool>/layout.js` or `page.js` (a `metadata` export); `docs/architecture.md` (the layout section — written here, referenced by U10).
+- **Approach:**
+  1. Define the canonical per-vertical layout: what belongs in `src/lib/<tool>/`, `src/components/<tool>/`, `src/app/<tool>/`. Write it in `docs/architecture.md`.
+  2. Add JSDoc `@param` / `@returns` to every exported function in the engine modules. No behavioral change.
+  3. Add a `metadata` export (`title`, `description`, `alternates.canonical` from `site.js`) to every `src/app/<tool>/` route that lacks one. No OG images, no JSON-LD (deferred).
+  4. Where a vertical's structure diverges cheaply from the canonical layout (a misplaced helper, an inconsistent file name), align it; anything larger is noted in `docs/architecture.md` as known drift, not fixed here.
+- **Test scenarios:**
+  - A build-time or `node --test` check asserts every `src/app/<tool>/` exports `metadata` with a non-empty `title`.
+  - `npm run build` shows a distinct `<title>` per route.
+  - Playwright screenshot diff within tolerance (metadata is head-only, no visual change).
+  - `npm run lint` passes (JSDoc additions do not trip rules).
+- **Verification:** `npm run build`; the metadata check passes; `docs/architecture.md` has the layout section.
 
 ---
 
@@ -357,14 +381,15 @@ flowchart TB
 
 | Gate | Command | Applies to | Done signal |
 |---|---|---|---|
-| Lint | `npm run lint` | all units | zero errors, zero inline `set-state-in-effect` disables after U6 |
-| Unit | `npm test` (`node --test`) | U2, U5, U7, U9, U10, U12, U13, U14, U15, U16 | all pass |
-| E2E | `npm run test:e2e` (Playwright) | U3, U4, U6, U8, U9, U11, U12, U16 | all specs pass; U3 screenshot diff empty |
-| Build | `npm run build` | all units | succeeds; sitemap shows `natdtm.vercel.app` |
-| CI | `.github/workflows/ci.yml` | M1 onward | required checks green on the PR |
+| Lint | `npm run lint` | U2, U6, U10, U17, U18, U18b, U20 | zero errors; zero inline `set-state-in-effect` disables after U6 |
+| Unit | `npm test` (`node --test`) | U5, U10, U17, U18b, U20 | all pass; currency test green with 2026 markers |
+| E2E | `npm run test:e2e` (Playwright) | U2, U4, U6, U18, U20 | all specs pass; screenshot diffs within `maxDiffPixelRatio`, footer stamp masked |
+| Build | `npm run build` | all units | succeeds; `/sitemap.xml` shows the confirmed domain; distinct `<title>` per route |
+| CI | `.github/workflows/ci.yml` | U1 onward | `unit`, `build`, `e2e` required and green on the PR |
 
-- No `release:validate` equivalent exists in this repo; the four gates above plus CI are the release bar.
-- U3 exit criterion is quantitative: Playwright screenshot diff of every landing and "the math" page is zero.
+- No `release:validate` equivalent exists; the gates above plus CI are the release bar.
+- U18's exit criterion is a per-page pixel-ratio diff under a stated tolerance with the version-stamp region masked — not zero.
+- U17 has an additional non-automated gate: the PR description enumerates every audited statutory constant, its source URL, and any value that disagrees with its 2026 source (a stop-condition finding).
 
 ---
 
@@ -372,62 +397,24 @@ flowchart TB
 
 **Global**
 
-- All four verification gates green in CI on each milestone PR.
-- `rg -i coah src/` returns nothing; `rg -- '--l-' src/` returns nothing.
-- `README.md` lists eight tools; `docs/architecture.md` exists and covers the shell, profile layer, data pipeline, design system.
-- No abandoned or dead-end code left in the diff; deleted `legacy.css` files actually removed, not emptied.
-- `profile.js` public API unchanged, or every changed call site updated in the same unit.
+- CI (`unit`, `build`, `e2e`) is a required check and green on the branch.
+- `rg -i coah src/` returns nothing; `rg -i coah .` returns only the single architecture-doc history line.
+- `npm run lint` passes with zero inline `eslint-disable` for `react-hooks/set-state-in-effect`.
+- Every embedded SG statutory constant carries an `_AS_OF` marker and a source URL; `docs/statutory-sources.md` lists them all; the currency test passes.
+- `README.md` describes all eight tools; `docs/architecture.md` exists and covers the shell, the profile store and schema history, the data pipeline, the design system, the "the math" convention, and the canonical module layout.
+- No abandoned or dead-end code; renamed/emptied `legacy.css` files are deleted, not left empty.
+- `src/lib/shared/profile.js` public API and `MAX_PROFILES` unchanged.
 
-**Per milestone**
+**Per unit**
 
-- M1 (A): CI required for merge; token rename proven visually neutral; Playwright smoke covers all 16+ pages; LTA PDF fixture test passes; React Compiler on repo-wide or exclusion documented; every vertical has metadata + OG image.
-- M2 (B): profile switch causes no page reload and syncs across tabs; export/import round-trips and migrates old payloads; home page shows connected-state; `/ledger` shows per-tool verdicts with stale flags.
-- M3 (D): DriveReady models EV road tax and shows an insurance range, both with "the math" coverage; reliefs optimizer ranks four reliefs for the current YA, reads the active profile, and matches its worked example.
-
-**Readiness flip:** resolve OQ1 and OQ2, then set `artifact_readiness: implementation-ready`.
-
----
-
-## Review findings and scope decision (2026-08-30 review)
-
-This block is the output of a `ce-doc-review` pass plus a scope decision by the owner. The plan body above is **not yet rewritten** to match it — do that before flipping to `implementation-ready`.
-
-### Scope decision — narrow the roadmap
-
-The A + D + B breadth was judged too wide for a solo portfolio / craft piece (6 reviewers converged: broad-but-not-exceptional risk). New scope:
-
-- **Keep:** M1 (harden) as the spine + **DriveReady** taken to exceptional depth as the one showpiece vertical.
-- **Defer to a later plan:** all of M2 / B (cross-tool profile layer — no-reload switch, cross-tab sync, export/import, home connected-state, MyLedger verdicts; R11–R16, U8–U12) and the Tax×Retire reliefs optimizer (R19, R20, U15, U16, KTD8).
-- **Drop from M1:** R3 / U3 token codemod (keep only R4 CSS consolidation, with its own screenshot check); R7 / repo-wide React Compiler (keep only R8 lint-debt cleanup); U7 / R9 SEO metadata + JSON-LD + OG images (optionally keep a plain per-route `title`/`description`).
-- **Add to M1:** a correctness-and-currency audit unit — verify every embedded SG rate / bracket / cap in the eight engines against its 2026 authoritative source (IRAS / CPF / LTA) with a dated `_AS_OF` citation per constant; add golden-master tests per engine against published figures; a stale constant fails CI. New Success Criterion: "every embedded statutory constant is current for its stated Year of Assessment." This replaces "trust" resting on render-smoke tests.
-
-OQ1 resolves to DriveReady-only (no reliefs optimizer this plan). OQ2 resolves to "keep `--l-*`, fix comments/docs only".
-
-### Factual corrections to fold in on rewrite
-
-- **U13 / U14 / KTD9 — do not rebuild what exists.** `src/lib/drive/tco.js` already ships `estimateRoadTax(omv, pureEV)` with `ROAD_TAX_BANDS_ICE` / `ROAD_TAX_BANDS_EV`, `estimateInsurance(omv, pureEV)` with `INSURANCE_BANDS` + an EV loading, and `isPureEV(car)` (from `calc.js`), all tested in `tco.test.js` and wired into `estimateAnnualRunningCosts`. Rewrite U13/U14 to modify those functions and route powertrain through the existing `isPureEV` / `car.type` mechanism (extend to `hybrid` if needed). Do not add a parallel `powertrain` enum or a new `src/lib/drive/insurance.js`.
-- **R17 has no data source for power-rating road tax or the EV COE category.** The codebase has no kW/cc data; `cars.json` is refreshed from a parser that extracts price/OMV/VES rows only, and `tco.js` approximates road tax by OMV band for exactly this reason. Either source and commit a kW dataset for EV models, or rescope R17 to an OMV-band EV schedule and state that COE-category-by-power is out of scope. U13 currently also omits any approach step or test for the EV COE category, which R17 names.
-- **R4 / U3 / Sources — `legacy.css` inventory is wrong.** Only three exist: `src/app/drive/legacy.css`, `src/app/etf/legacy.css`, `src/app/insure/legacy.css`. The other five verticals carry styling as JS style objects in `src/lib/<tool>/theme.js` + `src/components/<tool>/ui.js`, which also embed `--l-*` tokens and hex mirrors as string literals — that duplication is the real consolidation target.
-- **U2 / R2 — `coah` de-brand is ~56 files, not seven.** It is in CSS class names (`coah-button`, `coah-button--<variant>` from `src/components/shared/Button.js`; `coah-scroll` in `CarPicker`), CSS custom properties (`--color-coah`, `--font-coah`), theme keys (`C.coah` / `coahMid` / `coahLight` / `fontCoah` across every `src/lib/<tool>/theme.js`), and user-visible strings (`coah.sg` in `PrintSummary.jsx`, a literal "coah / invest" label in `ResultPanel.js`). Class/variable renames carry the same regression risk as R3 and need the same screenshot baseline.
-- **U2 — "Seven calculators" is one occurrence at `src/app/page.js:63`,** not two at lines 54/67. Fix the count and line reference in Problem Frame, Sources, and U2's approach.
-- **U1 / KTD3 — CI e2e job needs `npx playwright install --with-deps`** (cache `~/.cache/ms-playwright`), then build, then serve, before `npm run test:e2e`. Without it every run fails on a missing browser.
-- **HTD CI diagram contradicts the prose.** The mermaid wires `unit → e2e → build → gate`; KTD3/U1 say `build` needs `unit` and `e2e` is a sibling job off `unit`. Redraw: `unit → build`, `unit → e2e`, `lint → e2e`, both `build` and `e2e` → `gate`.
-- **Site URL is load-bearing and unconfirmed.** Promote "confirm `https://natdtm.vercel.app` is the canonical domain" to a blocking Open Question on the readiness-flip checklist; R2 writes it into `site.js`, sitemap, robots, and OG images.
-- **Supabase key-name fix is in scope but owned by no unit** — and may not be a real mismatch (`.env.example` documents both `SUPABASE_ANON_KEY` and `SUPABASE_SERVICE_ROLE_KEY`; `refresh-data.yml` uses the latter, which is present). Verify it is real; if so, give `.env.example` / `refresh-data.yml` to U1 and add a DoD check; otherwise move the item to "Deferred for later".
-- **U6 lint fix must use its standalone path.** With M2 deferred, `src/lib/shared/useActiveProfile.js` does not exist, so the `ProfileSwitcher` `set-state-in-effect` fix must be a lazy initializer / `useSyncExternalStore` against `profile.js` directly, plus one documented ESLint override rule replacing the scattered inline disables.
-- **KTD10 is redundant and brittle.** U2's own approach derives the hero copy from `TOOLS.length`, which makes "Seven"/"eight" drift impossible; a `node --test` case that regex-parses an array length out of JSX is more likely to false-fail. Drop KTD10; if a guard is wanted, assert the rendered home-page text in Playwright smoke.
-- **KTD5 "zero screenshot diff" is unachievable** even for the retained R4 consolidation — the footer build-version stamp and CI-vs-baseline font rendering guarantee a non-zero diff. Use a pixel/ratio tolerance with masked regions for the version stamp; pin the screenshot runner to the CI image; state the tolerance in the Verification Contract. Update the DoD line `rg -- '--l-' src/ returns nothing` (no longer true once R3 is dropped).
-
-### Open decisions still to settle on rewrite
-
-- **DriveReady depth needs UI specs:** powertrain input control type and what happens to the engine-capacity field when EV is selected (segmented control, hide vs disable); insurance range presentation (always-visible assumptions caption; TCO "optional line" — default included or excluded, user toggle or not).
-- **Accessibility:** no unit carries a keyboard-nav / focus / ARIA spec and the Verification Contract has no a11y gate — a gap on exactly the surfaces this plan touches, against the craft-piece bar. Add an a11y line to the DriveReady UI units and a keyboard-path assertion to the E2E gate.
-- **"Consistent craft" (objective clause 3) has no requirement.** Add an A-workstream code-consistency pass: one documented module layout applied to all eight verticals, shared `theme` / `ui` factored out, JSDoc completed on every exported engine function — or narrow the objective.
-- **LTA PDF fixture (R6 / U5):** confirm the LTA publication licence permits redistribution in a public repo before committing a real PDF; if not, generate a `/FlateDecode`-compressed fixture mirroring the layout. Target the assertion at structural parse success + `isLowCoverage`, not a specific price (LTA revises fortnightly).
-- **Branch protection** (R1 "a failure blocks merge") is a repo-admin action outside any PR; give a unit or DoD item the job of verifying it is enforced.
-
-### FYI / residual
-
-- `next.config.mjs` ships a self-only CSP with `'unsafe-inline'` and `'unsafe-eval'` — visible to a code reviewer, currently out of scope.
-- The Unit Index "Files touched" cells are deliberately abbreviated but omit collision-relevant files (U13's `UsedCarForm.js` / `CarPicker.js`); worth adding on rewrite.
-- The portfolio audience (who reviews the repo, against what bar) is never characterised — the payoff of any version of this plan is unmeasurable without it.
+- U1: PR shows `unit` / `build` / `e2e` checks; PR body names the branch-protection settings to enable.
+- U2: OQ0 confirmed before merge; `rg -i coah src/` empty; screenshot diff within tolerance.
+- U4: eight landing + eight "the math" pages + the keyboard path all green.
+- U5: fixture committed (real or synthetic, licence-checked); structural assertion + `isLowCoverage` both covered.
+- U6: zero inline `set-state-in-effect` disables; ProfileSwitcher keyboard-operable; no shared hook added.
+- U17: every constant dated and sourced; currency test green; value disagreements listed in the PR, none silently changed.
+- U18: `legacy.css` reduced to `globals.css` + per-tool deltas; `theme.js` objects share one helper; screenshot diff within tolerance.
+- U18b: one published-figure golden-master per engine that lacked one, each citing a source.
+- U19: PR note records "consistent, no change" or the alignment made.
+- U20: every route exports `metadata` with a real title; engine functions JSDoc'd; layout section in `docs/architecture.md`.
+- U10: README tool count matches `tools.js`; architecture doc complete against the eight `src/app/<tool>/` directories.

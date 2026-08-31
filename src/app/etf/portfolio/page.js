@@ -1,6 +1,6 @@
 'use client'
 
-import { Suspense, useState, useEffect } from 'react'
+import { Suspense, useState, useEffect, useMemo } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { C, loadPortfolio, savePortfolio } from '@/components/etf/shared'
 import ShellHeader from '@/components/shared/ShellHeader'
@@ -26,21 +26,21 @@ const RISK_BADGE_COLORS = {
 // ─── DONUT CHART ──────────────────────────────────────────────────────────────
 function DonutChart({ allocations }) {
   const size = 160, stroke = 22, r = (size - stroke) / 2, c = 2 * Math.PI * r
-  let offset = 0
+  const dashes = allocations.map(a => (a.percentage / 100) * c)
+  // Cumulative offset for each segment = sum of the dashes before it.
+  const offsets = dashes.map((_, i) => dashes.slice(0, i).reduce((s, d) => s + d, 0))
   return (
     <div className={styles.donutWrap}>
       <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} role="img" aria-label="Portfolio allocation by fund">
         <g transform={`rotate(-90 ${size/2} ${size/2})`}>
           <circle cx={size/2} cy={size/2} r={r} fill="none" stroke="#334155" strokeWidth={stroke} />
           {allocations.map((a, i) => {
-            const dash = (a.percentage / 100) * c
-            const seg = (
+            const dash = dashes[i]
+            return (
               <circle key={a.etf.ticker} cx={size/2} cy={size/2} r={r} fill="none"
                 stroke={FUND_PALETTE[i % FUND_PALETTE.length]} strokeWidth={stroke}
-                strokeDasharray={`${dash} ${c - dash}`} strokeDashoffset={-offset} />
+                strokeDasharray={`${dash} ${c - dash}`} strokeDashoffset={-offsets[i]} />
             )
-            offset += dash
-            return seg
           })}
         </g>
       </svg>
@@ -74,11 +74,10 @@ function AnimatedBar({ percentage, index }) {
 // ─── PERFORMANCE CHART ────────────────────────────────────────────────────────
 function PerformanceChart({ allocations }) {
   const [timeframe, setTimeframe] = useState('1y')
-  const [data, setData] = useState([])
-
-  useEffect(() => {
-    setData(generateIllustrativePerformance(allocations, timeframe))
-  }, [allocations, timeframe])
+  const data = useMemo(
+    () => generateIllustrativePerformance(allocations, timeframe),
+    [allocations, timeframe],
+  )
 
   if (data.length === 0) return null
 
@@ -473,6 +472,10 @@ function PortfolioContent() {
   const [data, setData] = useState(null) // { portfolio, prefs }
 
   useEffect(() => {
+    /* eslint-disable react-hooks/set-state-in-effect -- restores the
+       portfolio from the URL params or localStorage (unavailable during
+       SSR) and persists/redirects as a side effect; not a plain render
+       sync */
     // A shared/bookmarked link takes priority; otherwise fall back to
     // whatever was generated last in this session.
     const fromUrl = decodePrefsFromParams(searchParams)
@@ -489,6 +492,7 @@ function PortfolioContent() {
       // No portfolio in session or URL — redirect to preferences
       router.replace('/etf/preferences')
     }
+    /* eslint-enable react-hooks/set-state-in-effect */
   }, [router, searchParams])
 
   useEffect(() => {
