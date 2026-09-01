@@ -1,3 +1,4 @@
+import ProfileScope from '@/components/shared/ProfileScope'
 export const metadata = {
   title: { default: 'TaxWise', template: '%s · TaxWise · nat does the math' },
   description: 'Singapore income tax calculator and relief optimizer. Works out what you owe IRAS, your marginal versus effective rate, and exactly what SRS contributions and CPF top-ups would save you in dollars.',
@@ -10,5 +11,5 @@ export const metadata = {
 }
 
 export default function TaxLayout({ children }) {
-  return children
+  return <ProfileScope>{children}</ProfileScope>
 }

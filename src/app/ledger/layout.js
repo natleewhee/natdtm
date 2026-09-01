@@ -1,3 +1,4 @@
+import ProfileScope from '@/components/shared/ProfileScope'
 export const metadata = {
   title: { default: 'MyLedger', template: '%s · MyLedger · nat does the math' },
   description: 'Your whole Singapore financial picture in one place — net worth, total debt servicing ratio across every loan, and what a car or a house upgrade would do to your retirement. Compare up to three scenarios side by side.',
@@ -10,5 +11,5 @@ export const metadata = {
 }
 
 export default function LedgerLayout({ children }) {
-  return children
+  return <ProfileScope>{children}</ProfileScope>
 }

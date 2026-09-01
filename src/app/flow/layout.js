@@ -1,3 +1,4 @@
+import ProfileScope from '@/components/shared/ProfileScope'
 export const metadata = {
   title: { default: 'FlowState', template: '%s · FlowState · nat does the math' },
   description: 'Singapore cashflow calculator. Splits your salary into CPF versus cash automatically, splits the mortgage into what CPF pays versus what leaves your bank, and finds the one month a year your account runs dry.',
@@ -10,5 +11,5 @@ export const metadata = {
 }
 
 export default function FlowLayout({ children }) {
-  return children
+  return <ProfileScope>{children}</ProfileScope>
 }

@@ -2,7 +2,8 @@
 
 import { useEffect, useRef, useState } from 'react'
 import {
-  listProfiles, createProfile, renameProfile, deleteProfile, setActiveProfile, MAX_PROFILES,
+  listProfiles, createProfile, renameProfile, deleteProfile, setActiveProfile,
+  subscribeToProfileChanges, MAX_PROFILES,
 } from '@/lib/shared/profile'
 
 // Lets someone keep separate named sets of numbers on the same browser
@@ -12,11 +13,10 @@ import {
 // through the same active profile (see src/lib/shared/profile.js), so
 // this lives in the shared header rather than any one page.
 //
-// Switching, creating, or deleting reloads the page — every tool loads
-// its own state once on mount via its own effect, and there's no single
-// place to broadcast "the active profile changed" to all of them at
-// once. A full reload is the simplest way every tool ends up showing
-// the newly-active profile's numbers, not the previous one's.
+// Switching, creating, or deleting broadcasts a profile-change event;
+// tools re-read their numbers via the useActiveProfile hook, so no page
+// reload is needed. This component also subscribes so its own list stays
+// in sync when another tab changes a profile.
 export default function ProfileSwitcher() {
   const [profiles, setProfiles] = useState(null) // null until mounted — avoids an SSR/client name mismatch
   const [open, setOpen] = useState(false)
@@ -28,10 +28,12 @@ export default function ProfileSwitcher() {
   const triggerRef = useRef(null)
 
   useEffect(() => {
-    /* eslint-disable-next-line react-hooks/set-state-in-effect -- one-time
-       read from localStorage on mount; unavailable during SSR so can't
-       happen during render without a hydration mismatch */
+    /* eslint-disable react-hooks/set-state-in-effect -- client-only reads
+       from localStorage (unavailable during SSR); the subscription keeps
+       the list fresh when another tab switches or renames a profile */
     setProfiles(listProfiles())
+    return subscribeToProfileChanges(() => setProfiles(listProfiles()))
+    /* eslint-enable react-hooks/set-state-in-effect */
   }, [])
 
   useEffect(() => {
@@ -58,10 +60,14 @@ export default function ProfileSwitcher() {
 
   const active = profiles.find(p => p.isActive) || profiles[0]
 
+  // No page reload: setActiveProfile / createProfile / deleteProfile
+  // broadcast a profile-change event (see src/lib/shared/profile.js), and
+  // every tool re-reads its numbers via the useActiveProfile hook.
   function handleSwitch(id) {
-    if (id === active.id) { closeMenu(); return }
+    if (id === active.id) { closeMenu({ returnFocus: true }); return }
     setActiveProfile(id)
-    window.location.reload()
+    setProfiles(listProfiles())
+    closeMenu({ returnFocus: true })
   }
 
   function startRename(p) {
@@ -75,17 +81,15 @@ export default function ProfileSwitcher() {
   }
 
   function handleDelete(id) {
-    const wasActive = id === active.id
-    const ok = deleteProfile(id)
-    if (!ok) return
-    if (wasActive) { window.location.reload(); return }
+    if (!deleteProfile(id)) return
     setProfiles(listProfiles())
   }
 
   function submitCreate() {
     const id = createProfile(newName)
     if (!id) return // at MAX_PROFILES — button is hidden in that state, but guard anyway
-    window.location.reload()
+    setProfiles(listProfiles())
+    closeMenu({ returnFocus: true })
   }
 
   return (

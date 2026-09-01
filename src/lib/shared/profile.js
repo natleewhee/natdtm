@@ -147,6 +147,36 @@ function saveStore(store) {
   }
 }
 
+// The `storage` event only fires in OTHER tabs, never the one that wrote,
+// so a same-tab profile switch also dispatches this synthetic event. Tools
+// subscribe via subscribeToProfileChanges (or the useActiveProfile hook)
+// and re-read their numbers instead of the page doing a full reload.
+const PROFILE_CHANGE_EVENT = 'ndtm:profile-change'
+
+// A real browser window is required. The test harness stubs `window` with
+// just a localStorage shim, so feature-detect dispatchEvent rather than
+// assuming a full event target.
+const hasEventTarget = () =>
+  typeof window !== 'undefined' && typeof window.dispatchEvent === 'function'
+
+function notifyProfileChange() {
+  if (hasEventTarget()) window.dispatchEvent(new Event(PROFILE_CHANGE_EVENT))
+}
+
+// Subscribe to active-profile changes from this tab (create/switch/delete)
+// or another tab (the browser's own `storage` event). Returns an
+// unsubscribe function; a no-op unsubscribe when there is no window.
+export function subscribeToProfileChanges(callback) {
+  if (!hasEventTarget()) return () => {}
+  const onStorage = (e) => { if (e.key === STORAGE_KEY || e.key === null) callback() }
+  window.addEventListener(PROFILE_CHANGE_EVENT, callback)
+  window.addEventListener('storage', onStorage)
+  return () => {
+    window.removeEventListener(PROFILE_CHANGE_EVENT, callback)
+    window.removeEventListener('storage', onStorage)
+  }
+}
+
 // Loads the raw wrapper { schemaVersion, activeProfileId, profiles }
 // from localStorage, migrating a pre-profiles flat payload (or nothing
 // at all) into a single default profile. Never returns an empty
@@ -242,6 +272,7 @@ export function createProfile(name) {
   store.profiles.push(profile)
   store.activeProfileId = profile.id
   saveStore(store)
+  notifyProfileChange()
   return profile.id
 }
 
@@ -253,6 +284,7 @@ export function renameProfile(id, name) {
   if (!profile) return
   profile.name = trimmed
   saveStore(store)
+  notifyProfileChange()
 }
 
 // Deletes a profile — refuses to delete the last remaining one, since
@@ -265,6 +297,7 @@ export function deleteProfile(id) {
   store.profiles = store.profiles.filter(p => p.id !== id)
   if (store.activeProfileId === id) store.activeProfileId = store.profiles[0].id
   saveStore(store)
+  notifyProfileChange()
   return true
 }
 
@@ -273,6 +306,7 @@ export function setActiveProfile(id) {
   if (!store.profiles.some(p => p.id === id)) return
   store.activeProfileId = id
   saveStore(store)
+  notifyProfileChange()
 }
 
 // Merges onto whatever's already in the house slot (rather than a full

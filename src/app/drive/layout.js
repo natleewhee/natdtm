@@ -1,4 +1,5 @@
 import './drive.css'
+import ProfileScope from '@/components/shared/ProfileScope'
 
 export const metadata = {
   title: { default: 'DriveReady', template: '%s · DriveReady · nat does the math' },
@@ -12,5 +13,5 @@ export const metadata = {
 }
 
 export default function DriveLayout({ children }) {
-  return <div className="v-drive">{children}</div>
+  return <ProfileScope><div className="v-drive">{children}</div></ProfileScope>
 }
