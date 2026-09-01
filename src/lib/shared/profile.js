@@ -252,6 +252,65 @@ function save(data) {
   return saveStore(store)
 }
 
+// ─── Backup / restore ──────────────────────────────────────────────────
+
+// Serialises every profile (the raw wrapper store) to a pretty JSON
+// string for a "download my numbers" file. Nothing is sent anywhere.
+export function exportProfiles() {
+  return JSON.stringify(loadStore(), null, 2)
+}
+
+// Replaces all local profiles with the contents of an exported file.
+// Accepts both the wrapped shape exportProfiles() writes and a bare
+// pre-profiles flat payload (mirrors loadStore's own dual-shape read).
+// Each profile's inner data is migrated to the current version.
+//
+// Returns { ok, imported, truncated, error }:
+//   ok        — whether the store was replaced
+//   imported  — how many profiles were kept (<= MAX_PROFILES)
+//   truncated — how many were dropped for exceeding MAX_PROFILES
+//   error     — a human-readable reason when ok is false
+export function importProfiles(text) {
+  let parsed
+  try {
+    parsed = JSON.parse(text)
+  } catch {
+    return { ok: false, imported: 0, truncated: 0, error: 'Not valid JSON.' }
+  }
+
+  let profiles
+  let activeIndex = 0
+  if (isWrapped(parsed)) {
+    const src = parsed.profiles.filter(p => p && typeof p === 'object')
+    // ids are regenerated on import, so remember which POSITION was active.
+    const i = src.findIndex(p => p.id === parsed.activeProfileId)
+    activeIndex = i === -1 ? 0 : i
+    profiles = src.map(p => makeProfile(p.name, { ...EMPTY, ...(migrateInnerData(p.data) || {}) }))
+  } else if (parsed && typeof parsed === 'object') {
+    // A bare flat payload — wrap it into a single profile.
+    profiles = [makeProfile(DEFAULT_PROFILE_NAME, { ...EMPTY, ...(migrateInnerData(parsed) || {}) })]
+  } else {
+    return { ok: false, imported: 0, truncated: 0, error: 'Unrecognised file shape.' }
+  }
+
+  if (profiles.length === 0) {
+    return { ok: false, imported: 0, truncated: 0, error: 'No profiles found in the file.' }
+  }
+
+  const truncated = Math.max(0, profiles.length - MAX_PROFILES)
+  const kept = profiles.slice(0, MAX_PROFILES)
+  const active = kept[activeIndex] || kept[0]
+  const store = { schemaVersion: 1, activeProfileId: active.id, profiles: kept }
+  const ok = saveStore(store)
+  if (ok) notifyProfileChange()
+  return {
+    ok,
+    imported: ok ? kept.length : 0,
+    truncated,
+    error: ok ? null : 'Could not write to local storage (private browsing or quota).',
+  }
+}
+
 // ─── Profile management ─────────────────────────────────────────────────
 
 export function listProfiles() {

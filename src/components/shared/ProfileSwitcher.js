@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from 'react'
 import {
   listProfiles, createProfile, renameProfile, deleteProfile, setActiveProfile,
-  subscribeToProfileChanges, MAX_PROFILES,
+  subscribeToProfileChanges, exportProfiles, importProfiles, MAX_PROFILES,
 } from '@/lib/shared/profile'
 
 // Lets someone keep separate named sets of numbers on the same browser
@@ -24,8 +24,10 @@ export default function ProfileSwitcher() {
   const [editingName, setEditingName] = useState('')
   const [creating, setCreating] = useState(false)
   const [newName, setNewName] = useState('')
+  const [importMsg, setImportMsg] = useState(null) // { tone: 'ok'|'error', text }
   const menuRef = useRef(null)
   const triggerRef = useRef(null)
+  const fileInputRef = useRef(null)
 
   useEffect(() => {
     /* eslint-disable react-hooks/set-state-in-effect -- client-only reads
@@ -90,6 +92,40 @@ export default function ProfileSwitcher() {
     if (!id) return // at MAX_PROFILES — button is hidden in that state, but guard anyway
     setProfiles(listProfiles())
     closeMenu({ returnFocus: true })
+  }
+
+  function handleExport() {
+    const blob = new Blob([exportProfiles()], { type: 'application/json' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = 'ndtm-profiles.json'
+    document.body.appendChild(a)
+    a.click()
+    document.body.removeChild(a)
+    URL.revokeObjectURL(url)
+  }
+
+  async function handleImportFile(e) {
+    const file = e.target.files?.[0]
+    e.target.value = '' // let the same file be picked again after a cancel
+    if (!file) return
+    if (!window.confirm(
+      `Import "${file.name}"? This replaces all ${profiles.length} profile${profiles.length === 1 ? '' : 's'} on this browser with the file's contents.`,
+    )) return
+    let res
+    try {
+      res = importProfiles(await file.text())
+    } catch {
+      res = { ok: false, error: 'Could not read the file.' }
+    }
+    if (res.ok) {
+      setProfiles(listProfiles())
+      const extra = res.truncated ? ` (${res.truncated} beyond the ${MAX_PROFILES}-profile limit were dropped)` : ''
+      setImportMsg({ tone: 'ok', text: `Imported ${res.imported} profile${res.imported === 1 ? '' : 's'}${extra}.` })
+    } else {
+      setImportMsg({ tone: 'error', text: res.error || 'Import failed.' })
+    }
   }
 
   return (
@@ -180,6 +216,32 @@ export default function ProfileSwitcher() {
             </button>
           ) : (
             <div className="shell-profile-menu-hint">Up to {MAX_PROFILES} profiles</div>
+          )}
+
+          <div className="shell-switcher-divider" />
+
+          <div className="shell-profile-actions">
+            <button type="button" className="shell-profile-action" onClick={handleExport}>
+              Export
+            </button>
+            <button type="button" className="shell-profile-action" onClick={() => fileInputRef.current?.click()}>
+              Import
+            </button>
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="application/json,.json"
+              hidden
+              onChange={handleImportFile}
+            />
+          </div>
+          {importMsg && (
+            <div
+              className={`shell-profile-menu-hint${importMsg.tone === 'error' ? ' shell-profile-action--danger' : ''}`}
+              role="status"
+            >
+              {importMsg.text}
+            </div>
           )}
         </div>
       )}

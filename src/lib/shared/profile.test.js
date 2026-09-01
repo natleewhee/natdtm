@@ -21,6 +21,7 @@ const {
   saveToolInputs, loadToolInputs,
   clearHouseNumbers, clearDriveNumbers, clearRetireNumbers, clearEtfNumbers, clearFlowNumbers,
   listProfiles, createProfile, renameProfile, deleteProfile, setActiveProfile, getActiveProfileId,
+  exportProfiles, importProfiles,
   MAX_PROFILES,
 } = await import('./profile.js')
 
@@ -197,6 +198,55 @@ test('saveToolInputs for an unsupported tool name is a no-op', () => {
   window.localStorage.removeItem('ndtm_my_numbers_v1')
   saveToolInputs('notarealtool', { x: 1 })
   assert.equal(loadToolInputs('notarealtool'), null)
+})
+
+// ─── export / import ──────────────────────────────────────────────────
+
+test('exportProfiles / importProfiles round-trips every profile\'s numbers', () => {
+  window.localStorage.removeItem('ndtm_my_numbers_v1')
+  saveHouseNumbers({ cashProceeds: 123, totalCPFRefund: 0, salePrice: 0, saleDate: null })
+  createProfile('Joint')
+  saveToolInputs('tax', { monthlySalary: '9000' })
+
+  const dump = exportProfiles()
+  window.localStorage.removeItem('ndtm_my_numbers_v1') // wipe
+
+  const res = importProfiles(dump)
+  assert.equal(res.ok, true)
+  assert.equal(res.imported, 2)
+  assert.equal(res.truncated, 0)
+  const names = listProfiles().map(p => p.name).sort()
+  assert.deepEqual(names, ['Joint', 'My Numbers'])
+  // the active (first) profile is "Joint" — its tax inputs survived
+  assert.deepEqual(loadToolInputs('tax'), { monthlySalary: '9000' })
+})
+
+test('importProfiles migrates a bare pre-profiles v1 flat payload', () => {
+  window.localStorage.removeItem('ndtm_my_numbers_v1')
+  const legacy = JSON.stringify({ version: 1, house: { savedAt: 1, cashProceeds: 50, totalCPFRefund: 0, salePrice: 50, saleDate: null } })
+  const res = importProfiles(legacy)
+  assert.equal(res.ok, true)
+  assert.equal(res.imported, 1)
+  assert.equal(loadMyNumbers().house.cashProceeds, 50)
+})
+
+test('importProfiles rejects malformed JSON and leaves the store untouched', () => {
+  window.localStorage.removeItem('ndtm_my_numbers_v1')
+  saveToolInputs('drive', { carLabel: 'Civic' })
+  const res = importProfiles('{ not json')
+  assert.equal(res.ok, false)
+  assert.match(res.error, /JSON/)
+  assert.deepEqual(loadToolInputs('drive'), { carLabel: 'Civic' })
+})
+
+test('importProfiles keeps only MAX_PROFILES and reports the rest as truncated', () => {
+  window.localStorage.removeItem('ndtm_my_numbers_v1')
+  const many = { schemaVersion: 1, activeProfileId: 'x', profiles: Array.from({ length: MAX_PROFILES + 2 }, (_, i) => ({ id: `p${i}`, name: `P${i}`, data: { version: 6 } })) }
+  const res = importProfiles(JSON.stringify(many))
+  assert.equal(res.ok, true)
+  assert.equal(res.imported, MAX_PROFILES)
+  assert.equal(res.truncated, 2)
+  assert.equal(listProfiles().length, MAX_PROFILES)
 })
 
 test('saveToolInputs(house) does not clobber saveHouseNumbers metrics, and vice versa', () => {
