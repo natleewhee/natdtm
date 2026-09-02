@@ -25,26 +25,75 @@ const DEFAULT_MORTGAGE_TENURE = 25
 // stale slot silently disagrees with what the planner shows.
 export const SYNC_STALE_DAYS = 180
 
+// "Your current position" as edited on the surface — every field a plain
+// string, blank meaning "use whatever the other tools synced, else zero".
+// This is what makes the planner useful standalone: the baseline no longer
+// depends on having run RetireWell / HouseMuch / DriveReady first.
+export const EMPTY_POSITION = {
+  cpfOa: '', cpfSa: '', cpfMa: '',
+  investments: '', cash: '',
+  propertyValue: '', mortgageBalance: '', mortgageRate: '', mortgageYearsLeft: '',
+  carValue: '', loansMonthly: '', loansYearsLeft: '',
+}
+
+// Pre-fill the position editor from whatever the other tools last synced.
+export function positionFromStore(myNumbers) {
+  const b = buildBaselineState(myNumbers || {})
+  const s = (n) => (n ? String(Math.round(n)) : '')
+  return {
+    cpfOa: s(b.cpf?.oa), cpfSa: s(b.cpf?.sa), cpfMa: s(b.cpf?.ma),
+    investments: s(b.investmentBalance),
+    cash: '',
+    propertyValue: s(b.house?.propertyValue),
+    mortgageBalance: s(b.house?.outstandingBalance),
+    mortgageRate: myNumbers?.house?.rate ? String(myNumbers.house.rate) : '',
+    mortgageYearsLeft: b.house?.tenureRemaining != null ? String(b.house.tenureRemaining) : '',
+    carValue: s(b.car?.carValue),
+    loansMonthly: s(b.car?.monthlyInstalment),
+    loansYearsLeft: b.car?.tenureRemaining != null ? String(b.car.tenureRemaining) : '',
+  }
+}
+
 // myNumbers: the object loadMyNumbers() returns.
-// overrides: { startingCash } — cash has no source tool, so it is a plain
-//   user field on the surface.
-export function buildScenarioBaseState(myNumbers, overrides = {}) {
+// position: the "current position" fields (strings). A blank field falls
+//   back to the synced store value, then to 0. `{ startingCash: n }` is
+//   still accepted as an alias for `{ cash }` (the preview slice used it).
+export function buildScenarioBaseState(myNumbers, position = {}) {
   const b = buildBaselineState(myNumbers || {})
   const house = b.house
+  const p = position || {}
+  const pick = (posVal, storeVal) =>
+    (posVal === '' || posVal == null ? (num(storeVal) || 0) : (num(posVal) || 0))
+
+  const propertyValue = pick(p.propertyValue, house?.propertyValue)
+  const mortgageBalance = pick(p.mortgageBalance, house?.outstandingBalance)
+  const hasProperty = propertyValue > 0 || mortgageBalance > 0
+  const cashRaw = (p.cash !== '' && p.cash != null) ? p.cash : p.startingCash
+
   return {
-    startingOA: b.cpf?.oa || 0,
-    startingSA: b.cpf?.sa || 0,
-    startingMA: b.cpf?.ma || 0,
-    investmentStart: b.investmentBalance || 0,
-    startingCash: Math.max(0, Number(overrides.startingCash) || 0),
-    property: house && (house.propertyValue || house.outstandingBalance)
+    startingOA: pick(p.cpfOa, b.cpf?.oa),
+    startingSA: pick(p.cpfSa, b.cpf?.sa),
+    startingMA: pick(p.cpfMa, b.cpf?.ma),
+    investmentStart: pick(p.investments, b.investmentBalance),
+    startingCash: Math.max(0, pick(cashRaw, 0)),
+    property: hasProperty
       ? {
-          value: house.propertyValue || 0,
-          mortgagePrincipal: house.outstandingBalance || 0,
-          mortgageRatePct: Number(myNumbers?.house?.rate) || DEFAULT_MORTGAGE_RATE,
-          mortgageTenureYears: house.tenureRemaining != null ? Number(house.tenureRemaining) : DEFAULT_MORTGAGE_TENURE,
+          value: propertyValue,
+          mortgagePrincipal: mortgageBalance,
+          mortgageRatePct: pick(p.mortgageRate, myNumbers?.house?.rate) || DEFAULT_MORTGAGE_RATE,
+          mortgageTenureYears: pick(p.mortgageYearsLeft, house?.tenureRemaining) || DEFAULT_MORTGAGE_TENURE,
         }
       : null,
+    // Held flat — feeds the net-worth line and asset mix only, never the
+    // withdrawal headline (same treatment as property, KD3).
+    carValue: Math.max(0, pick(p.carValue, b.car?.carValue)),
+    // Current car / personal loan payments. Today's "monthly invested"
+    // already accounts for them; what the projection would otherwise miss
+    // is the step-UP in capacity when they finish.
+    currentLoans: {
+      monthly: Math.max(0, pick(p.loansMonthly, b.car?.monthlyInstalment)),
+      yearsLeft: Math.max(0, pick(p.loansYearsLeft, b.car?.tenureRemaining)),
+    },
   }
 }
 

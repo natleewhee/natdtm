@@ -105,6 +105,14 @@ export function runScenario(baseState = {}, scenario = {}, bundles = {}, retireA
   const retireYears = Math.max(0, Math.round((retireAssumptions.retirementAge || 0) - (retireAssumptions.currentAge || 0)))
   const { dated, warnings, property: propChange, mortgage: mortChange } = resolveTimeline(scenario.moves || [], retireYears)
 
+  // Current car / personal loans: when they finish, that monthly payment
+  // frees up for investing. Applies to every path including the baseline.
+  const loanMonthly = baseState.currentLoans?.monthly || 0
+  const loanYearsLeft = Math.round(baseState.currentLoans?.yearsLeft || 0)
+  if (loanMonthly > 0 && loanYearsLeft > 0 && loanYearsLeft < retireYears) {
+    dated.push({ year: loanYearsLeft, investmentLump: 0, cash: 0, cpfOa: 0, monthlyContribution: loanMonthly })
+  }
+
   // Which property is held at retirement, and from when.
   let finalProperty = null
   let finalBoughtYear = 0
@@ -180,12 +188,14 @@ export function runScenario(baseState = {}, scenario = {}, bundles = {}, retireA
     propertyEquity = rows[rows.length - 1].equity
   }
 
+  const carValue = Math.max(0, baseState.carValue || 0)
   const assetMix = {
     property: propertyEquity,      // never part of liquidBase (KD3)
     liquid: baseLiquid.oa + baseLiquid.sa + baseLiquid.investment,
     cash: baseCash,
+    car: carValue,                 // held flat, net-worth line only
   }
-  const netWorthAtRetirement = assetMix.liquid + assetMix.cash + assetMix.property
+  const netWorthAtRetirement = assetMix.liquid + assetMix.cash + assetMix.property + assetMix.car
 
   // A balance that dipped below zero at any point means the moves as laid
   // out are not fundable — surface it rather than let Math.max(0, ...)

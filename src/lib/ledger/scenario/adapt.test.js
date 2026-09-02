@@ -3,7 +3,7 @@ import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import {
   buildScenarioBaseState, buildRetireAssumptions, resolveReference, staleSyncedSlots, SYNC_STALE_DAYS,
-  toEngineMove, yearError,
+  toEngineMove, yearError, positionFromStore,
 } from './adapt.js'
 
 const MY_NUMBERS = {
@@ -25,6 +25,47 @@ test('buildScenarioBaseState yields a null property when no house slot is set', 
   const s = buildScenarioBaseState({ retire: MY_NUMBERS.retire }, {})
   assert.equal(s.property, null)
   assert.equal(s.startingCash, 0)
+})
+
+test('an entered position overrides the store field by field; blanks fall back to the store', () => {
+  const s = buildScenarioBaseState(MY_NUMBERS, {
+    cpfOa: '', cpfSa: '55000', cpfMa: '',       // SA overridden, OA/MA from store
+    investments: '90000', cash: '30000',
+    propertyValue: '1200000', mortgageBalance: '350000', mortgageRate: '3.1', mortgageYearsLeft: '12',
+    carValue: '80000', loansMonthly: '900', loansYearsLeft: '4',
+  })
+  assert.equal(s.startingOA, 100_000)  // blank -> store
+  assert.equal(s.startingSA, 55_000)   // overridden
+  assert.equal(s.investmentStart, 90_000)
+  assert.equal(s.startingCash, 30_000)
+  assert.deepEqual(s.property, { value: 1_200_000, mortgagePrincipal: 350_000, mortgageRatePct: 3.1, mortgageTenureYears: 12 })
+  assert.equal(s.carValue, 80_000)
+  assert.deepEqual(s.currentLoans, { monthly: 900, yearsLeft: 4 })
+})
+
+test('buildScenarioBaseState still accepts the legacy { startingCash } alias', () => {
+  const s = buildScenarioBaseState({}, { startingCash: 200_000 })
+  assert.equal(s.startingCash, 200_000)
+})
+
+test('a fully-empty position with an empty store is all zeros and no property', () => {
+  const s = buildScenarioBaseState({}, {})
+  assert.equal(s.startingOA, 0)
+  assert.equal(s.investmentStart, 0)
+  assert.equal(s.startingCash, 0)
+  assert.equal(s.property, null)
+  assert.equal(s.carValue, 0)
+  assert.deepEqual(s.currentLoans, { monthly: 0, yearsLeft: 0 })
+})
+
+test('positionFromStore pre-fills the editable fields from synced tool numbers', () => {
+  const p = positionFromStore(MY_NUMBERS)
+  assert.equal(p.cpfOa, '100000')
+  assert.equal(p.investments, '60000')
+  assert.equal(p.propertyValue, '900000')
+  assert.equal(p.mortgageBalance, '400000')
+  assert.equal(p.mortgageRate, '2.8')
+  assert.equal(p.cash, '') // no source tool for cash
 })
 
 test('buildRetireAssumptions prefers surface fields but falls back to the retire slot', () => {

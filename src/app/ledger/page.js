@@ -9,12 +9,17 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { C, SGD, parseMoney } from '@/lib/ledger/theme'
-import { buildBaselineState, calcNetWorth, calcTDSR } from '@/lib/ledger/calc'
+import { calcNetWorth, calcTDSR } from '@/lib/ledger/calc'
+import { calcMonthlyInstalment } from '@/lib/house/calc'
 import { loadMyNumbers, saveToolInputs, loadToolInputs } from '@/lib/shared/profile'
 import { runScenario, labelRead } from '@/lib/ledger/scenario/index'
-import { buildScenarioBaseState, buildRetireAssumptions, resolveReference, staleSyncedSlots, toEngineMove, yearError } from '@/lib/ledger/scenario/adapt'
+import {
+  buildScenarioBaseState, buildRetireAssumptions, resolveReference, staleSyncedSlots,
+  toEngineMove, yearError, EMPTY_POSITION, positionFromStore,
+} from '@/lib/ledger/scenario/adapt'
 import { CAR_CATALOG_ENDPOINT } from '@/lib/drive/endpoints'
 import { MoneyInput, PercentInput, NumberInput, SectionDivider } from '@/components/ledger/ui'
+import PositionEditor from '@/components/ledger/PositionEditor'
 import ScenarioColumn from '@/components/ledger/ScenarioColumn'
 import BundleEditor from '@/components/ledger/BundleEditor'
 import ComparisonRow from '@/components/ledger/ComparisonRow'
@@ -29,7 +34,7 @@ const MAX_SCENARIOS = 3 // baseline + up to 2 what-ifs
 const DEFAULT_ASSUMPTIONS = {
   currentAge: '', retirementAge: '65', lifeExpectancy: '90',
   salary: '', investmentMonthly: '', salaryGrowthRate: '2.0',
-  swr: '3', startingCash: '', reference: '',
+  swr: '3', reference: '',
 }
 const DEFAULT_BUNDLES = {
   conservative: { equityReturn: 3, propertyAppreciation: 1, inflation: 3 },
@@ -43,6 +48,7 @@ const nextScenarioId = () => { idSeq += 1; return `sc-${idSeq}` }
 export default function MyLedgerPage() {
   const [myNumbers, setMyNumbers] = useState(null)
   const [assumptions, setAssumptions] = useState(DEFAULT_ASSUMPTIONS)
+  const [position, setPosition] = useState(EMPTY_POSITION)
   const [bundles, setBundles] = useState(DEFAULT_BUNDLES)
   const [scenarios, setScenarios] = useState([{ id: 'baseline', label: 'Baseline', moves: [] }])
   const [cars, setCars] = useState([])
@@ -67,9 +73,13 @@ export default function MyLedgerPage() {
     const mn = loadMyNumbers()
     setMyNumbers(mn)
     try { setStale(staleSyncedSlots(mn)) } catch { setStale([]) }
+    // Seed the current position from whatever the other tools synced; a
+    // saved position (below) overrides it field by field.
+    try { setPosition(positionFromStore(mn)) } catch { /* keep EMPTY_POSITION */ }
     const saved = loadToolInputs('ledger')
     if (saved && saved.assumptions) {
       setAssumptions({ ...DEFAULT_ASSUMPTIONS, ...saved.assumptions })
+      if (saved.position) setPosition((cur) => ({ ...cur, ...saved.position }))
       if (saved.bundles && saved.bundles.conservative && saved.bundles.base && saved.bundles.optimistic) {
         setBundles({
           conservative: { ...DEFAULT_BUNDLES.conservative, ...saved.bundles.conservative },
@@ -121,6 +131,7 @@ export default function MyLedgerPage() {
     if (skipNextAutosave.current) { skipNextAutosave.current = false; return }
     const ok = saveToolInputs('ledger', {
       assumptions,
+      position,
       bundles,
       scenarios: scenarios.filter((s) => s.id !== 'baseline').map((s) => ({ label: s.label, moves: s.moves })),
     })
@@ -128,7 +139,7 @@ export default function MyLedgerPage() {
     setSaveFailed(!ok)
     if (ok) setSavedTick((t) => t + 1)
     /* eslint-enable react-hooks/set-state-in-effect */
-  }, [hasRestored, assumptions, bundles, scenarios])
+  }, [hasRestored, assumptions, position, bundles, scenarios])
 
   useEffect(() => {
     if (savedTick === 0) return
@@ -153,7 +164,7 @@ export default function MyLedgerPage() {
   // band, so it is applied per-column below and never busts the cache.
   const recompute = useCallback(() => {
     if (!isReady) { setResults({}); return }
-    const baseState = buildScenarioBaseState(myNumbers, { startingCash: num(assumptions.startingCash) })
+    const baseState = buildScenarioBaseState(myNumbers, position)
     const retireAssumptions = buildRetireAssumptions(myNumbers, {
       currentAge: num(assumptions.currentAge),
       retirementAge: num(assumptions.retirementAge),
@@ -184,7 +195,7 @@ export default function MyLedgerPage() {
     const elapsed = performance.now() - t0
     if (typeof console !== 'undefined' && elapsed > 16) console.log(`[ledger] recompute ${elapsed.toFixed(1)}ms (${scenarios.length} scenarios x 3 bundles)`)
     setResults(next)
-  }, [isReady, myNumbers, assumptions, bundles, scenarios, carsById, parsedSalary, retireYears])
+  }, [isReady, myNumbers, assumptions, position, bundles, scenarios, carsById, parsedSalary, retireYears])
 
   useEffect(() => {
     if (debounce.current) clearTimeout(debounce.current)
@@ -202,11 +213,26 @@ export default function MyLedgerPage() {
     setScenarios((s) => [...s, { id: nextScenarioId(), label, moves: [] }])
   }
 
+  // Today's net worth / TDSR from the position the user entered (not the
+  // raw store), so the secondary read agrees with the projection above.
   const today = useMemo(() => {
     if (!myNumbers) return null
-    const state = buildBaselineState(myNumbers)
+    const p = position
+    const pv = num(p.propertyValue); const mb = num(p.mortgageBalance)
+    const mortgageInstalment = mb > 0
+      ? calcMonthlyInstalment(mb, num(p.mortgageRate) || 2.6, num(p.mortgageYearsLeft) || 25)
+      : 0
+    const state = {
+      salary: parsedSalary,
+      house: (pv || mb) ? { propertyValue: pv, outstandingBalance: mb, monthlyInstalment: mortgageInstalment } : null,
+      car: (num(p.carValue) || num(p.loansMonthly)) ? { carValue: num(p.carValue), loanOutstanding: 0, monthlyInstalment: num(p.loansMonthly) } : null,
+      cpf: { oa: num(p.cpfOa), sa: num(p.cpfSa), ma: num(p.cpfMa) },
+      investmentBalance: num(p.investments),
+      cashSavings: num(p.cash),
+      insurancePremium: 0,
+    }
     return { netWorth: calcNetWorth(state), tdsr: calcTDSR(state) }
-  }, [myNumbers])
+  }, [myNumbers, position, parsedSalary])
 
   // The band is solved reference-free; the verdict is applied here from
   // the live reference so editing "monthly spend" never re-runs the solver.
@@ -262,6 +288,11 @@ export default function MyLedgerPage() {
           </div>
         )}
 
+        <SectionDivider label="Your current position" />
+        <div style={{ background: C.surface, border: `1px solid ${C.border}`, borderRadius: C.rXL, padding: 22, boxShadow: C.shadow }}>
+          <PositionEditor position={position} onChange={setPosition} synced={myNumbers ? positionFromStore(myNumbers) : null} />
+        </div>
+
         <SectionDivider label="Assumptions (shared across every path)" />
         <div style={{ background: C.surface, border: `1px solid ${C.border}`, borderRadius: C.rXL, padding: 22, boxShadow: C.shadow }}>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: 14 }}>
@@ -272,7 +303,6 @@ export default function MyLedgerPage() {
             <MoneyInput id="a-contrib" label="Monthly invested" value={assumptions.investmentMonthly} onChange={setField('investmentMonthly')} hint={myNumbers?.retire?.monthlyContribution ? `RetireWell has S$${Math.round(myNumbers.retire.monthlyContribution).toLocaleString('en-SG')}` : undefined} />
             <PercentInput id="a-growth" label="Salary growth" value={assumptions.salaryGrowthRate} onChange={setField('salaryGrowthRate')} />
             <PercentInput id="a-swr" label="Safe withdrawal rate" value={assumptions.swr} onChange={setField('swr')} />
-            <MoneyInput id="a-cash" label="Starting cash" value={assumptions.startingCash} onChange={setField('startingCash')} />
             <MoneyInput
               id="a-ref" label="Monthly spend in retirement" value={assumptions.reference} onChange={setField('reference')}
               hint={referenceInfo.source === 'flow' ? `FlowState measured S$${Math.round(referenceInfo.reference).toLocaleString('en-SG')}` : referenceInfo.source === 'none' ? 'Needed for the enough / tight / short verdict' : undefined}
