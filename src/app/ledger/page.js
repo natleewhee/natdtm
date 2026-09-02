@@ -11,8 +11,8 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { C, SGD, parseMoney } from '@/lib/ledger/theme'
 import { buildBaselineState, calcNetWorth, calcTDSR } from '@/lib/ledger/calc'
 import { loadMyNumbers, saveToolInputs, loadToolInputs } from '@/lib/shared/profile'
-import { runScenario } from '@/lib/ledger/scenario/index'
-import { buildScenarioBaseState, buildRetireAssumptions, resolveReference, staleSyncedSlots } from '@/lib/ledger/scenario/adapt'
+import { runScenario, labelRead } from '@/lib/ledger/scenario/index'
+import { buildScenarioBaseState, buildRetireAssumptions, resolveReference, staleSyncedSlots, toEngineMove, yearError } from '@/lib/ledger/scenario/adapt'
 import { CAR_CATALOG_ENDPOINT } from '@/lib/drive/endpoints'
 import { MoneyInput, PercentInput, NumberInput, SectionDivider } from '@/components/ledger/ui'
 import ScenarioColumn from '@/components/ledger/ScenarioColumn'
@@ -40,43 +40,6 @@ const DEFAULT_BUNDLES = {
 let idSeq = 0
 const nextScenarioId = () => { idSeq += 1; return `sc-${idSeq}` }
 
-// A move as edited on the surface -> the { type, year, inputs } shape
-// runScenario expects. buy-car needs its car object resolved from the
-// catalogue and the household salary threaded in.
-function toEngineMove(move, carsById, salary) {
-  const year = num(move.year)
-  const i = move.inputs || {}
-  switch (move.type) {
-    case 'sell-property':
-      return { type: move.type, year, inputs: {
-        propertyType: i.propertyType || 'private',
-        purchasePrice: num(i.purchasePrice), purchaseDate: i.purchaseDate || undefined,
-        salePrice: num(i.salePrice), saleDate: i.saleDate || undefined,
-        loanTaken: num(i.loanTaken), mortgageRate: num(i.mortgageRate), loanTenure: num(i.loanTenure),
-        cpfOutlay: num(i.cpfOutlay),
-      } }
-    case 'buy-property':
-      return { type: move.type, year, inputs: {
-        newPrice: num(i.newPrice), newLoanAmount: num(i.newLoanAmount),
-        newLoanTenure: num(i.newLoanTenure), newMortgageRate: num(i.newMortgageRate),
-        absd: num(i.absd), otherFees: num(i.otherFees),
-      } }
-    case 'cash-to-investments':
-      return { type: move.type, year, inputs: { amount: num(i.amount), direction: i.direction || 'in' } }
-    case 'buy-car':
-      return { type: move.type, year, inputs: {
-        car: carsById[i.carId] || null, salary, down: num(i.down), tenure: num(i.tenure),
-      } }
-    case 'have-child':
-      return { type: move.type, year, inputs: {
-        annualCost: num(i.annualCost), lumpAmount: num(i.lumpAmount),
-        lumpYear: i.lumpYear === '' ? undefined : num(i.lumpYear),
-      } }
-    default:
-      return { type: move.type, year, inputs: {} }
-  }
-}
-
 export default function MyLedgerPage() {
   const [myNumbers, setMyNumbers] = useState(null)
   const [assumptions, setAssumptions] = useState(DEFAULT_ASSUMPTIONS)
@@ -89,20 +52,31 @@ export default function MyLedgerPage() {
   const [stale, setStale] = useState([])
   const [savedTick, setSavedTick] = useState(0)
   const [justSaved, setJustSaved] = useState(false)
+  const [saveFailed, setSaveFailed] = useState(false)
 
   const cache = useRef(new Map())
   const debounce = useRef(null)
+  // The restore below sets state, which fires the autosave effect once
+  // before the user has done anything. Skip that first write so merely
+  // visiting a profile does not stamp a default payload into its slot.
+  const skipNextAutosave = useRef(true)
 
   // ── Mount: read the store, restore a saved planner state ──────────────
   useEffect(() => {
     /* eslint-disable react-hooks/set-state-in-effect -- one-time localStorage read on mount */
     const mn = loadMyNumbers()
     setMyNumbers(mn)
-    setStale(staleSyncedSlots(mn))
+    try { setStale(staleSyncedSlots(mn)) } catch { setStale([]) }
     const saved = loadToolInputs('ledger')
     if (saved && saved.assumptions) {
       setAssumptions({ ...DEFAULT_ASSUMPTIONS, ...saved.assumptions })
-      if (saved.bundles) setBundles(saved.bundles)
+      if (saved.bundles && saved.bundles.conservative && saved.bundles.base && saved.bundles.optimistic) {
+        setBundles({
+          conservative: { ...DEFAULT_BUNDLES.conservative, ...saved.bundles.conservative },
+          base: { ...DEFAULT_BUNDLES.base, ...saved.bundles.base },
+          optimistic: { ...DEFAULT_BUNDLES.optimistic, ...saved.bundles.optimistic },
+        })
+      }
       if (Array.isArray(saved.scenarios)) {
         setScenarios([
           { id: 'baseline', label: 'Baseline', moves: [] },
@@ -113,14 +87,18 @@ export default function MyLedgerPage() {
       }
       setRestoredNote(true)
     } else if (saved && !saved.assumptions) {
-      // A legacy assumptions-only payload from the old dashboard.
+      // A legacy assumptions-only payload from the old dashboard — carry
+      // the fields that still exist, mapping the old desired-withdrawal
+      // input onto the new reference figure so the verdict survives.
       setAssumptions((a) => ({
         ...a,
         currentAge: saved.currentAge ?? a.currentAge,
         retirementAge: saved.retirementAge ?? a.retirementAge,
         lifeExpectancy: saved.lifeExpectancy ?? a.lifeExpectancy,
         swr: saved.swr ?? a.swr,
+        reference: saved.desiredMonthlyWithdrawal ?? a.reference,
       }))
+      setRestoredNote(true)
     }
     setHasRestored(true)
     /* eslint-enable react-hooks/set-state-in-effect */
@@ -140,13 +118,16 @@ export default function MyLedgerPage() {
   // ── Autosave the whole planner state in one write (KTD9) ──────────────
   useEffect(() => {
     if (!hasRestored) return
+    if (skipNextAutosave.current) { skipNextAutosave.current = false; return }
     const ok = saveToolInputs('ledger', {
       assumptions,
       bundles,
       scenarios: scenarios.filter((s) => s.id !== 'baseline').map((s) => ({ label: s.label, moves: s.moves })),
     })
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- flashes the "Saved" indicator
+    /* eslint-disable react-hooks/set-state-in-effect -- flashes the "Saved" indicator / surfaces a write failure */
+    setSaveFailed(!ok)
     if (ok) setSavedTick((t) => t + 1)
+    /* eslint-enable react-hooks/set-state-in-effect */
   }, [hasRestored, assumptions, bundles, scenarios])
 
   useEffect(() => {
@@ -159,11 +140,17 @@ export default function MyLedgerPage() {
 
   const parsedSalary = num(assumptions.salary) || Number(myNumbers?.retire?.salary) || 0
   const retireYears = Math.max(0, Math.round(num(assumptions.retirementAge) - num(assumptions.currentAge)))
-  const isReady = num(assumptions.currentAge) > 0 && num(assumptions.retirementAge) > num(assumptions.currentAge) && parsedSalary > 0 && myNumbers != null
+  const isReady = num(assumptions.currentAge) > 0
+    && num(assumptions.retirementAge) > num(assumptions.currentAge)
+    && num(assumptions.lifeExpectancy) > num(assumptions.retirementAge)
+    && parsedSalary > 0 && myNumbers != null
 
   const referenceInfo = myNumbers ? resolveReference(myNumbers, num(assumptions.reference)) : { reference: 0, source: 'none' }
 
   // ── Debounced + memoised recompute (KTD3) ────────────────────────────
+  // The reference figure and the (solver-inert) SWR are deliberately NOT
+  // part of the recompute — the reference only re-labels an already-solved
+  // band, so it is applied per-column below and never busts the cache.
   const recompute = useCallback(() => {
     if (!isReady) { setResults({}); return }
     const baseState = buildScenarioBaseState(myNumbers, { startingCash: num(assumptions.startingCash) })
@@ -174,19 +161,21 @@ export default function MyLedgerPage() {
       salary: num(assumptions.salary),
       investmentMonthly: assumptions.investmentMonthly === '' ? undefined : num(assumptions.investmentMonthly),
       salaryGrowthRate: num(assumptions.salaryGrowthRate),
-      swr: num(assumptions.swr),
     })
-    const reference = referenceInfo.reference
-    const sharedSig = JSON.stringify({ baseState, retireAssumptions, bundles, reference })
+    const sharedSig = JSON.stringify({ baseState, retireAssumptions, bundles })
 
     const t0 = performance.now()
     const next = {}
     for (const sc of scenarios) {
-      const engineMoves = sc.moves.map((m) => toEngineMove(m, carsById, parsedSalary))
+      // Moves with a year the MoveEditor flags invalid never reach the
+      // engine — a blank year would otherwise compute as year 0.
+      const engineMoves = sc.moves
+        .filter((m) => yearError(m.year, retireYears) == null)
+        .map((m) => toEngineMove(m, carsById, parsedSalary))
       const key = JSON.stringify([sc.id === 'baseline' ? [] : engineMoves, sharedSig])
       let res = cache.current.get(key)
       if (!res) {
-        res = runScenario(baseState, { label: sc.label, moves: sc.id === 'baseline' ? [] : engineMoves }, bundles, retireAssumptions, reference)
+        res = runScenario(baseState, { label: sc.label, moves: sc.id === 'baseline' ? [] : engineMoves }, bundles, retireAssumptions, 0)
         cache.current.set(key, res)
         if (cache.current.size > 60) cache.current.clear()
       }
@@ -195,7 +184,7 @@ export default function MyLedgerPage() {
     const elapsed = performance.now() - t0
     if (typeof console !== 'undefined' && elapsed > 16) console.log(`[ledger] recompute ${elapsed.toFixed(1)}ms (${scenarios.length} scenarios x 3 bundles)`)
     setResults(next)
-  }, [isReady, myNumbers, assumptions, bundles, scenarios, carsById, parsedSalary, referenceInfo.reference])
+  }, [isReady, myNumbers, assumptions, bundles, scenarios, carsById, parsedSalary, retireYears])
 
   useEffect(() => {
     if (debounce.current) clearTimeout(debounce.current)
@@ -219,9 +208,19 @@ export default function MyLedgerPage() {
     return { netWorth: calcNetWorth(state), tdsr: calcTDSR(state) }
   }, [myNumbers])
 
+  // The band is solved reference-free; the verdict is applied here from
+  // the live reference so editing "monthly spend" never re-runs the solver.
+  const withRead = (result) => ({
+    ...result,
+    read: labelRead(result.band.base, result.band.conservative, referenceInfo.reference),
+  })
+
   const comparisonColumns = isReady
-    ? scenarios.filter((s) => results[s.id]).map((s) => ({ label: s.label, result: results[s.id] }))
+    ? scenarios.filter((s) => results[s.id]).map((s) => ({ label: s.label, result: withRead(results[s.id]) }))
     : []
+
+  const carsLoading = cars.length === 0
+  const invalidMoveCount = (sc) => sc.moves.filter((m) => yearError(m.year, retireYears) != null).length
 
   const setField = (k) => (e) => setAssumptions((a) => ({ ...a, [k]: e.target.value }))
 
@@ -255,6 +254,11 @@ export default function MyLedgerPage() {
         {restoredNote && (
           <div style={{ background: C.accentBg, border: `1px solid ${C.accent}55`, borderRadius: C.rL, padding: '12px 16px', marginBottom: 16, fontSize: C.xs, color: C.accent, fontWeight: 600 }}>
             Restored the scenarios and assumptions you last saved to this profile.
+          </div>
+        )}
+        {saveFailed && (
+          <div style={{ background: C.redBg, border: `1px solid ${C.red}`, borderRadius: C.rL, padding: '12px 16px', marginBottom: 16, fontSize: C.xs, color: C.redText, fontWeight: 600 }}>
+            Changes are not being saved on this browser (private browsing or storage full) — your scenarios will be lost on reload.
           </div>
         )}
 
@@ -293,8 +297,9 @@ export default function MyLedgerPage() {
               onRemove={() => removeScenario(sc.id)}
               retireYears={retireYears}
               cars={cars}
-              salary={parsedSalary}
-              result={results[sc.id]}
+              carsLoading={carsLoading}
+              invalidMoves={invalidMoveCount(sc)}
+              result={results[sc.id] && withRead(results[sc.id])}
             />
           ))}
         </div>

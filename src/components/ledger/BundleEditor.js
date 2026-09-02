@@ -5,10 +5,10 @@
 // Editing any rate re-runs every scenario (R12).
 
 import { C, parseMoney } from '@/lib/ledger/theme'
+import { BUNDLE_KEYS } from '@/lib/ledger/scenario/index'
 import { PercentInput } from './ui'
 
 const num = parseMoney
-const ORDER = ['conservative', 'base', 'optimistic']
 const NAME = { conservative: 'Conservative', base: 'Base', optimistic: 'Optimistic' }
 
 export default function BundleEditor({ bundles, onChange }) {
@@ -17,7 +17,7 @@ export default function BundleEditor({ bundles, onChange }) {
 
   return (
     <div style={{ display: 'grid', gap: 10 }}>
-      {ORDER.map((key) => (
+      {BUNDLE_KEYS.map((key) => (
         <div key={key} style={{ display: 'grid', gridTemplateColumns: '110px repeat(3, 1fr)', gap: 10, alignItems: 'end' }}>
           <div style={{ fontSize: C.sm, fontWeight: 700, color: key === 'base' ? C.primary : C.muted, paddingBottom: 10 }}>{NAME[key]}</div>
           <PercentInput id={`bundle-${key}-equity`} label="Equity return" value={String(bundles[key].equityReturn)} onChange={setRate(key, 'equityReturn')} />

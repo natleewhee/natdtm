@@ -77,15 +77,15 @@ test('an upgrade (sell + buy at one year) spends the CPF refund from exactly one
 // ─── buy / change a car ────────────────────────────────────────────────
 
 test('buy-car cuts the contribution by instalment + running costs only (no depreciation) and debits the down payment', () => {
-  const inputs = { car: CAR, salary: 12_000, down: 50_000, tenure: 7 }
+  const inputs = { car: CAR, salary: 12_000, down: 120_000, tenure: 7 }
   const d = resolveMove({ type: 'buy-car', year: 2, inputs })
-  const loan = calcCarLoan(12_000, 50_000, 7, CAR, null, 0)
+  const loan = calcCarLoan(12_000, 120_000, 7, CAR, null, 0)
   const running = estimateAnnualRunningCosts(CAR).monthly
   assert.ok(Math.abs(d.monthlyContributionDelta - -(loan.monthly + running)) < 0.01)
   // The depreciation term must NOT be in there.
   assert.ok(Math.abs(d.monthlyContributionDelta) < (loan.monthly + running + loan.deprAtTenure.monthlyDepr) - 1,
     'depreciation is not folded into the contribution cut')
-  assert.equal(d.cashDelta, -50_000)
+  assert.equal(d.cashDelta, -120_000)
   assert.equal(d.payoff.year, 2 + 7)
   assert.ok(Math.abs(d.payoff.monthlyContributionDelta - loan.monthly) < 0.01, 'payoff frees the instalment, not the running cost')
 })
@@ -96,6 +96,14 @@ test('buy-car with a zero down payment warns and produces an all-zero delta (no 
   assert.equal(d.monthlyContributionDelta, 0)
   assert.equal(d.cashDelta, 0)
   assert.equal(d.payoff, null)
+})
+
+test('buy-car with a non-zero but below-minimum down payment warns rather than silently max-financing', () => {
+  // minDown for a 60%-cap loan is 40% of price (~S$106k here); 50k is under it.
+  const d = resolveMove({ type: 'buy-car', year: 1, inputs: { car: CAR, salary: 12_000, down: 50_000, tenure: 7 } })
+  assert.equal(d.warning, 'car-down-too-low')
+  assert.equal(d.monthlyContributionDelta, 0)
+  assert.equal(d.cashDelta, 0)
 })
 
 // ─── have a child ──────────────────────────────────────────────────────
@@ -110,6 +118,15 @@ test('have-child with no lump emits no dated extras', () => {
   const d = resolveMove({ type: 'have-child', year: 4, inputs: { annualCost: 12_000 } })
   assert.equal(d.monthlyContributionDelta, -1_000)
   assert.deepEqual(d.datedExtras, [])
+})
+
+test('have-child restores the contribution once support ends (default 22 years, or a set window)', () => {
+  const dflt = resolveMove({ type: 'have-child', year: 3, inputs: { annualCost: 18_000 } })
+  assert.equal(dflt.payoff.year, 3 + 22)
+  assert.equal(dflt.payoff.monthlyContributionDelta, 1_500)
+
+  const short = resolveMove({ type: 'have-child', year: 3, inputs: { annualCost: 18_000, supportYears: 18 } })
+  assert.equal(short.payoff.year, 3 + 18)
 })
 
 // ─── unknown ───────────────────────────────────────────────────────────

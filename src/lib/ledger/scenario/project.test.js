@@ -166,6 +166,26 @@ test('a negative move year floors at 0', () => {
   assertFinalsMatch(negative, atZero, 'negative year == year 0')
 })
 
+test('minCash / minInvestment track the lowest a balance dips to along the way', () => {
+  // A no-op path never dips below the starting balances.
+  const clean = projectSegmented(BASE_STATE, [{ year: 5 }], BASE_ASSUMPTIONS)
+  assert.equal(clean.minCash, BASE_STATE.startingCash)
+  assert.ok(clean.minInvestment >= BASE_STATE.investmentStart - 1)
+
+  // A cash outflow larger than the starting cash drives minCash negative
+  // even though a later inflow can bring cashFinal back up.
+  const dip = projectSegmented(
+    BASE_STATE,
+    [
+      { year: 2, cash: -(BASE_STATE.startingCash + 100_000) },
+      { year: 8, cash: 300_000 },
+    ],
+    BASE_ASSUMPTIONS,
+  )
+  assert.ok(dip.minCash <= -100_000, `minCash ${dip.minCash} should reflect the year-2 overdraw`)
+  assert.ok(dip.cashFinal > dip.minCash, 'cashFinal recovers above the low point')
+})
+
 test('the segment trace covers the whole horizon in order', () => {
   const seg = projectSegmented(BASE_STATE, [{ year: 6 }, { year: 14 }], BASE_ASSUMPTIONS)
   assert.equal(seg.segments[0].startYear, 0)

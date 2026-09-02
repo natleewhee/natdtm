@@ -31,7 +31,14 @@ export function solveSustainableWithdrawal(liquidBase, retireAssumptions = {}) {
   const portfolio = Math.max(0, Number(liquidBase) || 0)
   if (portfolio <= 0) return { monthly: 0, tolerance: TOLERANCE }
 
-  const yearsInRetirement = Math.max(1, Math.round(lifeExpectancy - retirementAge))
+  // A non-positive drawdown horizon (plan-until age at or below retirement
+  // age) makes simulateDepletion's loop never run, so every withdrawal
+  // "lasts" and the exponential search below would run away to a
+  // meaningless ceiling. Reject it rather than emit an astronomical figure.
+  const horizonYears = Math.round(lifeExpectancy - retirementAge)
+  if (horizonYears < 1) return { monthly: 0, tolerance: TOLERANCE }
+
+  const yearsInRetirement = horizonYears
   const monthsToRetirement = Math.max(0, Math.round((retirementAge - currentAge) * 12))
   const accumulation = { investmentFinal: portfolio, oaFinal: 0, saFinal: 0, months: monthsToRetirement }
 
@@ -59,6 +66,11 @@ export function solveSustainableWithdrawal(liquidBase, retireAssumptions = {}) {
     hi *= 2
     doublings++
   }
+  // If even 2^40x the seed still "lasts", the depletion model isn't
+  // constraining the draw (a degenerate horizon slipped past the guard
+  // above, or a pathological rate combination). Don't bisect toward a
+  // meaningless ceiling — report zero so the UI shows no usable figure.
+  if (lasts(hi)) return { monthly: 0, tolerance: TOLERANCE }
 
   // Bisect [0, hi] — withdrawing $0 always lasts, so 0 is a valid floor.
   let lo = 0

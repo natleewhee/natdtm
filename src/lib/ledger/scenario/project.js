@@ -94,6 +94,12 @@ export function projectSegmented(baseState = {}, moves = [], assumptions = {}) {
   let bonusCursor = Number(annualBonus) || 0
   let salaryYear = 0
   let currentMonthly = Number(investmentMonthly) || 0
+  // Lowest the tracked balances dip to at any boundary — a negative value
+  // means a move (a lump, a down payment, a mortgage bigger than the
+  // contribution) made the plan infeasible at some point. The orchestrator
+  // turns this into a visible warning rather than silently flooring it.
+  let minCash = cash
+  let minInvestment = investment
 
   const segments = []
 
@@ -108,6 +114,8 @@ export function projectSegmented(baseState = {}, moves = [], assumptions = {}) {
       oa += d.cpfOa
       currentMonthly += d.monthlyContribution
     }
+    if (cash < minCash) minCash = cash
+    if (investment < minInvestment) minInvestment = investment
 
     while (salaryYear < a) {
       salaryCursor *= (1 + growthRate)
@@ -141,6 +149,7 @@ export function projectSegmented(baseState = {}, moves = [], assumptions = {}) {
       investment = res.investmentFinal
       frozenFRS = res.frozenFRS
       frozenBHS = res.frozenBHS
+      if (investment < minInvestment) minInvestment = investment
     }
 
     segments.push({
@@ -156,6 +165,7 @@ export function projectSegmented(baseState = {}, moves = [], assumptions = {}) {
     oaFinal: oa, saFinal: sa, maFinal: ma,
     investmentFinal: investment,
     cashFinal: cash,
+    minCash, minInvestment,
     frozenFRS, frozenBHS,
     segments,
   }

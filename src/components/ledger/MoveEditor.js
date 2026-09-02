@@ -6,10 +6,10 @@
 // non-negative integers inside [0, years-to-retirement) (KTD1).
 
 import { useState } from 'react'
-import { C, parseMoney } from '@/lib/ledger/theme'
+import { C } from '@/lib/ledger/theme'
+import { yearError } from '@/lib/ledger/scenario/adapt'
 import { MoneyInput, NumberInput, PercentInput, TextInput, SelectInput, Segmented } from './ui'
 
-const num = parseMoney
 let seq = 0
 const nextId = () => { seq += 1; return `mv-${Date.now()}-${seq}` }
 
@@ -32,19 +32,10 @@ function blankInputs(type) {
     case 'buy-car':
       return { carId: '', down: '', tenure: '7' }
     case 'have-child':
-      return { annualCost: '18000', lumpAmount: '', lumpYear: '' }
+      return { annualCost: '18000', supportYears: '22', lumpAmount: '', lumpYear: '' }
     default:
       return {}
   }
-}
-
-function yearError(year, retireYears) {
-  if (year === '' || year == null) return 'Set a year'
-  const n = Number(year)
-  if (!Number.isInteger(n)) return 'Whole years only'
-  if (n < 0) return 'Cannot be negative'
-  if (retireYears > 0 && n >= retireYears) return `Before retirement (< ${retireYears})`
-  return null
 }
 
 function FieldGrid({ children }) {
@@ -106,6 +97,7 @@ function InputsFor({ move, onInput, cars }) {
       return (
         <FieldGrid>
           <MoneyInput id={`${move.id}-ac`} label="Cost / year" value={inp.annualCost} onChange={set('annualCost')} />
+          <NumberInput id={`${move.id}-sy`} label="Support years" suffix="yr" value={inp.supportYears} onChange={set('supportYears')} />
           <MoneyInput id={`${move.id}-la`} label="Education lump" value={inp.lumpAmount} onChange={set('lumpAmount')} />
           <NumberInput id={`${move.id}-ly`} label="Lump in year" value={inp.lumpYear} onChange={set('lumpYear')} />
         </FieldGrid>
@@ -141,7 +133,7 @@ function MoveRow({ move, retireYears, cars, onPatch, onRemove, groupedLabel }) {
   )
 }
 
-export default function MoveEditor({ moves, onChange, retireYears, cars, salary }) {
+export default function MoveEditor({ moves, onChange, retireYears, cars }) {
   const [adding, setAdding] = useState(false)
 
   const patch = (id, next) => onChange(moves.map(m => (m.id === id ? next : m)))
@@ -189,7 +181,7 @@ export default function MoveEditor({ moves, onChange, retireYears, cars, salary 
       )
     } else {
       rendered.push(
-        <MoveRow key={m.id} move={m} retireYears={retireYears} cars={cars} salary={salary}
+        <MoveRow key={m.id} move={m} retireYears={retireYears} cars={cars}
           onPatch={(next) => patch(m.id, next)} onRemove={() => remove(m.id)} />,
       )
     }
@@ -220,5 +212,3 @@ export default function MoveEditor({ moves, onChange, retireYears, cars, salary 
     </div>
   )
 }
-
-export { yearError }

@@ -115,6 +115,13 @@ function resolveCar(move) {
     d.warning = 'car-inputs-incomplete'
     return d
   }
+  // A non-zero but below-minimum down payment: calc() still returns a
+  // result, silently at the maximum loan a bank would not actually grant.
+  // Flag it rather than model an impossible purchase.
+  if (loan.canDown === false) {
+    d.warning = 'car-down-too-low'
+    return d
+  }
   const running = estimateAnnualRunningCosts(inp.car).monthly || 0
   // Instalment + running costs are real cash outflows; depreciation is not.
   d.monthlyContributionDelta -= (loan.monthly + running)
@@ -129,12 +136,24 @@ function resolveCar(move) {
 }
 
 // ─── have a child ──────────────────────────────────────────────────────
-// move.inputs: { annualCost, lumpAmount?, lumpYear? }
+// move.inputs: { annualCost, supportYears?, lumpAmount?, lumpYear? }
+// The recurring cost runs for `supportYears` (default 22, roughly to the
+// end of tertiary education) and then stops — without an end it would
+// keep draining contributions for the whole projection, years past any
+// real dependency window, and materially understate the headline.
+const DEFAULT_CHILD_SUPPORT_YEARS = 22
 function resolveChild(move) {
   const d = emptyDelta()
   const inp = move.inputs || {}
   const annual = Math.max(0, Number(inp.annualCost) || 0)
-  d.monthlyContributionDelta -= Math.round(annual / 12)
+  const monthly = Math.round(annual / 12)
+  d.monthlyContributionDelta -= monthly
+  const supportYears = Math.max(1, Math.round(Number(inp.supportYears) || DEFAULT_CHILD_SUPPORT_YEARS))
+  if (monthly > 0) {
+    // Restore the contribution once support ends (same mechanism as a car
+    // loan's payoff step-up).
+    d.payoff = { year: (Number(move.year) || 0) + supportYears, monthlyContributionDelta: monthly }
+  }
   const lump = Math.max(0, Number(inp.lumpAmount) || 0)
   const lumpYear = Number(inp.lumpYear)
   if (lump > 0 && Number.isFinite(lumpYear)) {

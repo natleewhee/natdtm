@@ -72,6 +72,16 @@ test('a zero portfolio returns ~0 without looping', () => {
   assert.equal(tolerance, 25)
 })
 
+test('a non-positive drawdown horizon returns 0 instead of an astronomical figure or a hang', () => {
+  // Plan-until age at (or below) retirement age: simulateDepletion never
+  // draws down, so every withdrawal "lasts". Must be rejected, not
+  // exponential-searched into ~1e17.
+  for (const lifeExpectancy of [65, 64, 65.4]) {
+    const { monthly } = solveSustainableWithdrawal(1_500_000, { ...BASE, retirementAge: 65, lifeExpectancy })
+    assert.equal(monthly, 0, `lifeExpectancy ${lifeExpectancy} should solve to 0`)
+  }
+})
+
 test('the returned value sits within tolerance of a hand-bisected crossing', () => {
   const portfolio = 1_000_000
   // Hand bisection to a tight bound.

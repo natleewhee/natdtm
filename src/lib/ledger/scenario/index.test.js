@@ -79,7 +79,7 @@ test('AE1 — sell + buy a bigger place + a car drops the base headline and shif
   const moves = [
     { type: 'sell-property', year: 0, inputs: SALE_INPUTS },
     { type: 'buy-property', year: 0, inputs: { newPrice: 1_400_000, newLoanAmount: 900_000, newLoanTenure: 25, newMortgageRate: 3, absd: 0, otherFees: 6_000 } },
-    { type: 'buy-car', year: 2, inputs: { car: CAR, salary: 12_000, down: 50_000, tenure: 7 } },
+    { type: 'buy-car', year: 2, inputs: { car: CAR, salary: 12_000, down: 120_000, tenure: 7 } },
   ]
   const b = baseline()
   const s = runScenario(BASE_STATE, { label: 'Upgrade + car', moves }, BUNDLES, RETIRE, REFERENCE)
@@ -89,7 +89,7 @@ test('AE1 — sell + buy a bigger place + a car drops the base headline and shif
 })
 
 test('AE2 — adding a year-8 upgrade steps the property value up and moves the headline', () => {
-  const baseMoves = [{ type: 'buy-car', year: 1, inputs: { car: CAR, salary: 12_000, down: 40_000, tenure: 6 } }]
+  const baseMoves = [{ type: 'buy-car', year: 1, inputs: { car: CAR, salary: 12_000, down: 120_000, tenure: 6 } }]
   const upgradeMoves = [
     ...baseMoves,
     { type: 'sell-property', year: 8, inputs: { ...SALE_INPUTS, saleDate: '2034-01-01', salePrice: 1_050_000 } },
@@ -149,10 +149,52 @@ test('a band.conservative below the reference forces short even when band.base c
   assert.equal(runScenario(BASE_STATE, { label: 'A', moves: [] }, BUNDLES, RETIRE, ref).read, 'short')
 })
 
+// ─── Infeasibility & horizon bounds (code-review fixes) ────────────────
+
+test('an unaffordable path (cash overdrawn) surfaces a cash-shortfall warning', () => {
+  const poor = { ...BASE_STATE, startingCash: 20_000 }
+  const moves = [
+    { type: 'buy-property', year: 0, inputs: { newPrice: 1_600_000, newLoanAmount: 900_000, newLoanTenure: 25, newMortgageRate: 3, absd: 200_000, otherFees: 8_000 } },
+    { type: 'buy-car', year: 1, inputs: { car: CAR, salary: 12_000, down: 130_000, tenure: 7 } },
+  ]
+  const r = runScenario(poor, { label: 'stretch', moves }, BUNDLES, RETIRE, REFERENCE)
+  assert.ok(r.warnings.some((w) => w.warning === 'cash-shortfall'), `expected a cash-shortfall warning, got ${JSON.stringify(r.warnings)}`)
+})
+
+test('a move at or past retirement is dropped from both the projection and the asset mix, with a warning', () => {
+  const retireYears = RETIRE.retirementAge - RETIRE.currentAge // 25
+  const lateSell = runScenario(
+    BASE_STATE,
+    { label: 'late sell', moves: [{ type: 'sell-property', year: retireYears, inputs: SALE_INPUTS }] },
+    BUNDLES, RETIRE, REFERENCE,
+  )
+  const b = baseline()
+  assert.ok(lateSell.warnings.some((w) => w.warning === 'after-retirement'))
+  // The property is NOT removed — the asset mix still shows the baseline flat's equity.
+  assert.ok(Math.abs(lateSell.assetMix.property - b.assetMix.property) < 1, 'a past-retirement sell does not strip property equity')
+})
+
+test('an education lump after the horizon is dropped with a warning, not silently ignored', () => {
+  const moves = [{ type: 'have-child', year: 4, inputs: { annualCost: 18_000, lumpAmount: 80_000, lumpYear: 40 } }]
+  const r = runScenario(BASE_STATE, { label: 'child', moves }, BUNDLES, RETIRE, REFERENCE)
+  assert.ok(r.warnings.some((w) => w.warning === 'lump-after-retirement'))
+})
+
+test('a same-year sell resolves before a same-year buy regardless of move order', () => {
+  const sellFirst = [
+    { type: 'sell-property', year: 3, inputs: { ...SALE_INPUTS, saleDate: '2029-01-01' } },
+    { type: 'buy-property', year: 3, inputs: { newPrice: 1_500_000, newLoanAmount: 1_000_000, newLoanTenure: 25, newMortgageRate: 3, absd: 0, otherFees: 5_000 } },
+  ]
+  const buyFirst = [sellFirst[1], sellFirst[0]]
+  const a = runScenario(BASE_STATE, { label: 'A', moves: sellFirst }, BUNDLES, RETIRE, REFERENCE)
+  const b = runScenario(BASE_STATE, { label: 'B', moves: buyFirst }, BUNDLES, RETIRE, REFERENCE)
+  assert.equal(a.band.base, b.band.base, 'ordering the moves differently must not change the result')
+})
+
 // ─── Perf ──────────────────────────────────────────────────────────────
 
 test('a full 9-run recompute (baseline + 2 scenarios x 3 bundles) is well under budget', () => {
-  const scenarioA = { label: 'A', moves: [{ type: 'buy-car', year: 2, inputs: { car: CAR, salary: 12_000, down: 45_000, tenure: 7 } }] }
+  const scenarioA = { label: 'A', moves: [{ type: 'buy-car', year: 2, inputs: { car: CAR, salary: 12_000, down: 120_000, tenure: 7 } }] }
   const scenarioB = { label: 'B', moves: [
     { type: 'sell-property', year: 3, inputs: { ...SALE_INPUTS, saleDate: '2029-01-01' } },
     { type: 'buy-property', year: 3, inputs: { newPrice: 1_500_000, newLoanAmount: 1_000_000, newLoanTenure: 25, newMortgageRate: 3, absd: 0, otherFees: 5_000 } },
