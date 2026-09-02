@@ -102,6 +102,66 @@ export function NumberInput({ id, label, hint, value, onChange, suffix }) {
   )
 }
 
+// Plain text field — used for ISO dates on the sale-input group, where
+// the money/percent/number decorations would get in the way.
+export function TextInput({ id, label, hint, value, onChange, placeholder }) {
+  const [focused, setFocused] = useState(false)
+  return (
+    <div>
+      <label htmlFor={id} style={{ display: 'block', fontSize: C.sm, fontWeight: 600, color: C.primary, marginBottom: 7 }}>{label}</label>
+      <input
+        id={id} type="text" value={value ?? ''} onChange={onChange} placeholder={placeholder}
+        onFocus={() => setFocused(true)} onBlur={() => setFocused(false)}
+        style={{
+          width: '100%', boxSizing: 'border-box', background: C.surface,
+          border: `1.5px solid ${focused ? C.accent : C.border}`, borderRadius: C.r,
+          padding: '11px 12px', color: C.primary, fontSize: C.base,
+          fontFamily: C.fontMono, fontWeight: 500, outline: 'none',
+          boxShadow: focused ? `0 0 0 3px ${C.accentBg}` : 'none',
+          transition: 'border-color 0.2s, box-shadow 0.2s',
+        }}
+      />
+      {hint && <p style={{ marginTop: 5, fontSize: C.xs, color: C.muted, lineHeight: 1.5 }}>{hint}</p>}
+    </div>
+  )
+}
+
+// Native select styled to match the input row.
+export function SelectInput({ id, label, value, onChange, options }) {
+  return (
+    <div>
+      {label && <label htmlFor={id} style={{ display: 'block', fontSize: C.sm, fontWeight: 600, color: C.primary, marginBottom: 7 }}>{label}</label>}
+      <select
+        id={id} value={value} onChange={onChange}
+        style={{
+          width: '100%', boxSizing: 'border-box', background: C.surface,
+          border: `1.5px solid ${C.border}`, borderRadius: C.r,
+          padding: '11px 12px', color: C.primary, fontSize: C.base,
+          fontFamily: C.fontBody, fontWeight: 500, outline: 'none',
+        }}
+      >
+        {options.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
+      </select>
+    </div>
+  )
+}
+
+// The enough / tight / short verdict pill.
+const CHIP = {
+  'comfortably enough': { bg: C.greenBg, fg: C.greenText, label: 'Comfortably enough' },
+  tight: { bg: C.amberBg, fg: C.amberText, label: 'Tight' },
+  short: { bg: C.redBg, fg: C.redText, label: 'Short' },
+  'no-reference': { bg: C.accentBg, fg: C.muted, label: 'Set a monthly spend to see a verdict' },
+}
+export function VerdictChip({ read }) {
+  const c = CHIP[read] || CHIP['no-reference']
+  return (
+    <span style={{ display: 'inline-block', background: c.bg, color: c.fg, fontSize: C.xs, fontWeight: 700, padding: '4px 10px', borderRadius: C.r }}>
+      {c.label}
+    </span>
+  )
+}
+
 // Two/three-way pill toggle — same visual shape used across the other tools.
 export function Segmented({ options, value, onChange }) {
   return (

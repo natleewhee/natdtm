@@ -120,9 +120,8 @@ export function Segmented({ options, value, onChange }) {
   )
 }
 
-// Pill toggle for a boolean setting (e.g. "I have a mortgage") — same
-// shape as ledger/ScenarioCard.js's local Toggle, promoted to a shared
-// component here since FlowState needs several of them.
+// Pill toggle for a boolean setting (e.g. "I have a mortgage") — a shared
+// component since FlowState needs several of them.
 export function Toggle({ active, onClick, children }) {
   return (
     <button
