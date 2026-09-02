@@ -14,9 +14,9 @@ import {
 // this lives in the shared header rather than any one page.
 //
 // Switching, creating, or deleting broadcasts a profile-change event;
-// tools re-read their numbers via the useActiveProfile hook, so no page
-// reload is needed. This component also subscribes so its own list stays
-// in sync when another tab changes a profile.
+// ProfileScope remounts each tool's page so it re-reads its numbers, so
+// no page reload is needed. This component also subscribes so its own
+// list stays in sync when another tab changes a profile.
 export default function ProfileSwitcher() {
   const [profiles, setProfiles] = useState(null) // null until mounted — avoids an SSR/client name mismatch
   const [open, setOpen] = useState(false)
@@ -63,13 +63,16 @@ export default function ProfileSwitcher() {
   const active = profiles.find(p => p.isActive) || profiles[0]
 
   // No page reload: setActiveProfile / createProfile / deleteProfile
-  // broadcast a profile-change event (see src/lib/shared/profile.js), and
-  // every tool re-reads its numbers via the useActiveProfile hook.
+  // broadcast a profile-change event (see src/lib/shared/profile.js) that
+  // ProfileScope acts on to remount each tool's page. That remount also
+  // discards this component instance, so ProfileScope restores focus to
+  // the switch trigger after it — closeMenu's own returnFocus here would
+  // be undone.
   function handleSwitch(id) {
     if (id === active.id) { closeMenu({ returnFocus: true }); return }
     setActiveProfile(id)
     setProfiles(listProfiles())
-    closeMenu({ returnFocus: true })
+    closeMenu()
   }
 
   function startRename(p) {

@@ -9,11 +9,19 @@ import { readFileSync } from 'node:fs'
 const README = readFileSync(new URL('../../../README.md', import.meta.url), 'utf8')
 const HOME = readFileSync(new URL('../../app/page.js', import.meta.url), 'utf8')
 
-// The tool routes the home page links to.
-const routes = [...HOME.matchAll(/href:\s*'(\/[a-z]+)'/g)].map((m) => m[1])
+// The tool routes the home page's TOOLS array links to. Quote-agnostic
+// and allows digits / hyphens in a route, so a formatter change or a
+// route like `/foo-bar` doesn't produce a misleading count mismatch.
+const routes = [...HOME.matchAll(/href:\s*['"](\/[\w-]+)['"]/g)].map((m) => m[1])
+// How many entries the TOOLS array declares — the count `routes` must match.
+const toolEntryCount = (HOME.match(/^\s*href:\s*['"]\//gm) || []).length
 
-test('the home page links to eight distinct tool routes', () => {
-  assert.equal(new Set(routes).size, 8, `expected 8 tool routes, got ${routes.join(', ')}`)
+test('every TOOLS entry links to a distinct tool route', () => {
+  assert.ok(toolEntryCount >= 8, `TOOLS array has only ${toolEntryCount} entries`)
+  assert.equal(
+    new Set(routes).size, toolEntryCount,
+    `expected ${toolEntryCount} distinct tool routes, got ${routes.join(', ')}`,
+  )
 })
 
 test('README.md documents every tool route the home page links to', () => {

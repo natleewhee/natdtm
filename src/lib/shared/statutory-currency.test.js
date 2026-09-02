@@ -12,37 +12,33 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import { readFileSync, readdirSync } from 'node:fs'
+import { fileURLToPath } from 'node:url'
 
 const REGISTER = new URL('../../../docs/statutory-sources.md', import.meta.url)
 const LIB_DIR = new URL('../', import.meta.url)
 
 // How long an audit stays valid. Singapore rates move at the annual
-// Budget (Feb) plus occasional cooling measures, so ~13 months forces a
-// re-verification pass every year without tripping on a normal cycle.
-const MAX_AUDIT_AGE_DAYS = 400
+// Budget (mid-Feb) plus occasional cooling measures, so 365 days forces
+// a re-verification pass every year. Do the re-audit in Budget season
+// (Feb–Mar) and this never trips; leave it and CI goes red one year on.
+const MAX_AUDIT_AGE_DAYS = 365
 
 function registerText() {
   return readFileSync(REGISTER, 'utf8')
 }
 
-// Every `export const <NAME>_AS_OF` across the engine modules.
+// Every `export const <NAME>_AS_OF` anywhere under src/lib/ — recursive,
+// so a marker added to a new file or a nested dir can't slip past the
+// register-completeness check below.
 function asOfMarkersInEngines() {
+  const libRoot = fileURLToPath(LIB_DIR)
   const markers = []
-  for (const tool of readdirSync(LIB_DIR, { withFileTypes: true })) {
-    if (!tool.isDirectory()) continue
-    const toolDir = new URL(`${tool.name}/`, LIB_DIR)
-    let files
-    try {
-      files = readdirSync(toolDir)
-    } catch {
-      continue
-    }
-    for (const f of files) {
-      if (!f.endsWith('.js') || f.endsWith('.test.js')) continue
-      const src = readFileSync(new URL(f, toolDir), 'utf8')
-      for (const m of src.matchAll(/export const (\w*_AS_OF)\b/g)) {
-        markers.push({ name: m[1], file: `src/lib/${tool.name}/${f}` })
-      }
+  for (const ent of readdirSync(libRoot, { withFileTypes: true, recursive: true })) {
+    if (!ent.isFile() || !ent.name.endsWith('.js') || ent.name.endsWith('.test.js')) continue
+    const rel = `${ent.parentPath ?? ent.path}/${ent.name}`.replace(/\\/g, '/')
+    const src = readFileSync(rel, 'utf8')
+    for (const m of src.matchAll(/export const (\w*_AS_OF)\b/g)) {
+      markers.push({ name: m[1], file: `src/lib/${rel.slice(rel.indexOf('/lib/') + 5)}` })
     }
   }
   return markers

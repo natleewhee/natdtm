@@ -26,6 +26,19 @@ export default function ProfileScope({ children }) {
     })
   }, [])
 
+  // The remount above unmounts the ShellHeader/ProfileSwitcher along with
+  // the page, discarding whatever focus the switcher's own handler set.
+  // Put keyboard focus back on the switch trigger once the fresh subtree
+  // has painted, so a keyboard-driven profile switch doesn't dump focus
+  // to <body>. Skipped on the initial mount (gen 0).
+  useEffect(() => {
+    if (gen === 0 || typeof document === 'undefined') return
+    const raf = requestAnimationFrame(() => {
+      document.querySelector('[title="Switch profile"]')?.focus()
+    })
+    return () => cancelAnimationFrame(raf)
+  }, [gen])
+
   return (
     <div key={gen} style={{ display: 'contents' }}>
       {children}

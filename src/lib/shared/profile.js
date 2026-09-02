@@ -148,9 +148,10 @@ function saveStore(store) {
 }
 
 // The `storage` event only fires in OTHER tabs, never the one that wrote,
-// so a same-tab profile switch also dispatches this synthetic event. Tools
-// subscribe via subscribeToProfileChanges (or the useActiveProfile hook)
-// and re-read their numbers instead of the page doing a full reload.
+// so a same-tab profile switch also dispatches this synthetic event.
+// ProfileScope (src/components/shared/ProfileScope.js) subscribes via
+// subscribeToProfileChanges and remounts the tool subtree so its
+// "load my numbers" effect re-runs, instead of a full page reload.
 const PROFILE_CHANGE_EVENT = 'ndtm:profile-change'
 
 // A real browser window is required. The test harness stubs `window` with
@@ -168,7 +169,10 @@ function notifyProfileChange() {
 // unsubscribe function; a no-op unsubscribe when there is no window.
 export function subscribeToProfileChanges(callback) {
   if (!hasEventTarget()) return () => {}
-  const onStorage = (e) => { if (e.key === STORAGE_KEY || e.key === null) callback() }
+  // Only our own key — an unrelated localStorage.clear() in another tab
+  // fires `storage` with e.key === null, which must not trigger a re-read
+  // (loadStore would then re-persist a blank default over the real store).
+  const onStorage = (e) => { if (e.key === STORAGE_KEY) callback() }
   window.addEventListener(PROFILE_CHANGE_EVENT, callback)
   window.addEventListener('storage', onStorage)
   return () => {
@@ -278,19 +282,35 @@ export function importProfiles(text) {
     return { ok: false, imported: 0, truncated: 0, error: 'Not valid JSON.' }
   }
 
+  // migrateInnerData returns null for an unknown/newer schema version. If
+  // the source carried real data, that is a genuine failure — silently
+  // substituting a blank profile and reporting success would let a file
+  // exported from a newer deploy wipe every profile. Reject instead.
+  const migrateOrThrow = (raw) => {
+    const migrated = migrateInnerData(raw)
+    if (migrated == null && raw && typeof raw === 'object' && Object.keys(raw).length > 0) {
+      throw new Error('This file was saved by a newer version of the app and can’t be imported here.')
+    }
+    return migrated || {}
+  }
+
   let profiles
   let activeIndex = 0
-  if (isWrapped(parsed)) {
-    const src = parsed.profiles.filter(p => p && typeof p === 'object')
-    // ids are regenerated on import, so remember which POSITION was active.
-    const i = src.findIndex(p => p.id === parsed.activeProfileId)
-    activeIndex = i === -1 ? 0 : i
-    profiles = src.map(p => makeProfile(p.name, { ...EMPTY, ...(migrateInnerData(p.data) || {}) }))
-  } else if (parsed && typeof parsed === 'object') {
-    // A bare flat payload — wrap it into a single profile.
-    profiles = [makeProfile(DEFAULT_PROFILE_NAME, { ...EMPTY, ...(migrateInnerData(parsed) || {}) })]
-  } else {
-    return { ok: false, imported: 0, truncated: 0, error: 'Unrecognised file shape.' }
+  try {
+    if (isWrapped(parsed)) {
+      const src = parsed.profiles.filter(p => p && typeof p === 'object')
+      // ids are regenerated on import, so remember which POSITION was active.
+      const i = src.findIndex(p => p.id === parsed.activeProfileId)
+      activeIndex = i === -1 ? 0 : i
+      profiles = src.map(p => makeProfile(p.name, { ...EMPTY, ...migrateOrThrow(p.data) }))
+    } else if (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) {
+      // A bare pre-profiles flat payload — wrap it into one profile.
+      profiles = [makeProfile(DEFAULT_PROFILE_NAME, { ...EMPTY, ...migrateOrThrow(parsed) })]
+    } else {
+      return { ok: false, imported: 0, truncated: 0, error: 'Unrecognised file — expected an exported profiles file.' }
+    }
+  } catch (err) {
+    return { ok: false, imported: 0, truncated: 0, error: err.message }
   }
 
   if (profiles.length === 0) {

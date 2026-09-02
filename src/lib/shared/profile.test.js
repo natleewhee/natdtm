@@ -217,8 +217,28 @@ test('exportProfiles / importProfiles round-trips every profile\'s numbers', () 
   assert.equal(res.truncated, 0)
   const names = listProfiles().map(p => p.name).sort()
   assert.deepEqual(names, ['Joint', 'My Numbers'])
-  // the active (first) profile is "Joint" — its tax inputs survived
+  // "Joint" was the active profile at export time (created last), and
+  // import restores active-by-position, not by name/order — so its tax
+  // inputs are what loadToolInputs sees.
   assert.deepEqual(loadToolInputs('tax'), { monthlySalary: '9000' })
+})
+
+test('importProfiles rejects a file from a newer schema instead of blanking it', () => {
+  window.localStorage.removeItem('ndtm_my_numbers_v1')
+  saveToolInputs('drive', { carLabel: 'Civic' })
+  const future = { schemaVersion: 1, activeProfileId: 'a', profiles: [{ id: 'a', name: 'Me', data: { version: 99, house: { cashProceeds: 1 } } }] }
+  const res = importProfiles(JSON.stringify(future))
+  assert.equal(res.ok, false)
+  assert.match(res.error, /newer version/)
+  assert.deepEqual(loadToolInputs('drive'), { carLabel: 'Civic' }, 'store untouched')
+})
+
+test('importProfiles rejects a JSON array (wrong file)', () => {
+  window.localStorage.removeItem('ndtm_my_numbers_v1')
+  saveToolInputs('drive', { carLabel: 'Civic' })
+  const res = importProfiles('[1,2,3]')
+  assert.equal(res.ok, false)
+  assert.deepEqual(loadToolInputs('drive'), { carLabel: 'Civic' })
 })
 
 test('importProfiles migrates a bare pre-profiles v1 flat payload', () => {
