@@ -33,6 +33,13 @@ export function simulateAccumulation(inputs) {
     housingOaMonthly = 0, housingOaMonths = Infinity,
     rstuAmount = 0, rstuFrequency = 'monthly',
     investmentStart = 0, investmentMonthly = 0, investmentReturn = 0,
+    // Optional continuation inputs for a segmented projection: carry a
+    // prior segment's frozen cohort sums forward instead of re-deriving
+    // them from this call's (later) start year. Every standalone caller
+    // omits both, and `null` then reproduces the original "freeze the
+    // first time age crosses 55 / 65" behaviour exactly. Used only by the
+    // scenario planner's segmented driver (src/lib/ledger/scenario/project.js).
+    frozenFRS: frozenFRSIn = null, frozenBHS: frozenBHSIn = null,
   } = inputs
 
   const months = Math.max(0, Math.round((retirementAge - currentAge) * 12))
@@ -57,8 +64,8 @@ export function simulateAccumulation(inputs) {
   // Retirement Sum (FRS) works the same way, but locks in at 55 instead
   // (when your Retirement Account would be created) — both modeled with
   // the same freeze pattern.
-  let frozenBHS = null
-  let frozenFRS = null
+  let frozenBHS = Number.isFinite(frozenBHSIn) ? Number(frozenBHSIn) : null
+  let frozenFRS = Number.isFinite(frozenFRSIn) ? Number(frozenFRSIn) : null
   let bhsApplicableAtEnd = prevailingBHS(currentYear)
 
   for (let m = 0; m < months; m++) {
@@ -137,6 +144,10 @@ export function simulateAccumulation(inputs) {
     rstuCappedAtAge,
     maCappedAtAge, bhsApplicableAtEnd,
     oaHousingShortfallAge,
+    // The frozen cohort sums this run ended on (null before the relevant
+    // milestone age). A segmented driver feeds these back in as the next
+    // segment's frozenFRS / frozenBHS.
+    frozenFRS, frozenBHS,
     timeline,
   }
 }

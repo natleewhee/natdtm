@@ -328,6 +328,69 @@ const growingBonusOnly = simulateAccumulation({
 })
 assert('With no salary, bonus alone still escalates at the assumed growth rate, producing higher CPF balances', growingBonusOnly.cpfTotalFinal > flatBonusOnly.cpfTotalFinal)
 
+// ─── Segmented-driver continuation inputs (frozenFRS / frozenBHS) ────────
+// simulateAccumulation gained two optional inputs so the scenario
+// planner can run one projection as back-to-back segments (see
+// src/lib/ledger/scenario/project.js). These characterization checks pin
+// that every EXISTING caller — which passes neither key — is completely
+// unaffected, and that the new lever actually takes effect when used.
+const charInputs = {
+  currentAge: 45, retirementAge: 75, currentYear: 2026,
+  salary: 8_000, salaryGrowthRate: 3, annualBonus: 15_000,
+  startingOA: 120_000, startingSA: 90_000, startingMA: 45_000,
+  housingOaMonthly: 800, housingOaMonths: 60,
+  rstuAmount: 4_000, rstuFrequency: 'annual',
+  investmentStart: 60_000, investmentMonthly: 1_500, investmentReturn: 4,
+}
+const charOmitted = simulateAccumulation({ ...charInputs })
+const charNull = simulateAccumulation({ ...charInputs, frozenFRS: null, frozenBHS: null })
+const charUndef = simulateAccumulation({ ...charInputs, frozenFRS: undefined, frozenBHS: undefined })
+assert(
+  'Omitting frozenFRS/frozenBHS is byte-identical to passing them as null',
+  JSON.stringify(charOmitted) === JSON.stringify(charNull),
+)
+assert(
+  'Passing frozenFRS/frozenBHS as undefined behaves the same as omitting them',
+  JSON.stringify(charOmitted) === JSON.stringify(charUndef),
+)
+// This run spans ages 45→75, so it crosses both milestones and the
+// engine derives both frozen sums itself; they are now echoed back.
+assert('frozenFRS is echoed in the result once age 55 is crossed', approx(charOmitted.frozenFRS, prevailingFRS(2026 + 10), 0.01))
+assert('frozenBHS is echoed in the result once age 65 is crossed', approx(charOmitted.frozenBHS, prevailingBHS(2026 + 20), 0.01))
+
+// The new lever works: an injected frozenFRS gates RSTU room instead of
+// the engine deriving it from the (later) start year. Two segments of a
+// run starting at 57 — one continuing the age-55 freeze, one not.
+const frs55 = prevailingFRS(2026)
+const contInjected = simulateAccumulation({
+  currentAge: 57, retirementAge: 67, currentYear: 2028,
+  salary: 0, startingSA: frs55 - 30_000, rstuAmount: 12_000, rstuFrequency: 'annual',
+  frozenFRS: frs55,
+})
+const contDerived = simulateAccumulation({
+  currentAge: 57, retirementAge: 67, currentYear: 2028,
+  salary: 0, startingSA: frs55 - 30_000, rstuAmount: 12_000, rstuFrequency: 'annual',
+})
+assert(
+  'An injected frozenFRS caps RSTU room lower than letting the engine re-derive it from a later start year',
+  contInjected.saFinal < contDerived.saFinal,
+)
+assert('The injected frozenFRS is the one echoed back', approx(contInjected.frozenFRS, frs55, 0.01))
+const bhsLow = 40_000
+const bhsInjected = simulateAccumulation({
+  currentAge: 66, retirementAge: 76, currentYear: 2027,
+  salary: 10_000, startingMA: 0, frozenBHS: bhsLow,
+})
+const bhsDerived = simulateAccumulation({
+  currentAge: 66, retirementAge: 76, currentYear: 2027,
+  salary: 10_000, startingMA: 0,
+})
+assert(
+  'An injected frozenBHS caps MediSave contributions lower than the engine-derived prevailing figure',
+  bhsInjected.maFinal < bhsDerived.maFinal,
+)
+assert('The injected frozenBHS is echoed back', bhsInjected.frozenBHS === bhsLow)
+
 // ─── Orchestrator ────────────────────────────────────────────────────────
 const full = calcRetirement({
   currentAge: 35, retirementAge: 65, lifeExpectancy: 90,
