@@ -16,7 +16,8 @@ async function fillAssumptions(page) {
   await page.locator('#a-retire').fill('65')
   await page.locator('#a-life').fill('90')
   await page.locator('#a-salary').fill('8000')
-  await page.locator('#a-cash').fill('200000')
+  await page.locator('#pos-cash').fill('200000')
+  await page.locator('#pos-inv').fill('300000')
   await page.locator('#a-ref').fill('4000')
 }
 
@@ -24,7 +25,11 @@ test('build a two-move path, see a band and a verdict, and it persists across a 
   const errors = trackPageErrors(page)
   await page.goto('/ledger')
 
+  await expect(page.getByText('Your current position')).toBeVisible()
   await fillAssumptions(page)
+  // A current-position entry that should feed the projection.
+  await page.locator('#pos-pv').fill('1000000')
+  await page.locator('#pos-mb').fill('300000')
 
   // Add a what-if path.
   await page.getByRole('button', { name: '+ Add a what-if path' }).click()
@@ -53,6 +58,7 @@ test('build a two-move path, see a band and a verdict, and it persists across a 
   await expect(page.getByText(/Restored the scenarios and assumptions/)).toBeVisible()
   await expect(page.getByText('Move cash', { exact: false }).first()).toBeVisible()
   await expect(page.locator('input[id$="-amt"]').last()).toHaveValue('120000')
+  await expect(page.locator('#pos-pv')).toHaveValue('1000000') // current position persisted too
 
   expect(errors, 'browser errors on /ledger').toEqual([])
 })

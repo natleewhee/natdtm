@@ -191,6 +191,33 @@ test('a same-year sell resolves before a same-year buy regardless of move order'
   assert.equal(a.band.base, b.band.base, 'ordering the moves differently must not change the result')
 })
 
+// ─── Current position (car value, current loans) ──────────────────────
+
+test('an entered car value shows in the asset mix and net worth, never the headline', () => {
+  const withCar = runScenario({ ...BASE_STATE, carValue: 60_000 }, { label: 'A', moves: [] }, BUNDLES, RETIRE, REFERENCE)
+  const noCar = baseline()
+  assert.equal(withCar.assetMix.car, 60_000)
+  assert.equal(noCar.assetMix.car, 0)
+  assert.equal(withCar.band.base, noCar.band.base, 'car value does not move the withdrawal figure')
+  assert.equal(withCar.netWorthAtRetirement - noCar.netWorthAtRetirement, 60_000)
+})
+
+test('a current loan that finishes before retirement lifts the headline (freed payment invested)', () => {
+  const withLoanEnd = runScenario(
+    { ...BASE_STATE, currentLoans: { monthly: 1_200, yearsLeft: 6 } },
+    { label: 'A', moves: [] }, BUNDLES, RETIRE, REFERENCE,
+  )
+  const noLoanInfo = baseline()
+  assert.ok(withLoanEnd.band.base > noLoanInfo.band.base,
+    `freeing S$1,200/mo at year 6 should raise the base headline (${withLoanEnd.band.base} vs ${noLoanInfo.band.base})`)
+})
+
+test('a current loan lasting past retirement adds no step-up', () => {
+  const a = runScenario({ ...BASE_STATE, currentLoans: { monthly: 1_200, yearsLeft: 40 } }, { label: 'A', moves: [] }, BUNDLES, RETIRE, REFERENCE)
+  const b = baseline()
+  assert.equal(a.band.base, b.band.base)
+})
+
 // ─── Perf ──────────────────────────────────────────────────────────────
 
 test('a full 9-run recompute (baseline + 2 scenarios x 3 bundles) is well under budget', () => {
