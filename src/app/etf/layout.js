@@ -1,5 +1,6 @@
-import './legacy.css'
+import './etf.css'
 import SWRegister from '@/components/etf/SWRegister'
+import ProfileScope from '@/components/shared/ProfileScope'
 
 export const metadata = {
   title: { default: 'WhatETF', template: '%s · WhatETF · nat does the math' },
@@ -19,9 +20,11 @@ export const viewport = {
 
 export default function EtfLayout({ children }) {
   return (
-    <div className="v-etf">
-      {children}
-      <SWRegister />
-    </div>
+    <ProfileScope>
+      <div className="v-etf">
+        {children}
+        <SWRegister />
+      </div>
+    </ProfileScope>
   )
 }

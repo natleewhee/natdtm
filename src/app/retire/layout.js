@@ -1,3 +1,4 @@
+import ProfileScope from '@/components/shared/ProfileScope'
 export const metadata = {
   title: { default: 'RetireWell', template: '%s · RetireWell · nat does the math' },
   description: 'Singapore retirement readiness calculator. Projects your CPF contributions and money-market investments, then checks them against a safe-withdrawal-rate target and a year-by-year depletion simulation.',
@@ -10,5 +11,5 @@ export const metadata = {
 }
 
 export default function RetireLayout({ children }) {
-  return children
+  return <ProfileScope>{children}</ProfileScope>
 }

@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test'
 
-// Screenshot baselines for the coah rename (U2) and the CSS/theme
+// Screenshot baselines for the brand rename (U2) and the CSS/theme
 // consolidation (U18) — both must produce no rendered change. The
 // footer build-version stamp is masked because it is regenerated on
 // every build.

@@ -20,7 +20,7 @@ export function AffordabilityCeilingCard({ salary, down, tenure, existingDebt = 
   const maxCeil = Math.max(ceiling.catA, ceiling.catB)
   return (
     <div style={{background:C.surface,border:`1.5px solid ${C.accent}`,borderRadius:C.rL,overflow:'hidden',marginBottom:20,opacity:visible?1:0,transform:visible?'translateY(0)':'translateY(8px)',transition:'opacity 0.4s,transform 0.4s',boxShadow:`${C.shadowMd},0 0 0 1px ${C.accent}22`}}>
-      <div style={{background:`linear-gradient(135deg,${C.coah} 0%,${C.coahMid} 100%)`,padding:'16px 22px',display:'flex',alignItems:'center',justifyContent:'space-between',gap:12,flexWrap:'wrap'}}>
+      <div style={{background:`linear-gradient(135deg,${C.ndtm} 0%,${C.ndtmMid} 100%)`,padding:'16px 22px',display:'flex',alignItems:'center',justifyContent:'space-between',gap:12,flexWrap:'wrap'}}>
         <div>
           <div style={{fontSize:C.xs,fontWeight:700,color:'rgba(255,255,255,0.5)',textTransform:'uppercase',letterSpacing:'0.14em',marginBottom:4}}>Your affordability ceiling</div>
           <div style={{fontFamily:C.fontDisplay,fontSize:'clamp(22px,4vw,32px)',color:'#fff',lineHeight:1.1}}>

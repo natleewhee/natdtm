@@ -1,179 +1,167 @@
 # ndtm — nat does the math
 
-A single Next.js app hosting three free Singapore financial-decision
-calculators under one shell, one domain, and one shared dark design
-system:
+One Next.js 16 app hosting eight free Singapore financial-decision
+calculators under a single shell, domain, and dark design system. Every
+number is traceable to a "the math" page that shows exactly how it was
+worked out. No accounts; everything runs client-side except DriveReady's
+own keyless data API routes.
 
-- **InsureCheck** (`/insure`) — a 3-minute Insurance Score: hospitalisation,
-  critical illness, life/TPD, and premium-efficiency checked against
-  Singapore financial-planning benchmarks.
-- **DriveReady** (`/drive`) — true monthly cost of a car in Singapore,
-  including COE, PARF/ARF, loan-tier interest rates, and real depreciation —
-  not just the sticker price.
-- **WhatETF** (`/etf`) — illustrative ETF portfolio allocations for
-  Singapore investors (UCITS-first, tax-efficient), with the math shown,
-  not just a recommendation.
+Deployed at **https://natdtm.vercel.app**. Full architecture notes in
+[`docs/architecture.md`](docs/architecture.md); statutory-constant sources
+in [`docs/statutory-sources.md`](docs/statutory-sources.md).
 
-All three are free, run entirely client-side (no accounts, no data sent to
-a server beyond DriveReady's own COE/car-price API routes), and every
-number shown is traceable to a "the math" page that explains exactly how
-it was calculated.
+## The eight tools
 
-Originally three separate apps (consolidated from `sginsurecheck`,
-`sgdriveready`, `sgwhatetf`) under a "Coah" brand; the whole shell and each
-tool's home/result screens have since been rebranded to a personal,
-casual-voiced "ndtm" identity with a permanent dark "Digital Workbench"
-theme. Some internal code comments and CSS custom-property names (`--l-*`,
-`--color-coah`, `.coah-button`, etc.) still carry the old "Ledger"/"Coah"
-naming as historical residue from that migration — harmless, but worth
-knowing if you go looking for "Ledger" or "Coah" in the source and don't
-find it in the UI anymore.
+| Tool | Route | What it answers |
+|---|---|---|
+| **InsureCheck** | `/insure` | A 3-minute Insurance Score — critical illness, life/TPD, and hospitalisation gaps in real dollars against Singapore planning benchmarks. |
+| **DriveReady** | `/drive` | True monthly cost of a car — instalment, PARF/COE depreciation, TDSR — before you commit. The only vertical with live data (`/drive/api/*`). |
+| **WhatETF** | `/etf` | An illustrative ETF portfolio for Singapore investors — UCITS-aware, tax-efficient, DCA-ready — generated in the browser. |
+| **HouseMuch** | `/house` | What a property actually made you: profit/loss after CPF accrued-interest refund, mortgage interest, and stamp duties (BSD/ABSD/SSD). |
+| **RetireWell** | `/retire` | Whether you will have enough: CPF contributions and interest projected properly, investments stress-tested against a safe withdrawal rate. |
+| **TaxWise** | `/tax` | What you owe IRAS, your marginal vs effective rate, and what each relief (SRS, CPF top-up) is worth in dollars saved. |
+| **MyLedger** | `/ledger` | The whole picture: net worth, debt servicing across every loan, and what a car or a house upgrade does to retirement. |
+| **FlowState** | `/flow` | Where the salary goes: CPF split from cash automatically, the mortgage split into CPF vs bank, and the one month a year the account runs dry. |
+
+Each tool has a matching `/<tool>/the-math` page explaining its formulas
+and citing its sources.
 
 ## Structure
 
 ```
 src/app/
-  layout.js, page.js, globals.css   — the shell: root layout, home page,
-                                       and the single source of truth for
-                                       the dark palette + type system
-  not-found.js, error.js            — themed 404 / runtime-error screens
-  insure/                           — InsureCheck (check wizard, results,
-                                       the-math, loading)
-  drive/                            — DriveReady (the only vertical with a
-                                       live backend: /drive/api/cars,
-                                       /drive/api/coe; also renew-or-replace
-                                       and coe-explained sub-tools)
-  etf/                              — WhatETF (preferences, portfolio,
-                                       compare, rebalance, learn, the-math)
+  layout.js, page.js, globals.css   the shell: root layout, home page, and
+  not-found.js, error.js            the single source of truth for the dark
+                                    palette + type system; themed error screens
+  robots.js, sitemap.js            derived from src/lib/shared/site.js
+  <tool>/                          one directory per vertical: page.js,
+                                    layout.js (route metadata), the-math/,
+                                    plus any sub-routes (e.g. drive/api/,
+                                    drive/renew-or-replace/, etf/rebalance/)
+  <tool>/<tool>.css               per-vertical animations/utility classes
+                                    that have no shared-token equivalent
+
 src/components/
-  shared/                           — ShellHeader, Footer, Button,
-                                       VerdictBadge, InsightPill, ResultHero,
-                                       ExploreSection, TrustBadges, MathTOC —
-                                       the cross-tool UI vocabulary
-  insure/, drive/, etf/             — each tool's own components
+  shared/                          ShellHeader, Footer, Button, VerdictBadge,
+                                    ResultHero, ExploreSection, TrustBadges,
+                                    MathTOC, ProfileSwitcher, AutosaveIndicator
+  <tool>/                          each tool's own components + ui.js
+
 src/lib/
-  shared/site.js                    — SITE_URL etc., shared across tools
-  insure/engine/                    — scoring engine, band/severity colors
-  drive/                            — calc.js (the affordability/loan/
-                                       depreciation math), theme.js (Drive's
-                                       own literal-hex copy of the palette
-                                       — see the comment at the top of that
-                                       file for why it can't use var())
-  etf/logic.js                      — portfolio generation, backtest,
-                                       stress test, fee comparison
-public/fonts/                       — self-hosted variable-weight WOFF2:
-                                       Space Grotesk (display), Inter
-                                       (body), JetBrains Mono (numbers/code)
-scripts/                            — refresh-cars.mjs, refresh-coe-history.mjs
-                                       (DriveReady's data pipeline)
+  shared/                          site.js, profile.js (the cross-tool "My
+                                    Numbers" store), theme.js (the design-token
+                                    object + money helpers), freshness.js,
+                                    tieredTax.js, supabase.js
+  shared/*.test.js                 statutory-currency, golden-masters,
+                                    profile, freshness, tieredTax
+  <tool>/calc.js (+ .test.js)     the pure calculation engine per vertical
+  <tool>/theme.js                 re-exports shared/theme.js, spread with any
+                                    vertical-specific keys
+  drive/lta-parse.js, coe-history.js   DriveReady's PDF/CSV parsing
+  drive/__fixtures__/             committed LTA PDF fixture for the parser tests
+
+scripts/                          refresh-cars.mjs, refresh-coe-history.mjs,
+                                  seed-supabase.mjs (DriveReady data pipeline)
+public/fonts/                     self-hosted variable WOFF2: Space Grotesk,
+                                  Inter, JetBrains Mono
+public/data/                      bundled cars.json / coe-history.json snapshots
+.github/workflows/               ci.yml (lint/test/build/e2e), refresh-data.yml
+e2e/                             Playwright: smoke.spec.js, keyboard.spec.js,
+                                  visual.spec.js
 ```
 
-Each vertical's route tree is wrapped in a `.v-insure` / `.v-drive` /
-`.v-etf` container div (see each vertical's `layout.js`), a leftover from
-when each tool had its own independent legacy palette. All three now pull
-their colors from the same `--color-*` / `--l-*` custom properties defined
-once in `src/app/globals.css`; each vertical's `legacy.css` only holds a
-handful of animations/utility classes that don't have a shared-token
-equivalent yet.
+## Brand history
+
+Originally three separate apps (`sginsurecheck`, `sgdriveready`,
+`sgwhatetf`) under a "Coah" brand, later merged and rebranded to a
+personal "ndtm" identity with a permanent dark "Digital Workbench" theme,
+then extended to eight tools. Identifiers and strings have been renamed
+off the old brand; the one remaining trace is the `--l-*` CSS
+custom-property prefix (kept deliberately — a repo-wide rename of every
+token was judged higher risk than value). See `docs/architecture.md` for
+detail.
 
 ## Design system
 
-One theme, permanently dark — no light/dark toggle, pinned via
-`data-theme` on `<html>`. Core palette (defined in `globals.css`, mirrored
-as literal hex in `src/lib/drive/theme.js` and
-`src/lib/insure/engine/scorer.js` where CSS variables can't be used — see
-the in-file comments for why):
+One theme, permanently dark, pinned via `data-theme` on `<html>`. The
+palette is defined once in `src/app/globals.css` and mirrored as literal
+hex in `src/lib/shared/theme.js` (components build alpha variants by
+string-concatenating a hex suffix, `${C.accent}44`, which needs real hex).
 
-- **Background** `#0b1120` / **surface** `#1e293b` — near-black with a
-  slightly lighter card tone
-- **Accent** `#eab308` (gold) — primary CTAs, active states, focus rings
-- **Secondary** `#ff5722` (orange) — reserved for warning/mid-severity
-  states, never used decoratively alongside the accent
+- **Background** `#0b1120` / **surface** `#1e293b`
+- **Accent** `#eab308` (gold) — CTAs, active states, focus rings
+- **Secondary** `#ff5722` (orange) — warning / mid-severity only
 - **Semantic** green `#10b981` / red `#ef4444` / blue `#38bdf8` — positive,
-  negative, and neutral-informational states respectively, kept distinct
-  from the brand accent
-- **Type**: Space Grotesk for headings/display, Inter for body text,
-  JetBrains Mono for all numeric data (prices, scores, dates) — self-hosted
-  variable-weight WOFF2, no external font CDN
+  negative, informational; kept distinct from the brand accent
+- **Type** — Space Grotesk (display), Inter (body), JetBrains Mono
+  (all numeric data), self-hosted, no font CDN
 
-Shared components (`src/components/shared/`) carry the same visual
-language across all three tools: `Button` (tactile press feedback),
-`VerdictBadge` (mono, uppercase, "stamped label" treatment),
-`ExploreSection` (a "show the math" terminal-style collapsible — `[ + ]` /
-`[ − ]` bracket toggle), `ResultHero` (verdict pill + big mono number +
-plain-English sentence), `InsightPill`, `TrustBadges`, `MathTOC`, and the
-site-wide `ShellHeader` / `Footer`.
+Shared components carry one visual language across all eight tools:
+`Button` (press feedback), `VerdictBadge` (mono uppercase stamp),
+`ExploreSection` (terminal-style "show the math" collapsible),
+`ResultHero` (verdict + big mono number + plain sentence), `MathTOC`,
+`TrustBadges`, and the site-wide `ShellHeader` / `Footer`.
 
-## What changed from the three source repos
+## Cross-tool "My Numbers"
 
-- **Routing**: everything is namespaced (`/check` → `/insure/check`,
-  `/coe-explained` → `/drive/coe-explained`, `/preferences` →
-  `/etf/preferences`, etc).
-- **One header, one footer**: `ShellHeader` replaced each tool's own
-  nav+subnav stack; `Footer` replaced three separate per-vertical footers
-  (each with its own brand signature and cross-links) with one shell
-  footer that only varies by its regulatory disclaimer text per tool.
-- **Fonts**: no third-party font CDN — Space Grotesk/Inter/JetBrains Mono
-  are self-hosted from `public/fonts/`.
-- **Tailwind**: dropped. Auditing InsureCheck (the only source app with it
-  configured) found no actual Tailwind utility classes in use — everything
-  is inline `style={{}}` or CSS Modules, same as the other two apps.
-- **`next.config.mjs`**: one config using a strict self-only CSP (no
-  external font/style allowances needed) and build-version-stamping
-  (`NEXT_PUBLIC_APP_VERSION` / `_BUILD_SHA` / `_BUILD_TIME`, shown in the
-  shell footer) applied site-wide.
-- **DriveReady's data pipeline is untouched in shape**:
-  `scripts/refresh-cars.mjs`, `scripts/refresh-coe-history.mjs`, and
-  `.github/workflows/refresh-data.yml` still open a PR against
-  `public/data/*.json` rather than writing scraped data straight to prod.
-- **WhatETF's service worker** is scoped to `/etf/`
-  (`register('/sw.js', { scope: '/etf/' })`) so it can never intercept
-  navigation for Insure/Drive or the shell.
+`src/lib/shared/profile.js` is a client-side (localStorage) store that
+lets the tools hand figures to each other and to MyLedger's holistic
+dashboard, without re-typing. It holds up to three named profiles
+("Me", "Joint with Alex", …), each with a full per-tool slot set, and a
+v6 schema with in-place migrations from v1. `ProfileSwitcher` in the
+shell header switches the active profile. See `docs/architecture.md` for
+the schema history.
 
-## Known gaps
+## Data (DriveReady only)
 
-- **React Compiler**: Next.js and React versions are reconciled across all
-  three verticals (16.2.1 / 19.2.3), but React Compiler (only enabled in
-  the old InsureCheck) has not been turned on repo-wide — flagged as a risk
-  to verify carefully before enabling across all three verticals' worth of
-  components at once.
-- **Lint debt inherited from WhatETF**: a handful of pre-existing
-  `react-hooks/set-state-in-effect` findings in the ported ETF pages (state
-  set synchronously inside `useEffect`). Left as-is intentionally — fixing
-  them risks changing portfolio calculation behavior without dedicated
-  testing.
-- **PNG manifest icons**: WhatETF's PWA manifest is SVG-icon-only, which
-  iOS wants as PNG for home-screen install polish. Unchanged by the merge.
-- ~~LTA Car Cost Update PDF cannot be read~~ **Fixed.** `extractPdfText` in
-  `src/lib/drive/lta-parse.js` now inflates `/FlateDecode`-compressed
-  content streams (how essentially every real-world PDF, LTA's included, is
-  actually encoded — the old byte-scan only ever worked on uncompressed
-  streams, so it silently extracted nothing from a real LTA PDF). This
-  needed `node:zlib`, which isn't available on the edge runtime, so
-  `/drive/api/cars` moved from `runtime: 'edge'` to `runtime: 'nodejs'`.
-  `getPdfNumbers` in the same file was already confirmed correct against
-  the live PDF directory (covers a multi-month publishing lag). Verified
-  with synthetic `/FlateDecode` PDF fixtures in `lta-parse.test.js`
-  (previously zero test coverage on this function) — not yet verified
-  against a real downloaded LTA PDF, since this environment's network
-  policy blocks `onemotoring.lta.gov.sg`. Visit `/drive/data-status` to
-  confirm live.
-- **Copy voice pass**: the home-page heroes and footer blurb have been
-  rewritten into a casual first-person voice; deeper pages (wizard
-  microcopy, results screens, the-math pages) still read in the older,
-  more institutional tone in places.
+Live COE premiums come from [data.gov.sg](https://data.gov.sg/)'s mirror
+of LTA's COE Bidding Results dataset; car prices from the public
+OneMotoring Car Cost Update PDF. Both keyless. `scripts/refresh-*.mjs`
+(run weekly by `.github/workflows/refresh-data.yml`) open a PR against
+`public/data/*.json` rather than writing to prod. An optional Supabase
+mirror (`SUPABASE_URL` + `SUPABASE_SERVICE_ROLE_KEY`, CI secrets only)
+receives a dual write. `/drive/data-status` shows live feed health.
+
+## Statutory constants
+
+Every hard-coded Singapore rate, bracket, and cap in the engines is
+listed in [`docs/statutory-sources.md`](docs/statutory-sources.md) with
+its authoritative source and verification date.
+`src/lib/shared/statutory-currency.test.js` fails CI if that audit goes
+stale. `src/lib/shared/golden-masters.test.js` checks engine output
+against figures IRAS and CPF Board publish.
+
+> **Known open discrepancies** (see `docs/statutory-sources.md`): the CPF
+> contribution rates for ages 55–60 and 60–65 are still at 2025 values
+> (32.5% / 23.5%; 2026 is 34% / 25%), and `SRS_RETIREMENT_AGE` is 63
+> (rises to 64 on 1 Jul 2026). Fixing a constant changes calculator
+> output, so these are left for a deliberate follow-up.
 
 ## Development
 
 ```bash
 npm install
-npm run dev      # start the dev server
-npm run build    # production build
-npm run lint     # eslint
-npm test         # unit tests (node --test)
+npm run dev          # dev server
+npm run build        # production build
+npm run lint         # eslint
+npm test             # unit tests (node --test)
+npm run test:e2e     # Playwright: page smoke + keyboard path
+npm run test:e2e:visual   # screenshot baselines (regenerate on the CI runner)
 ```
 
-No environment variables are required. Live COE premiums (`/drive`) come
-from [data.gov.sg](https://data.gov.sg/)'s public mirror of LTA's COE
-dataset, and car prices come from a public OneMotoring PDF — both keyless.
-See `/drive/data-status` for the live health of each feed.
+No environment variables are required to run locally. CI
+(`.github/workflows/ci.yml`) runs lint, unit tests, the production build,
+and the Playwright suite on every push and PR.
+
+## Known gaps
+
+- **React Compiler** is enabled only on the original InsureCheck, not
+  repo-wide.
+- **`--l-*` CSS token prefix** is a deliberate leftover from the "Coah"
+  era; every other brand identifier has been renamed.
+- **Visual baselines** for the Playwright `visual` project must be
+  generated on the CI runner image (`ci.yml` `workflow_dispatch`), not a
+  dev machine — font rendering differs.
+- **PNG manifest icons** for WhatETF's PWA (currently SVG-only).
+- **Engine JSDoc** — `@param`/`@returns` annotations across the `calc.js`
+  modules are incomplete.

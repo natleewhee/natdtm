@@ -131,7 +131,7 @@ export function Segmented({ options, value, onChange }) {
           style={{
             padding: '7px 16px', fontSize: C.xs, fontWeight: 700, letterSpacing: '0.06em',
             textTransform: 'uppercase', cursor: 'pointer', borderRadius: 6, border: 'none',
-            fontFamily: C.fontBody, background: value === opt.value ? C.coah : 'transparent',
+            fontFamily: C.fontBody, background: value === opt.value ? C.ndtm : 'transparent',
             color: value === opt.value ? '#fff' : C.muted, transition: 'all 0.2s',
           }}
         >

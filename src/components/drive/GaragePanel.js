@@ -60,7 +60,7 @@ function EntryRow({ entry, onLoad, onDelete, onRename }) {
       </div>
       <div style={{display:'flex',gap:8}}>
         <button type="button" onClick={() => onLoad(entry)}
-          style={{fontSize:C.xs,fontWeight:700,color:'#fff',background:C.coah,border:'none',borderRadius:6,padding:'6px 12px',cursor:'pointer'}}>
+          style={{fontSize:C.xs,fontWeight:700,color:'#fff',background:C.ndtm,border:'none',borderRadius:6,padding:'6px 12px',cursor:'pointer'}}>
           Load
         </button>
         <button type="button" onClick={() => onDelete(entry.id)} aria-label={`Delete scenario "${entry.name}"`}

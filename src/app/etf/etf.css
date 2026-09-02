@@ -1,0 +1,25 @@
+/* WhatETF-only styles. The shared --color / --font tokens live in
+   app/globals.css; the shared `fadeUp` / `spin` keyframes too. A handful
+   of custom properties below exist only in WhatETF's own module CSS and
+   have no equivalent in the shared token set, repointed at
+   Ledger-consistent values. */
+
+.v-etf {
+  --color-accent-deep: var(--color-accent-text);
+  --color-green: var(--color-accent);
+  --color-soft-bg: var(--color-accent-bg);
+  --color-track: var(--color-border);
+  --radius-sm: 5px;
+  --radius-md: 9px;
+  --radius-lg: 13px;
+  --shadow-card: 0 1px 3px rgba(0,0,0,0.06), 0 4px 16px rgba(0,0,0,0.04);
+}
+
+.ndtm-btn { transition: transform .08s ease, box-shadow .08s ease; }
+.ndtm-btn:hover:not(:disabled) { filter: brightness(1.08); }
+.ndtm-btn:active:not(:disabled) { transform: translate(2px,2px); }
+
+.pf-grid { display: grid; grid-template-columns: minmax(0,2fr) minmax(0,1fr); gap: 24px; }
+@media (max-width: 860px) {
+  .pf-grid { grid-template-columns: 1fr; }
+}

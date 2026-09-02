@@ -5,7 +5,9 @@
 // treat these as indicative and verify at go.gov.sg/bsdrates (or the
 // equivalent current IRAS page) before relying on them for a real
 // transaction — the same caveat this app already applies to Drive's
-// COE/PARF constants.
+// COE/PARF constants. All three schedules re-verified against IRAS in
+// docs/statutory-sources.md (audited 2026-08-31) — still current, no open
+// discrepancies. The AS_OF dates below are each schedule's last revision.
 
 import { tieredTax } from '../shared/tieredTax.js'
 

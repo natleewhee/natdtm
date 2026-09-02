@@ -157,9 +157,9 @@
 .dcaAmount { font-family: var(--font-display); font-size: 18px; color: var(--color-accent); }
 
 /* Sidebar */
-.whyFreeCard { background: var(--color-coah); border-radius: var(--radius-lg); padding: 24px; }
+.whyFreeCard { background: var(--color-ndtm); border-radius: var(--radius-lg); padding: 24px; }
 .whyFreeHeader { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
-.whyFreeLabel { font-family: var(--font-coah); font-size: 13px; font-weight: 600; color: #fff; letter-spacing: 0.08em; }
+.whyFreeLabel { font-family: var(--font-ndtm); font-size: 13px; font-weight: 600; color: #fff; letter-spacing: 0.08em; }
 .whyFreeSub {
   font-size: 10px; color: rgba(255,255,255,0.5); border-left: 1px solid rgba(255,255,255,0.2);
   padding-left: 8px; text-transform: uppercase; letter-spacing: 0.06em;

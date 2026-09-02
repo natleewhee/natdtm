@@ -223,7 +223,7 @@ True effective monthly cost = instalment + monthly depreciation`}</Formula>
         </Section>
 
         {/* Why free */}
-        <div style={{ marginTop: 36, padding: 20, background: C.coah, borderRadius: 14 }}>
+        <div style={{ marginTop: 36, padding: 20, background: C.ndtm, borderRadius: 14 }}>
           <p style={{ fontSize: 11, color: 'rgba(255,255,255,0.5)', textTransform: 'uppercase', letterSpacing: '0.06em', margin: '0 0 10px' }}>Why this is free</p>
           <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.8)', lineHeight: 1.7, margin: 0 }}>
             DriveReady has no ads, no affiliate links, and no dealer referral fees. We don&apos;t earn anything when you use it. It&apos;s free because Singaporeans deserve to know the real numbers before they sign a hire-purchase agreement.

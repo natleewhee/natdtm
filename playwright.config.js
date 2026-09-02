@@ -7,7 +7,7 @@ import { defineConfig, devices } from '@playwright/test'
 // - `chromium` (default, run by `npm run test:e2e`): deterministic
 //   render + interaction checks, safe to gate CI on cross-platform.
 // - `visual` (run by `npm run test:e2e:visual`): screenshot baselines
-//   for the coah rename (U2) and CSS/theme consolidation (U18). These
+//   for the brand rename (U2) and CSS/theme consolidation (U18). These
 //   are platform-sensitive (font hinting, sub-pixel AA), so U18 owns
 //   generating and pinning them on the CI runner image, not this unit.
 

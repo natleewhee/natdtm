@@ -1,3 +1,4 @@
+import ProfileScope from '@/components/shared/ProfileScope'
 export const metadata = {
   title: { default: 'HouseMuch', template: '%s · HouseMuch · nat does the math' },
   description: 'Singapore house sale/purchase profit-loss calculator. See your true return after CPF refund, mortgage interest, and stamp duties — not just sale price minus purchase price.',
@@ -10,5 +11,5 @@ export const metadata = {
 }
 
 export default function HouseLayout({ children }) {
-  return children
+  return <ProfileScope>{children}</ProfileScope>
 }

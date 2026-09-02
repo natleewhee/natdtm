@@ -223,7 +223,7 @@ export default function HowItWorksPage() {
         <Section noBorder>
           <div style={{ paddingTop: '40px', paddingBottom: '8px' }}>
 
-            {/* Coah attribution */}
+            {/* Ndtm attribution */}
             <div style={{
               display: 'flex',
               alignItems: 'center',
@@ -231,7 +231,7 @@ export default function HowItWorksPage() {
               marginBottom: '16px',
             }}>
               <span style={{
-                fontFamily: 'var(--font-coah)',
+                fontFamily: 'var(--font-ndtm)',
                 fontSize: '13px',
                 fontWeight: '600',
                 color: 'var(--color-primary)',
@@ -512,11 +512,11 @@ Band inputs → band midpoint used as proxy → score shown as "estimated"`}
           </Caveat>
         </Section>
 
-        {/* ── Coah: Incorruptible Logic ── */}
+        {/* ── Ndtm: Incorruptible Logic ── */}
         <div style={{
           marginTop: '36px',
           padding: '20px',
-          background: 'var(--color-coah)',
+          background: 'var(--color-ndtm)',
           borderRadius: '14px',
         }}>
           <div style={{
@@ -526,7 +526,7 @@ Band inputs → band midpoint used as proxy → score shown as "estimated"`}
             marginBottom: '10px',
           }}>
             <span style={{
-              fontFamily: 'var(--font-coah)',
+              fontFamily: 'var(--font-ndtm)',
               fontSize: '14px',
               fontWeight: '600',
               color: '#fff',
@@ -862,7 +862,7 @@ This score is never included in finalScore.`}
           </div>
         </Section>
 
-        {/* ── Disclaimer + Coah footer ── */}
+        {/* ── Disclaimer + Ndtm footer ── */}
         <div style={{
           marginTop: '36px',
           paddingTop: '24px',
@@ -878,7 +878,7 @@ This score is never included in finalScore.`}
             Not affiliated with any insurer or MAS-licensed entity.
           </p>
 
-          {/* Coah signature */}
+          {/* Ndtm signature */}
           <div style={{
             paddingTop: '16px',
             borderTop: '1px solid var(--color-border)',
@@ -890,7 +890,7 @@ This score is never included in finalScore.`}
           }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
               <span style={{
-                fontFamily: 'var(--font-coah)',
+                fontFamily: 'var(--font-ndtm)',
                 fontSize: '14px',
                 fontWeight: '600',
                 color: 'var(--color-primary)',
@@ -912,7 +912,7 @@ This score is never included in finalScore.`}
               color: 'var(--color-faint)',
               textDecoration: 'none',
             }}>
-              coah.sg
+              natdtm.vercel.app
             </a>
           </div>
         </div>

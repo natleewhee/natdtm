@@ -1,9 +1,8 @@
-/* DriveReady-only leftovers from its original globals.css — animations and
-   a handful of utility classes not covered by the `C` theme object in
-   src/lib/drive/theme.js. The shared token set (--color-*, --font-*) now
-   lives in app/globals.css and is shared by Insure, Drive, and Invest
-   alike. The universal box-sizing/margin/padding reset also lives once
-   there. The external Fraunces Fontshare @import is dropped. */
+/* DriveReady-only styles — animations and utility classes not covered by
+   the `C` theme object in src/lib/drive/theme.js or the shared token set
+   in src/app/globals.css. The universal box-sizing/margin/padding reset,
+   the `prefers-reduced-motion` guard, and the shared `fadeUp` / `spin`
+   keyframes all live in globals.css. */
 
 /* Slider */
 /* --slider-fill is set inline per-element (e.g. style={{'--slider-fill': ...}})
@@ -17,18 +16,16 @@
 .zz-slider::-moz-range-thumb { width:20px; height:20px; background:#eab308; border-radius:50%; border:2px solid #0b1120; cursor:pointer; }
 
 /* Scrollbar */
-.coah-scroll::-webkit-scrollbar { width:3px; }
-.coah-scroll::-webkit-scrollbar-thumb { background:#334155; border-radius:2px; }
+.ndtm-scroll::-webkit-scrollbar { width:3px; }
+.ndtm-scroll::-webkit-scrollbar-thumb { background:#334155; border-radius:2px; }
 
-/* Animations */
+/* Animations (drive-only; fadeUp/spin are in globals.css) */
 @keyframes barGrow    { from{transform:scaleX(0)} to{transform:scaleX(1)} }
 @keyframes stampIn    { 0%{opacity:0;transform:scale(1.15)} 65%{opacity:1;transform:scale(0.98)} 100%{transform:scale(1)} }
 @keyframes ringOut    { 0%{transform:scale(0.7);opacity:0.6} 100%{transform:scale(2.2);opacity:0} }
 @keyframes spinIn     { from{transform:rotate(-120deg) scale(0);opacity:0} to{transform:rotate(0) scale(1);opacity:1} }
-@keyframes fadeUp     { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
 @keyframes expandDown { from{opacity:0;transform:translateY(-4px)} to{opacity:1;transform:translateY(0)} }
 @keyframes slideIn    { from{opacity:0;transform:translateY(16px)} to{opacity:1;transform:translateY(0)} }
-@keyframes spin       { to{transform:rotate(360deg)} }
 @keyframes fadeSlideUp { from{opacity:0;transform:translateY(6px)} to{opacity:1;transform:translateY(0)} }
 
 /* Interactive states */
@@ -40,19 +37,10 @@
 .search-row       { transition:background 0.12s; }
 .search-row:hover { background:rgba(255,255,255,0.04) !important; }
 .search-row.hi    { background:#332b0e !important; }
-.coah-link { color:#eab308; text-decoration:none; transition:opacity 0.15s; }
-.coah-link:hover { opacity:0.75; }
-
-@media (prefers-reduced-motion: reduce) {
-  *, *::before, *::after {
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
-    scroll-behavior: auto !important;
-  }
-}
+.ndtm-link { color:#eab308; text-decoration:none; transition:opacity 0.15s; }
+.ndtm-link:hover { opacity:0.75; }
 
 @media (max-width: 640px) {
-  .coah-nav { padding-left: 16px !important; padding-right: 16px !important; }
-  .coah-nav-badge { display: none !important; }
+  .ndtm-nav { padding-left: 16px !important; padding-right: 16px !important; }
+  .ndtm-nav-badge { display: none !important; }
 }

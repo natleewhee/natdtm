@@ -16,14 +16,14 @@ export function buildRecheckIcs(currentScore, now = new Date()) {
   // score/description containing one would corrupt the .ics structure.
   const escapeIcsText = (s) => String(s).replace(/\\/g, '\\\\').replace(/[,;]/g, '\\$&').replace(/\r?\n/g, '\\n')
 
-  const uid = `insurecheck-recheck-${now.getTime()}@coah.sg`
+  const uid = `insurecheck-recheck-${now.getTime()}@natdtm.vercel.app`
   const scoreLine = typeof currentScore === 'number' ? `Your score on ${now.toLocaleDateString('en-SG')} was ${currentScore}/100. ` : ''
-  const description = escapeIcsText(`${scoreLine}Coverage needs change with income, debt, and life events — take a fresh check at coah.vercel.app/insure.`)
+  const description = escapeIcsText(`${scoreLine}Coverage needs change with income, debt, and life events — take a fresh check at natdtm.vercel.app/insure.`)
 
   return [
     'BEGIN:VCALENDAR',
     'VERSION:2.0',
-    'PRODID:-//Coah//InsureCheck//EN',
+    'PRODID:-//Ndtm//InsureCheck//EN',
     'CALSCALE:GREGORIAN',
     'BEGIN:VEVENT',
     `UID:${uid}`,

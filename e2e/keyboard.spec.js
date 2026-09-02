@@ -26,11 +26,8 @@ test('profile switcher opens from the keyboard', async ({ page }) => {
   await expect(menu).toContainText(/\S/)
 })
 
-// R23 also requires Escape-to-close with focus returned to the trigger.
-// The ProfileSwitcher menu currently only closes on an outside mousedown
-// and does no focus management, so this is the failing proof for plan
-// unit U20. Flip `fixme` to a live test when U20 lands.
-test.fixme('Escape closes the profile menu and restores focus', async ({ page }) => {
+// R23: Escape closes the menu and returns focus to the trigger (U20).
+test('Escape closes the profile menu and restores focus', async ({ page }) => {
   await page.goto('/drive')
   const trigger = page.getByTitle('Switch profile')
   await trigger.focus()

@@ -89,11 +89,24 @@ export async function GET() {
       fetchError = err.message
       failReason = err.reason || 'unknown'
       attempts.push({ pdf: pdfNum, ok: false, reason: failReason, detail: err.message, ...err.meta })
-      console.error(`LTA PDF ${pdfNum} failed [${failReason}]: ${err.message}`)
+      // A 404 on a recent candidate is expected — LTA does not publish on
+      // a strict monthly cadence, so getPdfNumbers() always over-reaches
+      // by a month or two. Only a non-404 failure (network, HTTP 5xx,
+      // downloaded-but-unreadable) is worth a line here; a plain
+      // publishing lag gets one summary line after the loop instead.
+      if (failReason !== 'pdf_not_found') {
+        console.error(`LTA PDF ${pdfNum} failed [${failReason}]: ${err.message}`)
+      }
     }
   }
 
   if (!pdfText) {
+    const tried = candidates.length
+    const notFound = attempts.filter(a => a.reason === 'pdf_not_found').length
+    console.warn(
+      `LTA car-price PDF unavailable — tried ${tried} candidates (${candidates[0]}…${candidates[tried - 1]}), ` +
+      `${notFound} not yet published; serving the bundled snapshot. Last error: ${fetchError}`,
+    )
     return Response.json({
       source: 'fallback',
       reason: failReason,

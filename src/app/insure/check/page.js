@@ -1145,7 +1145,7 @@ export default function CheckPage() {
   </p>
   <p style={{ fontSize: '11px', color: 'var(--color-faint)', margin: 0 }}>
     <span style={{
-      fontFamily: 'var(--font-coah)',
+      fontFamily: 'var(--font-ndtm)',
       fontWeight: '600',
       letterSpacing: '0.06em',
     }}>

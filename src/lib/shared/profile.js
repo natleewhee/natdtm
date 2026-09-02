@@ -147,6 +147,40 @@ function saveStore(store) {
   }
 }
 
+// The `storage` event only fires in OTHER tabs, never the one that wrote,
+// so a same-tab profile switch also dispatches this synthetic event.
+// ProfileScope (src/components/shared/ProfileScope.js) subscribes via
+// subscribeToProfileChanges and remounts the tool subtree so its
+// "load my numbers" effect re-runs, instead of a full page reload.
+const PROFILE_CHANGE_EVENT = 'ndtm:profile-change'
+
+// A real browser window is required. The test harness stubs `window` with
+// just a localStorage shim, so feature-detect dispatchEvent rather than
+// assuming a full event target.
+const hasEventTarget = () =>
+  typeof window !== 'undefined' && typeof window.dispatchEvent === 'function'
+
+function notifyProfileChange() {
+  if (hasEventTarget()) window.dispatchEvent(new Event(PROFILE_CHANGE_EVENT))
+}
+
+// Subscribe to active-profile changes from this tab (create/switch/delete)
+// or another tab (the browser's own `storage` event). Returns an
+// unsubscribe function; a no-op unsubscribe when there is no window.
+export function subscribeToProfileChanges(callback) {
+  if (!hasEventTarget()) return () => {}
+  // Only our own key — an unrelated localStorage.clear() in another tab
+  // fires `storage` with e.key === null, which must not trigger a re-read
+  // (loadStore would then re-persist a blank default over the real store).
+  const onStorage = (e) => { if (e.key === STORAGE_KEY) callback() }
+  window.addEventListener(PROFILE_CHANGE_EVENT, callback)
+  window.addEventListener('storage', onStorage)
+  return () => {
+    window.removeEventListener(PROFILE_CHANGE_EVENT, callback)
+    window.removeEventListener('storage', onStorage)
+  }
+}
+
 // Loads the raw wrapper { schemaVersion, activeProfileId, profiles }
 // from localStorage, migrating a pre-profiles flat payload (or nothing
 // at all) into a single default profile. Never returns an empty
@@ -222,6 +256,81 @@ function save(data) {
   return saveStore(store)
 }
 
+// ─── Backup / restore ──────────────────────────────────────────────────
+
+// Serialises every profile (the raw wrapper store) to a pretty JSON
+// string for a "download my numbers" file. Nothing is sent anywhere.
+export function exportProfiles() {
+  return JSON.stringify(loadStore(), null, 2)
+}
+
+// Replaces all local profiles with the contents of an exported file.
+// Accepts both the wrapped shape exportProfiles() writes and a bare
+// pre-profiles flat payload (mirrors loadStore's own dual-shape read).
+// Each profile's inner data is migrated to the current version.
+//
+// Returns { ok, imported, truncated, error }:
+//   ok        — whether the store was replaced
+//   imported  — how many profiles were kept (<= MAX_PROFILES)
+//   truncated — how many were dropped for exceeding MAX_PROFILES
+//   error     — a human-readable reason when ok is false
+export function importProfiles(text) {
+  let parsed
+  try {
+    parsed = JSON.parse(text)
+  } catch {
+    return { ok: false, imported: 0, truncated: 0, error: 'Not valid JSON.' }
+  }
+
+  // migrateInnerData returns null for an unknown/newer schema version. If
+  // the source carried real data, that is a genuine failure — silently
+  // substituting a blank profile and reporting success would let a file
+  // exported from a newer deploy wipe every profile. Reject instead.
+  const migrateOrThrow = (raw) => {
+    const migrated = migrateInnerData(raw)
+    if (migrated == null && raw && typeof raw === 'object' && Object.keys(raw).length > 0) {
+      throw new Error('This file was saved by a newer version of the app and can’t be imported here.')
+    }
+    return migrated || {}
+  }
+
+  let profiles
+  let activeIndex = 0
+  try {
+    if (isWrapped(parsed)) {
+      const src = parsed.profiles.filter(p => p && typeof p === 'object')
+      // ids are regenerated on import, so remember which POSITION was active.
+      const i = src.findIndex(p => p.id === parsed.activeProfileId)
+      activeIndex = i === -1 ? 0 : i
+      profiles = src.map(p => makeProfile(p.name, { ...EMPTY, ...migrateOrThrow(p.data) }))
+    } else if (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) {
+      // A bare pre-profiles flat payload — wrap it into one profile.
+      profiles = [makeProfile(DEFAULT_PROFILE_NAME, { ...EMPTY, ...migrateOrThrow(parsed) })]
+    } else {
+      return { ok: false, imported: 0, truncated: 0, error: 'Unrecognised file — expected an exported profiles file.' }
+    }
+  } catch (err) {
+    return { ok: false, imported: 0, truncated: 0, error: err.message }
+  }
+
+  if (profiles.length === 0) {
+    return { ok: false, imported: 0, truncated: 0, error: 'No profiles found in the file.' }
+  }
+
+  const truncated = Math.max(0, profiles.length - MAX_PROFILES)
+  const kept = profiles.slice(0, MAX_PROFILES)
+  const active = kept[activeIndex] || kept[0]
+  const store = { schemaVersion: 1, activeProfileId: active.id, profiles: kept }
+  const ok = saveStore(store)
+  if (ok) notifyProfileChange()
+  return {
+    ok,
+    imported: ok ? kept.length : 0,
+    truncated,
+    error: ok ? null : 'Could not write to local storage (private browsing or quota).',
+  }
+}
+
 // ─── Profile management ─────────────────────────────────────────────────
 
 export function listProfiles() {
@@ -242,6 +351,7 @@ export function createProfile(name) {
   store.profiles.push(profile)
   store.activeProfileId = profile.id
   saveStore(store)
+  notifyProfileChange()
   return profile.id
 }
 
@@ -253,6 +363,7 @@ export function renameProfile(id, name) {
   if (!profile) return
   profile.name = trimmed
   saveStore(store)
+  notifyProfileChange()
 }
 
 // Deletes a profile — refuses to delete the last remaining one, since
@@ -265,6 +376,7 @@ export function deleteProfile(id) {
   store.profiles = store.profiles.filter(p => p.id !== id)
   if (store.activeProfileId === id) store.activeProfileId = store.profiles[0].id
   saveStore(store)
+  notifyProfileChange()
   return true
 }
 
@@ -273,6 +385,7 @@ export function setActiveProfile(id) {
   if (!store.profiles.some(p => p.id === id)) return
   store.activeProfileId = id
   saveStore(store)
+  notifyProfileChange()
 }
 
 // Merges onto whatever's already in the house slot (rather than a full

@@ -209,7 +209,7 @@ function PreferencesForm() {
         </div>
 
         <div className={styles.stickyBar}>
-          <button onClick={handleSubmit} className={`coah-btn ${styles.submitBtn}`}>
+          <button onClick={handleSubmit} className={`ndtm-btn ${styles.submitBtn}`}>
             Generate My Portfolio →
           </button>
         </div>

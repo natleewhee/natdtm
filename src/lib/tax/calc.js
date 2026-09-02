@@ -12,6 +12,7 @@
 
 import { CPF_CONTRIBUTION_TABLE, CPF_OW_CEILING, CPF_ANNUAL_CEILING } from '../retire/cpf.js'
 
+// Verified against IRAS in docs/statutory-sources.md (audited 2026-08-31).
 export const TAX_RATES_AS_OF = '2026-01-01' // YA2024 onwards resident rate schedule
 
 // Resident progressive rate schedule. `upTo` is the top of each band;

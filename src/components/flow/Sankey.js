@@ -142,7 +142,7 @@ export default function Sankey({ flow }) {
         <div
           style={{
             position: 'absolute', left: tooltip.x + 14, top: tooltip.y + 10,
-            background: C.coah, border: `1px solid ${C.border}`, borderRadius: C.r,
+            background: C.ndtm, border: `1px solid ${C.border}`, borderRadius: C.r,
             padding: '8px 11px', pointerEvents: 'none', zIndex: 10,
             boxShadow: C.shadowMd, maxWidth: 240,
           }}

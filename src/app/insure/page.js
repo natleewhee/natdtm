@@ -179,7 +179,7 @@ export default function LandingPage() {
       </section>
 
       {/* Closing line — the brand signature + privacy claims live once in the
-          shell Footer; the home page doesn't repeat the Coah card or a second
+          shell Footer; the home page doesn't repeat the Ndtm card or a second
           CTA (the hero CTA + sticky header already carry the action). */}
       <section style={{ padding: '40px 24px 8px', textAlign: 'center', maxWidth: '520px', margin: '0 auto' }}>
         <p style={{

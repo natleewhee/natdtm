@@ -463,7 +463,7 @@ export default function RenewOrReplacePage() {
 
         <div style={{height:24}}/>
         <button onClick={calculate}
-          style={{width:'100%',padding:'16px',background:C.coah,color:'#fff',border:'none',borderRadius:C.rL,fontSize:C.base,fontWeight:700,cursor:'pointer',fontFamily:C.fontBody,boxShadow:'0 4px 16px rgba(0,0,0,0.35)'}}>
+          style={{width:'100%',padding:'16px',background:C.ndtm,color:'#fff',border:'none',borderRadius:C.rL,fontSize:C.base,fontWeight:700,cursor:'pointer',fontFamily:C.fontBody,boxShadow:'0 4px 16px rgba(0,0,0,0.35)'}}>
           Compare options →
         </button>
 
@@ -472,7 +472,7 @@ export default function RenewOrReplacePage() {
           <div id="ror-results" style={{marginTop:32,animation:'fadeUp 0.3s ease both'}}>
 
             {/* Verdict */}
-            <div style={{background:C.coah,borderRadius:C.rXL,padding:28,marginBottom:24}}>
+            <div style={{background:C.ndtm,borderRadius:C.rXL,padding:28,marginBottom:24}}>
               <div style={{fontSize:C.xs,fontWeight:700,color:'rgba(255,255,255,0.45)',textTransform:'uppercase',letterSpacing:'0.1em',marginBottom:6}}>Our assessment</div>
               <div style={{fontFamily:C.fontDisplay,fontSize:22,color:'#fff',marginBottom:10,lineHeight:1.3}}>{results.verdict.headline}</div>
               <p style={{fontSize:C.sm,color:'rgba(255,255,255,0.7)',margin:'0 0 14px',lineHeight:1.7}}>{results.verdict.rationale}</p>

@@ -32,3 +32,6 @@ yarn-error.log*
 /playwright-report/
 /blob-report/
 /playwright/.cache/
+# Visual baselines are platform-specific (font hinting). Regenerate on the
+# CI runner image via the ci.yml workflow_dispatch, not from a dev machine.
+/e2e/*-snapshots/
