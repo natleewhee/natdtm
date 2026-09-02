@@ -7,6 +7,15 @@
 // rather than re-deriving their math, so a rate-table fix in one place
 // stays the single source of truth. Pure functions — no React, no fetch.
 // Covered by calc.test.js.
+//
+// Note: since the /ledger rebuild around the scenario engine
+// (src/lib/ledger/scenario/*), `buildBaselineState`, `calcNetWorth` and
+// `calcTDSR` are the only functions the page still calls. The house-module
+// resolvers (`resolveHouseModule`, `calcHousePurchase`, `calcHouseUpgrade`)
+// and the flat-contribution scenario drivers (`calcScenarioRetirement`,
+// `compareScenarios`) are retained — still exported, still tested — as the
+// documented prior art the segmented engine replaces and as a reference
+// for `/ledger/the-math`. Remove them only with a deliberate cleanup pass.
 
 import { calcRetirement } from '../retire/calc.js'
 import { TDSR_LIMIT } from '../drive/calc.js'

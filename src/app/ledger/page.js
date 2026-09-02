@@ -1,12 +1,23 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+// MyLedger — the timed cross-tool scenario planner. Lay a major asset
+// move out as a dated sequence and see how each future plays out against
+// doing nothing: the sustainable monthly withdrawal it leaves, read as
+// comfortably enough / tight / short, across three assumption bundles.
+// The old net-worth / TDSR-across-loans dashboard is kept as a secondary
+// read. Engine: src/lib/ledger/scenario/*.
+
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { C, SGD, parseMoney } from '@/lib/ledger/theme'
-import { buildBaselineState, compareScenarios, resolveHouseModule } from '@/lib/ledger/calc'
+import { buildBaselineState, calcNetWorth, calcTDSR } from '@/lib/ledger/calc'
 import { loadMyNumbers, saveToolInputs, loadToolInputs } from '@/lib/shared/profile'
+import { runScenario, labelRead } from '@/lib/ledger/scenario/index'
+import { buildScenarioBaseState, buildRetireAssumptions, resolveReference, staleSyncedSlots, toEngineMove, yearError } from '@/lib/ledger/scenario/adapt'
+import { CAR_CATALOG_ENDPOINT } from '@/lib/drive/endpoints'
 import { MoneyInput, PercentInput, NumberInput, SectionDivider } from '@/components/ledger/ui'
-import ScenarioCard from '@/components/ledger/ScenarioCard'
-import ComparisonTable from '@/components/ledger/ComparisonTable'
+import ScenarioColumn from '@/components/ledger/ScenarioColumn'
+import BundleEditor from '@/components/ledger/BundleEditor'
+import ComparisonRow from '@/components/ledger/ComparisonRow'
 import ShellHeader from '@/components/shared/ShellHeader'
 import TrustBadges from '@/components/shared/TrustBadges'
 import Button from '@/components/shared/Button'
@@ -15,310 +26,314 @@ import AutosaveIndicator from '@/components/shared/AutosaveIndicator'
 const num = parseMoney
 const MAX_SCENARIOS = 3 // baseline + up to 2 what-ifs
 
-let scenarioCounter = 0
-function nextId() { scenarioCounter += 1; return `scenario-${scenarioCounter}` }
-
-// Turns a numeric baseline state (from src/lib/ledger/calc.js) into the
-// string-field shape ScenarioCard's inputs expect.
-function stateToScenario(state, id, label) {
-  return {
-    id, label,
-    salary: state.salary ? String(Math.round(state.salary)) : '',
-    hasHouse: !!state.house,
-    house: {
-      mode: 'existing',
-      propertyValue: state.house ? String(Math.round(state.house.propertyValue || 0)) : '',
-      outstandingBalance: state.house ? String(Math.round(state.house.outstandingBalance || 0)) : '',
-      monthlyInstalment: state.house ? String(Math.round(state.house.monthlyInstalment || 0)) : '',
-      tenureRemaining: state.house?.tenureRemaining != null ? String(state.house.tenureRemaining) : '',
-      propertyType: state.house?.propertyType || 'private',
-      price: '', downpaymentPct: '25', rate: '2.60', tenureYears: '25', otherFees: '', absd: '',
-      isJointLoan: false, yourSharePct: '50',
-      cashProceeds: state.house?.cashProceeds ? String(Math.round(state.house.cashProceeds)) : '',
-      totalCPFRefund: state.house?.totalCPFRefund ? String(Math.round(state.house.totalCPFRefund)) : '',
-      source: state.house?.source || 'manual',
-    },
-    hasCar: !!state.car,
-    car: {
-      carValue: state.car ? String(Math.round(state.car.carValue || 0)) : '',
-      loanOutstanding: state.car ? String(Math.round(state.car.loanOutstanding || 0)) : '',
-      monthlyInstalment: state.car ? String(Math.round(state.car.monthlyInstalment || 0)) : '',
-      tenureRemaining: state.car?.tenureRemaining != null ? String(state.car.tenureRemaining) : '',
-      source: state.car?.source || 'manual',
-    },
-    oaBalance: state.cpf?.oa ? String(Math.round(state.cpf.oa)) : '',
-    saBalance: state.cpf?.sa ? String(Math.round(state.cpf.sa)) : '',
-    maBalance: state.cpf?.ma ? String(Math.round(state.cpf.ma)) : '',
-    investmentBalance: state.investmentBalance ? String(Math.round(state.investmentBalance)) : '',
-    cashSavings: state.cashSavings ? String(Math.round(state.cashSavings)) : '',
-    insurancePremium: state.insurancePremium ? String(Math.round(state.insurancePremium)) : '',
-    insuranceSource: state.insurancePremium ? 'auto' : 'manual',
-    livingExpenses: state.livingExpenses ? String(Math.round(state.livingExpenses)) : '',
-    livingExpensesSource: state.livingExpenses ? 'auto' : 'manual',
-    // monthlyTakeHome is an EXACT figure from TaxWise, computed for a
-    // specific salary — monthlyTakeHomeSalary records which one, so
-    // scenarioToState can tell it's gone stale once the scenario's
-    // salary is edited away from that baseline.
-    monthlyTakeHome: state.monthlyTakeHome || 0,
-    monthlyTakeHomeSalary: state.monthlyTakeHome ? (state.salary || 0) : 0,
-  }
+const DEFAULT_ASSUMPTIONS = {
+  currentAge: '', retirementAge: '65', lifeExpectancy: '90',
+  salary: '', investmentMonthly: '', salaryGrowthRate: '2.0',
+  swr: '3', startingCash: '', reference: '',
+}
+const DEFAULT_BUNDLES = {
+  conservative: { equityReturn: 3, propertyAppreciation: 1, inflation: 3 },
+  base: { equityReturn: 5, propertyAppreciation: 2.5, inflation: 2.5 },
+  optimistic: { equityReturn: 7, propertyAppreciation: 4, inflation: 2 },
 }
 
-// Converts a scenario's string fields back into the numeric state shape
-// the ledger engine (src/lib/ledger/calc.js) computes against. A
-// "buying a new house" or "upgrading" module gets resolved into loan/
-// instalment/BSD via resolveHouseModule, and its cashImpact (negative =
-// draws down, positive = tops up, e.g. leftover sale proceeds) is
-// applied to cash savings, floored at zero — a shortfall just means
-// savings alone don't cover it, which ScenarioCard surfaces separately.
-function scenarioToState(scenario) {
-  // No `|| 100` fallback here — that's the exact falsy-coercion trap
-  // resolveHouseModule's resolveSharePct (imported from house/calc.js)
-  // exists to avoid: it would silently turn an explicitly-typed 0% share
-  // into 100%. Pass the raw parsed value through and let resolveSharePct
-  // do the clamping/defaulting, same as house/page.js does.
-  const yourSharePct = scenario.house?.isJointLoan ? num(scenario.house.yourSharePct) : 100
-  const houseInput = scenario.hasHouse ? (
-    scenario.house.mode === 'purchase'
-      ? {
-          mode: 'purchase', propertyType: scenario.house.propertyType || 'private', yourSharePct,
-          price: num(scenario.house.price), downpaymentPct: num(scenario.house.downpaymentPct) || 25,
-          rate: num(scenario.house.rate), tenureYears: num(scenario.house.tenureYears) || 25,
-          otherFees: num(scenario.house.otherFees),
-        }
-      : scenario.house.mode === 'upgrade'
-      ? {
-          mode: 'upgrade', propertyType: scenario.house.propertyType || 'private', yourSharePct,
-          cashProceeds: num(scenario.house.cashProceeds), totalCPFRefund: num(scenario.house.totalCPFRefund),
-          price: num(scenario.house.price), downpaymentPct: num(scenario.house.downpaymentPct) || 25,
-          rate: num(scenario.house.rate), tenureYears: num(scenario.house.tenureYears) || 25,
-          otherFees: num(scenario.house.otherFees), absd: num(scenario.house.absd),
-        }
-      : {
-          propertyValue: num(scenario.house.propertyValue),
-          outstandingBalance: num(scenario.house.outstandingBalance),
-          monthlyInstalment: num(scenario.house.monthlyInstalment),
-          tenureRemaining: scenario.house.tenureRemaining !== '' ? num(scenario.house.tenureRemaining) : null,
-          propertyType: scenario.house.propertyType || 'private',
-          yourSharePct,
-        }
-  ) : null
-
-  const { resolved: house, cashImpact } = resolveHouseModule(houseInput)
-  const cashSavings = Math.max(0, num(scenario.cashSavings) + cashImpact)
-
-  return {
-    salary: num(scenario.salary),
-    house,
-    car: scenario.hasCar ? {
-      carValue: num(scenario.car.carValue),
-      loanOutstanding: num(scenario.car.loanOutstanding),
-      monthlyInstalment: num(scenario.car.monthlyInstalment),
-      tenureRemaining: scenario.car.tenureRemaining !== '' ? num(scenario.car.tenureRemaining) : null,
-    } : null,
-    cpf: { oa: num(scenario.oaBalance), sa: num(scenario.saBalance), ma: num(scenario.maBalance) },
-    investmentBalance: num(scenario.investmentBalance),
-    cashSavings,
-    insurancePremium: num(scenario.insurancePremium),
-    livingExpenses: num(scenario.livingExpenses),
-    // If the salary was edited away from what monthlyTakeHome was
-    // actually computed for, that exact figure no longer applies —
-    // fall back to calcTakeHome's flat 80% approximation instead of
-    // silently reusing take-home math for a different salary.
-    monthlyTakeHome: Math.round(num(scenario.salary)) === Math.round(scenario.monthlyTakeHomeSalary || 0)
-      ? (scenario.monthlyTakeHome || 0)
-      : 0,
-  }
-}
+let idSeq = 0
+const nextScenarioId = () => { idSeq += 1; return `sc-${idSeq}` }
 
 export default function MyLedgerPage() {
-  const [scenarios, setScenarios] = useState([stateToScenario({ salary: 0, house: null, car: null, cpf: {}, investmentBalance: 0 }, 'baseline', 'Baseline')])
-  const [synced, setSynced] = useState(false)
-
-  const [currentAge, setCurrentAge] = useState('')
-  const [retirementAge, setRetirementAge] = useState('65')
-  const [lifeExpectancy, setLifeExpectancy] = useState('95')
-  const [desiredMonthlyWithdrawal, setDesiredMonthlyWithdrawal] = useState('')
-  const [inflationRate, setInflationRate] = useState('2.5')
-  const [swr, setSwr] = useState('3')
-  const [investmentReturn, setInvestmentReturn] = useState('3.0')
-
-  const [calculated, setCalculated] = useState(false)
-  const [restoredFromSave, setRestoredFromSave] = useState(false)
+  const [myNumbers, setMyNumbers] = useState(null)
+  const [assumptions, setAssumptions] = useState(DEFAULT_ASSUMPTIONS)
+  const [bundles, setBundles] = useState(DEFAULT_BUNDLES)
+  const [scenarios, setScenarios] = useState([{ id: 'baseline', label: 'Baseline', moves: [] }])
+  const [cars, setCars] = useState([])
+  const [results, setResults] = useState({})
   const [hasRestored, setHasRestored] = useState(false)
-  const [justSaved, setJustSaved] = useState(false)
-  // Increments on every autosave — see the matching comment in
-  // src/app/house/page.js for why a plain boolean isn't enough to keep
-  // "Saved ✓" showing continuously through a fast typing burst.
+  const [restoredNote, setRestoredNote] = useState(false)
+  const [stale, setStale] = useState([])
   const [savedTick, setSavedTick] = useState(0)
+  const [justSaved, setJustSaved] = useState(false)
+  const [saveFailed, setSaveFailed] = useState(false)
 
-  // Pull in whatever the other tools last saved locally as the starting
-  // baseline — nothing is sent anywhere. See src/lib/shared/profile.js.
-  // Scenarios (the baseline + any what-if variants) are always rebuilt
-  // fresh from the other tools' latest numbers, since a stale saved
-  // scenario would silently disagree with what those tools now show —
-  // only the retirement-assumption fields below (which are MyLedger's
-  // own, not derived from anywhere else) are restored from a save.
+  const cache = useRef(new Map())
+  const debounce = useRef(null)
+  // The restore below sets state, which fires the autosave effect once
+  // before the user has done anything. Skip that first write so merely
+  // visiting a profile does not stamp a default payload into its slot.
+  const skipNextAutosave = useRef(true)
+
+  // ── Mount: read the store, restore a saved planner state ──────────────
   useEffect(() => {
-    /* eslint-disable react-hooks/set-state-in-effect -- one-time read from
-       localStorage on mount; unavailable during SSR so can't happen during
-       render without a hydration mismatch */
-    const myNumbers = loadMyNumbers()
-    const baseline = buildBaselineState(myNumbers)
-    setScenarios([stateToScenario(baseline, 'baseline', 'Baseline')])
-    setSynced(!!(myNumbers.house || myNumbers.drive || myNumbers.retire || myNumbers.insure || myNumbers.tax || myNumbers.etf || myNumbers.flow))
+    /* eslint-disable react-hooks/set-state-in-effect -- one-time localStorage read on mount */
+    const mn = loadMyNumbers()
+    setMyNumbers(mn)
+    try { setStale(staleSyncedSlots(mn)) } catch { setStale([]) }
     const saved = loadToolInputs('ledger')
-    if (saved) {
-      setCurrentAge(saved.currentAge ?? '')
-      setRetirementAge(saved.retirementAge ?? '65')
-      setLifeExpectancy(saved.lifeExpectancy ?? '95')
-      setDesiredMonthlyWithdrawal(saved.desiredMonthlyWithdrawal ?? '')
-      setInflationRate(saved.inflationRate ?? '2.5')
-      setSwr(saved.swr ?? '3')
-      setInvestmentReturn(saved.investmentReturn ?? '3.0')
-      setRestoredFromSave(true)
+    if (saved && saved.assumptions) {
+      setAssumptions({ ...DEFAULT_ASSUMPTIONS, ...saved.assumptions })
+      if (saved.bundles && saved.bundles.conservative && saved.bundles.base && saved.bundles.optimistic) {
+        setBundles({
+          conservative: { ...DEFAULT_BUNDLES.conservative, ...saved.bundles.conservative },
+          base: { ...DEFAULT_BUNDLES.base, ...saved.bundles.base },
+          optimistic: { ...DEFAULT_BUNDLES.optimistic, ...saved.bundles.optimistic },
+        })
+      }
+      if (Array.isArray(saved.scenarios)) {
+        setScenarios([
+          { id: 'baseline', label: 'Baseline', moves: [] },
+          ...saved.scenarios.slice(0, MAX_SCENARIOS - 1).map((s) => ({
+            id: nextScenarioId(), label: s.label || 'Scenario', moves: Array.isArray(s.moves) ? s.moves : [],
+          })),
+        ])
+      }
+      setRestoredNote(true)
+    } else if (saved && !saved.assumptions) {
+      // A legacy assumptions-only payload from the old dashboard — carry
+      // the fields that still exist, mapping the old desired-withdrawal
+      // input onto the new reference figure so the verdict survives.
+      setAssumptions((a) => ({
+        ...a,
+        currentAge: saved.currentAge ?? a.currentAge,
+        retirementAge: saved.retirementAge ?? a.retirementAge,
+        lifeExpectancy: saved.lifeExpectancy ?? a.lifeExpectancy,
+        swr: saved.swr ?? a.swr,
+        reference: saved.desiredMonthlyWithdrawal ?? a.reference,
+      }))
+      setRestoredNote(true)
     }
     setHasRestored(true)
     /* eslint-enable react-hooks/set-state-in-effect */
   }, [])
 
-  // Autosave every keystroke, same as DriveReady's own persistence, just
-  // scoped to whichever profile is active — only the retirement
-  // assumptions, per the comment above (scenarios always rebuild fresh).
+  useEffect(() => {
+    // Via the catalog route (Supabase, with the bundled snapshot as its
+    // own fallback) — same source DriveReady's own picker uses.
+    fetch(CAR_CATALOG_ENDPOINT)
+      .then((r) => r.json())
+      .then((d) => { if (Array.isArray(d.cars)) setCars(d.cars) })
+      .catch(() => {})
+  }, [])
+
+  const carsById = useMemo(() => Object.fromEntries(cars.map((c) => [c.id, c])), [cars])
+
+  // ── Autosave the whole planner state in one write (KTD9) ──────────────
   useEffect(() => {
     if (!hasRestored) return
+    if (skipNextAutosave.current) { skipNextAutosave.current = false; return }
     const ok = saveToolInputs('ledger', {
-      currentAge, retirementAge, lifeExpectancy, desiredMonthlyWithdrawal, inflationRate, swr, investmentReturn,
+      assumptions,
+      bundles,
+      scenarios: scenarios.filter((s) => s.id !== 'baseline').map((s) => ({ label: s.label, moves: s.moves })),
     })
-    // Only flash "Saved" when the write actually landed — see tax/page.js.
-    if (ok) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect -- flashes the "Saved" indicator; not a render-affecting state sync
-      setSavedTick(t => t + 1)
-    }
-  }, [hasRestored, currentAge, retirementAge, lifeExpectancy, desiredMonthlyWithdrawal, inflationRate, swr, investmentReturn])
+    /* eslint-disable react-hooks/set-state-in-effect -- flashes the "Saved" indicator / surfaces a write failure */
+    setSaveFailed(!ok)
+    if (ok) setSavedTick((t) => t + 1)
+    /* eslint-enable react-hooks/set-state-in-effect */
+  }, [hasRestored, assumptions, bundles, scenarios])
 
   useEffect(() => {
     if (savedTick === 0) return
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- flashes the "Saved" indicator; not a render-affecting state sync
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- flashes the "Saved" indicator
     setJustSaved(true)
     const t = setTimeout(() => setJustSaved(false), 1400)
     return () => clearTimeout(t)
   }, [savedTick])
 
-  const updateScenario = (id, next) => setScenarios(s => s.map(sc => sc.id === id ? next : sc))
-  const removeScenario = (id) => setScenarios(s => s.filter(sc => sc.id !== id))
+  const parsedSalary = num(assumptions.salary) || Number(myNumbers?.retire?.salary) || 0
+  const retireYears = Math.max(0, Math.round(num(assumptions.retirementAge) - num(assumptions.currentAge)))
+  const isReady = num(assumptions.currentAge) > 0
+    && num(assumptions.retirementAge) > num(assumptions.currentAge)
+    && num(assumptions.lifeExpectancy) > num(assumptions.retirementAge)
+    && parsedSalary > 0 && myNumbers != null
+
+  const referenceInfo = myNumbers ? resolveReference(myNumbers, num(assumptions.reference)) : { reference: 0, source: 'none' }
+
+  // ── Debounced + memoised recompute (KTD3) ────────────────────────────
+  // The reference figure and the (solver-inert) SWR are deliberately NOT
+  // part of the recompute — the reference only re-labels an already-solved
+  // band, so it is applied per-column below and never busts the cache.
+  const recompute = useCallback(() => {
+    if (!isReady) { setResults({}); return }
+    const baseState = buildScenarioBaseState(myNumbers, { startingCash: num(assumptions.startingCash) })
+    const retireAssumptions = buildRetireAssumptions(myNumbers, {
+      currentAge: num(assumptions.currentAge),
+      retirementAge: num(assumptions.retirementAge),
+      lifeExpectancy: num(assumptions.lifeExpectancy) || 90,
+      salary: num(assumptions.salary),
+      investmentMonthly: assumptions.investmentMonthly === '' ? undefined : num(assumptions.investmentMonthly),
+      salaryGrowthRate: num(assumptions.salaryGrowthRate),
+    })
+    const sharedSig = JSON.stringify({ baseState, retireAssumptions, bundles })
+
+    const t0 = performance.now()
+    const next = {}
+    for (const sc of scenarios) {
+      // Moves with a year the MoveEditor flags invalid never reach the
+      // engine — a blank year would otherwise compute as year 0.
+      const engineMoves = sc.moves
+        .filter((m) => yearError(m.year, retireYears) == null)
+        .map((m) => toEngineMove(m, carsById, parsedSalary))
+      const key = JSON.stringify([sc.id === 'baseline' ? [] : engineMoves, sharedSig])
+      let res = cache.current.get(key)
+      if (!res) {
+        res = runScenario(baseState, { label: sc.label, moves: sc.id === 'baseline' ? [] : engineMoves }, bundles, retireAssumptions, 0)
+        cache.current.set(key, res)
+        if (cache.current.size > 60) cache.current.clear()
+      }
+      next[sc.id] = res
+    }
+    const elapsed = performance.now() - t0
+    if (typeof console !== 'undefined' && elapsed > 16) console.log(`[ledger] recompute ${elapsed.toFixed(1)}ms (${scenarios.length} scenarios x 3 bundles)`)
+    setResults(next)
+  }, [isReady, myNumbers, assumptions, bundles, scenarios, carsById, parsedSalary, retireYears])
+
+  useEffect(() => {
+    if (debounce.current) clearTimeout(debounce.current)
+    debounce.current = setTimeout(recompute, 150)
+    return () => debounce.current && clearTimeout(debounce.current)
+  }, [recompute])
+
+  // ── Scenario list handlers ──────────────────────────────────────────
+  const updateScenario = (id, next) => setScenarios((s) => s.map((sc) => (sc.id === id ? next : sc)))
+  const removeScenario = (id) => setScenarios((s) => s.filter((sc) => sc.id !== id))
   const addScenario = () => {
     if (scenarios.length >= MAX_SCENARIOS) return
-    const base = scenarios[0]
-    const usedLabels = new Set(scenarios.map(sc => sc.label))
-    const label = ['Scenario A', 'Scenario B'].find(l => !usedLabels.has(l)) || 'Scenario B'
-    setScenarios(s => [...s, { ...base, id: nextId(), label, house: { ...base.house }, car: { ...base.car } }])
+    const used = new Set(scenarios.map((s) => s.label))
+    const label = ['Scenario A', 'Scenario B'].find((l) => !used.has(l)) || 'Scenario B'
+    setScenarios((s) => [...s, { id: nextScenarioId(), label, moves: [] }])
   }
 
-  const isReady = num(currentAge) > 0 && num(retirementAge) > num(currentAge) && num(desiredMonthlyWithdrawal) > 0 && num(scenarios[0]?.salary) > 0
+  const today = useMemo(() => {
+    if (!myNumbers) return null
+    const state = buildBaselineState(myNumbers)
+    return { netWorth: calcNetWorth(state), tdsr: calcTDSR(state) }
+  }, [myNumbers])
 
-  const comparison = calculated && isReady ? compareScenarios(
-    scenarios.map(sc => ({ label: sc.label, state: scenarioToState(sc) })),
-    {
-      currentAge: num(currentAge), retirementAge: num(retirementAge), lifeExpectancy: num(lifeExpectancy) || 95,
-      desiredMonthlyWithdrawal: num(desiredMonthlyWithdrawal), inflationRate: num(inflationRate), swr: num(swr),
-      investmentReturn: num(investmentReturn),
-    },
-  ) : null
+  // The band is solved reference-free; the verdict is applied here from
+  // the live reference so editing "monthly spend" never re-runs the solver.
+  const withRead = (result) => ({
+    ...result,
+    read: labelRead(result.band.base, result.band.conservative, referenceInfo.reference),
+  })
 
-  const handleCalc = () => setCalculated(true)
+  const comparisonColumns = isReady
+    ? scenarios.filter((s) => results[s.id]).map((s) => ({ label: s.label, result: withRead(results[s.id]) }))
+    : []
+
+  const carsLoading = cars.length === 0
+  const invalidMoveCount = (sc) => sc.moves.filter((m) => yearError(m.year, retireYears) != null).length
+
+  const setField = (k) => (e) => setAssumptions((a) => ({ ...a, [k]: e.target.value }))
 
   return (
     <div style={{ minHeight: '100vh', background: C.bg, fontFamily: C.fontBody }}>
       <ShellHeader title="MyLedger" links={[{ href: '/ledger/the-math', label: 'The Math' }]} />
 
-      {/* Hero */}
-      <div style={{ background: C.ndtm, padding: '48px 32px 52px', textAlign: 'center' }}>
+      <div style={{ background: C.ndtm, padding: '44px 32px 48px', textAlign: 'center' }}>
         <div style={{ fontFamily: C.fontNdtm, fontSize: 10, fontWeight: 600, color: 'rgba(255,255,255,0.35)', letterSpacing: '0.18em', textTransform: 'uppercase', marginBottom: 14 }}>
-          Your Whole Financial Picture
+          Timed Scenario Planner
         </div>
-        <h1 style={{ fontFamily: C.fontDisplay, fontSize: 'clamp(30px, 5.5vw, 48px)', color: '#fff', marginBottom: 10, lineHeight: 1.2 }}>
-          Net worth, TDSR, retirement — together.
+        <h1 style={{ fontFamily: C.fontDisplay, fontSize: 'clamp(28px, 5vw, 44px)', color: '#fff', marginBottom: 10, lineHeight: 1.2 }}>
+          Sell, buy, upgrade, add a car — see the whole path.
         </h1>
-        <p style={{ fontFamily: C.fontDisplay, fontSize: 18, color: 'rgba(255,255,255,0.5)', marginBottom: 24, fontStyle: 'italic' }}>
-          One picture for your mortgage, car, and CPF — plus what a big decision does to all three at once.
+        <p style={{ fontFamily: C.fontDisplay, fontSize: 17, color: 'rgba(255,255,255,0.5)', marginBottom: 22, fontStyle: 'italic' }}>
+          A dated sequence of moves, projected against doing nothing, across three sets of assumptions.
         </p>
-        <TrustBadges tone="dark" items={['Pulls from your other ndtm tools', 'Compare up to 3 scenarios', 'Zero data collected', 'Free, forever']} />
+        <TrustBadges tone="dark" items={['Pulls from your other ndtm tools', 'Compare up to 3 paths', 'Zero data collected', 'Free, forever']} />
       </div>
 
-      {/* Compliance line */}
       <div style={{ background: C.surface, borderBottom: `1px solid ${C.border}`, padding: '8px 24px', textAlign: 'center' }}>
-        <p style={{ fontSize: 11, color: C.faint, margin: 0 }}>
-          Educational tool only · Not financial advice · Not affiliated with CPF Board or MAS
-        </p>
+        <p style={{ fontSize: 11, color: C.faint, margin: 0 }}>Educational tool only · Not financial advice · Not affiliated with CPF Board or MAS</p>
       </div>
 
-      <div style={{ maxWidth: 900, margin: '0 auto', padding: '40px 20px 80px' }}>
-        {synced && (
-          <div style={{ background: C.accentBg, border: `1px solid ${C.accent}55`, borderRadius: C.rL, padding: '12px 16px', marginBottom: 20, fontSize: C.xs, color: C.muted, lineHeight: 1.5 }}>
-            Baseline prefilled from whatever the other ndtm tools last had saved on this browser. Everything below is editable — nothing here changes what those tools have saved.
+      <div style={{ maxWidth: 1000, margin: '0 auto', padding: '36px 20px 80px' }}>
+        {stale.length > 0 && (
+          <div style={{ background: C.amberBg, border: `1px solid ${C.amber}`, borderRadius: C.rL, padding: '12px 16px', marginBottom: 16, fontSize: C.xs, color: C.amberText, lineHeight: 1.5 }}>
+            Your {stale.map((s) => s.slot).join(', ')} figures were last synced over {Math.max(...stale.map((s) => s.months))} months ago — re-run those tools so the baseline here matches what they now show.
           </div>
         )}
-        {restoredFromSave && (
-          <div style={{ background: C.accentBg, border: `1px solid ${C.accent}55`, borderRadius: C.rL, padding: '12px 16px', marginBottom: 20, fontSize: C.xs, color: C.accent, fontWeight: 600 }}>
-            Restored the retirement assumptions you last saved to this profile — edit freely.
+        {restoredNote && (
+          <div style={{ background: C.accentBg, border: `1px solid ${C.accent}55`, borderRadius: C.rL, padding: '12px 16px', marginBottom: 16, fontSize: C.xs, color: C.accent, fontWeight: 600 }}>
+            Restored the scenarios and assumptions you last saved to this profile.
+          </div>
+        )}
+        {saveFailed && (
+          <div style={{ background: C.redBg, border: `1px solid ${C.red}`, borderRadius: C.rL, padding: '12px 16px', marginBottom: 16, fontSize: C.xs, color: C.redText, fontWeight: 600 }}>
+            Changes are not being saved on this browser (private browsing or storage full) — your scenarios will be lost on reload.
           </div>
         )}
 
-        <SectionDivider label="Retirement assumptions (shared across every scenario)" />
-        <div style={{ background: C.surface, border: `1px solid ${C.border}`, borderRadius: C.rXL, padding: '22px', boxShadow: C.shadow, marginBottom: 8 }}>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: 14 }}>
-            <NumberInput id="ledger-current-age" label="Current age" value={currentAge} onChange={e => setCurrentAge(e.target.value)} />
-            <NumberInput id="ledger-retirement-age" label="Retirement age" value={retirementAge} onChange={e => setRetirementAge(e.target.value)} />
-            <NumberInput id="ledger-life-expectancy" label="Plan until age" value={lifeExpectancy} onChange={e => setLifeExpectancy(e.target.value)} />
-            <MoneyInput id="ledger-withdrawal" label="Desired monthly withdrawal" value={desiredMonthlyWithdrawal} onChange={e => setDesiredMonthlyWithdrawal(e.target.value)} />
-            <PercentInput id="ledger-inflation" label="Inflation" value={inflationRate} onChange={e => setInflationRate(e.target.value)} />
-            <PercentInput id="ledger-swr" label="Safe withdrawal rate" value={swr} onChange={e => setSwr(e.target.value)} />
-            <PercentInput id="ledger-return" label="Investment return" value={investmentReturn} onChange={e => setInvestmentReturn(e.target.value)} />
+        <SectionDivider label="Assumptions (shared across every path)" />
+        <div style={{ background: C.surface, border: `1px solid ${C.border}`, borderRadius: C.rXL, padding: 22, boxShadow: C.shadow }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: 14 }}>
+            <NumberInput id="a-age" label="Current age" value={assumptions.currentAge} onChange={setField('currentAge')} />
+            <NumberInput id="a-retire" label="Retirement age" value={assumptions.retirementAge} onChange={setField('retirementAge')} />
+            <NumberInput id="a-life" label="Plan until age" value={assumptions.lifeExpectancy} onChange={setField('lifeExpectancy')} />
+            <MoneyInput id="a-salary" label="Monthly salary" value={assumptions.salary} onChange={setField('salary')} hint={myNumbers?.retire?.salary ? `RetireWell has S$${Math.round(myNumbers.retire.salary).toLocaleString('en-SG')}` : undefined} />
+            <MoneyInput id="a-contrib" label="Monthly invested" value={assumptions.investmentMonthly} onChange={setField('investmentMonthly')} hint={myNumbers?.retire?.monthlyContribution ? `RetireWell has S$${Math.round(myNumbers.retire.monthlyContribution).toLocaleString('en-SG')}` : undefined} />
+            <PercentInput id="a-growth" label="Salary growth" value={assumptions.salaryGrowthRate} onChange={setField('salaryGrowthRate')} />
+            <PercentInput id="a-swr" label="Safe withdrawal rate" value={assumptions.swr} onChange={setField('swr')} />
+            <MoneyInput id="a-cash" label="Starting cash" value={assumptions.startingCash} onChange={setField('startingCash')} />
+            <MoneyInput
+              id="a-ref" label="Monthly spend in retirement" value={assumptions.reference} onChange={setField('reference')}
+              hint={referenceInfo.source === 'flow' ? `FlowState measured S$${Math.round(referenceInfo.reference).toLocaleString('en-SG')}` : referenceInfo.source === 'none' ? 'Needed for the enough / tight / short verdict' : undefined}
+            />
           </div>
         </div>
 
-        <SectionDivider label={`Scenarios (${scenarios.length}/${MAX_SCENARIOS})`} />
-        <div style={{ display: 'grid', gridTemplateColumns: `repeat(${scenarios.length}, minmax(280px, 1fr))`, gap: 16, overflowX: 'auto' }}>
-          {scenarios.map((sc, i) => (
-            <ScenarioCard
-              key={sc.id} scenario={sc} isBaseline={i === 0}
-              onChange={next => updateScenario(sc.id, next)}
-              onLabelChange={label => updateScenario(sc.id, { ...sc, label })}
+        <SectionDivider label="Assumption bundles — low · base · high" />
+        <div style={{ background: C.surface, border: `1px solid ${C.border}`, borderRadius: C.rXL, padding: 22, boxShadow: C.shadow }}>
+          <BundleEditor bundles={bundles} onChange={setBundles} />
+        </div>
+
+        <SectionDivider label={`Paths (${scenarios.length}/${MAX_SCENARIOS})`} />
+        <div style={{ display: 'grid', gridTemplateColumns: `repeat(${scenarios.length}, minmax(300px, 1fr))`, gap: 16, overflowX: 'auto' }}>
+          {scenarios.map((sc) => (
+            <ScenarioColumn
+              key={sc.id}
+              scenario={sc}
+              isBaseline={sc.id === 'baseline'}
+              onChange={(next) => updateScenario(sc.id, next)}
+              onLabelChange={(label) => updateScenario(sc.id, { ...sc, label })}
               onRemove={() => removeScenario(sc.id)}
+              retireYears={retireYears}
+              cars={cars}
+              carsLoading={carsLoading}
+              invalidMoves={invalidMoveCount(sc)}
+              result={results[sc.id] && withRead(results[sc.id])}
             />
           ))}
         </div>
 
         {scenarios.length < MAX_SCENARIOS && (
-          <div style={{ marginTop: 16 }}>
-            <Button variant="outline" onClick={addScenario}>+ Add a what-if scenario</Button>
+          <div style={{ marginTop: 14 }}>
+            <Button variant="outline" onClick={addScenario}>+ Add a what-if path</Button>
           </div>
         )}
 
-        <div style={{ marginTop: 28 }}>
-          <Button variant="accent" fullWidth onClick={handleCalc} disabled={!isReady}>
-            {isReady ? 'Check my full picture' : 'Fill in age, salary, and desired withdrawal above'}
-          </Button>
-        </div>
         <AutosaveIndicator justSaved={justSaved} C={C} style={{ textAlign: 'left' }} />
         <p style={{ marginTop: 4, fontSize: C.xs, color: C.faint, lineHeight: 1.5 }}>
-          Only the retirement assumptions above are saved — scenarios always rebuild fresh from your other tools&apos; latest numbers.
+          Your moves and assumptions are saved to this profile. Baseline balances always re-derive from your other tools&apos; latest numbers.
         </p>
 
-        {comparison && (
-          <div style={{ marginTop: 32 }}>
+        {!isReady && (
+          <p style={{ marginTop: 24, fontSize: C.sm, color: C.faint }}>
+            Fill in current age, retirement age, and monthly salary above to see the comparison.
+          </p>
+        )}
+
+        {isReady && comparisonColumns.length > 0 && (
+          <div style={{ marginTop: 28 }}>
             <SectionDivider label="Side by side" />
-            <div style={{ background: C.surface, border: `1px solid ${C.border}`, borderRadius: C.rXL, padding: '20px', boxShadow: C.shadow }}>
-              <ComparisonTable rows={comparison} />
+            <div style={{ background: C.surface, border: `1px solid ${C.border}`, borderRadius: C.rXL, padding: 20, boxShadow: C.shadow }}>
+              <ComparisonRow columns={comparisonColumns} today={today} />
               <p style={{ fontSize: C.xs, color: C.faint, lineHeight: 1.6, marginTop: 16 }}>
-                TDSR counts loan repayments only (banks don&apos;t count insurance premiums), against gross salary; MSR applies to HDB loans and is usually the tighter of the two. Retirement figures reuse RetireWell&apos;s own projection engine, fed with capacity that <strong>rises as your loans end</strong> rather than assuming today&apos;s repayments last forever. See <a href="/ledger/the-math" style={{ color: C.accent }}>the math</a> for the full formulas.
+                The headline is the inflation-adjusted monthly withdrawal your liquid assets (CPF OA/SA + investments + residual cash) sustain to your plan-until age, solved against RetireWell&apos;s own depletion model. Property equity feeds net worth and the asset mix but never the withdrawal figure. See <a href="/ledger/the-math" style={{ color: C.accent }}>the math</a>.
               </p>
-              <p style={{ fontSize: C.xs, color: C.faint, lineHeight: 1.6, marginTop: 8 }}>
-                {comparison[0]?.takeHome?.exact
-                  ? 'Take-home pay is the exact after-tax figure from TaxWise, including your age-banded CPF share.'
-                  : <>Take-home pay is approximated at 80% of gross. <a href="/tax" style={{ color: C.accent }}>Run TaxWise</a> for an exact after-tax figure — it matters most if you&apos;re over 55 or paying significant tax.</>}
-              </p>
+              {referenceInfo.source === 'none' && (
+                <p style={{ fontSize: C.xs, color: C.amberText, marginTop: 8 }}>
+                  Set a monthly retirement spend above to turn the headline into a comfortably&nbsp;enough / tight / short verdict.
+                </p>
+              )}
             </div>
           </div>
         )}
