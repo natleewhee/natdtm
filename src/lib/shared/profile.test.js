@@ -307,6 +307,67 @@ test('saveToolInputs is scoped per profile, same as saveFlowInputs', () => {
   assert.deepEqual(loadToolInputs('drive'), { carLabel: 'Honda Civic' })
 })
 
+// ─── Scenario-planner payload (U7 / KTD9) ──────────────────────────────
+// The rebuilt /ledger stores its whole {assumptions, bundles, scenarios}
+// object in the ledger slot's `inputs`. saveToolInputs REPLACES `inputs`
+// wholesale on every write — the page must therefore always persist the
+// full object, never a partial one.
+
+test('the ledger slot round-trips the full scenario-planner payload intact', () => {
+  window.localStorage.removeItem('ndtm_my_numbers_v1')
+  const payload = {
+    assumptions: {
+      currentAge: 40, retirementAge: 65, lifeExpectancy: 90,
+      desiredMonthlyWithdrawal: 4000, inflationRate: 2.5, swr: 3,
+      investmentReturn: 5, salaryGrowthRate: 3, startingCash: 200000, reference: 4200,
+    },
+    bundles: [
+      { label: 'Conservative', equityReturn: 3, propertyAppreciation: 1, inflation: 3 },
+      { label: 'Base', equityReturn: 5, propertyAppreciation: 2.5, inflation: 2.5 },
+      { label: 'Optimistic', equityReturn: 7, propertyAppreciation: 4, inflation: 2 },
+    ],
+    scenarios: [
+      { label: 'Upgrade + car', moves: [
+        { type: 'sell-property', year: 0, inputs: { salePrice: 900000 } },
+        { type: 'buy-car', year: 2, inputs: { carId: 'sealion7', down: 50000, tenure: 7 } },
+      ] },
+    ],
+  }
+  saveToolInputs('ledger', payload)
+  assert.deepEqual(loadToolInputs('ledger'), payload)
+})
+
+test('saveToolInputs REPLACES the inputs object — a later partial write drops omitted keys', () => {
+  window.localStorage.removeItem('ndtm_my_numbers_v1')
+  saveToolInputs('ledger', { assumptions: { currentAge: 40 }, bundles: [1, 2, 3], scenarios: [{ label: 'A', moves: [] }] })
+  // A partial write that forgets `scenarios` and `bundles`:
+  saveToolInputs('ledger', { assumptions: { currentAge: 41 } })
+  const loaded = loadToolInputs('ledger')
+  assert.deepEqual(loaded, { assumptions: { currentAge: 41 } })
+  assert.equal(loaded.scenarios, undefined, 'the omitted key is gone — this is why U6 writes the whole object every autosave')
+})
+
+test('a legacy assumptions-only ledger payload restores without error and has no scenarios', () => {
+  window.localStorage.removeItem('ndtm_my_numbers_v1')
+  saveToolInputs('ledger', { currentAge: '40', retirementAge: '65', lifeExpectancy: '90', swr: '3' })
+  const loaded = loadToolInputs('ledger')
+  assert.equal(loaded.scenarios, undefined)
+  assert.equal(loaded.currentAge, '40')
+})
+
+test('the ledger scenario payload survives a profile switch away and back', () => {
+  window.localStorage.removeItem('ndtm_my_numbers_v1')
+  const mine = getActiveProfileId()
+  const payload = { assumptions: { currentAge: 40 }, bundles: [], scenarios: [{ label: 'Mine', moves: [] }] }
+  saveToolInputs('ledger', payload)
+  const other = createProfile('Other')
+  assert.equal(loadToolInputs('ledger'), null, 'the new profile has its own empty ledger slot')
+  setActiveProfile(mine)
+  assert.deepEqual(loadToolInputs('ledger'), payload)
+  setActiveProfile(other)
+  assert.equal(loadToolInputs('ledger'), null)
+})
+
 test('clearFlowNumbers nulls only the flow slot', () => {
   window.localStorage.removeItem('ndtm_my_numbers_v1')
   saveFlowNumbers({ livingExpenses: 3200 })
