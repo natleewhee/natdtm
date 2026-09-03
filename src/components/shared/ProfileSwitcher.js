@@ -14,6 +14,23 @@ function getServerSnapshot() {
   return null
 }
 
+// useSyncExternalStore requires getSnapshot to return the *same*
+// reference until the store actually changes — listProfiles() allocates
+// a fresh array every call, which without this cache makes every render
+// look like a change and loops forever (React error #185). Recomputed
+// only when subscribeToProfileChanges fires; module-scoped is fine since
+// the underlying profile store is itself a single global singleton.
+let cachedProfiles = listProfiles()
+function getSnapshot() {
+  return cachedProfiles
+}
+function subscribe(callback) {
+  return subscribeToProfileChanges(() => {
+    cachedProfiles = listProfiles()
+    callback()
+  })
+}
+
 // Lets someone keep separate named sets of numbers on the same browser
 // — "Me", "Joint with Alex", "5-years-from-now plan" — each with its
 // own live data across every tool, rather than one household's numbers
@@ -28,7 +45,7 @@ function getServerSnapshot() {
 export default function ProfileSwitcher() {
   // Subscribed directly to the profile store — no mount-time setState
   // effect, so no SSR/client name mismatch to guard against.
-  const profiles = useSyncExternalStore(subscribeToProfileChanges, listProfiles, getServerSnapshot)
+  const profiles = useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot)
   const [open, setOpen] = useState(false)
   const [editingId, setEditingId] = useState(null)
   const [editingName, setEditingName] = useState('')
