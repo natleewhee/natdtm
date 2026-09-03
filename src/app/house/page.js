@@ -93,7 +93,6 @@ export default function HouseMuchPage() {
   // it's purely for "here's what I typed last time."
   useEffect(() => {
     const saved = loadToolInputs('house')
-    /* eslint-disable react-hooks/set-state-in-effect */
     if (saved) {
       setPropertyType(saved.propertyType ?? 'private')
       setIsJointLoan(!!saved.isJointLoan)
@@ -126,7 +125,6 @@ export default function HouseMuchPage() {
       setRestoredFromSave(true)
     }
     setHasRestored(true)
-    /* eslint-enable react-hooks/set-state-in-effect */
   }, [])
 
   // Autosave every keystroke — same as DriveReady's own persistence, just
@@ -145,7 +143,6 @@ export default function HouseMuchPage() {
     })
     // Only flash "Saved" when the write actually landed — see tax/page.js.
     if (ok) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect -- flashes the "Saved" indicator; not a render-affecting state sync
       setSavedTick(t => t + 1)
     }
   }, [
@@ -159,7 +156,6 @@ export default function HouseMuchPage() {
 
   useEffect(() => {
     if (savedTick === 0) return
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- flashes the "Saved" indicator; not a render-affecting state sync
     setJustSaved(true)
     const t = setTimeout(() => setJustSaved(false), 1400)
     return () => clearTimeout(t)

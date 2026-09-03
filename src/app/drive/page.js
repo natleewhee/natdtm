@@ -65,7 +65,6 @@ export default function DriveReadyPage() {
   // rather than distorted with an artificial setTimeout.
   const [now, setNow] = useState(null)
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
     setNow(Date.now())
   }, [scrapedAt])
 
@@ -183,9 +182,6 @@ export default function DriveReadyPage() {
   }
 
   useEffect(() => {
-    /* eslint-disable react-hooks/set-state-in-effect -- one-time restore from
-       localStorage/URL on mount; this can't happen during render since both
-       are unavailable during SSR and would cause a hydration mismatch */
     // Profile-scoped storage is the source of truth, same as every other
     // tool — switching profiles must switch DriveReady's data too. A
     // one-time migration reads (and clears) the OLD global key so a
@@ -204,18 +200,14 @@ export default function DriveReadyPage() {
     if (Object.keys(restored).length > 0) applyRestoredState(restored)
 
     setHasRestored(true)
-    /* eslint-enable react-hooks/set-state-in-effect */
   }, [])
 
   // Resolve pending car IDs once the car list has loaded.
   useEffect(() => {
     if (!pendingCarIds || allCars.length === 0) return
-    /* eslint-disable react-hooks/set-state-in-effect -- one-time resolution
-       once allCars becomes available, not a re-render loop */
     if (pendingCarIds.a) setCarA(allCars.find(c => c.id === pendingCarIds.a) ?? null)
     if (pendingCarIds.b) setCarB(allCars.find(c => c.id === pendingCarIds.b) ?? null)
     setPendingCarIds(null)
-    /* eslint-enable react-hooks/set-state-in-effect */
   }, [pendingCarIds, allCars])
 
   // Persist on every change, once initial restore has completed — scoped
@@ -227,7 +219,6 @@ export default function DriveReadyPage() {
     // Only flash "Saved" when the write actually landed — saveToolInputs
     // returns false on a silently-swallowed quota/private-browsing failure.
     if (ok) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect -- flashes the "Saved" indicator; not a render-affecting state sync
       setSavedTick(t => t + 1)
     }
     const params = serializeToParams(state)
@@ -237,7 +228,6 @@ export default function DriveReadyPage() {
 
   useEffect(() => {
     if (savedTick === 0) return
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- flashes the "Saved" indicator; not a render-affecting state sync
     setJustSaved(true)
     const t = setTimeout(() => setJustSaved(false), 1400)
     return () => clearTimeout(t)
@@ -308,10 +298,7 @@ export default function DriveReadyPage() {
   // ── Garage: save/compare multiple calculated scenarios ─────────────────────
   const [garage, setGarage] = useState([])
   useEffect(() => {
-    /* eslint-disable react-hooks/set-state-in-effect -- one-time load from
-       localStorage on mount, same rationale as the input-restore effect above */
     setGarage(loadGarage())
-    /* eslint-enable react-hooks/set-state-in-effect */
   }, [])
 
   const summarizeResult = r => r ? { name: r.car.name, price: r.car.price, monthly: r.monthly, totalCoo: r.totalCoo, verdict: r.verdict, tdsrExceeded: r.tdsrExceeded } : null

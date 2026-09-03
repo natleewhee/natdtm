@@ -58,13 +58,9 @@ export default function RetireWellPage() {
   // sent anywhere) so this page can offer them as an editable starting
   // point instead of asking for the same numbers twice.
   useEffect(() => {
-    /* eslint-disable react-hooks/set-state-in-effect -- one-time read from
-       localStorage on mount; unavailable during SSR so can't happen during
-       render without a hydration mismatch */
     const { house, drive } = loadMyNumbers()
     setHouseNumbers(house)
     setDriveNumbers(drive)
-    /* eslint-enable react-hooks/set-state-in-effect */
   }, [])
 
   const applyHouseNumbers = () => {
@@ -84,7 +80,6 @@ export default function RetireWellPage() {
 
   useEffect(() => {
     const saved = loadToolInputs('retire')
-    /* eslint-disable react-hooks/set-state-in-effect */
     if (saved) {
       setCurrentAge(saved.currentAge ?? '')
       setRetirementAge(saved.retirementAge ?? '65')
@@ -113,7 +108,6 @@ export default function RetireWellPage() {
       setRestoredFromSave(true)
     }
     setHasRestored(true)
-    /* eslint-enable react-hooks/set-state-in-effect */
   }, [])
 
   // Autosave every keystroke, same as DriveReady's own persistence, just
@@ -131,7 +125,6 @@ export default function RetireWellPage() {
     })
     // Only flash "Saved" when the write actually landed — see tax/page.js.
     if (ok) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect -- flashes the "Saved" indicator; not a render-affecting state sync
       setSavedTick(t => t + 1)
     }
   }, [
@@ -146,7 +139,6 @@ export default function RetireWellPage() {
 
   useEffect(() => {
     if (savedTick === 0) return
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- flashes the "Saved" indicator; not a render-affecting state sync
     setJustSaved(true)
     const t = setTimeout(() => setJustSaved(false), 1400)
     return () => clearTimeout(t)

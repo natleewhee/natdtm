@@ -1,10 +1,18 @@
 'use client'
 
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState, useSyncExternalStore } from 'react'
 import {
   listProfiles, createProfile, renameProfile, deleteProfile, setActiveProfile,
   subscribeToProfileChanges, exportProfiles, importProfiles, MAX_PROFILES,
 } from '@/lib/shared/profile'
+
+// listProfiles() reads localStorage, so the client snapshot only matches
+// getServerSnapshot (null) on the very first render — React re-renders
+// once the real snapshot differs, which is the SSR/client name mismatch
+// this avoids without an effect-driven setState.
+function getServerSnapshot() {
+  return null
+}
 
 // Lets someone keep separate named sets of numbers on the same browser
 // — "Me", "Joint with Alex", "5-years-from-now plan" — each with its
@@ -18,7 +26,9 @@ import {
 // no page reload is needed. This component also subscribes so its own
 // list stays in sync when another tab changes a profile.
 export default function ProfileSwitcher() {
-  const [profiles, setProfiles] = useState(null) // null until mounted — avoids an SSR/client name mismatch
+  // Subscribed directly to the profile store — no mount-time setState
+  // effect, so no SSR/client name mismatch to guard against.
+  const profiles = useSyncExternalStore(subscribeToProfileChanges, listProfiles, getServerSnapshot)
   const [open, setOpen] = useState(false)
   const [editingId, setEditingId] = useState(null)
   const [editingName, setEditingName] = useState('')
@@ -28,15 +38,6 @@ export default function ProfileSwitcher() {
   const menuRef = useRef(null)
   const triggerRef = useRef(null)
   const fileInputRef = useRef(null)
-
-  useEffect(() => {
-    /* eslint-disable react-hooks/set-state-in-effect -- client-only reads
-       from localStorage (unavailable during SSR); the subscription keeps
-       the list fresh when another tab switches or renames a profile */
-    setProfiles(listProfiles())
-    return subscribeToProfileChanges(() => setProfiles(listProfiles()))
-    /* eslint-enable react-hooks/set-state-in-effect */
-  }, [])
 
   useEffect(() => {
     if (!open) return
@@ -71,7 +72,6 @@ export default function ProfileSwitcher() {
   function handleSwitch(id) {
     if (id === active.id) { closeMenu({ returnFocus: true }); return }
     setActiveProfile(id)
-    setProfiles(listProfiles())
     closeMenu()
   }
 
@@ -81,19 +81,16 @@ export default function ProfileSwitcher() {
   }
   function saveRename() {
     if (editingId) renameProfile(editingId, editingName)
-    setProfiles(listProfiles())
     setEditingId(null)
   }
 
   function handleDelete(id) {
-    if (!deleteProfile(id)) return
-    setProfiles(listProfiles())
+    deleteProfile(id)
   }
 
   function submitCreate() {
     const id = createProfile(newName)
     if (!id) return // at MAX_PROFILES — button is hidden in that state, but guard anyway
-    setProfiles(listProfiles())
     closeMenu({ returnFocus: true })
   }
 
@@ -123,7 +120,6 @@ export default function ProfileSwitcher() {
       res = { ok: false, error: 'Could not read the file.' }
     }
     if (res.ok) {
-      setProfiles(listProfiles())
       const extra = res.truncated ? ` (${res.truncated} beyond the ${MAX_PROFILES}-profile limit were dropped)` : ''
       setImportMsg({ tone: 'ok', text: `Imported ${res.imported} profile${res.imported === 1 ? '' : 's'}${extra}.` })
     } else {

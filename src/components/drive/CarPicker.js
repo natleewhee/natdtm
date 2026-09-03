@@ -54,13 +54,9 @@ export function CarPicker({ value, onChange, slot, ceiling, down, allCars = [], 
   // just caused, which would otherwise immediately overwrite mid-typed
   // text like "1.2" with the already-rounded "1" it committed.
   useEffect(() => {
-    /* eslint-disable react-hooks/set-state-in-effect -- syncing local
-       display text to an external prop change (car swapped, cleared
-       elsewhere), guarded above to skip our own just-committed value */
     const parsed = parseMoneyKM(priceText)
     if (parsed != null && String(parsed) === String(customPrice)) return
     setPriceText(customPrice)
-    /* eslint-enable react-hooks/set-state-in-effect */
     // priceText intentionally omitted: this effect reacts to customPrice
     // changing, and re-reads priceText fresh each time via the closure
     // eslint-disable-next-line react-hooks/exhaustive-deps

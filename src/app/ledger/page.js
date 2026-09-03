@@ -69,7 +69,6 @@ export default function MyLedgerPage() {
 
   // ── Mount: read the store, restore a saved planner state ──────────────
   useEffect(() => {
-    /* eslint-disable react-hooks/set-state-in-effect -- one-time localStorage read on mount */
     const mn = loadMyNumbers()
     setMyNumbers(mn)
     try { setStale(staleSyncedSlots(mn)) } catch { setStale([]) }
@@ -111,7 +110,6 @@ export default function MyLedgerPage() {
       setRestoredNote(true)
     }
     setHasRestored(true)
-    /* eslint-enable react-hooks/set-state-in-effect */
   }, [])
 
   useEffect(() => {
@@ -135,15 +133,12 @@ export default function MyLedgerPage() {
       bundles,
       scenarios: scenarios.filter((s) => s.id !== 'baseline').map((s) => ({ label: s.label, moves: s.moves })),
     })
-    /* eslint-disable react-hooks/set-state-in-effect -- flashes the "Saved" indicator / surfaces a write failure */
     setSaveFailed(!ok)
     if (ok) setSavedTick((t) => t + 1)
-    /* eslint-enable react-hooks/set-state-in-effect */
   }, [hasRestored, assumptions, position, bundles, scenarios])
 
   useEffect(() => {
     if (savedTick === 0) return
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- flashes the "Saved" indicator
     setJustSaved(true)
     const t = setTimeout(() => setJustSaved(false), 1400)
     return () => clearTimeout(t)

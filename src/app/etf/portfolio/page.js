@@ -472,10 +472,6 @@ function PortfolioContent() {
   const [data, setData] = useState(null) // { portfolio, prefs }
 
   useEffect(() => {
-    /* eslint-disable react-hooks/set-state-in-effect -- restores the
-       portfolio from the URL params or localStorage (unavailable during
-       SSR) and persists/redirects as a side effect; not a plain render
-       sync */
     // A shared/bookmarked link takes priority; otherwise fall back to
     // whatever was generated last in this session.
     const fromUrl = decodePrefsFromParams(searchParams)
@@ -492,7 +488,6 @@ function PortfolioContent() {
       // No portfolio in session or URL — redirect to preferences
       router.replace('/etf/preferences')
     }
-    /* eslint-enable react-hooks/set-state-in-effect */
   }, [router, searchParams])
 
   useEffect(() => {
