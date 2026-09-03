@@ -75,6 +75,12 @@ export const NSMAN_RELIEF = {
   keyActive: 5_000,
 }
 
+/**
+ * Looks up the automatic Earned Income Relief for a given age, scaled by
+ * age band (as at the end of the year before the Year of Assessment).
+ * @param {number} age - Age in years.
+ * @returns {number} The relief amount in dollars.
+ */
 export function earnedIncomeRelief(age) {
   const a = Number(age) || 0
   const band = EARNED_INCOME_RELIEF.find(b => a <= b.maxAge) || EARNED_INCOME_RELIEF[EARNED_INCOME_RELIEF.length - 1]
@@ -99,6 +105,13 @@ export const CPF_EMPLOYEE_SHARE = [
   { minAge: 70, maxAge: 999, rate: 0.05 },
 ]
 
+/**
+ * Employee's own share of the CPF contribution rate for a given age,
+ * using contiguous age-band boundaries so a fractional age (e.g. 55.5)
+ * always matches exactly one band.
+ * @param {number} age - Age in years.
+ * @returns {number} The employee CPF contribution rate (e.g. 0.20 for 20%).
+ */
 export function cpfEmployeeRateForAge(age) {
   const a = Number(age) || 0
   const band = CPF_EMPLOYEE_SHARE.find(b => a >= b.minAge && a <= b.maxAge)
@@ -108,6 +121,13 @@ export function cpfEmployeeRateForAge(age) {
 
 // Monthly employee CPF contribution, capped at the Ordinary Wage
 // ceiling — this is what's actually deducted from a payslip.
+/**
+ * Monthly employee CPF contribution, capped at the Ordinary Wage
+ * ceiling — this is what's actually deducted from a payslip.
+ * @param {number} monthlySalary - Gross monthly salary in dollars.
+ * @param {number} age - Age in years, used to pick the contribution rate.
+ * @returns {number} Monthly employee CPF contribution in dollars.
+ */
 export function monthlyEmployeeCpf(monthlySalary, age) {
   const wage = Math.min(Math.max(0, Number(monthlySalary) || 0), CPF_OW_CEILING)
   return wage * cpfEmployeeRateForAge(age)
@@ -116,6 +136,15 @@ export function monthlyEmployeeCpf(monthlySalary, age) {
 // Annual employee CPF contribution across salary and bonus, respecting
 // both the monthly Ordinary Wage ceiling and the annual total ceiling —
 // this is the figure that qualifies for CPF relief.
+/**
+ * Annual employee CPF contribution across salary and bonus, respecting
+ * both the monthly Ordinary Wage ceiling and the annual total ceiling —
+ * this is the figure that qualifies for CPF relief.
+ * @param {number} monthlySalary - Gross monthly salary in dollars.
+ * @param {number} annualBonus - Annual bonus in dollars.
+ * @param {number} age - Age in years, used to pick the contribution rate.
+ * @returns {number} Annual employee CPF contribution in dollars.
+ */
 export function annualEmployeeCpf(monthlySalary, annualBonus, age) {
   const rate = cpfEmployeeRateForAge(age)
   const ordinaryWages = Math.min(Math.max(0, Number(monthlySalary) || 0), CPF_OW_CEILING) * 12
@@ -126,6 +155,12 @@ export function annualEmployeeCpf(monthlySalary, annualBonus, age) {
 
 // Progressive tax on a chargeable income figure. Each band's rate
 // applies only to the slice of income within it.
+/**
+ * Progressive tax on a chargeable income figure. Each band's rate
+ * applies only to the slice of income within it.
+ * @param {number} chargeableIncome - Chargeable income in dollars.
+ * @returns {number} Total tax payable in dollars.
+ */
 export function taxOnChargeableIncome(chargeableIncome) {
   let remaining = Math.max(0, Number(chargeableIncome) || 0)
   let lower = 0
@@ -145,6 +180,14 @@ export function taxOnChargeableIncome(chargeableIncome) {
 // === 20,000), that whole $20,000 is still taxed at the band below it,
 // but the NEXT dollar earned (dollar 20,001) falls into the band above —
 // `<=` would wrongly return the band-below's rate at every boundary.
+/**
+ * The marginal rate that applies to the next dollar earned. Uses a
+ * strict `<` against each band's upper bound so a chargeable income
+ * exactly at a boundary is still taxed at the band below it, while the
+ * next dollar earned falls into the band above.
+ * @param {number} chargeableIncome - Chargeable income in dollars.
+ * @returns {number} The marginal tax rate (e.g. 0.15 for 15%).
+ */
 export function marginalRate(chargeableIncome) {
   const ci = Math.max(0, Number(chargeableIncome) || 0)
   for (const band of TAX_BANDS) {
@@ -156,6 +199,18 @@ export function marginalRate(chargeableIncome) {
 // Sums every relief the user claims, then applies the overall personal
 // relief cap. Returns both the raw and capped totals so the UI can point
 // out when someone is claiming past the ceiling for no benefit.
+/**
+ * Sums every relief the user claims, then applies the overall personal
+ * relief cap. Returns both the raw and capped totals so the UI can point
+ * out when someone is claiming past the ceiling for no benefit.
+ * @param {object} inputs - Relief inputs (age, monthlySalary, annualBonus,
+ *   srsContribution, rstuSelf, rstuFamily, courseFees, nsmanStatus,
+ *   childCount, parentReliefLivingWith, parentReliefNotLivingWith,
+ *   otherReliefs, isForeigner).
+ * @returns {{breakdown: object, raw: number, capped: number, cappedOut: boolean, srsCap: number}}
+ *   Per-relief breakdown, the raw sum, the sum capped at PERSONAL_RELIEF_CAP,
+ *   whether the cap was exceeded, and the applicable SRS cap.
+ */
 export function totalReliefs(inputs) {
   const {
     age = 0, monthlySalary = 0, annualBonus = 0,
@@ -192,6 +247,18 @@ export function totalReliefs(inputs) {
 // next $1,000 would save. Marginal-rate-aware, and returns zero once the
 // personal relief cap is already reached, since further reliefs then do
 // nothing at all.
+/**
+ * What one more dollar of a given relief actually saves — and what the
+ * next `extraAmount` would save. Marginal-rate-aware, and returns zero
+ * once the personal relief cap is already reached, since further
+ * reliefs then do nothing at all.
+ * @param {number} chargeableIncome - Chargeable income before the extra relief, in dollars.
+ * @param {number} reliefsRaw - Reliefs already claimed (uncapped), in dollars.
+ * @param {number} [extraAmount=1000] - Additional relief amount to test, in dollars.
+ * @returns {{effective: number, saving: number, blockedByCap: boolean}}
+ *   The portion of extraAmount that actually fits under the cap, the tax
+ *   saved by it, and whether the cap already blocks any further saving.
+ */
 export function reliefValue(chargeableIncome, reliefsRaw, extraAmount = 1_000) {
   const headroom = Math.max(0, PERSONAL_RELIEF_CAP - reliefsRaw)
   const effective = Math.min(Math.max(0, Number(extraAmount) || 0), headroom)
@@ -201,6 +268,20 @@ export function reliefValue(chargeableIncome, reliefsRaw, extraAmount = 1_000) {
 }
 
 // ─── Orchestrator ─────────────────────────────────────────────────────────
+/**
+ * Orchestrates the full tax calculation: employment income, capped
+ * reliefs, chargeable income, tax and effective/marginal rates, a
+ * smoothed monthly take-home figure, and what the next $1,000 into SRS
+ * or an RSTU top-up would save (flagging when the SRS and RSTU headroom
+ * suggestions would compete for the same shared relief-cap headroom).
+ * @param {object} inputs - Tax inputs, including monthlySalary, annualBonus,
+ *   otherIncome, age, and every field accepted by {@link totalReliefs}.
+ * @returns {object} The full tax breakdown: employmentIncome, reliefs,
+ *   chargeableIncome, tax, marginal, effectiveRate, employeeCpf,
+ *   annualTakeHome, monthlyTakeHome, nextThousand, srsHeadroom,
+ *   rstuHeadroom, maxSrsSaving, maxRstuSaving, combinedCapHeadroom,
+ *   capHeadroomSharedBetweenSrsAndRstu.
+ */
 export function calcTax(inputs) {
   const {
     monthlySalary = 0, annualBonus = 0, otherIncome = 0, age = 0,

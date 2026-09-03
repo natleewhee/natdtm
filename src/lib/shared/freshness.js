@@ -16,6 +16,14 @@ export const FRESHNESS_WINDOWS = {
   statutory: 1100, // tax rates, stamp duty, CPF rates: revised in Budgets, not often
 }
 
+/**
+ * Days elapsed since a given date. Guards null/undefined/empty
+ * explicitly (rather than trusting Number.isFinite on `new Date(null)`,
+ * which resolves to the epoch, not an invalid date).
+ * @param {*} asOf - The reference date (ISO string or anything Date can parse), or null/undefined/''.
+ * @param {Date} [now=new Date()] - The current date.
+ * @returns {?number} Days elapsed, or null if asOf is missing/unparseable.
+ */
 export function daysSince(asOf, now = new Date()) {
   // Guard null/undefined explicitly: `new Date(null)` is the epoch, not
   // an invalid date, so a bare isFinite check would report ~57 years
@@ -26,10 +34,16 @@ export function daysSince(asOf, now = new Date()) {
   return (now.getTime() - then) / 86_400_000
 }
 
-// Returns { days, stale, months } for an ISO date (or a 'mid-2025'-style
-// label, which is resolved to the middle of that year). `stale` is null
-// when the date can't be parsed, so callers can tell "unknown" apart
-// from "fine".
+/**
+ * Checks how stale a hand-maintained date/label is against a given
+ * freshness window. Accepts an ISO date or a human label like
+ * 'mid-2025' (resolved via {@link normalizeAsOf}). `stale` is null when
+ * the date can't be parsed, so callers can tell "unknown" apart from "fine".
+ * @param {*} asOf - The AS_OF date or label to check.
+ * @param {number} [windowDays=FRESHNESS_WINDOWS.marketData] - Days before the data is considered stale.
+ * @param {Date} [now=new Date()] - The current date.
+ * @returns {{days: (number|null), months: (number|null), stale: (boolean|null)}} The freshness result.
+ */
 export function checkFreshness(asOf, windowDays = FRESHNESS_WINDOWS.marketData, now = new Date()) {
   const iso = normalizeAsOf(asOf)
   const days = daysSince(iso, now)
@@ -41,9 +55,14 @@ export function checkFreshness(asOf, windowDays = FRESHNESS_WINDOWS.marketData, 
   }
 }
 
-// Some AS_OF constants in the suite are human labels rather than dates
-// ('mid-2025', '2025-Q1'). Resolve those to a concrete date so they can
-// still be checked rather than silently skipped.
+/**
+ * Resolves an AS_OF constant to a concrete ISO date. Some constants in
+ * the suite are human labels rather than dates ('mid-2025', '2025-Q1'),
+ * which are resolved to a representative date so they can still be
+ * checked rather than silently skipped.
+ * @param {*} asOf - The date or label to normalize.
+ * @returns {?string} An ISO date string (YYYY-MM-DD), or null if it can't be parsed.
+ */
 export function normalizeAsOf(asOf) {
   if (!asOf) return null
   const s = String(asOf).trim()
@@ -62,8 +81,14 @@ export function normalizeAsOf(asOf) {
   return Number.isFinite(parsed.getTime()) ? parsed.toISOString().slice(0, 10) : null
 }
 
-// Human phrasing for a staleness warning — keeps the wording consistent
-// across tools instead of each one inventing its own.
+/**
+ * Human phrasing for a staleness warning — keeps the wording consistent
+ * across tools instead of each one inventing its own.
+ * @param {*} asOf - The AS_OF date or label to check.
+ * @param {number} windowDays - Days before the data is considered stale.
+ * @param {Date} [now=new Date()] - The current date.
+ * @returns {?string} A label string, or null if asOf can't be parsed.
+ */
 export function freshnessLabel(asOf, windowDays, now = new Date()) {
   const { months, stale } = checkFreshness(asOf, windowDays, now)
   if (stale == null) return null

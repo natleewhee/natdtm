@@ -170,8 +170,14 @@ export const MATCH_TERMS = {
 // fixed lag, so a slow month self-heals without another anchor chase.
 const LOOKBACK_MONTHS = 6
 
-// Takes an optional Date (defaults to now) so it can be unit tested without
-// mocking global time. Returns candidates newest-first.
+/**
+ * Generates candidate LTA Car Cost Update PDF numbers (e.g. "M032") to
+ * try fetching, widening the search LOOKBACK_MONTHS back from a
+ * calendar-derived guess rather than assuming a fixed publishing lag
+ * (LTA doesn't publish on a strict +1-per-month cadence).
+ * @param {Date} [now=new Date()] - The current date (injectable for testing).
+ * @returns {string[]} Candidate PDF numbers, newest-first.
+ */
 export function getPdfNumbers(now = new Date()) {
   const y = now.getUTCFullYear()
   const m = now.getUTCMonth() + 1
@@ -250,6 +256,16 @@ function findFlateStreams(bytes) {
 // their content streams, so that first pass alone yields ~0 characters on
 // them; when it does, every /FlateDecode stream in the document is
 // inflated and scanned the same way.
+/**
+ * Extracts text content from a PDF binary buffer. Tries the plain
+ * (uncompressed-stream) heuristic first, falling back to inflating every
+ * /FlateDecode stream in the document (the near-universal case for
+ * real-world PDFs, LTA's included) and scanning the combined pool, then
+ * a last-resort "grab any parenthesised string" pass if structured
+ * BT/ET extraction still comes up short.
+ * @param {Buffer|Uint8Array} buffer - The raw PDF file bytes.
+ * @returns {string} Extracted text content (may be empty/sparse if extraction failed).
+ */
 export function extractPdfText(buffer) {
   const bytes = Buffer.isBuffer(buffer) ? buffer : Buffer.from(buffer)
 
@@ -292,6 +308,16 @@ export function extractPdfText(buffer) {
 // "41 BYD ATTO 3 EXTENDED RANGE A 100 E 64 A 28519 8784 31927 -22500 -7500 350 106320 39580 145900 - 246388 - 100488"
 // We split line by line, look for lines starting with a row number, then
 // extract the name tokens and the numeric columns.
+/**
+ * Parses extracted LTA Car Cost Update PDF text into rows of {name,
+ * sellingPrice, omv, vesAmount, rowNum}, using row-number-prefixed lines
+ * and heuristics over the numeric columns (selling price is typically
+ * the larger of two consecutive large numbers near the end of the row)
+ * to recover each car's name and cost figures from the table layout.
+ * @param {string} text - Extracted PDF text (see {@link extractPdfText}).
+ * @returns {Array<{name: string, sellingPrice: number, omv: (number|null), vesAmount: number, rowNum: number}>}
+ *   Parsed rows.
+ */
 export function parseLTARows(text) {
   const results = []
   const lines = text.split('\n')
@@ -404,6 +430,15 @@ export function parseLTARows(text) {
 // term across all ids (not the first id that happens to have a substring
 // match) so that e.g. "ioniq 5 n" resolves to ioniq5n rather than ioniq5,
 // regardless of key ordering in MATCH_TERMS.
+/**
+ * Matches an LTA model name to our internal car ID, picking the LONGEST
+ * matching term across all IDs (not the first ID with a substring match)
+ * so e.g. "ioniq 5 n" resolves to ioniq5n rather than ioniq5, regardless
+ * of key ordering in matchTerms.
+ * @param {string} ltaName - The LTA model name to match.
+ * @param {object} [matchTerms=MATCH_TERMS] - Map of internal car ID to match-term substrings.
+ * @returns {?string} The matched internal car ID, or null if nothing matched.
+ */
 export function matchToId(ltaName, matchTerms = MATCH_TERMS) {
   const lower = ltaName.toLowerCase()
   let bestId = null
@@ -425,6 +460,13 @@ export function matchToId(ltaName, matchTerms = MATCH_TERMS) {
 // silently serving a mostly-empty price map as a normal update.
 export const MIN_COVERAGE = 30
 
+/**
+ * Whether a parse matched too few cars to trust — likely the LTA PDF
+ * layout has drifted from what MATCH_TERMS expects, or the fetch
+ * returned a near-empty/garbled document.
+ * @param {number} matchedCars - Number of cars successfully matched.
+ * @returns {boolean} True if matchedCars is below MIN_COVERAGE.
+ */
 export function isLowCoverage(matchedCars) {
   return matchedCars < MIN_COVERAGE
 }
@@ -437,6 +479,16 @@ export function isLowCoverage(matchedCars) {
 // OMV/VES must clear any stale value, not silently inherit one from a
 // different trim, or the displayed price ends up paired with another
 // trim's government-cost breakdown.
+/**
+ * Reduces parsed PDF rows (possibly several trims per car) down to one
+ * price/OMV/VES entry per car ID, keeping the LOWEST selling price
+ * (cheapest trim). Whenever the cheapest-price row for a car changes,
+ * omv/ves are reset to that new row's own values rather than left
+ * holding a previous, more expensive trim's figures.
+ * @param {Array<object>} rows - Parsed LTA rows (see {@link parseLTARows}).
+ * @param {object} [matchTerms=MATCH_TERMS] - Map of internal car ID to match-term substrings.
+ * @returns {{priceMap: object, omvMap: object, vesMap: object}} Per-car-ID maps of selling price, OMV, and VES.
+ */
 export function buildPriceMaps(rows, matchTerms = MATCH_TERMS) {
   const priceMap = {}
   const omvMap = {}

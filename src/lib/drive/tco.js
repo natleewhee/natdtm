@@ -38,6 +38,14 @@ const ROAD_TAX_BANDS_EV = [
   { maxOmv: Infinity, annual: 2800 },
 ]
 
+/**
+ * Estimates annual road tax by OMV band, a rough approximation of LTA's
+ * exact engine-capacity/power-rating formula (which needs cc/kW data
+ * this app doesn't have for every car). Pure EVs use a lower schedule.
+ * @param {?number} omv - Open Market Value in dollars.
+ * @param {boolean} pureEV - Whether the car is a pure EV.
+ * @returns {number} Estimated annual road tax in dollars.
+ */
 export function estimateRoadTax(omv, pureEV) {
   const bands = pureEV ? ROAD_TAX_BANDS_EV : ROAD_TAX_BANDS_ICE
   return bands.find(b => (omv ?? 0) <= b.maxOmv).annual
@@ -52,6 +60,14 @@ const INSURANCE_BANDS = [
   { maxOmv: Infinity, annual: 4200 },
 ]
 
+/**
+ * Estimates annual comprehensive insurance premium by OMV band, with a
+ * small EV loading (EV repair costs — battery, sensors, body panels —
+ * tend to run higher). Not a quote; driver profile affects real pricing enormously.
+ * @param {?number} omv - Open Market Value in dollars.
+ * @param {boolean} pureEV - Whether the car is a pure EV.
+ * @returns {number} Estimated annual insurance premium in dollars.
+ */
 export function estimateInsurance(omv, pureEV) {
   const base = INSURANCE_BANDS.find(b => (omv ?? 0) <= b.maxOmv).annual
   return pureEV ? Math.round(base * 1.1) : base
@@ -70,6 +86,14 @@ const BRAND_ALIASES = {
 // renew-or-replace tool's data rather than duplicating it) — falls back to
 // the 'toyota' baseline tier if nothing matches, same fallback
 // getAnnualMaintenance already uses for an unknown key.
+/**
+ * Guesses a maintenance brand key from a car's display name, matching
+ * against known brands in MAINTENANCE_BY_BRAND (via a small alias table
+ * for sub-brands like "Range Rover" that don't contain their parent
+ * brand's name/label), falling back to the 'toyota' baseline tier.
+ * @param {string} carName - The car's display name.
+ * @returns {string} A maintenance brand key from MAINTENANCE_BY_BRAND (or 'toyota' as fallback).
+ */
 export function guessBrandKey(carName) {
   const lower = (carName || '').toLowerCase()
   for (const alias of Object.keys(BRAND_ALIASES)) {
@@ -82,8 +106,14 @@ export function guessBrandKey(carName) {
   return 'toyota'
 }
 
-// Full first-year running-cost estimate for a car, on top of the loan
-// instalment and depreciation already covered by calc.js.
+/**
+ * Full first-year running-cost estimate for a car — road tax, insurance,
+ * maintenance, and parking — on top of the loan instalment and
+ * depreciation already covered by calc.js.
+ * @param {object} car - The car record (name, omv, rateTier, type).
+ * @returns {{roadTax: number, insurance: number, maintenance: number, parking: number, total: number, monthly: number, brandKey: string}}
+ *   The annual running-cost breakdown.
+ */
 export function estimateAnnualRunningCosts(car) {
   const pureEV = isPureEV(car)
   const brandKey = guessBrandKey(car.name)

@@ -60,6 +60,9 @@ const LIFE_PARTIAL_RATIO = BENCHMARKS.LIFE_PARTIAL_MULTIPLE / BENCHMARKS.LIFE_AD
 /**
  * Resolve a risk-profile key to its CI/Life adequate + partial multiples.
  * Unknown/missing keys fall back to "balanced" (today's default behaviour).
+ * @param {?string} riskProfile - A key into RISK_PROFILES ('conservative' | 'balanced' | 'selfInsured'), or null.
+ * @returns {{profile: object, ciAdequateMultiple: number, ciPartialMultiple: number, lifeAdequateMultiple: number, lifePartialMultiple: number}}
+ *   The resolved profile and its scaled multiples.
  */
 export function getProfileBenchmarks(riskProfile) {
   const profile = RISK_PROFILES[riskProfile] ?? RISK_PROFILES.balanced;
@@ -161,7 +164,8 @@ function roundScore(value) {
 
 /**
  * Hospitalisation — binary gate.
- * Returns { score: 0|50|100, passed: bool, isUnsure: bool }
+ * @param {'yes'|'no'|'unsure'} hasHosp - Whether the user has hospitalisation cover.
+ * @returns {{score: number, passed: boolean, isUnsure: boolean}} score is 100/25/0 for yes/unsure/no.
  */
 export function scoreHospitalisation(hasHosp) {
   if (hasHosp === 'yes')    return { score: 100, passed: true,  isUnsure: false };
@@ -176,6 +180,17 @@ export function scoreHospitalisation(hasHosp) {
  * count toward the benchmark. adequateMultiple/partialMultiple default to
  * the standard 5×/2× benchmarks but can be swapped for a risk profile's
  * multiples (see getProfileBenchmarks).
+ */
+/**
+ * @param {'yes'|'no'|'unsure'} hasCI - Whether the user has CI cover.
+ * @param {?number} ciAmount - Exact CI sum assured in SGD, or null if unknown.
+ * @param {?string} ciBand - Band fallback ('low'|'partial'|'high') if ciAmount is null.
+ * @param {number} annualIncome - Annual income in SGD.
+ * @param {number} [outstandingDebt=0] - Outstanding debt in SGD, added to the target.
+ * @param {number} [adequateMultiple=BENCHMARKS.CI_ADEQUATE_MULTIPLE] - Income multiple for full marks.
+ * @param {number} [partialMultiple=BENCHMARKS.CI_PARTIAL_MULTIPLE] - Income multiple for the "partial" band midpoint.
+ * @returns {{score: number, amount: number, isEstimated: boolean, multiple: number, target: number, adequateMultiple: number}}
+ *   The CI base score (0-100) and supporting figures.
  */
 export function scoreCIBase(
   hasCI, ciAmount, ciBand, annualIncome, outstandingDebt = 0,
@@ -209,6 +224,11 @@ export function scoreCIBase(
 
 /**
  * ECI boost (0–20 points added to CI base).
+ * @param {'yes'|'no'|'unsure'} hasECI - Whether the user has ECI cover.
+ * @param {?number} eciAmount - Exact ECI sum assured in SGD, or null if unknown.
+ * @param {?string} eciBand - Band fallback ('none'|'low'|'mid'|'high') if eciAmount is null.
+ * @param {number} annualIncome - Annual income in SGD.
+ * @returns {{boost: number, amount: number, isEstimated: boolean}} The ECI boost (0/5/10/20) and supporting figures.
  */
 export function scoreECIBoost(hasECI, eciAmount, eciBand, annualIncome) {
   if (hasECI === 'no') return { boost: 0, amount: 0, isEstimated: false };
@@ -235,7 +255,18 @@ export function scoreECIBoost(hasECI, eciAmount, eciBand, annualIncome) {
 }
 
 /**
- * Combined resilience score = min(CI base + ECI boost, 100)
+ * Combined resilience score = min(CI base + ECI boost, 100).
+ * @param {'yes'|'no'|'unsure'} hasCI - Whether the user has CI cover.
+ * @param {?number} ciAmount - Exact CI sum assured in SGD, or null.
+ * @param {?string} ciBand - CI band fallback.
+ * @param {'yes'|'no'|'unsure'} hasECI - Whether the user has ECI cover.
+ * @param {?number} eciAmount - Exact ECI sum assured in SGD, or null.
+ * @param {?string} eciBand - ECI band fallback.
+ * @param {number} annualIncome - Annual income in SGD.
+ * @param {number} [outstandingDebt=0] - Outstanding debt in SGD.
+ * @param {number} [ciAdequateMultiple=BENCHMARKS.CI_ADEQUATE_MULTIPLE] - Income multiple for full CI marks.
+ * @param {number} [ciPartialMultiple=BENCHMARKS.CI_PARTIAL_MULTIPLE] - Income multiple for the CI "partial" band midpoint.
+ * @returns {{score: number, ci: object, eci: object, isEstimated: boolean}} The combined resilience score and its components.
  */
 export function scoreResilience(
   hasCI, ciAmount, ciBand, hasECI, eciAmount, eciBand, annualIncome, outstandingDebt = 0,
@@ -262,6 +293,18 @@ export function scoreResilience(
  * target drops to just outstanding debt + a final-expenses buffer.
  * adequateMultiple/partialMultiple default to the standard 9×/5× benchmarks
  * but can be swapped for a risk profile's multiples.
+ */
+/**
+ * @param {'yes'|'no'|'unsure'} hasLife - Whether the user has Life/TPD cover.
+ * @param {?number} lifeAmount - Exact Life/TPD sum assured in SGD, or null.
+ * @param {?string} lifeBand - Band fallback ('low'|'partial'|'high') if lifeAmount is null.
+ * @param {number} annualIncome - Annual income in SGD.
+ * @param {number} [outstandingDebt=0] - Outstanding debt in SGD.
+ * @param {number} [adequateMultiple=BENCHMARKS.LIFE_ADEQUATE_MULTIPLE] - Income multiple for full marks.
+ * @param {number} [partialMultiple=BENCHMARKS.LIFE_PARTIAL_MULTIPLE] - Income multiple for the "partial" band midpoint.
+ * @param {'yes'|'no'|'unsure'} [hasDependents='yes'] - 'no' drops the target to debt + final-expenses buffer.
+ * @returns {{score: number, amount: number, isEstimated: boolean, multiple: number, target: number, adequateMultiple: number, usesIncomeMultiple: boolean}}
+ *   The Life/TPD score (0-100) and supporting figures.
  */
 export function scoreLife(
   hasLife, lifeAmount, lifeBand, annualIncome, outstandingDebt = 0,
@@ -301,7 +344,10 @@ export function scoreLife(
 /**
  * Premium efficiency score (0–100).
  * Full marks up to PREMIUM_SAFE_RATIO, tapering linearly to 0 at PREMIUM_HIGH_RATIO.
- * Returns null if monthlyPremium not provided.
+ * @param {?number} monthlyPremium - Monthly premium in SGD, or null/undefined if skipped.
+ * @param {number} annualIncome - Annual income in SGD.
+ * @returns {{score: (number|null), annualPremium: (number|null), ratio: (number|null), isOverpaying: boolean}}
+ *   The premium efficiency score, or all-null fields if monthlyPremium was not provided.
  */
 export function scorePremium(monthlyPremium, annualIncome) {
   if (monthlyPremium === null || monthlyPremium === undefined) {
@@ -329,6 +375,10 @@ export function scorePremium(monthlyPremium, annualIncome) {
  * Target = 60% of gross monthly income, the typical DI payout benchmark.
  * Returns score: null if the question was skipped (not asked yet), distinct
  * from score: 0 (asked, and no DI cover).
+ * @param {?('yes'|'no'|'unsure')} hasDI - Whether the user has DI cover, or null/undefined if unasked.
+ * @param {?number} monthlyBenefit - Monthly DI payout in SGD, if known.
+ * @param {number} annualIncome - Annual income in SGD.
+ * @returns {{score: (number|null), amount: number, target: number, isEstimated: boolean}} The DI score and supporting figures.
  */
 export function scoreDI(hasDI, monthlyBenefit, annualIncome) {
   const monthlyIncome = annualIncome > 0 ? annualIncome / 12 : 0;
@@ -1037,6 +1087,11 @@ export function explainPillar(id, result) {
 // UTILITIES
 // ---------------------------------------------------------------------------
 
+/**
+ * Formats a number as an SGD currency string, no decimal places.
+ * @param {*} amount - The amount to format.
+ * @returns {string} Formatted SGD string, or '—' if amount is falsy and not 0.
+ */
 export function formatSGD(amount) {
   if (!amount && amount !== 0) return '—';
   return new Intl.NumberFormat('en-SG', {
@@ -1046,6 +1101,11 @@ export function formatSGD(amount) {
   }).format(amount);
 }
 
+/**
+ * Looks up display colors for a score band.
+ * @param {string} color - A SCORE_BANDS color key ('red'|'amber'|'blue'|'teal').
+ * @returns {{bg: string, text: string, arc: string}} The color set, falling back to 'red' if unknown.
+ */
 export function getBandColor(color) {
   const map = {
     red:   { bg: '#3a1414', text: '#fca5a5', arc: '#ef4444' },
@@ -1056,6 +1116,12 @@ export function getBandColor(color) {
   return map[color] ?? map.red;
 }
 
+/**
+ * Looks up display colors/labels for an insight card severity.
+ * @param {string} severity - 'critical' | 'warning' | 'info' | 'nudge'.
+ * @returns {{border: string, text: string, bg: string, pillBg: string, pillText: string, pillLabel: string}}
+ *   The style set, falling back to 'info' if unknown.
+ */
 export function getSeverityStyle(severity) {
   // `border`/`arc`-style colors are tuned for use as a saturated accent
   // (borders, bars, pill fills paired with white text) — too light to pass

@@ -24,6 +24,12 @@ const BSD_TIERS = [
   { upTo: Infinity, rate: 0.06 },
 ]
 
+/**
+ * Buyer's Stamp Duty, tiered on purchase price / market value (whichever
+ * is higher). Same schedule for HDB and private residential property.
+ * @param {number} price - Purchase price or market value, whichever is higher, in dollars.
+ * @returns {number} BSD payable in dollars.
+ */
 export function calcBSD(price) {
   return tieredTax(price, BSD_TIERS)
 }
@@ -69,6 +75,19 @@ export const SSD_REGIME_CUTOVER_DATE = '2025-07-04'
 // existing caller that hasn't been updated to pass it, since assuming
 // the new (worse for the seller) rate by default would understate SSD
 // for anyone who genuinely bought before the cutover.
+/**
+ * Seller's Stamp Duty for private residential property (always 0 for
+ * HDB, which is governed by the Minimum Occupation Period instead).
+ * `purchaseDate` selects which schedule applies (old 3-year schedule vs.
+ * the schedule for property bought on/after SSD_REGIME_CUTOVER_DATE);
+ * `yearsHeld` selects the tier within that schedule. Omitting
+ * `purchaseDate` defaults to the old (safer, lower) schedule.
+ * @param {number} salePrice - Sale price in dollars.
+ * @param {number} yearsHeld - Years the property was held before sale.
+ * @param {string} propertyType - 'private' to compute SSD; anything else returns zero.
+ * @param {?string} [purchaseDate=null] - ISO date string of purchase, used to pick the schedule.
+ * @returns {{rate: number, amount: number}} The applicable SSD rate and amount in dollars.
+ */
 export function calcSSD(salePrice, yearsHeld, propertyType, purchaseDate = null) {
   const p = Number(salePrice)
   if (propertyType !== 'private' || !Number.isFinite(p) || p <= 0 || !Number.isFinite(yearsHeld)) {

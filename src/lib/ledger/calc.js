@@ -48,6 +48,16 @@ export const TAKE_HOME_RATE = 0.80
 // HouseMuch sale calculation instead of asking for them again. Cash
 // savings has no source tool to sync from, so it always starts at zero
 // and is manual-entry only.
+/**
+ * Builds a baseline ledger state from the shared "My Numbers" store
+ * (src/lib/shared/profile.js) — whatever HouseMuch/DriveReady/RetireWell
+ * last saved, filled to zero/null where a module is empty. Cash savings
+ * has no source tool to sync from, so it always starts at zero and is
+ * manual-entry only.
+ * @param {object} myNumbers - The shared "My Numbers" store, keyed by tool (house, drive, retire, insure, tax, etf, flow).
+ * @returns {object} A resolved ledger state: salary, monthlyTakeHome, insurancePremium,
+ *   livingExpenses, house, car, cpf, investmentBalance, cashSavings.
+ */
 export function buildBaselineState(myNumbers) {
   const { house, drive, retire, insure, tax, etf, flow } = myNumbers || {}
   return {
@@ -94,6 +104,19 @@ export function buildBaselineState(myNumbers) {
 // numbers, the same way HouseMuch's NextPurchase does — reducing-balance
 // instalment on a fresh loan, BSD from the public schedule. downpaymentPct
 // defaults to 25% (75% loan), the standard first-home-loan LTV ceiling.
+/**
+ * Turns a "buying a new house" input into the actual loan/instalment/BSD
+ * numbers, the same way HouseMuch's NextPurchase does — reducing-balance
+ * instalment on a fresh loan, BSD from the public schedule.
+ * @param {object} params - Purchase inputs.
+ * @param {number} [params.price=0] - Purchase price in dollars.
+ * @param {number} [params.downpaymentPct=25] - Downpayment percentage (default 25%, the standard first-home-loan LTV ceiling).
+ * @param {number} [params.rate=0] - Annual mortgage rate as a percentage.
+ * @param {number} [params.tenureYears=25] - Loan tenure in years.
+ * @param {number} [params.otherFees=0] - Other one-off fees in dollars.
+ * @returns {{price: number, downpaymentAmount: number, loanAmount: number, monthlyInstalment: number, bsd: number, otherFees: number, cashNeeded: number}}
+ *   The resolved purchase figures.
+ */
 export function calcHousePurchase({ price = 0, downpaymentPct = 25, rate = 0, tenureYears = 25, otherFees = 0 }) {
   const p = Math.max(0, Number(price) || 0)
   const downPct = Math.max(0, Math.min(100, Number(downpaymentPct) || 0))
@@ -113,6 +136,24 @@ export function calcHousePurchase({ price = 0, downpaymentPct = 25, rate = 0, te
 // of a HouseMuch sale calculation (synced automatically if you've run
 // one, editable either way). Cash and CPF are pooled together as "funds
 // available" here, same simplification NextPurchase itself documents.
+/**
+ * "Upgrading" — sell the current house, then use the sale proceeds plus
+ * CPF refund toward a new house — reusing HouseMuch's own NextPurchase
+ * engine (calcNextPurchase) rather than re-deriving the
+ * funds-required-vs-funds-available math. Cash and CPF are pooled
+ * together as "funds available", same simplification NextPurchase itself documents.
+ * @param {object} params - Upgrade inputs.
+ * @param {number} [params.cashProceeds=0] - Cash proceeds from the prior sale, in dollars.
+ * @param {number} [params.totalCPFRefund=0] - CPF refund from the prior sale, in dollars.
+ * @param {number} [params.price=0] - New property price in dollars.
+ * @param {number} [params.downpaymentPct=25] - Downpayment percentage.
+ * @param {number} [params.rate=0] - Annual mortgage rate as a percentage.
+ * @param {number} [params.tenureYears=25] - Loan tenure in years.
+ * @param {number} [params.otherFees=0] - Other one-off fees in dollars.
+ * @param {number} [params.absd=0] - ABSD payable, in dollars.
+ * @returns {object} price, loanAmount, monthlyInstalment, bsd, downpayment, cashProceeds,
+ *   totalCPFRefund, fundsRequired, fundsAvailable, gap, surplus.
+ */
 export function calcHouseUpgrade({
   cashProceeds = 0, totalCPFRefund = 0,
   price = 0, downpaymentPct = 25, rate = 0, tenureYears = 25, otherFees = 0, absd = 0,
@@ -150,6 +191,19 @@ export function calcHouseUpgrade({
 // module was auto-synced from a HouseMuch sale, its figures are
 // already scaled there (see src/app/house/page.js) — yourSharePct here
 // is for a scenario's own manually-entered or purchase/upgrade mortgage.
+/**
+ * Resolves a scenario's house input — a plain existing-mortgage shape, a
+ * { mode: 'purchase', ... } shape, or a { mode: 'upgrade', ... } shape —
+ * into the { outstandingBalance, monthlyInstalment, propertyValue } shape
+ * every other function here expects, plus cashImpact: how much the
+ * choice adds to (positive) or draws from (negative) cash savings.
+ * `house.yourSharePct` (default 100) scales outstandingBalance,
+ * monthlyInstalment, and propertyValue together so a joint loan's equity
+ * contribution comes out as YOUR share of equity.
+ * @param {?object} house - The house module input, or null/undefined for no house.
+ * @returns {{resolved: (object|null), cashImpact: number, detail: (object|null)}}
+ *   The resolved house figures, the cash impact of the choice, and any purchase/upgrade detail.
+ */
 export function resolveHouseModule(house) {
   if (!house) return { resolved: null, cashImpact: 0, detail: null }
 
@@ -212,6 +266,13 @@ export function resolveHouseModule(house) {
   }
 }
 
+/**
+ * Net worth from a resolved ledger state: property equity + car equity +
+ * total CPF + investment balance + cash savings.
+ * @param {object} state - A resolved ledger state (see {@link buildBaselineState}).
+ * @returns {{propertyEquity: number, carEquity: number, cpfTotal: number, investmentBalance: number, cashSavings: number, netWorth: number}}
+ *   The net worth breakdown.
+ */
 export function calcNetWorth(state) {
   const propertyEquity = state.house ? (state.house.propertyValue || 0) - (state.house.outstandingBalance || 0) : 0
   const carEquity = state.car ? (state.car.carValue || 0) - (state.car.loanOutstanding || 0) : 0
@@ -225,6 +286,14 @@ export function calcNetWorth(state) {
 // Insurance premiums are a real monthly commitment but they are NOT a
 // debt obligation, so they reduce what you can invest without counting
 // toward TDSR or MSR — banks don't count them either.
+/**
+ * Monthly obligations from a resolved ledger state. Insurance premiums
+ * are a real monthly commitment but NOT a debt obligation, so they're
+ * broken out separately from `debt` (what a bank counts toward TDSR/MSR).
+ * @param {object} state - A resolved ledger state.
+ * @returns {{mortgage: number, car: number, insurance: number, debt: number, total: number}}
+ *   `debt` is mortgage+car (bank-counted); `total` is everything that actually leaves the account.
+ */
 export function calcMonthlyObligations(state) {
   const mortgage = state.house?.monthlyInstalment || 0
   const car = state.car?.monthlyInstalment || 0
@@ -240,6 +309,14 @@ export function calcMonthlyObligations(state) {
 // the per-tool TDSR checks (e.g. DriveReady's) only ever see their own
 // loan plus a flat "existing debt" figure the user has to remember to
 // fill in; this sums the actual modules instead.
+/**
+ * Total Debt Servicing Ratio across every debt in the ledger, not just
+ * one loan at a time — sums the actual house and car modules instead of
+ * relying on a flat "existing debt" figure entered per-tool.
+ * @param {object} state - A resolved ledger state.
+ * @returns {{obligations: number, tdsr: (number|null), exceeded: boolean}}
+ *   Monthly debt obligations, the TDSR ratio (null if salary is 0), and whether it exceeds TDSR_LIMIT.
+ */
 export function calcTDSR(state) {
   const obligations = calcMonthlyObligations(state).debt
   const salary = state.salary || 0
@@ -255,6 +332,14 @@ export function calcTDSR(state) {
 // property, where MSR simply doesn't apply.
 export const MSR_LIMIT = 0.30
 
+/**
+ * Mortgage Servicing Ratio — 30% of gross monthly income, counting ONLY
+ * the property loan. Applies to HDB flats and ECs bought from a
+ * developer, where it's often the binding constraint over the 55% TDSR.
+ * @param {object} state - A resolved ledger state.
+ * @returns {{applicable: boolean, msr: (number|null), exceeded: boolean, mortgage?: number}}
+ *   `applicable` is false (with msr null) for non-HDB property, where MSR doesn't apply.
+ */
 export function calcMSR(state) {
   if (state.house?.propertyType !== 'hdb') return { applicable: false, msr: null, exceeded: false }
   const mortgage = state.house?.monthlyInstalment || 0
@@ -268,6 +353,14 @@ export function calcMSR(state) {
 // AND income tax); otherwise falls back to the flat 80%-of-gross
 // approximation the rest of the suite uses, which is roughly right below
 // 55 and increasingly wrong above it.
+/**
+ * Take-home pay. Prefers an exact after-tax figure from TaxWise when one
+ * has been computed (accounts for the age-banded employee CPF share and
+ * income tax); otherwise falls back to the flat 80%-of-gross
+ * approximation, which is roughly right below 55 and increasingly wrong above it.
+ * @param {object} state - A resolved ledger state.
+ * @returns {{takeHome: number, exact: boolean}} Monthly take-home pay, and whether it's the exact TaxWise figure.
+ */
 export function calcTakeHome(state) {
   if (state.monthlyTakeHome > 0) return { takeHome: state.monthlyTakeHome, exact: true }
   return { takeHome: (state.salary || 0) * TAKE_HOME_RATE, exact: false }
@@ -278,6 +371,13 @@ export function calcTakeHome(state) {
 // living costs were zero, overstating capacity by whatever someone
 // actually spends on food, transport, utilities and everything else
 // that isn't a loan or insurance premium.
+/**
+ * Monthly capacity to invest, right now. Subtracts FlowState's measured
+ * living expenses when available, rather than implicitly assuming
+ * living costs are zero.
+ * @param {object} state - A resolved ledger state.
+ * @returns {number} Monthly investable capacity in dollars, floored at 0.
+ */
 export function calcInvestmentCapacity(state) {
   const { takeHome } = calcTakeHome(state)
   const obligations = calcMonthlyObligations(state).total
@@ -291,6 +391,16 @@ export function calcInvestmentCapacity(state) {
 // tenure is up, and capacity steps up accordingly. Insurance premiums
 // and living expenses have no tenure and are assumed to continue
 // throughout.
+/**
+ * Investment capacity month by month over the accumulation period. Loans
+ * END — a 7-year car loan does not keep draining a 30-year projection —
+ * so each obligation drops out once its remaining tenure is up, and
+ * capacity steps up accordingly. Insurance premiums and living expenses
+ * are assumed to continue throughout (no tenure).
+ * @param {object} state - A resolved ledger state.
+ * @param {number} months - Number of months to project.
+ * @returns {number[]} Monthly investable capacity for each month, floored at 0.
+ */
 export function buildCapacitySchedule(state, months) {
   const { takeHome } = calcTakeHome(state)
   const insurance = state.insurancePremium || 0
@@ -316,6 +426,16 @@ export function buildCapacitySchedule(state, months) {
 // LEVEL contribution whose future value at retirement exactly equals
 // that of the real, time-varying schedule — so the flat figure handed to
 // RetireWell produces the same answer the varying one would.
+/**
+ * RetireWell's engine takes a single flat monthly contribution, but real
+ * capacity steps up as loans end. Rather than approximate with a simple
+ * average (which would misprice the compounding), this solves for the
+ * LEVEL contribution whose future value at retirement exactly equals
+ * that of the real, time-varying schedule.
+ * @param {number[]} schedule - Monthly capacity figures (see {@link buildCapacitySchedule}).
+ * @param {number} annualReturnPct - Assumed annual investment return, as a percentage.
+ * @returns {number} The level monthly contribution with the same future value as the schedule.
+ */
 export function levelEquivalentContribution(schedule, annualReturnPct) {
   const n = schedule.length
   if (n === 0) return 0
@@ -333,6 +453,16 @@ export function levelEquivalentContribution(schedule, annualReturnPct) {
 // engine, using the state's CPF/investment balances and salary as the
 // starting point and the level-equivalent of this state's real,
 // loan-tenure-aware capacity schedule as the monthly contribution.
+/**
+ * Runs a ledger state through RetireWell's own accumulation/depletion
+ * engine, using the state's CPF/investment balances and salary as the
+ * starting point and the level-equivalent of this state's real,
+ * loan-tenure-aware capacity schedule as the monthly contribution.
+ * @param {object} state - A resolved ledger state.
+ * @param {object} retireAssumptions - currentAge, retirementAge, investmentReturn, and other
+ *   fields accepted by calcRetirement (retire/calc.js).
+ * @returns {object} The result of calcRetirement (retire/calc.js).
+ */
 export function calcScenarioRetirement(state, retireAssumptions) {
   const { currentAge = 0, retirementAge = 0, investmentReturn = 0 } = retireAssumptions
   const months = Math.max(0, Math.round((retirementAge - currentAge) * 12))
@@ -351,6 +481,15 @@ export function calcScenarioRetirement(state, retireAssumptions) {
 
 // Runs every {label, state} scenario through the full stack and returns
 // one row per scenario, ready for a side-by-side comparison table.
+/**
+ * Runs every {label, state} scenario through the full stack and returns
+ * one row per scenario, ready for a side-by-side comparison table.
+ * @param {Array<{label: string, state: object}>} scenarios - Named ledger states to compare.
+ * @param {object} retireAssumptions - currentAge, retirementAge, investmentReturn, and other
+ *   fields accepted by calcRetirement.
+ * @returns {Array<object>} One row per scenario: label, netWorth, obligations, tdsr, msr,
+ *   takeHome, investmentCapacity, levelCapacity, finalCapacity, retirement.
+ */
 export function compareScenarios(scenarios, retireAssumptions) {
   const { currentAge = 0, retirementAge = 0, investmentReturn = 0 } = retireAssumptions
   const months = Math.max(0, Math.round((retirementAge - currentAge) * 12))

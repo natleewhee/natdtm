@@ -5,6 +5,16 @@
 // `tiers` is an ascending list of { upTo, rate }, where each tier's rate
 // applies only to the portion of `amount` between the previous tier's
 // upTo and this one's.
+/**
+ * Generic progressive/tiered-rate accumulator, applying each tier's rate
+ * only to the slice of `amount` within that tier — the same shape used
+ * by Buyer's Stamp Duty, non-owner-occupied property tax, and Singapore
+ * income tax bands.
+ * @param {number} amount - The amount to tax.
+ * @param {Array<{upTo: number, rate: number}>} tiers - Ascending tiers; each rate applies to the portion
+ *   of `amount` between the previous tier's `upTo` and this one's.
+ * @returns {number} Total tax across all tiers.
+ */
 export function tieredTax(amount, tiers) {
   const a = Number(amount)
   if (!Number.isFinite(a) || a <= 0) return 0

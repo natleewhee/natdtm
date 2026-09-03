@@ -42,11 +42,24 @@ export const COE_FALLBACK = { catA: 129000, catB: 130889 }
 // than an explicit warning.
 export const COE_FALLBACK_AS_OF = '2026-07-01' // Jul 2026 1st bidding (day approximated — source data is month-level only)
 
+/**
+ * Whether the hardcoded COE_FALLBACK pair is stale (bidding happens
+ * ~2x/month, so treated as stale after ~45 days).
+ * @param {Date} [now=new Date()] - The current date to check against.
+ * @returns {boolean} True if COE_FALLBACK_AS_OF is more than 45 days old.
+ */
 export function isCoeFallbackStale(now = new Date()) {
   const ageDays = (now.getTime() - new Date(COE_FALLBACK_AS_OF).getTime()) / 86400000
   return ageDays > 45
 }
 
+/**
+ * Additional Registration Fee on a tiered schedule of Open Market Value
+ * (effective Feb 2023): 100% on the first $20k, 140% on the next $20k,
+ * 190% on the next $20k, 250% on the next $20k, 320% above $80k.
+ * @param {number} omv - Open Market Value in dollars.
+ * @returns {number} Gross ARF in dollars.
+ */
 export function calcARF(omv) {
   if (omv <= 20000) return omv
   if (omv <= 40000) return 20000 + (omv - 20000) * 1.4
@@ -55,7 +68,12 @@ export function calcARF(omv) {
   return 20000 + 20000 * 1.4 + 20000 * 1.9 + 20000 * 2.5 + (omv - 80000) * 3.2
 }
 
-// PARF % by age at deregistration
+/**
+ * PARF rebate percentage by age at deregistration: 75% at ≤5yr, stepping
+ * down 5%/yr to 50% at 9–10yr, nil after 10yr.
+ * @param {number} ageYears - Vehicle age in years at deregistration.
+ * @returns {number} PARF rebate rate as a decimal (e.g. 0.75 for 75%).
+ */
 export function parfPct(ageYears) {
   if (ageYears <= 5)  return 0.75
   if (ageYears <= 6)  return 0.70
@@ -66,11 +84,23 @@ export function parfPct(ageYears) {
   return 0
 }
 
+/**
+ * PARF rebate in dollars, capped at PARF_CAP (S$60,000, for cars
+ * registered with COEs from the Feb 2023 second bidding onwards).
+ * @param {number} netArf - Net ARF (after VES/EEAI) in dollars.
+ * @param {number} ageYears - Vehicle age in years at deregistration.
+ * @returns {number} PARF rebate in dollars.
+ */
 export function calcPARF(netArf, ageYears) {
   return Math.min(netArf * parfPct(ageYears), PARF_CAP)
 }
 
-// COE rebate = unused months / 120 × COE paid
+/**
+ * COE rebate for the unused portion of a COE's 120-month term.
+ * @param {number} coePaid - COE premium paid, in dollars.
+ * @param {number} monthsRemaining - Months remaining on the COE.
+ * @returns {number} COE rebate in dollars, floored at 0.
+ */
 export function calcCOERebate(coePaid, monthsRemaining) {
   return Math.max(0, (monthsRemaining / 120) * coePaid)
 }
@@ -83,6 +113,15 @@ export function calcCOERebate(coePaid, monthsRemaining) {
 // understate that car's ARF and its true cost.
 const NON_EV_MARKERS = /hybrid|phev|e-power|plug-?in|mild/i
 
+/**
+ * Whether a car qualifies as a pure EV for EEAI purposes (fully electric
+ * only — NOT hybrids, PHEVs, or e-Power). Tesla is always treated as pure
+ * EV; otherwise the type field is checked against NON_EV_MARKERS to
+ * avoid a bare "Electric" substring match wrongly granting EEAI to a
+ * mislabeled hybrid.
+ * @param {{rateTier?: string, type?: string}} car - The car record.
+ * @returns {boolean} True if the car is a pure EV.
+ */
 export function isPureEV(car) {
   // EEAI applies to fully electric vehicles only — NOT hybrids, PHEVs, or e-Power
   // Tesla is always pure EV. Otherwise check the type field.
@@ -100,6 +139,14 @@ export function isPureEV(car) {
 // user they qualified for a loan a bank would reject. Every caller that
 // needs either value should derive it from OMV via this function rather
 // than trust a stored field.
+/**
+ * MAS LTV/COE-category threshold derived from OMV — the single source of
+ * truth for whether a car is Cat A or Cat B, and its maximum loan
+ * percentage. Every caller should derive this from OMV rather than trust
+ * a separately stored field.
+ * @param {?number} omv - Open Market Value in dollars.
+ * @returns {{coe: string, loanCap: number}} 'Cat A' (≤$20,000 OMV, 70% max loan) or 'Cat B' (60% max loan).
+ */
 export function omvToLtv(omv) {
   const catA = (omv ?? 0) <= 20000
   return { coe: catA ? 'Cat A' : 'Cat B', loanCap: catA ? 70 : 60 }
@@ -113,11 +160,27 @@ export function omvToLtv(omv) {
 // than just this number), but every OTHER minDown check in the app —
 // CarPicker's budget filter, coe-explained's demo — should call this
 // instead of re-deriving the un-rounded, untoleranced version.
+/**
+ * Minimum downpayment for a car at a given loan cap, rounded to cents so
+ * a downpayment of exactly the minimum doesn't read as insufficient due
+ * to float arithmetic (e.g. 60000.00000000001).
+ * @param {number} price - Car price in dollars.
+ * @param {number} loanCap - Maximum loan percentage (e.g. 70 for 70%).
+ * @returns {number} Minimum downpayment in dollars, rounded to cents.
+ */
 export function minDownFor(price, loanCap) {
   const maxLoan = price * (loanCap / 100)
   return Math.round((price - maxLoan) * 100) / 100
 }
 
+/**
+ * Net ARF: gross ARF minus VES rebate/surcharge minus EEAI (EV Early
+ * Adoption Incentive, pure EVs only — 45% of post-VES ARF, capped at $7,500).
+ * @param {number} omv - Open Market Value in dollars.
+ * @param {number} ves - VES rebate (positive) or surcharge (negative), in dollars.
+ * @param {boolean} pureEV - Whether the car qualifies for EEAI.
+ * @returns {{grossArf: number, vesAmount: number, eeai: number, netArf: number}} The ARF breakdown.
+ */
 export function calcNetARF(omv, ves, pureEV) {
   // Gross ARF → minus VES rebate/surcharge → minus EEAI for pure EVs only
   const grossArf = calcARF(omv || 0)
@@ -127,12 +190,27 @@ export function calcNetARF(omv, ves, pureEV) {
   return { grossArf, vesAmount, eeai, netArf: Math.max(0, afterVES - eeai) }
 }
 
+/**
+ * Resolves the COE premium to use — the live value when given, otherwise
+ * the hardcoded COE_FALLBACK by the car's COE category.
+ * @param {{coe: string}} car - The car record (needs its coe category).
+ * @param {?number} liveCOEPremium - Live COE premium, or null/undefined to use the fallback.
+ * @returns {number} COE premium in dollars.
+ */
 export function getCOEPremium(car, liveCOEPremium) {
   // Use live value if available, else use hardcoded fallback
   if (liveCOEPremium !== null && liveCOEPremium !== undefined) return liveCOEPremium
   return car.coe === 'Cat A' ? COE_FALLBACK.catA : COE_FALLBACK.catB
 }
 
+/**
+ * All government-mandated costs for a car: net ARF, excise duty, COE,
+ * and registration fee.
+ * @param {object} car - The car record (omv, ves, coe, rateTier, type).
+ * @param {?number} [liveCOEPremium=null] - Live COE premium override.
+ * @returns {{grossArf: number, vesAmount: number, eeai: number, netArf: number, duty: number, regFee: number, coe: number, total: number}}
+ *   The government-cost breakdown.
+ */
 export function calcGovtCosts(car, liveCOEPremium = null) {
   const pureEV = isPureEV(car)
   const ves = car.ves ?? 0
@@ -146,6 +224,18 @@ export function calcGovtCosts(car, liveCOEPremium = null) {
 
 const SGD = n => `S$${Math.round(n).toLocaleString('en-SG')}`
 
+/**
+ * Estimated distributor margin: car price minus all known government
+ * costs. Teslas are handled specially (their published subtotal ex-COE
+ * is shown as a fraction of price, not a margin). If price is at or
+ * below government costs — typically because a seeded sticker price
+ * predates the current COE level — flags the estimate as unreliable
+ * rather than showing a misleading S$0.
+ * @param {object} car - The car record (price, omv, ves, coe, rateTier, type, subtotalExCOE).
+ * @param {?number} [liveCOEPremium=null] - Live COE premium override.
+ * @returns {object} gap, gapPct, isTesla, govtCosts, label, sublabel, and (non-Tesla) unreliable,
+ *   or (Tesla) isSubtotal.
+ */
 export function calcPriceGap(car, liveCOEPremium = null) {
   const isTesla = car.rateTier === 'tesla'
   const govtCosts = calcGovtCosts(car, liveCOEPremium)
@@ -188,6 +278,16 @@ export function calcPriceGap(car, liveCOEPremium = null) {
   }
 }
 
+/**
+ * Depreciation figures for a car at a given ownership year: PARF rebate,
+ * COE rebate, resulting "paper value", and total/annual/monthly
+ * depreciation. Returns a zeroed object if any input produces NaN (e.g. missing car fields).
+ * @param {object} car - The car record (price, omv, ves, coe, rateTier, type).
+ * @param {number} y - Ownership year to evaluate.
+ * @param {?number} [liveCOEPremium=null] - Live COE premium override.
+ * @returns {{grossArf: number, netArf: number, eeai: number, coePaid: number, parf: number, coeRebate: number, paperValue: number, totalDepr: number, annualDepr: number, monthlyDepr: number}}
+ *   The depreciation breakdown.
+ */
 export function calcDepr(car, y, liveCOEPremium = null) {
   const pureEV = isPureEV(car)
   const ves = car.ves ?? 0
@@ -206,6 +306,19 @@ export function calcDepr(car, y, liveCOEPremium = null) {
            totalDepr, annualDepr:totalDepr/y, monthlyDepr:totalDepr/y/12 }
 }
 
+/**
+ * Full affordability calculation for a car: loan sizing, monthly
+ * instalment, comfort verdict (based on 80% take-home), TDSR (based on
+ * gross salary plus existing debt), and a year-by-year cost-of-ownership
+ * curve. Returns null on invalid inputs.
+ * @param {number} salary - Gross monthly salary in dollars.
+ * @param {number} down - Downpayment offered, in dollars.
+ * @param {number} tenure - Loan tenure in years (1-10).
+ * @param {object} car - The car record (price, loanCap, rateTier, coe, omv, ves, type).
+ * @param {?object} [liveCOE=null] - Live COE premiums {catA, catB}, or null to use the fallback.
+ * @param {number} [existingDebt=0] - Existing monthly debt obligations, in dollars.
+ * @returns {?object} The full affordability breakdown, or null if inputs are invalid.
+ */
 export function calc(salary, down, tenure, car, liveCOE = null, existingDebt = 0) {
   // Coerce and validate inputs — reject non-numeric, non-positive, or absurd values
   salary = Number(salary)
@@ -272,6 +385,17 @@ export function calc(salary, down, tenure, car, liveCOE = null, existingDebt = 0
            salary, down, tenure, existingDebt, tdsr, tdsrExceeded }
 }
 
+/**
+ * Reverse-solves the maximum affordable car price, given salary,
+ * downpayment, and tenure, under both the comfort limit (30% of
+ * take-home) and the TDSR limit — whichever binds — for both Cat A and Cat B.
+ * @param {number} salary - Gross monthly salary in dollars.
+ * @param {number} down - Downpayment available, in dollars.
+ * @param {number} tenure - Loan tenure in years.
+ * @param {number} [existingDebt=0] - Existing monthly debt obligations, in dollars.
+ * @returns {?{catA: number, catB: number, takeHome: number, maxMonthly: number, maxMonthlyComfort: number, maxMonthlyTdsr: number, tdsrBinding: boolean}}
+ *   Affordable price ceilings for each COE category (rounded down to the nearest $1,000), or null if inputs are invalid.
+ */
 export function calcCeiling(salary, down, tenure, existingDebt = 0) {
   salary = Number(salary); down = Number(down); tenure = Number(tenure)
   existingDebt = Number(existingDebt)

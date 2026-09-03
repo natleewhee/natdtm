@@ -24,6 +24,24 @@ import {
 // the milestone age (55 for FRS, 65 for BHS), then freezes for life.
 // MediSave contributions beyond the applicable BHS overflow into SA the
 // same way real CPF contributions do.
+/**
+ * Simulates CPF (OA/SA/MA) and investment accumulation month by month
+ * from now to retirement age. Salary/bonus escalate annually, RSTU
+ * top-ups are credited to SA up to the applicable (cohort-frozen) FRS,
+ * MediSave overflow past the applicable (cohort-frozen) BHS spills into
+ * SA, and OA can be drawn down monthly for housing. CPF's Retirement
+ * Account sweep at 55 and CPF LIFE's real annuity mechanics are out of
+ * scope — OA/SA simply keep compounding through retirement age.
+ * @param {object} inputs - Accumulation inputs: currentAge, retirementAge, currentYear,
+ *   salary, salaryGrowthRate, annualBonus, startingOA, startingSA, startingMA,
+ *   housingOaMonthly, housingOaMonths, rstuAmount, rstuFrequency,
+ *   investmentStart, investmentMonthly, investmentReturn, and optionally
+ *   frozenFRS / frozenBHS to continue a prior segment's cohort sums (used
+ *   only by the scenario planner's segmented driver).
+ * @returns {object} months, oaFinal/saFinal/maFinal, cpfTotalFinal, investmentFinal,
+ *   rstuCappedAtAge, maCappedAtAge, bhsApplicableAtEnd, oaHousingShortfallAge,
+ *   frozenFRS, frozenBHS (this run's ending cohort sums), and a yearly `timeline`.
+ */
 export function simulateAccumulation(inputs) {
   const {
     currentAge = 0, retirementAge = 0,
@@ -161,6 +179,20 @@ export function simulateAccumulation(inputs) {
 // simpler to reason about, at the cost of not modeling CPF LIFE's actual
 // lifetime-annuity mechanics (see the-math page). MediSave is excluded:
 // it's earmarked for healthcare premiums, not everyday withdrawals.
+/**
+ * Determines the required nest egg using the classic safe-withdrawal-rate
+ * approach (withdraw a fixed % of the nest egg in year 1, then escalate
+ * that dollar amount by inflation thereafter), checked against the
+ * combined investment + CPF OA/SA portfolio (MediSave excluded, as it's
+ * earmarked for healthcare). Also solves for the extra monthly
+ * investment contribution, from today, needed to close any gap.
+ * @param {object} inputs - Target inputs: currentAge, retirementAge,
+ *   desiredMonthlyWithdrawal, inflationRate, swr, investmentReturn.
+ * @param {object} accumulation - The result of {@link simulateAccumulation}.
+ * @returns {object} desiredMonthlyWithdrawal, swr, yearsToRetirement,
+ *   inflatedMonthlyWithdrawal, requiredNestEgg, projectedPortfolio, gap,
+ *   onTrack, extraMonthlyNeeded.
+ */
 export function calcRetirementTarget(inputs, accumulation) {
   const {
     currentAge = 0, retirementAge = 0,
@@ -215,6 +247,18 @@ export function calcRetirementTarget(inputs, accumulation) {
 // whole simulation is the more honest check than the safe-withdrawal-rate
 // framing above, which assumes indefinite sustainability that a
 // money-market-heavy portfolio may not actually deliver.
+/**
+ * Simulates portfolio drawdown year by year from retirement age: withdraw
+ * the inflation-escalated amount, grow the remainder at the assumed
+ * money-market return (applied to the whole balance, including the CPF
+ * portion, as a simplifying and conservative assumption since CPF's
+ * guaranteed rates typically run higher).
+ * @param {object} inputs - retirementAge, lifeExpectancy, inflationRate, investmentReturn.
+ * @param {number} startingBalance - Portfolio balance at retirement, in dollars.
+ * @param {number} firstYearMonthlyWithdrawal - Monthly withdrawal in the first year, in dollars.
+ * @returns {{depletedAtAge: (number|null), rows: Array<{age: number, balance: number}>, lastsToLifeExpectancy: boolean}}
+ *   The age the portfolio hits zero (if it does), the year-by-year balances, and whether it lasted.
+ */
 export function simulateDepletion(inputs, startingBalance, firstYearMonthlyWithdrawal) {
   const {
     retirementAge = 0, lifeExpectancy = 90, inflationRate = 2.5, investmentReturn = 0,
@@ -245,6 +289,16 @@ export function simulateDepletion(inputs, startingBalance, firstYearMonthlyWithd
 }
 
 // ─── Orchestrator ─────────────────────────────────────────────────────────
+/**
+ * Orchestrates the full retirement projection: accumulation to
+ * retirement age, the nest-egg target check, and the post-retirement
+ * depletion simulation.
+ * @param {object} inputs - Retirement inputs, including currentAge, retirementAge,
+ *   lifeExpectancy, housingOaUntilAge, and every field accepted by
+ *   {@link simulateAccumulation} and {@link calcRetirementTarget}.
+ * @returns {{currentAge: number, retirementAge: number, lifeExpectancy: number, accumulation: object, target: object, depletion: object}}
+ *   The combined accumulation, target, and depletion results.
+ */
 export function calcRetirement(inputs) {
   const {
     currentAge = 0, retirementAge = 0, lifeExpectancy = 90,
