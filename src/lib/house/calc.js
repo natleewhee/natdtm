@@ -18,10 +18,23 @@ const SGT_OFFSET_MS = 8 * 3600 * 1000 // Singapore is fixed UTC+8, no DST
 // which would wrongly flip a same-day sale to saleIsInFuture and shift
 // every "as of today" CPF/interest override anchor by a day right when
 // someone opens this in the morning.
+/**
+ * Today's calendar date in Singapore time (fixed UTC+8, no DST), not the
+ * server/runtime's own UTC date — avoids being a day behind SGT between
+ * 00:00 and 08:00 SGT.
+ * @param {number} [nowMs=Date.now()] - Current time in epoch milliseconds.
+ * @returns {string} Today's date in Singapore time, as an ISO date string (YYYY-MM-DD).
+ */
 export function todaySGT(nowMs = Date.now()) {
   return new Date(nowMs + SGT_OFFSET_MS).toISOString().slice(0, 10)
 }
 
+/**
+ * Years elapsed between two ISO dates, as a decimal.
+ * @param {string} startISO - Start date, ISO format.
+ * @param {string} endISO - End date, ISO format.
+ * @returns {number} Years between the two dates, or 0 if either is missing/invalid or end is not after start.
+ */
 export function yearsBetween(startISO, endISO) {
   if (!startISO || !endISO) return 0
   const start = new Date(startISO).getTime()
@@ -30,7 +43,13 @@ export function yearsBetween(startISO, endISO) {
   return (end - start) / MS_PER_DAY / DAYS_PER_YEAR
 }
 
-// Standard reducing-balance monthly instalment: M = P·r(1+r)^n / ((1+r)^n − 1)
+/**
+ * Standard reducing-balance monthly instalment: M = P·r(1+r)^n / ((1+r)^n − 1).
+ * @param {number} principal - Loan principal in dollars.
+ * @param {number} annualRatePct - Annual interest rate as a percentage (e.g. 3 for 3%).
+ * @param {number} tenureYears - Loan tenure in years.
+ * @returns {number} Monthly instalment in dollars.
+ */
 export function calcMonthlyInstalment(principal, annualRatePct, tenureYears) {
   const P = Number(principal), r = Number(annualRatePct) / 100 / 12, n = Number(tenureYears) * 12
   if (!Number.isFinite(P) || P <= 0 || !Number.isFinite(n) || n <= 0) return 0
@@ -38,8 +57,15 @@ export function calcMonthlyInstalment(principal, annualRatePct, tenureYears) {
   return P * (r * Math.pow(1 + r, n)) / (Math.pow(1 + r, n) - 1)
 }
 
-// Outstanding principal balance after `monthsElapsed` of a standard
-// reducing-balance loan: B(t) = P·[(1+r)^n − (1+r)^t] / [(1+r)^n − 1]
+/**
+ * Outstanding principal balance after `monthsElapsed` of a standard
+ * reducing-balance loan: B(t) = P·[(1+r)^n − (1+r)^t] / [(1+r)^n − 1].
+ * @param {number} principal - Loan principal in dollars.
+ * @param {number} annualRatePct - Annual interest rate as a percentage.
+ * @param {number} tenureYears - Loan tenure in years.
+ * @param {number} monthsElapsed - Months elapsed since the loan started, clamped to [0, tenureYears*12].
+ * @returns {number} Outstanding principal balance in dollars.
+ */
 export function calcOutstandingBalance(principal, annualRatePct, tenureYears, monthsElapsed) {
   const P = Number(principal), r = Number(annualRatePct) / 100 / 12, n = Number(tenureYears) * 12
   if (!Number.isFinite(P) || P <= 0 || !Number.isFinite(n) || n <= 0) return 0
@@ -58,6 +84,16 @@ export function calcOutstandingBalance(principal, annualRatePct, tenureYears, mo
 // use the override field once you have it.
 export const CPF_OA_RATE = 0.025
 
+/**
+ * Interest a CPF principal used for property would have earned had it
+ * stayed in the Ordinary Account, compounded over the holding period.
+ * An approximation — CPF Board computes this per-withdrawal from each
+ * withdrawal's own date; use the override field for the exact CPF figure.
+ * @param {number} cpfPrincipal - CPF principal used, in dollars.
+ * @param {number} yearsHeld - Years the principal has been outstanding.
+ * @param {number} [rate=CPF_OA_RATE] - Annual interest rate (decimal, e.g. 0.025).
+ * @returns {number} Accrued interest in dollars.
+ */
 export function calcCPFAccruedInterest(cpfPrincipal, yearsHeld, rate = CPF_OA_RATE) {
   const P = Number(cpfPrincipal)
   if (!Number.isFinite(P) || P <= 0 || !Number.isFinite(yearsHeld) || yearsHeld <= 0) return 0
@@ -71,6 +107,14 @@ export function calcCPFAccruedInterest(cpfPrincipal, yearsHeld, rate = CPF_OA_RA
 // become 100%, crediting a co-borrower with zero stake in the full
 // household profit/loss instead of none. Also clamps > 100 / negative
 // entries, since nothing upstream validates the input field.
+/**
+ * Resolves a joint-loan share input to a percentage in [0, 100],
+ * defaulting to 100 (sole ownership) only when nothing usable was
+ * passed in — an explicit 0 is preserved rather than falling back
+ * (avoids the classic `Number(0) || 100` falsy-coercion trap).
+ * @param {*} pct - The share percentage input.
+ * @returns {number} A percentage clamped to [0, 100], defaulting to 100 if unusable.
+ */
 export function resolveSharePct(pct) {
   const n = Number(pct)
   if (!Number.isFinite(n)) return 100
@@ -88,6 +132,24 @@ export function resolveSharePct(pct) {
 // This also means BSD at purchase is computed from the public schedule
 // rather than asked for — only legal and agent fees (which aren't
 // government-set) are self-reported.
+/**
+ * Full house-sale waterfall: purchase fees, mortgage amortization
+ * projected to the sale date, CPF principal + accrued interest refund
+ * (per owner), stamp duty, cash proceeds, and true profit/loss (a
+ * property-economics figure independent of financing) plus ROI on price
+ * and on outlay, both point and annualized. Cash outlay at purchase is
+ * derived, not asked for, as purchase price + fees − loan − CPF used.
+ * Supports a two-owner joint purchase/sale, splitting outputs by
+ * ownership share (or, for cash proceeds, optionally by each owner's
+ * actual cash outlay).
+ * @param {object} inputs - Sale inputs: propertyType, purchasePrice, purchaseDate,
+ *   legalFeesAtPurchase, agentFeesAtPurchase, cpfOutlay, loanTaken, mortgageRate,
+ *   loanTenure, sunkCost, salePrice, saleDate, agentCommission, legalFeesAtSale,
+ *   various *Override fields, today, yourSharePct, personBCpfOutlay and its
+ *   overrides, and cashProceedsSplitMode ('share' | 'outlay').
+ * @returns {object} The full sale breakdown — costs, CPF refunds, true
+ *   profit/loss, ROI figures, MOP eligibility, and per-owner (personA/personB) splits.
+ */
 export function calcSale(inputs) {
   const {
     propertyType,
@@ -371,6 +433,18 @@ export function calcSale(inputs) {
 // interchangeable here for simplicity — in practice some costs may need
 // to be cash-only depending on your CPF withdrawal limits, so treat the
 // gap/surplus figure as indicative and confirm with your banker/lawyer.
+/**
+ * Funds-gap check for buying the next property: compares funds required
+ * (downpayment + BSD + ABSD + other fees) against funds available
+ * (carried forward from a Part A calcSale result's cash proceeds + CPF
+ * refund, plus any extra cash/CPF top-up). Cash and CPF are treated as
+ * interchangeable here for simplicity.
+ * @param {object} inputs - newPrice, newLoanAmount, newLoanTenure, newMortgageRate,
+ *   absd, otherFees, extraCash, extraCPF.
+ * @param {?object} saleResult - The result of {@link calcSale}, or null/undefined.
+ * @returns {{bsd: number, downpayment: number, fundsRequired: number, fundsAvailable: number, gap: number, surplus: boolean, newMonthlyInstalment: number}}
+ *   The funds-gap breakdown.
+ */
 export function calcNextPurchase(inputs, saleResult) {
   const {
     newPrice = 0, newLoanAmount = 0, newLoanTenure = 0, newMortgageRate = 0,

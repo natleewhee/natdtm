@@ -47,7 +47,6 @@ export default function TaxWisePage() {
   // here before, that's a stronger signal than a salary borrowed from
   // another tool.
   useEffect(() => {
-    /* eslint-disable react-hooks/set-state-in-effect */
     const saved = loadToolInputs('tax')
     if (saved) {
       setAge(saved.age ?? '')
@@ -78,7 +77,6 @@ export default function TaxWisePage() {
       }
     }
     setHasRestored(true)
-    /* eslint-enable react-hooks/set-state-in-effect */
   }, [])
 
   // Autosave every keystroke, same as DriveReady's own persistence, just
@@ -95,7 +93,6 @@ export default function TaxWisePage() {
     // and claiming success there would mislead the user into thinking their
     // inputs will be there next time when they won't be.
     if (ok) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect -- flashes the "Saved" indicator; not a render-affecting state sync
       setSavedTick(t => t + 1)
     }
   }, [
@@ -106,7 +103,6 @@ export default function TaxWisePage() {
 
   useEffect(() => {
     if (savedTick === 0) return
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- flashes the "Saved" indicator; not a render-affecting state sync
     setJustSaved(true)
     const t = setTimeout(() => setJustSaved(false), 1400)
     return () => clearTimeout(t)

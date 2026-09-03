@@ -295,7 +295,6 @@ function ActionPlan({ items }) {
     try {
       const raw = localStorage.getItem(ACTION_PLAN_STORAGE_KEY)
       // Must run post-mount: localStorage doesn't exist during SSR.
-      // eslint-disable-next-line react-hooks/set-state-in-effect
       if (raw) setChecked(JSON.parse(raw))
     } catch {}
   }, [])
@@ -424,7 +423,6 @@ export default function ResultsPage() {
       if (!raw) { router.push('/insure/check'); return }
       const parsed = JSON.parse(raw)
       // Must run post-mount: sessionStorage doesn't exist during SSR.
-      // eslint-disable-next-line react-hooks/set-state-in-effect
       setData(parsed)
 
       try {

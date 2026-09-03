@@ -49,6 +49,14 @@ const AGE_REPAIR = {
   tesla:      [0, 0, 0, 300,  600,  600, 1200, 2000, 4000, 8000],
 }
 
+/**
+ * Annual maintenance estimate for a brand at a given age: base annual
+ * service cost plus a non-linear, tier-based age-related repair cost.
+ * Falls back to the 'toyota' brand/tier if the key is unknown.
+ * @param {string} brandKey - Key into MAINTENANCE_BY_BRAND.
+ * @param {number} ageYears - Vehicle age in years.
+ * @returns {number} Estimated annual maintenance cost in dollars.
+ */
 export function getAnnualMaintenance(brandKey, ageYears) {
   const brand = MAINTENANCE_BY_BRAND[brandKey] || MAINTENANCE_BY_BRAND.toyota
   const repairs = AGE_REPAIR[brand.tier] || AGE_REPAIR.japanese
@@ -56,6 +64,14 @@ export function getAnnualMaintenance(brandKey, ageYears) {
   return brand.annualService + (repairs[idx] || 0)
 }
 
+/**
+ * Total maintenance cost over a span of ownership years, summing the
+ * annual estimate for each year of age.
+ * @param {string} brandKey - Key into MAINTENANCE_BY_BRAND.
+ * @param {number} startAge - Vehicle age in years at the start of the span.
+ * @param {number} years - Number of years to sum over.
+ * @returns {number} Total maintenance cost in dollars.
+ */
 export function getTotalMaintenance(brandKey, startAge, years) {
   let total = 0
   for (let y = 0; y < years; y++) total += getAnnualMaintenance(brandKey, startAge + y)

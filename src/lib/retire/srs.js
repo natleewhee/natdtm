@@ -37,6 +37,17 @@ export const SRS_MAX_WITHDRAWAL_YEARS = 10
 // as a separate, additive function rather than folded into that
 // simulation, since SRS has its own withdrawal rules entirely distinct
 // from the general investment balance it currently models.
+/**
+ * Projects an SRS account forward to retirement using flat
+ * monthly-compounding, the same approach as RetireWell's investment
+ * projection (see simulateAccumulation in calc.js).
+ * @param {object} params - Projection inputs.
+ * @param {number} [params.startBalance=0] - Starting SRS balance in dollars.
+ * @param {number} [params.monthlyContribution=0] - Monthly contribution in dollars.
+ * @param {number} [params.annualReturnPct=0] - Assumed annual return, as a percentage (e.g. 5 for 5%).
+ * @param {number} [params.yearsToRetirement=0] - Years until retirement.
+ * @returns {number} Projected SRS balance at retirement, in dollars.
+ */
 export function projectSrsBalance({ startBalance = 0, monthlyContribution = 0, annualReturnPct = 0, yearsToRetirement = 0 }) {
   const months = Math.max(0, Math.round((Number(yearsToRetirement) || 0) * 12))
   const monthlyReturn = (Number(annualReturnPct) || 0) / 100 / 12
@@ -53,6 +64,14 @@ export function projectSrsBalance({ startBalance = 0, monthlyContribution = 0, a
 // a conservative simplification, since real SRS funds can stay invested
 // while being drawn down). Only half of each year's withdrawal is
 // chargeable income.
+/**
+ * Splits a retirement-age SRS balance into `years` equal nominal
+ * withdrawals (no further growth assumed during the drawdown window).
+ * Only half of each year's withdrawal is chargeable income.
+ * @param {number} balanceAtRetirement - SRS balance at retirement, in dollars.
+ * @param {number} [years=SRS_MAX_WITHDRAWAL_YEARS] - Number of withdrawal years, clamped to (0, SRS_MAX_WITHDRAWAL_YEARS].
+ * @returns {Array<{year: number, withdrawal: number, taxableAmount: number}>} The withdrawal schedule.
+ */
 export function srsWithdrawalSchedule(balanceAtRetirement, years = SRS_MAX_WITHDRAWAL_YEARS) {
   const requested = Math.round(Number(years)) || SRS_MAX_WITHDRAWAL_YEARS
   const n = requested <= 0 ? SRS_MAX_WITHDRAWAL_YEARS : Math.min(SRS_MAX_WITHDRAWAL_YEARS, requested)
@@ -69,6 +88,16 @@ export function srsWithdrawalSchedule(balanceAtRetirement, years = SRS_MAX_WITHD
 // between chargeable-income tax with and without the withdrawal stacked
 // on, since Singapore's bands are progressive — the withdrawal is taxed
 // at whatever rate it lands on TOP of existing income, not from zero.
+/**
+ * Incremental tax a year's taxable SRS withdrawal adds on top of
+ * whatever else is chargeable that year, computed as the difference
+ * between chargeable-income tax with and without the withdrawal stacked
+ * on (Singapore's bands are progressive, so it's taxed at whatever rate
+ * it lands on top of existing income, not from zero).
+ * @param {number} taxableAmount - The taxable portion of the withdrawal, in dollars.
+ * @param {number} [otherTaxableIncome=0] - Other chargeable income for that year, in dollars.
+ * @returns {number} Additional tax owed due to the withdrawal, in dollars.
+ */
 export function srsWithdrawalTax(taxableAmount, otherTaxableIncome = 0) {
   const other = Math.max(0, Number(otherTaxableIncome) || 0)
   const taxable = Math.max(0, Number(taxableAmount) || 0)
@@ -86,6 +115,17 @@ export function srsWithdrawalTax(taxableAmount, otherTaxableIncome = 0) {
 // within the 0% band even taken as a lump sum, spreading saves nothing
 // (a genuine possibility this function is expected to surface honestly,
 // not paper over with a manufactured saving).
+/**
+ * The headline SRS-optimizer comparison: same total balance and same
+ * otherTaxableIncome each year, spread over different numbers of years,
+ * to illustrate why spreading usually beats a lump sum (though if the
+ * lump sum already sits well within the 0% band, spreading saves nothing
+ * — this is expected to surface honestly, not paper over).
+ * @param {number} balanceAtRetirement - SRS balance at retirement, in dollars.
+ * @param {number} [otherTaxableIncome=0] - Other chargeable income each year, in dollars.
+ * @param {number[]} [yearOptions=[1, 5, 10]] - Withdrawal-year counts to compare.
+ * @returns {Array<{years: number, annualWithdrawal: number, totalTax: number}>} One row per option.
+ */
 export function compareSrsWithdrawalPlans(balanceAtRetirement, otherTaxableIncome = 0, yearOptions = [1, 5, 10]) {
   return yearOptions.map(years => {
     const schedule = srsWithdrawalSchedule(balanceAtRetirement, years)

@@ -44,6 +44,12 @@ const RETURNS = {
 // ─── HELPERS ──────────────────────────────────────────────────────────────────
 // Guarantee allocations sum to exactly 100, absorbing any rounding remainder
 // into the largest holding. Keeps the logic tamper-proof if weights are tweaked.
+/**
+ * Guarantees allocations sum to exactly 100, absorbing any rounding
+ * remainder into the largest holding.
+ * @param {Array<{etf: object, percentage: number}>} allocations - Portfolio allocations (mutated in place).
+ * @returns {Array<{etf: object, percentage: number}>} The same allocations array, normalized.
+ */
 export function normalizeTo100(allocations) {
   if (!allocations.length) return allocations
   const total = allocations.reduce((s, a) => s + a.percentage, 0)
@@ -57,6 +63,11 @@ export function normalizeTo100(allocations) {
 
 // Weighted average annual expense ratio across all holdings, plus what that
 // costs in dollar terms over a horizon assuming a flat monthly contribution.
+/**
+ * Weighted average annual expense ratio (TER) across all holdings.
+ * @param {Array<{etf: object, percentage: number}>} allocations - Portfolio allocations.
+ * @returns {number} Blended TER as a percentage, rounded to 3 decimal places.
+ */
 export function computeBlendedTER(allocations) {
   const pct = allocations.reduce((s, a) => s + (a.percentage / 100) * a.etf.ter, 0)
   return Math.round(pct * 1000) / 1000
@@ -65,6 +76,18 @@ export function computeBlendedTER(allocations) {
 // escalatorPct raises the monthly contribution by that percentage at the
 // start of every subsequent year (a raise-and-invest-it habit), rather than
 // holding it flat for the whole horizon.
+/**
+ * Projects gross vs. TER-net portfolio value from a monthly DCA
+ * contribution, to show what the fee actually costs in dollar terms.
+ * `escalatorPct` raises the monthly contribution by that percentage at
+ * the start of every subsequent year, modeling a raise-and-invest-it habit.
+ * @param {number} blendedTerPct - Blended TER as a percentage.
+ * @param {number} monthlyAmount - Monthly contribution in dollars.
+ * @param {number} years - Investment horizon in years.
+ * @param {number} [annualGrowthPct=6] - Assumed gross annual growth, as a percentage.
+ * @param {number} [escalatorPct=0] - Annual contribution escalation, as a percentage.
+ * @returns {?{gross: number, net: number, cost: number}} Gross/net final value and the fee cost, or null if monthlyAmount is not positive.
+ */
 export function estimateFeeCost(blendedTerPct, monthlyAmount, years, annualGrowthPct = 6, escalatorPct = 0) {
   if (!monthlyAmount || monthlyAmount <= 0) return null
   const months = years * 12
@@ -79,7 +102,13 @@ export function estimateFeeCost(blendedTerPct, monthlyAmount, years, annualGrowt
   return { gross: Math.round(gross), net: Math.round(net), cost: Math.round(gross - net) }
 }
 
-// True regional exposure after looking through each fund's holdings.
+/**
+ * True regional exposure after looking through each fund's underlying
+ * holdings — de-duplicates overlapping regional exposure (e.g. VWRA
+ * already contains US/Japan/EM/China) rather than showing naive fund weights.
+ * @param {Array<{etf: object, percentage: number}>} allocations - Portfolio allocations.
+ * @returns {Array<{region: string, percentage: number}>} Regional exposure, sorted descending, zero entries filtered out.
+ */
 export function computeLookThrough(allocations) {
   const buckets = {}
   allocations.forEach(a => {
@@ -95,6 +124,15 @@ export function computeLookThrough(allocations) {
 }
 
 // ─── PORTFOLIO GENERATOR ─────────────────────────────────────────────────────
+/**
+ * Generates a portfolio (title, description, allocations, rationale)
+ * from user preferences — a single-fund, core-and-satellite, or
+ * precision multi-fund mix depending on `prefs.simplicity`, tilted by
+ * `prefs.risk` and `prefs.tilts`.
+ * @param {{simplicity: string, risk: string, tilts: string[]}} prefs - Portfolio preferences.
+ * @returns {{title: string, description: string, allocations: Array<{etf: object, percentage: number}>, whyItWorks: string}}
+ *   The generated portfolio.
+ */
 export function generatePortfolio(prefs) {
   let allocations = [], title = '', description = '', whyItWorks = ''
 
@@ -188,6 +226,15 @@ function mulberry32(seed) {
 }
 
 // ─── ILLUSTRATIVE PERFORMANCE CHART DATA ─────────────────────────────────────
+/**
+ * Generates illustrative short-term performance chart points for a
+ * portfolio over `timeframe`, using deterministic seeded noise (same
+ * portfolio + timeframe always draws the same line) around a weighted
+ * return derived from RETURNS.
+ * @param {Array<{etf: object, percentage: number}>} allocations - Portfolio allocations.
+ * @param {string} timeframe - '1w' | '6m' | '1y'.
+ * @returns {Array<{date: string, value: number}>} Chart points from a $10,000 starting value.
+ */
 export function generateIllustrativePerformance(allocations, timeframe) {
   const steps = timeframe === '1y' ? 52 : timeframe === '6m' ? 26 : 7
   const volatility = timeframe === '1w' ? 0.005 : 0.015
@@ -253,8 +300,13 @@ const ANNUAL_RETURNS = {
   AGGU: [ 0.006, 0.039, 0.030, -0.005, 0.068, 0.056, -0.014, -0.112, 0.057, 0.030],
 }
 
-// Year-by-year portfolio value from a lump sum, using each fund's real
-// historical annual sequence weighted by allocation.
+/**
+ * Year-by-year portfolio value from a lump sum, using each fund's real
+ * historical annual return sequence (2015-2024) weighted by allocation.
+ * @param {Array<{etf: object, percentage: number}>} allocations - Portfolio allocations.
+ * @param {number} [startValue=10000] - Starting lump-sum value in dollars.
+ * @returns {Array<{year: number, value: number}>} One point per year, including the start year.
+ */
 export function computeBacktest(allocations, startValue = 10000) {
   let value = startValue
   const points = [{ year: BACKTEST_YEARS[0] - 1, value: startValue }]
@@ -281,6 +333,20 @@ export function computeBacktest(allocations, startValue = 10000) {
 // escalatorPct (default 0) raises the monthly contribution by that % at the
 // start of each subsequent year — modeling "give yourself a raise every
 // year and invest the increase" rather than a flat contribution forever.
+/**
+ * Projects a monthly DCA contribution forward under three growth
+ * scenarios (pessimistic/expected/optimistic), net of TER. "Expected"
+ * is derived from this portfolio's own approximate 2015-2024 historical
+ * CAGR; pessimistic/optimistic are ±5 percentage-point bands around it,
+ * not statistical confidence intervals.
+ * @param {Array<{etf: object, percentage: number}>} allocations - Portfolio allocations.
+ * @param {number} monthlyAmount - Monthly contribution in dollars.
+ * @param {number} years - Investment horizon in years.
+ * @param {number} blendedTerPct - Blended TER as a percentage.
+ * @param {number} [escalatorPct=0] - Annual contribution escalation, as a percentage.
+ * @returns {?Array<{key: string, label: string, growthPct: number, projected: number}>}
+ *   One row per scenario, or null if monthlyAmount/years are not positive.
+ */
 export function projectGoal(allocations, monthlyAmount, years, blendedTerPct, escalatorPct = 0) {
   if (!monthlyAmount || monthlyAmount <= 0 || !years || years <= 0) return null
 
@@ -308,6 +374,16 @@ export function projectGoal(allocations, monthlyAmount, years, blendedTerPct, es
 // actual worst calendar year and largest peak-to-trough drawdown within that
 // window. It's a rehearsal, not a prediction — a future downturn could easily
 // be worse than anything in this ten-year sample.
+/**
+ * Replays this portfolio's real blended 2015-2024 historical sequence to
+ * find its actual worst calendar year and largest peak-to-trough
+ * drawdown within that window — a rehearsal, not a prediction of future
+ * downturns.
+ * @param {Array<{etf: object, percentage: number}>} allocations - Portfolio allocations.
+ * @param {number} [startingValue=10000] - Starting lump-sum value in dollars.
+ * @returns {{worstYear: {year: number, returnPct: number}, maxDrawdownPct: number, peakValue: number, troughValue: number, startingValue: number}}
+ *   The stress-test summary.
+ */
 export function computeStressTest(allocations, startingValue = 10000) {
   const points = computeBacktest(allocations, startingValue)
 
@@ -355,6 +431,12 @@ export const BROKERS = [
   { id:'saxo',   name:'Saxo Markets',        commissionPct:0.08, commissionMin:5,    fxSpreadPct:0.05, note:'Higher headline commission but broad fund access and SGD-denominated accounts.' },
 ]
 
+/**
+ * Illustrative commission + FX conversion cost per broker, applied to a
+ * monthly DCA amount, sorted cheapest first.
+ * @param {number} monthlyAmount - Monthly contribution in dollars.
+ * @returns {?Array<object>} Each broker plus perTradeCost and annualCost, or null if monthlyAmount is not positive.
+ */
 export function computeBrokerCosts(monthlyAmount) {
   if (!monthlyAmount || monthlyAmount <= 0) return null
   return BROKERS.map(b => {
@@ -371,6 +453,18 @@ export function computeBrokerCosts(monthlyAmount) {
 // assumed growth rate so the entire gap is attributable to fees, not
 // performance — an apples-to-apples cost comparison, not a returns claim.
 export const FEE_BENCHMARK_AS_OF = 'mid-2025'
+/**
+ * Compares this portfolio's blended TER against typical all-in fee
+ * levels for a robo-advisor and an actively-managed unit trust,
+ * compounded at the same assumed growth rate — an apples-to-apples cost
+ * comparison, not a returns claim.
+ * @param {number} blendedTerPct - This portfolio's blended TER as a percentage.
+ * @param {number} monthlyAmount - Monthly contribution in dollars.
+ * @param {number} years - Investment horizon in years.
+ * @param {number} [annualGrowthPct=6] - Assumed gross annual growth, as a percentage.
+ * @returns {?Array<{key: string, label: string, terPct: number, net: number}>}
+ *   One row per fee level, or null if monthlyAmount/years are not positive.
+ */
 export function computeFeeComparison(blendedTerPct, monthlyAmount, years, annualGrowthPct = 6) {
   if (!monthlyAmount || monthlyAmount <= 0 || !years || years <= 0) return null
   const levels = [
@@ -384,8 +478,12 @@ export function computeFeeComparison(blendedTerPct, monthlyAmount, years, annual
   })
 }
 
-// ─── PORTFOLIO SUMMARY (for comparison mode) ──────────────────────────────────
-// Bundles the numbers used to compare two portfolios side by side.
+/**
+ * Bundles the numbers used to compare two portfolios side by side:
+ * generated portfolio, blended TER, historical CAGR, and stress test.
+ * @param {{simplicity: string, risk: string, tilts: string[]}} prefs - Portfolio preferences.
+ * @returns {{prefs: object, portfolio: object, ter: number, cagrPct: number, stress: object}} The comparison summary.
+ */
 export function summarizePortfolio(prefs) {
   const portfolio = generatePortfolio(prefs)
   const ter = computeBlendedTER(portfolio.allocations)
@@ -407,6 +505,12 @@ const RISK_DECODES = Object.fromEntries(Object.entries(RISK_CODES).map(([k, v]) 
 const SIMPLICITY_CODES = { '1 ETF':'1', '2-3 ETFs':'2', '4-5 ETFs':'4' }
 const SIMPLICITY_DECODES = Object.fromEntries(Object.entries(SIMPLICITY_CODES).map(([k, v]) => [v, k]))
 
+/**
+ * Encodes portfolio preferences into a compact URL query-string form so a
+ * portfolio can be bookmarked, shared, or reopened on another device.
+ * @param {{risk?: string, simplicity?: string, tilts?: string[], monthlyInvestment?: (string|number)}} prefs - Portfolio preferences.
+ * @returns {URLSearchParams} The encoded params.
+ */
 export function encodePrefsToParams(prefs) {
   const params = new URLSearchParams()
   params.set('r', RISK_CODES[prefs.risk] || 'b')
@@ -416,6 +520,13 @@ export function encodePrefsToParams(prefs) {
   return params
 }
 
+/**
+ * Decodes portfolio preferences from URL query params (the inverse of
+ * {@link encodePrefsToParams}).
+ * @param {?URLSearchParams} params - The URL params to decode.
+ * @returns {?{risk: string, simplicity: string, tilts: string[], monthlyInvestment: string}}
+ *   The decoded preferences, or null if required fields (risk, simplicity) are missing/invalid.
+ */
 export function decodePrefsFromParams(params) {
   if (!params || !params.get('r')) return null
   const risk = RISK_DECODES[params.get('r')]
@@ -427,8 +538,14 @@ export function decodePrefsFromParams(params) {
   return { risk, simplicity, tilts, monthlyInvestment }
 }
 
-// Two portfolios in one URL for comparison mode: each side's params are
-// namespaced with an a_/b_ prefix so they can share a single query string.
+/**
+ * Encodes two portfolios' preferences into one URL for comparison mode:
+ * each side's params are namespaced with an a_/b_ prefix so they can
+ * share a single query string.
+ * @param {object} prefsA - First portfolio's preferences.
+ * @param {object} prefsB - Second portfolio's preferences.
+ * @returns {URLSearchParams} The combined, namespaced params.
+ */
 export function encodeComparePrefs(prefsA, prefsB) {
   const params = new URLSearchParams()
   for (const [k, v] of encodePrefsToParams(prefsA)) params.set(`a_${k}`, v)
@@ -436,6 +553,12 @@ export function encodeComparePrefs(prefsA, prefsB) {
   return params
 }
 
+/**
+ * Decodes two portfolios' preferences from a namespaced comparison-mode
+ * URL (the inverse of {@link encodeComparePrefs}).
+ * @param {?URLSearchParams} params - The URL params to decode.
+ * @returns {?{a: object, b: object}} Both sides' decoded preferences, or null if either side is missing/invalid.
+ */
 export function decodeComparePrefs(params) {
   if (!params) return null
   const pa = new URLSearchParams()
@@ -450,10 +573,16 @@ export function decodeComparePrefs(params) {
   return { a, b }
 }
 
-// ─── REBALANCING ────────────────────────────────────────────────────────────
-// Given current $ holdings per ticker and a target allocation, work out how
-// to steer the next contribution back toward target — buying only underweight
-// funds first, rather than requiring anyone to sell anything.
+/**
+ * Given current $ holdings per ticker and a target allocation, works out
+ * how to steer the next contribution back toward target — buying only
+ * underweight funds, rather than requiring anyone to sell anything. Any
+ * rounding remainder goes to the largest buy so amounts sum exactly.
+ * @param {Array<{etf: object, percentage: number}>} allocations - Target portfolio allocations.
+ * @param {Object<string, number>} currentValues - Current dollar value held per ticker.
+ * @param {number} nextContribution - The next contribution amount, in dollars.
+ * @returns {{currentTotal: number, projectedTotal: number, rows: Array<object>}} The rebalance plan.
+ */
 export function computeRebalance(allocations, currentValues, nextContribution) {
   const currentTotal = Object.values(currentValues).reduce((s, v) => s + (Number(v) || 0), 0)
   const projectedTotal = currentTotal + (Number(nextContribution) || 0)

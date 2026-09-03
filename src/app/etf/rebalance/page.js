@@ -23,9 +23,6 @@ function RebalanceContent() {
   const [contribution, setContribution] = useState('')
 
   useEffect(() => {
-    /* eslint-disable react-hooks/set-state-in-effect -- restores the
-       target portfolio from the URL params or localStorage (unavailable
-       during SSR) and blanks the holdings form to match it */
     const fromUrl = decodePrefsFromParams(searchParams)
     const saved = fromUrl ? null : loadPortfolio()
     const next = fromUrl
@@ -33,7 +30,6 @@ function RebalanceContent() {
       : (saved?.portfolio?.allocations?.length ? saved.portfolio : null)
     setPortfolio(next)
     setCurrentValues(next ? Object.fromEntries(next.allocations.map(a => [a.etf.ticker, ''])) : {})
-    /* eslint-enable react-hooks/set-state-in-effect */
   }, [searchParams])
 
   const result = useMemo(() => {

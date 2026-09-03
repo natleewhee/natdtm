@@ -51,6 +51,15 @@ export const CPF_CONTRIBUTION_TABLE = [
   { minAge: 70, maxAge: 999, total: 0.125, oa: 0.01, sa: 0.01, ma: 0.105 },
 ]
 
+/**
+ * Looks up the age-banded CPF contribution rates (total + OA/SA/MA
+ * allocation shares). Boundaries are contiguous so a fractional age
+ * (e.g. currentAge + monthsElapsed/12) always matches exactly one band,
+ * with an age exactly on a boundary landing in the lower, higher-rate band.
+ * @param {number} age - Age in years (may be fractional).
+ * @returns {{minAge: number, maxAge: number, total: number, oa: number, sa: number, ma: number}}
+ *   The matching contribution band.
+ */
 export function contributionRatesForAge(age) {
   const band = CPF_CONTRIBUTION_TABLE.find(b => age >= b.minAge && age <= b.maxAge)
     || CPF_CONTRIBUTION_TABLE[CPF_CONTRIBUTION_TABLE.length - 1]
@@ -60,6 +69,14 @@ export function contributionRatesForAge(age) {
 // Splits an already-capped wage base into OA/SA/MA using the age-banded
 // allocation — shared by the monthly (OW-capped) and bonus (AW-capped)
 // contribution calculations below.
+/**
+ * Splits an already-capped wage base into OA/SA/MA using the age-banded
+ * allocation — shared by the monthly (OW-capped) and bonus (AW-capped)
+ * contribution calculations.
+ * @param {number} wageBase - The CPF-able wage base, already capped, in dollars.
+ * @param {number} age - Age in years.
+ * @returns {{total: number, oa: number, sa: number, ma: number}} Dollar amounts per sub-account.
+ */
 export function splitContribution(wageBase, age) {
   const wage = Math.max(0, Number(wageBase) || 0)
   const { total, oa, sa, ma } = contributionRatesForAge(age)
@@ -73,6 +90,13 @@ export function splitContribution(wageBase, age) {
 
 // Monthly CPF contribution split, from monthly salary capped at the OW
 // ceiling. Returns dollar amounts credited to each sub-account this month.
+/**
+ * Monthly CPF contribution split, from monthly salary capped at the OW
+ * ceiling. Returns dollar amounts credited to each sub-account this month.
+ * @param {number} salary - Monthly salary in dollars.
+ * @param {number} age - Age in years.
+ * @returns {{total: number, oa: number, sa: number, ma: number}} Dollar amounts credited this month.
+ */
 export function monthlyCpfContribution(salary, age) {
   const wage = Math.min(Math.max(0, Number(salary) || 0), CPF_OW_CEILING)
   return splitContribution(wage, age)
@@ -95,6 +119,14 @@ export const CPF_EXTRA_55_TIER2_CAP = 30_000
 
 // Extra interest earned this month on the OA/SA/MA balances, following
 // the "OA counts first, up to $20k" allocation rule, tiered by age.
+/**
+ * Extra interest earned this month on the OA/SA/MA balances, following
+ * the "OA counts first, up to $20k" allocation rule, tiered by age
+ * (a single below-55 tier, or two tiers from age 55).
+ * @param {{oa: number, sa: number, ma: number}} balances - Sub-account balances at the start of the month.
+ * @param {number} age - Age in years.
+ * @returns {{oa: number, sa: number, ma: number}} Extra interest earned this month, per sub-account.
+ */
 export function monthlyExtraInterest(balances, age) {
   const oa = Number(balances.oa) || 0, sa = Number(balances.sa) || 0, ma = Number(balances.ma) || 0
   const oaForExtra = Math.min(oa, CPF_EXTRA_OA_CAP)
@@ -146,6 +178,13 @@ export function monthlyExtraInterest(balances, age) {
 
 // Monthly interest credited to each sub-account: base rate + extra
 // interest tier for the month, on the balances at the start of the month.
+/**
+ * Monthly interest credited to each sub-account: base rate + extra
+ * interest tier for the month, on the balances at the start of the month.
+ * @param {{oa: number, sa: number, ma: number}} balances - Sub-account balances at the start of the month.
+ * @param {number} age - Age in years.
+ * @returns {{oa: number, sa: number, ma: number}} Total interest credited this month, per sub-account.
+ */
 export function monthlyCpfInterest(balances, age) {
   const extra = monthlyExtraInterest(balances, age)
   return {
@@ -167,6 +206,13 @@ export const CPF_FRS_BASE = 220_400
 export const CPF_FRS_BASE_YEAR = 2026
 export const CPF_FRS_GROWTH_RATE = 0.035
 
+/**
+ * The Full Retirement Sum for a given year, grown from the labeled base
+ * year at CPF_FRS_GROWTH_RATE p.a. rather than frozen at today's figure —
+ * this is the ceiling RSTU top-ups are accepted against.
+ * @param {number} year - Calendar year.
+ * @returns {number} The prevailing FRS in dollars.
+ */
 export function prevailingFRS(year) {
   const yearsFromBase = Math.max(0, year - CPF_FRS_BASE_YEAR)
   return CPF_FRS_BASE * Math.pow(1 + CPF_FRS_GROWTH_RATE, yearsFromBase)
@@ -189,6 +235,15 @@ export const CPF_BHS_BASE = 79_000
 export const CPF_BHS_BASE_YEAR = 2026
 export const CPF_BHS_GROWTH_RATE = 0.0475
 
+/**
+ * The Basic Healthcare Sum (MediSave cap) for a given year, grown from
+ * the labeled base year at CPF_BHS_GROWTH_RATE p.a. Note: a member's own
+ * BHS freezes at whatever the prevailing figure was the year they turned
+ * 65 (see creditWithMaOverflow / calc.js's simulateAccumulation) even as
+ * this prevailing figure keeps rising for everyone younger.
+ * @param {number} year - Calendar year.
+ * @returns {number} The prevailing BHS in dollars.
+ */
 export function prevailingBHS(year) {
   const yearsFromBase = Math.max(0, year - CPF_BHS_BASE_YEAR)
   return CPF_BHS_BASE * Math.pow(1 + CPF_BHS_GROWTH_RATE, yearsFromBase)
@@ -199,6 +254,17 @@ export function prevailingBHS(year) {
 // instead — mutates and returns the balances object. Takes the cap as a
 // dollar figure (not a year) so the caller can pass either the current
 // prevailing BHS or a member's frozen cohort figure once they've turned 65.
+/**
+ * Credits a contribution split {oa, sa, ma} onto running balances,
+ * redirecting any MA portion that would exceed the given BHS cap into SA
+ * instead. Mutates and returns the balances object. Takes the cap as a
+ * dollar figure (not a year) so the caller can pass either the current
+ * prevailing BHS or a member's frozen cohort figure once they've turned 65.
+ * @param {{oa: number, sa: number, ma: number}} balances - Running balances, mutated in place.
+ * @param {{oa: number, sa: number, ma: number}} contrib - Contribution split to credit.
+ * @param {number} bhs - The MediSave cap to apply, in dollars.
+ * @returns {{oa: number, sa: number, ma: number}} The same, mutated balances object.
+ */
 export function creditWithMaOverflow(balances, contrib, bhs) {
   const room = Math.max(0, bhs - balances.ma)
   const maCredited = Math.min(contrib.ma, room)

@@ -24,6 +24,23 @@ const passes = (r, targetRatio) => r && r.canDown && r.ratio <= targetRatio && !
 //   0     — already at or under the target
 //   null  — unachievable via downpayment alone, even at down = car.price
 //   n > 0 — extra S$ needed, rounded up to the nearest dollar
+/**
+ * Binary-searches the minimum extra downpayment (on top of `down`) needed
+ * to bring the burden ratio to `targetRatio` (and clear TDSR) at the
+ * current tenure, using `calcFn` as the oracle so results never
+ * contradict the numbers shown elsewhere.
+ * @param {number} salary - Gross monthly salary in dollars.
+ * @param {number} down - Current downpayment offered, in dollars.
+ * @param {number} tenure - Loan tenure in years.
+ * @param {object} car - The car record.
+ * @param {?object} liveCOE - Live COE premiums, or null.
+ * @param {number} [existingDebt=0] - Existing monthly debt obligations, in dollars.
+ * @param {number} [targetRatio=0.30] - Target monthly-instalment-to-take-home ratio.
+ * @param {Function} [calcFn=calc] - The affordability function to use as the oracle
+ *   (swap for calcUsed() when solving for a used car).
+ * @returns {?number} 0 if already at/under target, null if unachievable via downpayment
+ *   alone (even at down = car.price), or the extra dollars needed (rounded up).
+ */
 export function solveExtraDownNeeded(salary, down, tenure, car, liveCOE, existingDebt = 0, targetRatio = 0.30, calcFn = calc) {
   const current = calcFn(salary, down, tenure, car, liveCOE, existingDebt)
   if (!current) return null
@@ -47,6 +64,19 @@ export function solveExtraDownNeeded(salary, down, tenure, car, liveCOE, existin
 // solveExtraDownNeeded's note on calcFn — for a used car this also
 // implicitly respects the car's remaining-COE tenure cap, since calcUsed()
 // clamps tenure internally and returns the clamped value in r.tenure.
+/**
+ * Finds the smallest tenure in [1, MAX_TENURE] that reaches `targetRatio`
+ * (and clears TDSR) at the current downpayment. For a used car, `calcFn`
+ * (calcUsed()) internally respects the car's remaining-COE tenure cap.
+ * @param {number} salary - Gross monthly salary in dollars.
+ * @param {number} down - Downpayment offered, in dollars.
+ * @param {object} car - The car record.
+ * @param {?object} liveCOE - Live COE premiums, or null.
+ * @param {number} [existingDebt=0] - Existing monthly debt obligations, in dollars.
+ * @param {number} [targetRatio=0.30] - Target monthly-instalment-to-take-home ratio.
+ * @param {Function} [calcFn=calc] - The affordability function to use as the oracle.
+ * @returns {?number} The smallest passing tenure in years, or null if none do.
+ */
 export function solveMinTenureNeeded(salary, down, car, liveCOE, existingDebt = 0, targetRatio = 0.30, calcFn = calc) {
   for (let t = 1; t <= MAX_TENURE; t++) {
     const r = calcFn(salary, down, t, car, liveCOE, existingDebt)
@@ -60,6 +90,23 @@ export function solveMinTenureNeeded(salary, down, car, liveCOE, existingDebt = 
 // point at "cars under S$X" without hardcoding any specific model names.
 // The ceiling always uses the new-car calcCeiling() regardless of calcFn,
 // since "cars under S$X" is inherently a new-car-shopping suggestion.
+/**
+ * Bundles every adjustment path for a non-"Affordable" result (extra
+ * downpayment needed, minimum tenure needed) plus the affordability
+ * ceiling at current inputs, so the UI can point at "cars under S$X"
+ * without hardcoding model names. The ceiling always uses the new-car
+ * calcCeiling() regardless of calcFn, since it's inherently a
+ * new-car-shopping suggestion.
+ * @param {number} salary - Gross monthly salary in dollars.
+ * @param {number} down - Downpayment offered, in dollars.
+ * @param {number} tenure - Loan tenure in years.
+ * @param {object} car - The car record.
+ * @param {?object} liveCOE - Live COE premiums, or null.
+ * @param {number} [existingDebt=0] - Existing monthly debt obligations, in dollars.
+ * @param {Function} [calcFn=calc] - The affordability function to use as the oracle.
+ * @returns {{extraDown: (number|null), minTenure: (number|null), ceiling: (object|null)}}
+ *   The bundled adjustment suggestions.
+ */
 export function suggestAdjustments(salary, down, tenure, car, liveCOE, existingDebt = 0, calcFn = calc) {
   return {
     extraDown: solveExtraDownNeeded(salary, down, tenure, car, liveCOE, existingDebt, 0.30, calcFn),

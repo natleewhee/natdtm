@@ -413,7 +413,6 @@ export default function CheckPage() {
         const parsed = JSON.parse(saved)
         // Must run post-mount: sessionStorage doesn't exist during SSR, so this
         // can't move into a lazy useState initializer without crashing the server render.
-        // eslint-disable-next-line react-hooks/set-state-in-effect
         setForm({
           age: parsed.age ?? '',
           annualIncome: parsed.annualIncome ?? '',
@@ -465,7 +464,6 @@ export default function CheckPage() {
     const ok = saveToolInputs('insure', form)
     // Only flash "Saved" when the write actually landed — see tax/page.js.
     if (!ok) return
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- flashes the "Saved" indicator; not a render-affecting state sync
     setJustSaved(true)
     const t = setTimeout(() => setJustSaved(false), 1400)
     return () => clearTimeout(t)

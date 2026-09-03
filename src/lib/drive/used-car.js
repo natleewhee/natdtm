@@ -24,6 +24,17 @@ import {
   isPureEV, calcNetARF, getCOEPremium, calcPARF, calcCOERebate, TDSR_LIMIT, omvToLtv, minDownFor,
 } from './calc.js'
 
+/**
+ * Depreciation figures for a used car at ownership year `y`, mirroring
+ * calcDepr()'s signature but computing PARF off the car's TOTAL age
+ * (ageNow + y, cut off once it exceeds 10 years) and COE rebate off the
+ * actual months remaining at that point (not a fresh 120-month clock).
+ * @param {object} usedCar - The used car record (price, omv, ves, ageNow, monthsRemaining, coe).
+ * @param {number} y - Years of further ownership to evaluate.
+ * @param {?number} [liveCOEPremium=null] - Live COE premium override.
+ * @returns {{grossArf: number, netArf: number, eeai: number, coePaid: number, parf: number, coeRebate: number, paperValue: number, totalDepr: number, annualDepr: number, monthlyDepr: number}}
+ *   The depreciation breakdown.
+ */
 export function calcUsedDepr(usedCar, y, liveCOEPremium = null) {
   const pureEV = isPureEV(usedCar)
   const ves = usedCar.ves ?? 0
@@ -47,6 +58,22 @@ export function calcUsedDepr(usedCar, y, liveCOEPremium = null) {
            totalDepr, annualDepr:totalDepr/y, monthlyDepr:totalDepr/y/12 }
 }
 
+/**
+ * Full affordability calculation for a used car — a drop-in counterpart
+ * to calc() returning the same result shape. Loan tenure is clamped to
+ * whatever's left of the car's COE (and to the 7-year UI maximum), since
+ * a loan can't outlive the car's remaining COE; there's no ARF/duty/
+ * registration fee up front (the asking price already reflects the
+ * car's remaining COE + PARF-eligible value). Returns null on invalid inputs.
+ * @param {number} salary - Gross monthly salary in dollars.
+ * @param {number} down - Downpayment offered, in dollars.
+ * @param {number} tenure - Requested loan tenure in years, clamped to the car's remaining COE and 7.
+ * @param {object} usedCar - The used car record (price, omv, ves, rateTier, ageNow, monthsRemaining).
+ * @param {?object} [liveCOE=null] - Live COE premiums {catA, catB}, or null to use the fallback.
+ * @param {number} [existingDebt=0] - Existing monthly debt obligations, in dollars.
+ * @returns {?object} The full affordability breakdown (same shape as calc(), plus
+ *   requestedTenure, maxTenureFromCoe, tenureClamped), or null if inputs are invalid.
+ */
 export function calcUsed(salary, down, tenure, usedCar, liveCOE = null, existingDebt = 0) {
   salary = Number(salary)
   down   = Number(down)

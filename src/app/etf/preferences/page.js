@@ -38,7 +38,6 @@ function PreferencesForm() {
   // in components/etf/shared.js.
   useEffect(() => {
     const fromUrl = decodePrefsFromParams(searchParams)
-    /* eslint-disable react-hooks/set-state-in-effect */
     if (fromUrl) {
       setPrefs(fromUrl)
       setLoadedFromUrl(true)
@@ -48,7 +47,6 @@ function PreferencesForm() {
       if (saved) { setPrefs(saved); setRestoredFromSave(true) }
     }
     setHasRestored(true)
-    /* eslint-enable react-hooks/set-state-in-effect */
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
@@ -63,7 +61,6 @@ function PreferencesForm() {
     const ok = savePrefs(prefs)
     // Only flash "Saved" when the write actually landed — see tax/page.js.
     if (!ok) return
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- flashes the "Saved" indicator; not a render-affecting state sync
     setJustSaved(true)
     const t = setTimeout(() => setJustSaved(false), 1400)
     return () => clearTimeout(t)
