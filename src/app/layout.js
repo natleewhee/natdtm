@@ -1,5 +1,6 @@
 import './globals.css'
 import Footer from '@/components/shared/Footer'
+import ThemeBoot from '@/components/shared/ThemeBoot'
 
 export const metadata = {
   metadataBase: new URL('https://natdtm.vercel.app'),
@@ -14,10 +15,12 @@ export const metadata = {
 
 export default function RootLayout({ children }) {
   return (
-    <html lang="en" data-theme="light">
+    <html lang="en" data-theme="dark">
       <body>
-        <main>{children}</main>
-        <Footer />
+        <ThemeBoot>
+          <main>{children}</main>
+          <Footer />
+        </ThemeBoot>
       </body>
     </html>
   )

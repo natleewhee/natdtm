@@ -28,34 +28,63 @@
   src: url('/fonts/jetbrains-mono-variable.woff2') format('woff2');
 }
 
-:root {
-  /* Workbench & Blueprint palette */
-  --l-bg: #0b1120;
-  --l-surface: #1e293b;
-  --l-ink: #f8fafc;
-  --l-sub: #94a3b8;
-  --l-accent: #eab308;
-  --l-accent-ink: #1b1400;
-  --l-accent-bg: #332b0e;
-  --l-amber: #ff5722;
-  --l-amber-bg: #3a1f12;
-  --l-line: #334155;
+/* "Clay & Cream" palette — terracotta accent, warm neutrals. Mirrors the
+   DARK/LIGHT dictionaries in src/lib/shared/theme.js by hand (that file's
+   block comment explains why the JS side can't just read var() here).
+   `data-theme` is set on <html> by src/lib/shared/themeMode.js; the
+   server always renders 'dark' (src/app/layout.js), corrected in place
+   on the client by ThemeBoot if the resolved mode differs. */
+:root, :root[data-theme='dark'] {
+  --l-bg: #17120f;
+  --l-surface: #221b16;
+  --l-ink: #f7f1ea;
+  --l-sub: #ab9a8c;
+  --l-faint: #7d6f63;
+  --l-accent: #e0763f;
+  --l-accent-ink: #2b1208;
+  --l-accent-bg: #2e1f16;
+  --l-accent-text: #f0a677;
+  --l-amber: #d9a441;
+  --l-amber-bg: #2e2313;
+  --l-amber-text: #f0cf8f;
+  --l-red: #e2564a;
+  --l-red-bg: #341714;
+  --l-red-text: #f2a99f;
+  --l-green: #4caf7d;
+  --l-green-bg: #16271f;
+  --l-green-text: #8fd9b2;
+  --l-blue: #5b9bd1;
+  --l-blue-bg: #16232e;
+  --l-blue-text: #a8d0ee;
+  --l-line: #3a2f27;
 
   --l-font-display: 'Space Grotesk', 'Inter', -apple-system, sans-serif;
   --l-font-body: 'Inter', -apple-system, 'Segoe UI', sans-serif;
   --l-font-mono: 'JetBrains Mono', ui-monospace, 'SF Mono', Consolas, monospace;
 }
 :root[data-theme='light'] {
-  --l-bg: #0b1120;
-  --l-surface: #1e293b;
-  --l-ink: #f8fafc;
-  --l-sub: #94a3b8;
-  --l-accent: #eab308;
-  --l-accent-ink: #1b1400;
-  --l-accent-bg: #332b0e;
-  --l-amber: #ff5722;
-  --l-amber-bg: #3a1f12;
-  --l-line: #334155;
+  --l-bg: #faf5ef;
+  --l-surface: #ffffff;
+  --l-ink: #2b2019;
+  --l-sub: #8a7969;
+  --l-faint: #a89686;
+  --l-accent: #c2542a;
+  --l-accent-ink: #fffaf6;
+  --l-accent-bg: #f6e6d8;
+  --l-accent-text: #8a3417;
+  --l-amber: #a97a1f;
+  --l-amber-bg: #f6ecd4;
+  --l-amber-text: #7a5713;
+  --l-red: #c94a3d;
+  --l-red-bg: #fbe8e5;
+  --l-red-text: #9c2f24;
+  --l-green: #2f8f5b;
+  --l-green-bg: #e6f5ec;
+  --l-green-text: #1f6a41;
+  --l-blue: #3574a8;
+  --l-blue-bg: #e6f0f8;
+  --l-blue-text: #204d6e;
+  --l-line: #e8dccb;
 }
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -131,13 +160,38 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
 }
 .ndtm-button:disabled { cursor: not-allowed; }
 .ndtm-button--full { width: 100%; }
-.ndtm-button--accent { background: var(--color-accent); color: var(--l-accent-ink); box-shadow: 0 4px 16px rgba(234,179,8,0.16); }
+.ndtm-button--accent { background: var(--color-accent); color: var(--l-accent-ink); box-shadow: 0 4px 16px rgba(224,118,63,0.18); }
 .ndtm-button--dark { background: var(--color-ndtm); color: var(--color-primary); border: 1.5px solid var(--color-border); box-shadow: 0 4px 16px rgba(0,0,0,0.35); }
 .ndtm-button--dark:disabled { background: var(--color-bg); color: var(--color-faint); box-shadow: none; border: 1.5px solid var(--color-border); }
 .ndtm-button--outline { background: transparent; border: 2px solid var(--color-primary); color: var(--color-primary); box-shadow: none; }
 
 /* ── shell shared layout ─────────────────────────────────────────── */
 .shell-wrap { max-width: 1080px; margin: 0 auto; padding: 0 24px; }
+
+/* ── home page tool grid (src/app/page.js) ─────────────────────────
+   Icon-chip cards with real rounding and elevation, replacing the old
+   flat 4px-radius bordered boxes + uppercase-mono eyebrow label. */
+.home-tool-card {
+  display: block; padding: 26px 24px; text-decoration: none; color: var(--color-text);
+  border-radius: var(--radius-md);
+  background: linear-gradient(165deg, var(--color-surface), var(--color-bg));
+  border: 1px solid var(--color-accent-bg);
+  box-shadow: var(--shadow-card);
+  transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
+}
+.home-tool-card:hover {
+  transform: translateY(-2px);
+  border-color: var(--color-accent);
+}
+.home-tool-icon {
+  width: 42px; height: 42px; border-radius: var(--radius-sm);
+  background: var(--color-accent-bg); color: var(--color-accent);
+  display: flex; align-items: center; justify-content: center;
+  margin-bottom: 18px;
+}
+.home-tool-cta {
+  font-family: var(--font-mono); font-size: 12px; color: var(--color-accent);
+}
 
 .shell-footer {
   border-top: 1px solid var(--l-line);
@@ -267,6 +321,29 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
 }
 .shell-profile-add-btn:hover { background: var(--color-accent-bg); }
 
+/* Light/dark toggle — src/components/shared/ThemeToggle.js. A sun/moon
+   pill switch, same shape sketched in the palette mockup; the thumb's
+   position is the only thing [data-theme] needs to flip since the sun
+   and moon glyphs sit fixed on either end. */
+.shell-theme-toggle {
+  display: inline-flex; align-items: center; gap: 6px;
+  min-height: 44px; padding: 0 10px;
+  background: none; border: none; cursor: pointer;
+  color: var(--color-faint);
+}
+.shell-theme-toggle-track {
+  position: relative; width: 30px; height: 17px; border-radius: 999px;
+  background: var(--color-accent-bg); border: 1px solid var(--color-border);
+  transition: background 0.15s ease;
+}
+.shell-theme-toggle-thumb {
+  position: absolute; top: 1px; left: 1px; width: 13px; height: 13px;
+  border-radius: 50%; background: var(--color-accent);
+  transition: transform 0.15s ease;
+}
+[data-theme='light'] .shell-theme-toggle-thumb { transform: translateX(13px); }
+.shell-theme-toggle:hover { color: var(--color-primary); }
+
 .shell-header-right { display: flex; align-items: center; gap: 4px; flex-shrink: 0; }
 .shell-header-back {
   display: flex; align-items: center; justify-content: center;
@@ -317,34 +394,32 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
   --color-primary-text: var(--l-accent-ink);
   --color-accent: var(--l-accent);
   --color-accent-bg: var(--l-accent-bg);
-  /* Hand-picked to match --l-accent's hue (~45°), not derived from it —
-     if --l-accent's hue ever moves, re-check this still reads as "the
-     same yellow, lighter" rather than a mismatched tint. Currently
-     11.3:1 against --color-accent-bg. */
-  --color-accent-text: #fde68a;
+  --color-accent-text: var(--l-accent-text);
   --color-bg: var(--l-bg);
   --color-surface: var(--l-surface);
   --color-border: var(--l-line);
   --color-text: var(--l-ink);
   --color-muted: var(--l-sub);
-  --color-faint: #64748b;
+  --color-faint: var(--l-faint);
 
-  --color-red: #ef4444;
-  --color-red-bg: #3a1414;
-  --color-red-text: #fca5a5;
+  --color-red: var(--l-red);
+  --color-red-bg: var(--l-red-bg);
+  --color-red-text: var(--l-red-text);
   --color-amber: var(--l-amber);
   --color-amber-bg: var(--l-amber-bg);
-  --color-amber-text: #fdba74;
-  --color-blue: #38bdf8;
-  --color-blue-bg: #0f2a38;
-  --color-blue-text: #93d9fb;
-  --color-green: #10b981;
-  --color-green-bg: #0f2e23;
-  --color-green-text: #6ee7b7;
+  --color-amber-text: var(--l-amber-text);
+  --color-blue: var(--l-blue);
+  --color-blue-bg: var(--l-blue-bg);
+  --color-blue-text: var(--l-blue-text);
+  --color-green: var(--l-green);
+  --color-green-bg: var(--l-green-bg);
+  --color-green-text: var(--l-green-text);
 
-  --color-ndtm: #05070c;
-  --color-ndtm-mid: #05070c;
-  --color-ndtm-light: #141b2e;
+  /* Fixed "always ink" panel tone — deliberately NOT mode-reactive; see
+     Button.js's `dark` variant and the block comment in shared/theme.js. */
+  --color-ndtm: #0d0a08;
+  --color-ndtm-mid: #0d0a08;
+  --color-ndtm-light: #241a12;
 
   --font-ndtm: var(--l-font-display);
   --font-display: var(--l-font-display);
@@ -357,8 +432,11 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
      no shadow. Defined once here for the whole product; etf/legacy.css
      re-declares the same values locally, which is now redundant but
      harmless. */
-  --radius-sm: 5px;
-  --radius-md: 9px;
-  --radius-lg: 13px;
-  --shadow-card: 0 1px 3px rgba(0,0,0,0.06), 0 4px 16px rgba(0,0,0,0.04);
+  --radius-sm: 10px;
+  --radius-md: 16px;
+  --radius-lg: 22px;
+  --shadow-card: 0 1px 3px rgba(0,0,0,0.16), 0 4px 16px rgba(0,0,0,0.12);
+}
+:root[data-theme='light'] {
+  --shadow-card: 0 1px 3px rgba(43,32,25,0.08), 0 4px 16px rgba(43,32,25,0.06);
 }

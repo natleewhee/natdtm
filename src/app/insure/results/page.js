@@ -81,8 +81,8 @@ function PillarRow({ row, index, result }) {
     return () => clearTimeout(t)
   }, [row, index])
 
-  const barColor = row.isGap ? '#ef4444' : getBandColor(row.color).arc
-  const textColor = row.isGap ? '#fca5a5' : getBandColor(row.color).text
+  const barColor = row.isGap ? '#e2564a' : getBandColor(row.color).arc
+  const textColor = row.isGap ? '#f2a99f' : getBandColor(row.color).text
   const scoreLabel = row.isGate
     ? (row.score === 100 ? 'Covered' : row.score === 25 ? 'Unsure' : 'Not covered')
     : row.isGap ? 'Gap flagged'
@@ -195,8 +195,8 @@ function DisabilityIncomeCard({ result }) {
   const di = result.pillars.di
   if (di.score === null) return null // not answered — the insight card nudge covers this
 
-  const barColor = di.score >= 80 ? '#10b981' : di.score >= 50 ? '#38bdf8' : di.score > 0 ? '#ff5722' : '#ef4444'
-  const textColor = di.score >= 80 ? '#6ee7b7' : di.score >= 50 ? '#93d9fb' : di.score > 0 ? '#fdba74' : '#fca5a5'
+  const barColor = di.score >= 80 ? '#4caf7d' : di.score >= 50 ? '#5b9bd1' : di.score > 0 ? '#d9a441' : '#e2564a'
+  const textColor = di.score >= 80 ? '#8fd9b2' : di.score >= 50 ? '#a8d0ee' : di.score > 0 ? '#f0cf8f' : '#f2a99f'
 
   return (
     <div style={{

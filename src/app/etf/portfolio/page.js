@@ -15,7 +15,7 @@ import { checkFreshness, freshnessLabel, FRESHNESS_WINDOWS } from '@/lib/shared/
 import { saveEtfNumbers } from '@/lib/shared/profile'
 import styles from './portfolio.module.css'
 
-const FUND_PALETTE = ['#eab308', '#ff5722', '#38bdf8', '#c4b5fd', '#ef4444', '#10b981', '#fdba74', '#94a3b8']
+const FUND_PALETTE = ['#e0763f', '#d9a441', '#5b9bd1', '#c4b5fd', '#e2564a', '#4caf7d', '#f0cf8f', '#ab9a8c']
 
 const RISK_BADGE_COLORS = {
   Conservative: { bg: 'var(--color-blue-bg)', color: 'var(--color-blue-text)' },
@@ -33,7 +33,7 @@ function DonutChart({ allocations }) {
     <div className={styles.donutWrap}>
       <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} role="img" aria-label="Portfolio allocation by fund">
         <g transform={`rotate(-90 ${size/2} ${size/2})`}>
-          <circle cx={size/2} cy={size/2} r={r} fill="none" stroke="#334155" strokeWidth={stroke} />
+          <circle cx={size/2} cy={size/2} r={r} fill="none" stroke="#3a2f27" strokeWidth={stroke} />
           {allocations.map((a, i) => {
             const dash = dashes[i]
             return (
@@ -400,8 +400,8 @@ function LookThroughCard({ allocations }) {
   const buckets = computeLookThrough(allocations)
   const max = Math.max(...buckets.map(b => b.percentage), 1)
   const palette = {
-    'United States': '#eab308', 'Other Developed': '#38bdf8', 'Japan': '#c4b5fd',
-    'Emerging Markets': '#10b981', 'China / Hong Kong': '#ff5722', 'Global Bonds': '#94a3b8',
+    'United States': '#e0763f', 'Other Developed': '#5b9bd1', 'Japan': '#c4b5fd',
+    'Emerging Markets': '#4caf7d', 'China / Hong Kong': '#d9a441', 'Global Bonds': '#ab9a8c',
   }
   return (
     <div className={`${styles.card} ${styles.lookThroughCard}`}>
