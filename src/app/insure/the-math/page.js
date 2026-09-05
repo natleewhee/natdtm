@@ -58,10 +58,10 @@ function Expandable({ label, children }) {
 
 function PillarCard({ color, emoji, title, weight, summary, why, expandContent }) {
   const colors = {
-    red:   { bg: '#3a1414', border: '#ef4444', badge: '#3a1414', badgeText: '#fca5a5' },
-    amber: { bg: '#3a1f12', border: '#ff5722', badge: '#3a1f12', badgeText: '#fdba74' },
-    blue:  { bg: '#0f2a38', border: '#38bdf8', badge: '#0f2a38', badgeText: '#93d9fb' },
-    gray:  { bg: '#27303f', border: '#64748b', badge: '#27303f', badgeText: '#94a3b8' },
+    red:   { bg: '#341714', border: '#e2564a', badge: '#341714', badgeText: '#f2a99f' },
+    amber: { bg: '#2e2313', border: '#d9a441', badge: '#2e2313', badgeText: '#f0cf8f' },
+    blue:  { bg: '#16232e', border: '#5b9bd1', badge: '#16232e', badgeText: '#a8d0ee' },
+    gray:  { bg: '#27303f', border: '#7d6f63', badge: '#27303f', badgeText: '#ab9a8c' },
   }
   const c = colors[color] ?? colors.gray
 
@@ -341,10 +341,10 @@ export default function HowItWorksPage() {
           </BodyText>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
             {[
-              { color: '#fca5a5', bg: '#3a1414', range: '0 – 39',   label: 'At risk',           desc: 'You have critical gaps. At least one major area of protection is missing.' },
-              { color: '#fdba74', bg: '#3a1f12', range: '40 – 59',  label: 'Partially covered', desc: "You have some coverage but meaningful gaps remain — worth addressing." },
-              { color: '#93d9fb', bg: '#0f2a38', range: '60 – 79',  label: 'Mostly covered',    desc: "You're in reasonable shape. A few areas to tighten up." },
-              { color: '#6ee7b7', bg: '#0f2e23', range: '80 – 100', label: 'Well protected',    desc: 'Your coverage meets or exceeds the key benchmarks. Well done.' },
+              { color: '#f2a99f', bg: '#341714', range: '0 – 39',   label: 'At risk',           desc: 'You have critical gaps. At least one major area of protection is missing.' },
+              { color: '#f0cf8f', bg: '#2e2313', range: '40 – 59',  label: 'Partially covered', desc: "You have some coverage but meaningful gaps remain — worth addressing." },
+              { color: '#a8d0ee', bg: '#16232e', range: '60 – 79',  label: 'Mostly covered',    desc: "You're in reasonable shape. A few areas to tighten up." },
+              { color: '#8fd9b2', bg: '#16271f', range: '80 – 100', label: 'Well protected',    desc: 'Your coverage meets or exceeds the key benchmarks. Well done.' },
             ].map(band => (
               <div key={band.range} style={{
                 display: 'flex',
@@ -405,9 +405,9 @@ export default function HowItWorksPage() {
               The weighting
             </p>
             {[
-              { label: 'Critical illness', pct: 40, barColor: '#ff5722', textColor: '#fdba74' },
-              { label: 'Life and TPD',     pct: 30, barColor: '#38bdf8', textColor: '#93d9fb' },
-              { label: 'Premium efficiency', pct: 20, barColor: '#64748b', textColor: 'var(--color-muted)' },
+              { label: 'Critical illness', pct: 40, barColor: '#d9a441', textColor: '#f0cf8f' },
+              { label: 'Life and TPD',     pct: 30, barColor: '#5b9bd1', textColor: '#a8d0ee' },
+              { label: 'Premium efficiency', pct: 20, barColor: '#7d6f63', textColor: 'var(--color-muted)' },
             ].map(item => (
               <div key={item.label} style={{ marginBottom: '10px' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>

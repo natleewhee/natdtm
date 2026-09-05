@@ -15,7 +15,7 @@ export const metadata = {
 }
 
 export const viewport = {
-  themeColor: '#0b1120',
+  themeColor: '#17120f',
 }
 
 export default function EtfLayout({ children }) {

@@ -1,7 +1,7 @@
 'use client'
 
 import { useMemo, useRef, useState } from 'react'
-import { C, FATE_COLOR, SGD } from '@/lib/flow/theme'
+import { C, getFateColor, SGD } from '@/lib/flow/theme'
 import { SOURCE } from '@/lib/flow/calc.js'
 
 // Fixed 4-column topology — not a general graph-layout problem, since
@@ -31,6 +31,7 @@ export default function Sankey({ flow }) {
   if (!layout) return null
 
   const { width, height, nodes, links, keptTotal, goneTotal, investedTotal, totalComp } = layout
+  const FATE_COLOR = getFateColor()
 
   const showTooltip = (e, title, body) => {
     const rect = wrapRef.current?.getBoundingClientRect()

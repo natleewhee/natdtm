@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useEffect, useRef, useState } from 'react'
 import ProfileSwitcher from './ProfileSwitcher'
+import ThemeToggle from './ThemeToggle'
 
 const TOOLS = [
   { key: 'insure', href: '/insure', label: 'Insure' },
@@ -92,8 +93,9 @@ export default function ShellHeader({
           <ProfileSwitcher />
         </div>
 
-        {hasContext && (
-          <div className="shell-header-right">
+        <div className="shell-header-right">
+          <ThemeToggle />
+          {hasContext && (<>
             {(backHref || onBack) && (
               backHref ? (
                 <a href={backHref} className="shell-header-back" aria-label="Go back">←</a>
@@ -110,8 +112,8 @@ export default function ShellHeader({
             {links.map((l) => (
               <a key={l.href} href={l.href} className="shell-header-link">{l.label}</a>
             ))}
-          </div>
-        )}
+          </>)}
+        </div>
       </div>
       {below}
     </div>

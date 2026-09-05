@@ -27,7 +27,7 @@ export default function ScoreHistorySparkline({ history }) {
   const pathD = points.map((p, i) => `${i === 0 ? 'M' : 'L'} ${p.x.toFixed(1)} ${p.y.toFixed(1)}`).join(' ')
   const last = points[points.length - 1]
   const trendUp = scores[scores.length - 1] >= scores[0]
-  const lineColor = trendUp ? '#10b981' : '#ef4444'
+  const lineColor = trendUp ? '#4caf7d' : '#e2564a'
 
   return (
     <div style={{
@@ -55,7 +55,7 @@ export default function ScoreHistorySparkline({ history }) {
             cx={p.x}
             cy={p.y}
             r={i === points.length - 1 ? 3.5 : 2}
-            fill={i === points.length - 1 ? lineColor : '#334155'}
+            fill={i === points.length - 1 ? lineColor : '#3a2f27'}
           />
         ))}
       </svg>

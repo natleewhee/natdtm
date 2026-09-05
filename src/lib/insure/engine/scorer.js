@@ -4,6 +4,8 @@
  * All monetary values in SGD. Income = annual.
  */
 
+import { C } from '../../shared/theme.js'
+
 // ---------------------------------------------------------------------------
 // CONSTANTS
 // ---------------------------------------------------------------------------
@@ -1108,10 +1110,10 @@ export function formatSGD(amount) {
  */
 export function getBandColor(color) {
   const map = {
-    red:   { bg: '#3a1414', text: '#fca5a5', arc: '#ef4444' },
-    amber: { bg: '#3a1f12', text: '#fdba74', arc: '#ff5722' },
-    blue:  { bg: '#0f2a38', text: '#93d9fb', arc: '#38bdf8' },
-    teal:  { bg: '#0f2e23', text: '#6ee7b7', arc: '#10b981' },
+    red:   { bg: C.redBg,   text: C.redText,   arc: C.red },
+    amber: { bg: C.amberBg, text: C.amberText, arc: C.amber },
+    blue:  { bg: C.blueBg,  text: C.blueText,  arc: C.blue },
+    teal:  { bg: C.greenBg, text: C.greenText, arc: C.green },
   };
   return map[color] ?? map.red;
 }
@@ -1129,10 +1131,10 @@ export function getSeverityStyle(severity) {
   // variant safe for that use; pills use the same dark-bg/light-text
   // pattern as the score band pill (getBandColor).
   const map = {
-    critical: { border: '#ef4444', text: '#fca5a5', bg: '#3a1414', pillBg: '#3a1414', pillText: '#fca5a5', pillLabel: 'Critical gap' },
-    warning:  { border: '#ff5722', text: '#fdba74', bg: '#3a1f12', pillBg: '#3a1f12', pillText: '#fdba74', pillLabel: 'Gap found' },
-    info:     { border: '#38bdf8', text: '#93d9fb', bg: '#0f2a38', pillBg: '#0f2a38', pillText: '#93d9fb', pillLabel: 'Worth noting' },
-    nudge:    { border: '#10b981', text: '#6ee7b7', bg: '#0f2e23', pillBg: '#0f2e23', pillText: '#6ee7b7', pillLabel: 'Tip' },
+    critical: { border: C.red,   text: C.redText,   bg: C.redBg,   pillBg: C.redBg,   pillText: C.redText,   pillLabel: 'Critical gap' },
+    warning:  { border: C.amber, text: C.amberText, bg: C.amberBg, pillBg: C.amberBg, pillText: C.amberText, pillLabel: 'Gap found' },
+    info:     { border: C.blue,  text: C.blueText,  bg: C.blueBg,  pillBg: C.blueBg,  pillText: C.blueText,  pillLabel: 'Worth noting' },
+    nudge:    { border: C.green, text: C.greenText, bg: C.greenBg, pillBg: C.greenBg, pillText: C.greenText, pillLabel: 'Tip' },
   };
   return map[severity] ?? map.info;
 }

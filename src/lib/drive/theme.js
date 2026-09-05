@@ -1,13 +1,20 @@
 // src/lib/drive/theme.js
-// DriveReady's tokens are the shared set (src/lib/shared/theme.js) plus
-// two ICE rate-tier swatches, and its own rate-tier display metadata.
+// DriveReady's tokens are the shared set (src/lib/shared/theme.js) —
+// `iceBg`/`iceText` live in the shared DARK/LIGHT dictionaries since
+// they're just another semantic pair, not a Drive-only key.
 // Pure data — safe to import from both client components and the calc engine.
-import { C as BASE } from '../shared/theme.js'
+import { C as BASE, applyMode as applyBaseMode } from '../shared/theme.js'
 
-// `accent` (caution yellow) is the BRAND/chrome color; `green` is a
-// separate SEMANTIC color for positive outcomes (affordable, eco rate
-// tier, savings) — keep the two apart.
-export const C = { ...BASE, iceBg: '#27303f', iceText: '#94a3b8' }
+// `accent` (clay) is the BRAND/chrome color; `green` is a separate
+// SEMANTIC color for positive outcomes (affordable, eco rate tier,
+// savings) — keep the two apart.
+export const C = { ...BASE }
+
+/** @param {'light'|'dark'} mode */
+export function applyMode(mode) {
+  applyBaseMode(mode)
+  Object.assign(C, BASE)
+}
 
 export const RATE_TIERS = [
   { id:'ice',   label:'Standard ICE',       sub:'Petrol & diesel',   rate:0.0260, display:'2.60%', color:C.iceText,   bg:C.iceBg },
