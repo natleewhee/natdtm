@@ -18,7 +18,7 @@ export default function BundleEditor({ bundles, onChange }) {
   return (
     <div style={{ display: 'grid', gap: 10 }}>
       {BUNDLE_KEYS.map((key) => (
-        <div key={key} style={{ display: 'grid', gridTemplateColumns: '110px repeat(3, 1fr)', gap: 10, alignItems: 'end' }}>
+        <div key={key} className="ledger-bundle-row" style={{ display: 'grid', gridTemplateColumns: '110px repeat(3, 1fr)', gap: 10, alignItems: 'end' }}>
           <div style={{ fontSize: C.sm, fontWeight: 700, color: key === 'base' ? C.primary : C.muted, paddingBottom: 10 }}>{NAME[key]}</div>
           <PercentInput id={`bundle-${key}-equity`} label="Equity return" value={String(bundles[key].equityReturn)} onChange={setRate(key, 'equityReturn')} />
           <PercentInput id={`bundle-${key}-property`} label="Property appr." value={String(bundles[key].propertyAppreciation)} onChange={setRate(key, 'propertyAppreciation')} />

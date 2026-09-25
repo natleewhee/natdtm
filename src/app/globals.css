@@ -446,3 +446,21 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
 :root[data-theme='light'] {
   --shadow-card: 0 1px 3px rgba(43,32,25,0.08), 0 4px 16px rgba(43,32,25,0.06);
 }
+
+/* ── MyLedger assumption bundles (src/components/ledger/BundleEditor.js) ──
+   A fixed 4-column grid (label + 3 rate inputs) that squashes to
+   unreadably narrow columns at phone width instead of reflowing, since
+   a fixed grid-template-columns never wraps on its own the way the
+   auto-fit grids used elsewhere in the app do. Below 480px each bundle
+   row stacks into its own card: the label becomes a heading, the three
+   PercentInputs go one per row. */
+@media (max-width: 480px) {
+  .ledger-bundle-row {
+    grid-template-columns: 1fr !important;
+    gap: 10px !important;
+    padding: 12px !important;
+    background: var(--color-bg);
+    border-radius: var(--radius-sm);
+  }
+  .ledger-bundle-row > :first-child { padding-bottom: 0 !important; }
+}
