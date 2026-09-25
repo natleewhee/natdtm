@@ -12,20 +12,18 @@ Surfaced by a full audit of the rendered app (10 pages × light/dark ×
 mode-reactive-token defects from that audit shipped in PR #11; these are
 what's left.
 
-- **MyLedger is a single ~9,200px page of ~20 inputs.** `/ledger`'s
-  "Your current position" + assumptions form has no progressive
-  disclosure — everything renders at once regardless of which fields the
-  user actually needs. Needs a design decision (accordion sections? a
-  stepper? collapse-by-default with synced-value previews?) before it's
-  buildable, not a quick fix.
+- ~~**MyLedger is a single ~9,200px page of ~20 inputs.**~~ Resolved as a
+  side effect of the FlowState-into-MyLedger plan (PRs #21-#22): the
+  absorbed Capacity module is a collapsed-by-default section (F1/F2 in
+  `docs/plans/2026-09-11-0225-feat-flowstate-into-ledger-plan.md`), which
+  is exactly the "collapse-by-default with synced-value previews" option
+  this item was waiting on a design decision for.
 - **Assumption-bundle table doesn't reflow on mobile.** `/ledger`'s
   Conservative/Base/Optimistic grid is a fixed multi-column table that
   squashes at 375px. Needs a real mobile layout (stacked cards?), not
   just a breakpoint tweak.
-- **Car names truncate in DriveReady's best-sellers list.** e.g. "Toyota
-  Corol…" on the `/drive` step-1 car picker at 375px — truncating the
-  one thing the user is choosing between. Needs either a layout change
-  (wrap instead of truncate) or shorter display names.
+- ~~**Car names truncate in DriveReady's best-sellers list.**~~ Fixed in
+  PR #17 (`-webkit-line-clamp: 2` instead of ellipsis truncation).
 - **~35 uses of 10-11px type in Drive and Flow.** Legible now that PR
   #11 fixed contrast, but under most mobile type-size guidelines (16px
   body / 12px floor is the usual recommendation). Broad pass, not a
