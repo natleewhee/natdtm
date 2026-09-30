@@ -388,19 +388,29 @@ export function setActiveProfile(id) {
   notifyProfileChange()
 }
 
-// Merges onto whatever's already in the house slot (rather than a full
-// overwrite) so this auto-sync never clobbers a saved `inputs` blob
-// written by saveToolInputs('house', ...) — same reasoning as
-// saveFlowNumbers/saveFlowInputs above.
+// Every save<Module>Numbers function below shares this read-merge-write
+// skeleton: load the whole store, merge the new fields onto whatever's
+// already in that tool's slot (never a full overwrite, so this auto-sync
+// never clobbers a saved `inputs` blob written by saveToolInputs), stamp
+// savedAt, save. Only the skeleton is shared — each field's own
+// coercion (plain `Number(x) || 0`, a nullable variant that preserves
+// `null` over defaulting to 0, or falling back to the existing stored
+// value) stays inline at the call site, since that per-field policy is
+// the part that actually differs module to module and is worth reading
+// in place rather than hiding behind a declarative spec.
+function mergeModuleSlot(tool, fields) {
+  const data = loadMyNumbers()
+  const existing = data[tool] || {}
+  data[tool] = { ...existing, ...fields, savedAt: Date.now() }
+  return save(data)
+}
+
 export function saveHouseNumbers({
   cashProceeds, totalCPFRefund, salePrice, saleDate,
   outstandingBalance, rate, tenureRemaining, monthlyInstalment, propertyValue, cpfServicing,
   propertyType, source = 'auto',
 }) {
-  const data = loadMyNumbers()
-  const existing = data.house || {}
-  data.house = {
-    ...existing,
+  return mergeModuleSlot('house', {
     source,
     cashProceeds: Number(cashProceeds) || 0,
     totalCPFRefund: Number(totalCPFRefund) || 0,
@@ -413,21 +423,15 @@ export function saveHouseNumbers({
     propertyValue: propertyValue != null ? Number(propertyValue) || 0 : null,
     cpfServicing: cpfServicing != null ? Number(cpfServicing) || 0 : null,
     propertyType: propertyType || 'private',
-    savedAt: Date.now(),
-  }
-  return save(data)
+  })
 }
 
-// Merges onto whatever's already in the drive slot — see saveHouseNumbers.
 export function saveDriveNumbers({
   monthlyInstalment, carLabel, salary,
   loanOutstanding, rate, tenureRemaining, carValue,
   source = 'auto',
 }) {
-  const data = loadMyNumbers()
-  const existing = data.drive || {}
-  data.drive = {
-    ...existing,
+  return mergeModuleSlot('drive', {
     source,
     monthlyInstalment: Number(monthlyInstalment) || 0,
     carLabel: carLabel || null,
@@ -436,20 +440,14 @@ export function saveDriveNumbers({
     rate: rate != null ? Number(rate) || 0 : null,
     tenureRemaining: tenureRemaining != null ? Number(tenureRemaining) || 0 : null,
     carValue: carValue != null ? Number(carValue) || 0 : null,
-    savedAt: Date.now(),
-  }
-  return save(data)
+  })
 }
 
-// Merges onto whatever's already in the retire slot — see saveHouseNumbers.
 export function saveRetireNumbers({
   salary, oaBalance, saBalance, maBalance, investmentBalance, monthlyContribution,
   source = 'auto',
 }) {
-  const data = loadMyNumbers()
-  const existing = data.retire || {}
-  data.retire = {
-    ...existing,
+  return mergeModuleSlot('retire', {
     source,
     salary: Number(salary) || 0,
     oaBalance: Number(oaBalance) || 0,
@@ -457,55 +455,37 @@ export function saveRetireNumbers({
     maBalance: Number(maBalance) || 0,
     investmentBalance: Number(investmentBalance) || 0,
     monthlyContribution: Number(monthlyContribution) || 0,
-    savedAt: Date.now(),
-  }
-  return save(data)
+  })
 }
 
-// Merges onto whatever's already in the insure slot — see saveHouseNumbers.
 export function saveInsureNumbers({ monthlyPremium, score, source = 'auto' }) {
-  const data = loadMyNumbers()
-  const existing = data.insure || {}
-  data.insure = {
-    ...existing,
+  return mergeModuleSlot('insure', {
     source,
     monthlyPremium: Number(monthlyPremium) || 0,
     score: score != null ? Number(score) || 0 : null,
-    savedAt: Date.now(),
-  }
-  return save(data)
+  })
 }
 
-// Merges onto whatever's already in the tax slot — see saveHouseNumbers.
 export function saveTaxNumbers({ monthlyTakeHome, annualTax, marginalRate, age, source = 'auto' }) {
-  const data = loadMyNumbers()
-  const existing = data.tax || {}
-  data.tax = {
-    ...existing,
+  return mergeModuleSlot('tax', {
     source,
     monthlyTakeHome: Number(monthlyTakeHome) || 0,
     annualTax: Number(annualTax) || 0,
     marginalRate: Number(marginalRate) || 0,
     age: Number(age) || 0,
-    savedAt: Date.now(),
-  }
-  return save(data)
+  })
 }
 
 // The portfolio page (DCA plan) and rebalance page (actual holdings) each
-// know only their own half of this slot, so merge with whatever the other
-// page last saved instead of clobbering it with a default 0.
+// know only their own half of this slot, so an omitted field falls back
+// to whatever's already stored instead of clobbering it with a default 0.
 export function saveEtfNumbers({ portfolioValue, monthlyContribution, source = 'auto' }) {
-  const data = loadMyNumbers()
-  const existing = data.etf || {}
-  data.etf = {
-    ...existing,
+  const existing = loadMyNumbers().etf || {}
+  return mergeModuleSlot('etf', {
     source,
     portfolioValue: portfolioValue != null ? Number(portfolioValue) || 0 : (existing.portfolioValue ?? 0),
     monthlyContribution: monthlyContribution != null ? Number(monthlyContribution) || 0 : (existing.monthlyContribution ?? 0),
-    savedAt: Date.now(),
-  }
-  return save(data)
+  })
 }
 
 export function clearEtfNumbers() {
@@ -519,18 +499,13 @@ export function clearEtfNumbers() {
 // flow slot so it never clobbers a saved `inputs` blob written by
 // saveFlowInputs below.
 export function saveFlowNumbers({ livingExpenses, monthlySurplus, trueSavingsRate, cashSavingsRate, source = 'auto' }) {
-  const data = loadMyNumbers()
-  const existing = data.flow || {}
-  data.flow = {
-    ...existing,
+  return mergeModuleSlot('flow', {
     source,
     livingExpenses: Number(livingExpenses) || 0,
     monthlySurplus: monthlySurplus != null ? Number(monthlySurplus) || 0 : null,
     trueSavingsRate: trueSavingsRate != null ? Number(trueSavingsRate) || 0 : null,
     cashSavingsRate: cashSavingsRate != null ? Number(cashSavingsRate) || 0 : null,
-    savedAt: Date.now(),
-  }
-  return save(data)
+  })
 }
 
 export function clearFlowNumbers() {

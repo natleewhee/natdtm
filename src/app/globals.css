@@ -464,3 +464,25 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
   }
   .ledger-bundle-row > :first-child { padding-bottom: 0 !important; }
 }
+
+/* ── MyLedger Capacity module lumpy items (src/components/ledger/
+   CapacityModule.js) ── Same defect as .ledger-bundle-row above, on a
+   component built after that item was first logged: a fixed 5-column
+   grid (label / type-toggle / amount / month / remove) that can't
+   reflow at phone width. Below 480px each lumpy item stacks into its
+   own card, one field per row, with the remove button pinned to the
+   top-right of its card instead of stretching full width as the grid's
+   last row. */
+@media (max-width: 480px) {
+  .ledger-lumpy-row {
+    grid-template-columns: 1fr !important;
+    gap: 10px !important;
+    padding: 12px !important;
+    background: var(--color-bg);
+    border-radius: var(--radius-sm);
+    position: relative;
+  }
+  .ledger-lumpy-row > :last-child {
+    position: absolute; top: 8px; right: 8px; margin: 0 !important;
+  }
+}
