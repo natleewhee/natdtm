@@ -603,7 +603,7 @@ export default function CapacityModule({ onCapacityChange }) {
       {lumpyItems.map(item => {
         const isBonus = item.type === 'bonus'
         return (
-          <div key={item.id} style={{ display: 'grid', gridTemplateColumns: '2fr auto 1fr 1fr auto', gap: 10, marginBottom: 10, alignItems: 'end' }}>
+          <div key={item.id} className="ledger-lumpy-row" style={{ display: 'grid', gridTemplateColumns: '2fr auto 1fr 1fr auto', gap: 10, marginBottom: 10, alignItems: 'end' }}>
             <div>
               <label style={{ display: 'block', fontSize: C.xs, fontWeight: 600, color: C.muted, marginBottom: 5 }}>What</label>
               <input value={item.label} onChange={e => updateLumpyItem(item.id, { label: e.target.value })} placeholder={isBonus ? 'Bonus' : 'Road tax'}
@@ -643,7 +643,10 @@ export default function CapacityModule({ onCapacityChange }) {
               </select>
             </div>
             <button type="button" onClick={() => removeLumpyItem(item.id)} aria-label="Remove"
-              style={{ background: 'none', border: 'none', color: C.faint, fontSize: C.sm, cursor: 'pointer', padding: '10px 4px' }}>✕</button>
+              style={{
+                background: 'none', border: 'none', color: C.faint, fontSize: C.sm, cursor: 'pointer',
+                minWidth: 44, minHeight: 44, display: 'flex', alignItems: 'center', justifyContent: 'center',
+              }}>✕</button>
           </div>
         )
       })}
