@@ -116,3 +116,78 @@ than acted on:
   never appear on them) — not a bug, but worth tightening later if
   GitHub adds a narrower bypass mechanism (e.g. an allowlist scoped just
   to this bot) than blanket admin override.
+
+## Performance, maintainability & Capacity-module UX audit (2026-09-30)
+
+Ran a fresh whole-app pass across three lenses at the user's request:
+performance, code-quality/maintainability, and design/UX gaps the
+earlier three audits (2026-09-08/09/10, above) couldn't have caught
+because MyLedger's Capacity module (the FlowState-into-MyLedger merge,
+PRs #21-#23) postdates all of them.
+
+**Performance** — the calc-heavy paths already have the memoization an
+audit would normally flag as missing: `/ledger`'s `recompute` is
+debounced 150ms and keyed-cached (`src/app/ledger/page.js`), and
+`Sankey.js`'s `buildLayout` is `useMemo`'d on `flow`. `loadMyNumbers()`
+is called often across the codebase but only ever once per mount
+effect, never per-render or per-keystroke. No confident, material
+performance finding survived verification — noted here so this doesn't
+get re-audited from scratch next time.
+
+**Maintainability**
+
+- **Seven near-identical `save<Module>Numbers` functions in
+  `src/lib/shared/profile.js` (lines 395-536) duplicate the same
+  read-merge-write skeleton.** `saveHouseNumbers`, `saveDriveNumbers`,
+  `saveRetireNumbers`, `saveInsureNumbers`, `saveTaxNumbers`,
+  `saveEtfNumbers`, `saveFlowNumbers` each independently call
+  `loadMyNumbers()`, spread the existing slot, coerce each field
+  (`Number(x) || 0` or the nullable variant), stamp `savedAt:
+  Date.now()`, and call `save(data)` — roughly 130 lines of boilerplate
+  a `mergeModuleSlot(tool, coercedFields)` helper (fields declared
+  per-module as `{key, coerce}` pairs) would collapse to one
+  implementation plus seven short field-list declarations. Medium
+  effort — `profile.test.js` is 645 lines, so the refactor needs full
+  regression coverage, but the mechanical shape is simple.
+- **`src/app/drive/renew-or-replace/page.js` (511 lines) defines 9 local
+  presentational components inline** (`Label`, `Hint`, `MoneyInput`,
+  `Slider`, `BrandSelect`, `Card`, `SectionTitle`, `ResultCard`, `Row` —
+  lines 24-162) instead of using `src/components/drive/ui.js`, which
+  already exists and already exports a `MoneyInput` for the same
+  vertical — a near-duplicate implementation, not just an unextracted
+  one. Every other canonical vertical keeps these primitives in
+  `components/<tool>/ui.js` per `docs/architecture.md`; this page is the
+  one holdout. Medium effort — consolidate the overlapping components
+  (`MoneyInput` at minimum) into the shared file rather than just
+  relocating, since a naive move would create two competing definitions.
+
+**Design/UX — Capacity module** (new since the last UI/UX audit, so
+never checked for the same contrast/touch-target/mobile-reflow class of
+defect that audit found and fixed elsewhere):
+
+- **The lumpy-items row uses a fixed 5-column grid with no mobile
+  breakpoint**, unlike every other grid in the same file.
+  `src/components/ledger/CapacityModule.js:606`:
+  `gridTemplateColumns: '2fr auto 1fr 1fr auto'` (What / type-toggle /
+  Amount / Month / remove) — every other grid in `CapacityModule.js` and
+  `CapacityResults.js` uses `repeat(auto-fit, minmax(Npx, 1fr))`, which
+  reflows to fewer columns at phone width; this fixed one can't, and at
+  375px each field squashes well under a usable input width. Same
+  category of defect as the already-logged "Assumption-bundle table
+  doesn't reflow on mobile" item above, on a component built after that
+  audit ran. Medium effort — needs a stacked-card mobile layout for this
+  row, same open question as that item.
+- **The lumpy-item remove button is under the touch-target floor.**
+  `src/components/ledger/CapacityModule.js:645-646` — `padding: '10px
+  4px'` with `C.sm` (~14px) text gives a tappable area roughly 34×22px,
+  below the ~44×44px minimum PR #11's touch-target work established
+  elsewhere. The sibling +/− type-toggle buttons three lines above
+  (`CapacityModule.js:615-632`) use `padding: '10px 10px'` and don't
+  have this problem — only this one button was left narrower. Small
+  effort — widen the horizontal padding to match.
+
+No other Capacity-module regression found: contrast pairings all route
+through the shared `C.*` tokens the light/dark audit already covers,
+every other grid in the module uses the safe `auto-fit` pattern, and the
+collapsed-section toggle on `/ledger` doesn't introduce a new
+interactive pattern outside what PR #11 already audited.
