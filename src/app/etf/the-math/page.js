@@ -72,32 +72,36 @@ export default function TheMathPage() {
             <div className={styles.codeBlock}>
 {`Example (Balanced, 2-3 ETFs, US tilt):
   Core: VWRA @ 70%
-  Satellite: CSPX @ 30%
+  Satellite: XUS @ 30%
   Total: 100%
 
 Example (Conservative, 2-3 ETFs, no tilt):
   Bonds: AGGU @ 25%
   Core:  VWRA @ 55%
-  Satellite: CSPX @ 20%
+  Satellite: XUS @ 20%
 
 Example (Growth, 4-5 ETFs, no tilt):
   VWRA @ 30%
-  CSPX @ 40%
+  XUS @ 40%
   EIMI @ 20%
   WSML @ 10%`}
             </div>
           </Section>
 
           <Section title="ETFs we use and why">
-            <Body>All ETFs are Ireland-domiciled UCITS funds. This matters for tax efficiency.</Body>
+            <Body>All ETFs are Ireland-domiciled UCITS funds. This matters for tax efficiency. Four of them (XUS, EUS, XND, XWR) list directly on SGX in SGD as of October 2026 — the rest list on the LSE and need a broker with UK market access.</Body>
             {[
               { ticker:'VWRA', name:'Vanguard FTSE All-World UCITS ETF',      why:'The closest thing to owning the entire world. 3,700+ companies. Low 0.22% TER. Accumulating.' },
-              { ticker:'CSPX', name:'iShares Core S&P 500 UCITS ETF',         why:'US large-cap exposure. Very low 0.07% TER. Ireland-domiciled for 15% WHT vs 30% for VOO.' },
+              { ticker:'XUS', name:'Xtrackers S&P 500 UCITS ETF',             why:'US large-cap exposure — the same index as CSPX, at a lower 0.03% TER, trading directly in SGD on SGX. Our default US building block.' },
+              { ticker:'CSPX', name:'iShares Core S&P 500 UCITS ETF',         why:'US large-cap exposure. Very low 0.07% TER. Ireland-domiciled for 15% WHT vs 30% for VOO. Kept for comparison — XUS above tracks the same index for less.' },
               { ticker:'EIMI', name:'iShares Core MSCI EM IMI UCITS ETF',     why:'Broad emerging market coverage. High growth potential. Higher volatility.' },
               { ticker:'VJPW', name:'Vanguard FTSE Japan UCITS ETF',          why:'Concentrated Japan exposure for those wanting direct Asian developed market tilt.' },
               { ticker:'WSML', name:'iShares MSCI World Small Cap UCITS ETF', why:'Small-cap factor tilt. Historically higher returns over long periods at the cost of volatility.' },
               { ticker:'HMCH', name:'HSBC MSCI China UCITS ETF',              why:'China/HK exposure for those with conviction in Chinese growth. Carries policy and regulatory risk.' },
               { ticker:'AGGU', name:'iShares Core Global Aggregate Bond UCITS ETF', why:'Investment-grade global bonds, USD-hedged. Added to conservative portfolios as ballast — bonds historically fall less than equities in downturns.' },
+              { ticker:'EUS', name:'Xtrackers S&P 500 Equal Weight UCITS ETF', why:'The same 500 companies as XUS, equally weighted instead of by market cap — less concentrated in the largest few names, at a 0.15% TER.' },
+              { ticker:'XND', name:'Xtrackers Nasdaq 100 UCITS ETF',          why:'The 100 largest non-financial Nasdaq companies. A concentrated tech tilt on top of a broader core, not a replacement for one.' },
+              { ticker:'XWR', name:'Xtrackers MSCI World UCITS ETF',          why:'Developed markets worldwide, excluding emerging markets — unlike VWRA. Pairs with EIMI as a lower-cost 2-fund alternative to VWRA alone.' },
             ].map(e => (
               <InfoCard key={e.ticker} title={`${e.ticker} — ${e.name}`} body={e.why}/>
             ))}

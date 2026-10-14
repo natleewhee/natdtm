@@ -90,13 +90,13 @@ test('generatePortfolio: Precision splits its tilt slice across MULTIPLE selecte
   approx(sumPct(p.allocations), 100)
 })
 
-test('generatePortfolio: Precision tops up existing CSPX/EIMI slots for US/EM tilts rather than duplicating a line', () => {
+test('generatePortfolio: Precision tops up existing XUS/EIMI slots for US/EM tilts rather than duplicating a line', () => {
   const base = generatePortfolio({ simplicity: '4-5 ETFs', risk: 'Balanced', tilts: [] })
-  const baseUs = base.allocations.find(a => a.etf.ticker === 'CSPX').percentage
+  const baseUs = base.allocations.find(a => a.etf.ticker === 'XUS').percentage
   const tilted = generatePortfolio({ simplicity: '4-5 ETFs', risk: 'Balanced', tilts: ['United States'] })
-  const cspxEntries = tilted.allocations.filter(a => a.etf.ticker === 'CSPX')
-  assert.equal(cspxEntries.length, 1, 'should top up the existing CSPX line, not add a second one')
-  assert.ok(cspxEntries[0].percentage > baseUs)
+  const xusEntries = tilted.allocations.filter(a => a.etf.ticker === 'XUS')
+  assert.equal(xusEntries.length, 1, 'should top up the existing XUS line, not add a second one')
+  assert.ok(xusEntries[0].percentage > baseUs)
   approx(sumPct(tilted.allocations), 100)
 })
 
@@ -105,6 +105,30 @@ test('generatePortfolio: Precision with no tilts selected tops up the global cor
   const vwra = p.allocations.find(a => a.etf.ticker === 'VWRA')
   assert.ok(vwra.percentage > 40) // base gW=40 + otW=5 topped up
   approx(sumPct(p.allocations), 100)
+})
+
+// ─── New SGX-listed Ireland-domiciled ETFs (Oct 2026) ───────────────────────
+
+test('ETFS: the four SGX-listed funds are present with exchange metadata', () => {
+  for (const ticker of ['XUS', 'EUS', 'XND', 'XWR']) {
+    assert.ok(ETFS[ticker], `${ticker} should be in the ETF database`)
+    assert.equal(ETFS[ticker].exchange, 'SGX')
+  }
+  // Every pre-existing fund keeps its LSE listing, so UI code that reads
+  // .exchange doesn't see `undefined` for the funds added before this field.
+  for (const ticker of ['VWRA', 'CSPX', 'EIMI', 'VJPW', 'WSML', 'HMCH', 'VUSA', 'AGGU']) {
+    assert.equal(ETFS[ticker].exchange, 'LSE')
+  }
+})
+
+test('generatePortfolio: the US building block is XUS (SGX, lower TER), not CSPX', () => {
+  const twoThree = generatePortfolio({ simplicity: '2-3 ETFs', risk: 'Balanced', tilts: [] })
+  assert.ok(twoThree.allocations.some(a => a.etf.ticker === 'XUS'))
+  assert.ok(!twoThree.allocations.some(a => a.etf.ticker === 'CSPX'))
+
+  const precision = generatePortfolio({ simplicity: '4-5 ETFs', risk: 'Balanced', tilts: ['United States'] })
+  assert.ok(precision.allocations.some(a => a.etf.ticker === 'XUS'))
+  assert.ok(!precision.allocations.some(a => a.etf.ticker === 'CSPX'))
 })
 
 // ─── URL encode/decode round-trip ──────────────────────────────────────────
