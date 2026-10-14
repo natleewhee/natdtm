@@ -1,15 +1,29 @@
 // ─── ETF DATABASE ─────────────────────────────────────────────────────────────
 // ter = total expense ratio (annual fund cost, %) — published by the fund
 // managers on their factsheets. Used only to illustrate blended portfolio cost.
+// exchange: where the fund actually trades. 'LSE' funds need a broker with UK
+// market access and involve an SGD->USD/GBP FX conversion (see BROKERS below).
+// 'SGX' funds are the same UCITS/Ireland-domiciled structure but list directly
+// on SGX in SGD — any SG brokerage already supports them, no FX leg needed.
 export const ETFS = {
-  VWRA: { ticker:'VWRA', name:'Vanguard FTSE All-World UCITS ETF',      region:'Global',             ter:0.22, description:'Broad diversification across developed and emerging markets globally — 3,700+ companies.' },
-  CSPX: { ticker:'CSPX', name:'iShares Core S&P 500 UCITS ETF',         region:'United States',      ter:0.07, description:'Exposure to the 500 largest US companies. The bedrock of most growth portfolios.' },
-  EIMI: { ticker:'EIMI', name:'iShares Core MSCI EM IMI UCITS ETF',     region:'Emerging Markets',   ter:0.18, description:'Broad exposure to emerging market companies across Asia, Latin America, and beyond.' },
-  VJPW: { ticker:'VJPW', name:'Vanguard FTSE Japan UCITS ETF',          region:'Japan',              ter:0.15, description:'Focused exposure to the Japanese stock market — the world\'s third-largest economy.' },
-  WSML: { ticker:'WSML', name:'iShares MSCI World Small Cap UCITS ETF', region:'Global Small Cap',   ter:0.35, description:'Small-cap companies in developed markets. Higher growth potential, higher volatility.' },
-  HMCH: { ticker:'HMCH', name:'HSBC MSCI China UCITS ETF',              region:'China / Hong Kong',  ter:0.28, description:'Exposure to large and mid-cap Chinese companies. High growth potential, elevated risk.' },
-  VUSA: { ticker:'VUSA', name:'Vanguard S&P 500 UCITS ETF',             region:'United States',      ter:0.07, description:'Low-cost S&P 500 exposure. Slightly lower TER than CSPX. Distributing version available.' },
-  AGGU: { ticker:'AGGU', name:'iShares Core Global Aggregate Bond UCITS ETF', region:'Global Bonds', ter:0.10, description:'Broad investment-grade government and corporate bonds, USD-hedged. Ballast that cushions equity drawdowns.' },
+  VWRA: { ticker:'VWRA', name:'Vanguard FTSE All-World UCITS ETF',      region:'Global',             ter:0.22, exchange:'LSE', description:'Broad diversification across developed and emerging markets globally — 3,700+ companies.' },
+  CSPX: { ticker:'CSPX', name:'iShares Core S&P 500 UCITS ETF',         region:'United States',      ter:0.07, exchange:'LSE', description:'Exposure to the 500 largest US companies. The bedrock of most growth portfolios. XUS below tracks the same index for less, and trades on SGX.' },
+  EIMI: { ticker:'EIMI', name:'iShares Core MSCI EM IMI UCITS ETF',     region:'Emerging Markets',   ter:0.18, exchange:'LSE', description:'Broad exposure to emerging market companies across Asia, Latin America, and beyond.' },
+  VJPW: { ticker:'VJPW', name:'Vanguard FTSE Japan UCITS ETF',          region:'Japan',              ter:0.15, exchange:'LSE', description:'Focused exposure to the Japanese stock market — the world\'s third-largest economy.' },
+  WSML: { ticker:'WSML', name:'iShares MSCI World Small Cap UCITS ETF', region:'Global Small Cap',   ter:0.35, exchange:'LSE', description:'Small-cap companies in developed markets. Higher growth potential, higher volatility.' },
+  HMCH: { ticker:'HMCH', name:'HSBC MSCI China UCITS ETF',              region:'China / Hong Kong',  ter:0.28, exchange:'LSE', description:'Exposure to large and mid-cap Chinese companies. High growth potential, elevated risk.' },
+  VUSA: { ticker:'VUSA', name:'Vanguard S&P 500 UCITS ETF',             region:'United States',      ter:0.07, exchange:'LSE', description:'Low-cost S&P 500 exposure. Slightly lower TER than CSPX. Distributing version available.' },
+  AGGU: { ticker:'AGGU', name:'iShares Core Global Aggregate Bond UCITS ETF', region:'Global Bonds', ter:0.10, exchange:'LSE', description:'Broad investment-grade government and corporate bonds, USD-hedged. Ballast that cushions equity drawdowns.' },
+  // Four Xtrackers (DWS) UCITS ETFs that listed directly on SGX in SGD in
+  // October 2026 — the first time Ireland-domiciled funds have traded on
+  // the Singapore exchange itself, rather than needing a broker with LSE
+  // access. Same Ireland domicile as the funds above, so the same 15%
+  // US-dividend withholding tax treaty rate applies; all four are
+  // physically replicated and accumulating (no distributions to manage).
+  XUS: { ticker:'XUS', name:'Xtrackers S&P 500 UCITS ETF',              region:'United States',      ter:0.03, exchange:'SGX', description:'Tracks the same S&P 500 index as CSPX/VUSA for about half the fee, and settles directly in SGD on SGX — no FX conversion needed.' },
+  EUS:  { ticker:'EUS', name:'Xtrackers S&P 500 Equal Weight UCITS ETF', region:'United States',      ter:0.15, exchange:'SGX', description:'The same 500 companies as XUS, each held at an equal weight instead of by market cap — less concentrated in the largest few names, at a higher fee.' },
+  XND: { ticker:'XND', name:'Xtrackers Nasdaq 100 UCITS ETF',           region:'United States',      ter:0.20, exchange:'SGX', description:'The 100 largest non-financial Nasdaq-listed companies — a tech-heavy tilt on top of a broad US or global core, not a substitute for one.' },
+  XWR: { ticker:'XWR', name:'Xtrackers MSCI World UCITS ETF',           region:'Global Developed',   ter:0.12, exchange:'SGX', description:'Developed-market companies worldwide — not emerging markets. Cheaper than VWRA, but VWRA already includes this exposure plus EM/China; pair XWR with EIMI instead of swapping it in for VWRA.' },
 }
 
 // ─── LOOK-THROUGH COMPOSITION ─────────────────────────────────────────────────
@@ -26,6 +40,14 @@ const COMPOSITION = {
   WSML: { 'United States':0.60, 'Other Developed':0.29, 'Japan':0.11 },
   HMCH: { 'China / Hong Kong':1.0 },
   AGGU: { 'Global Bonds':1.0 },
+  // Same underlying index as CSPX/VUSA (XUS, EUS) or the same mega-cap
+  // tech-heavy Nasdaq-100 (XND) — all pure US. XWR tracks MSCI World,
+  // which (unlike VWRA) excludes emerging markets entirely, so its
+  // developed-world split mirrors WSML's rather than VWRA's.
+  XUS: { 'United States':1.0 },
+  EUS: { 'United States':1.0 },
+  XND: { 'United States':1.0 },
+  XWR: { 'United States':0.72, 'Other Developed':0.22, 'Japan':0.06 },
 }
 
 // ─── ILLUSTRATIVE HISTORICAL RETURNS (for chart simulation) ─────────────────
@@ -39,6 +61,15 @@ const RETURNS = {
   HMCH: { y1:-0.04, m6:-0.01, w1:-0.001 },
   VUSA: { y1:0.22,  m6:0.09,  w1:0.005  },
   AGGU: { y1:0.03,  m6:0.015, w1:0.0005 },
+  // XUS/EUS track S&P 500 variants, XND tracks Nasdaq-100, XWR tracks MSCI
+  // World — reusing the closest existing index-level figures above (CSPX
+  // for XUS's identical index; a modest discount for EUS's equal-weight
+  // tilt, which lagged cap-weighted through this period; WSML's developed-
+  // ex-EM blend for XWR) rather than inventing unsourced numbers.
+  XUS: { y1:0.22,  m6:0.09,  w1:0.005  },
+  EUS:  { y1:0.17,  m6:0.07,  w1:0.004  },
+  XND: { y1:0.28,  m6:0.11,  w1:0.006  },
+  XWR: { y1:0.12,  m6:0.05,  w1:0.0025 },
 }
 
 // ─── HELPERS ──────────────────────────────────────────────────────────────────
@@ -140,7 +171,7 @@ export function generatePortfolio(prefs) {
     title = 'The Ultimate Simplicity'
     description = 'A single-fund solution that covers the entire world.'
     allocations = [{ etf: ETFS.VWRA, percentage: 100 }]
-    whyItWorks = 'VWRA provides instant diversification across 3,700+ companies globally. It is the gold standard for "set and forget" investing in Singapore due to its tax efficiency (UCITS, Ireland-domiciled) and broad coverage. One fund. One monthly buy. Done. Note: a single all-equity fund cannot be tailored by risk level or region — choose 2–3 ETFs to add a bond cushion or regional tilts.'
+    whyItWorks = 'VWRA provides instant diversification across 3,700+ companies globally. It is the gold standard for "set and forget" investing in Singapore due to its tax efficiency (UCITS, Ireland-domiciled) and broad coverage. One fund. One monthly buy. Done. Note: a single all-equity fund cannot be tailored by risk level or region — choose 2–3 ETFs to add a bond cushion or regional tilts. A lower-cost 2-fund alternative covering the same ground is XWR + EIMI (developed markets + emerging markets, blended TER well under VWRA\'s alone) — only worth the extra line if you don\'t mind two monthly buys instead of one.'
 
   } else if (prefs.simplicity === '2-3 ETFs') {
     title = 'The Core & Satellite Approach'
@@ -154,16 +185,16 @@ export function generatePortfolio(prefs) {
     if (prefs.tilts.length > 0) {
       const w = Math.floor(satelliteWeight / prefs.tilts.length)
       prefs.tilts.forEach(tilt => {
-        if      (tilt === 'United States')       allocations.push({ etf: ETFS.CSPX, percentage: w })
+        if      (tilt === 'United States')       allocations.push({ etf: ETFS.XUS, percentage: w })
         else if (tilt === 'Emerging Markets')    allocations.push({ etf: ETFS.EIMI, percentage: w })
         else if (tilt === 'Japan')               allocations.push({ etf: ETFS.VJPW, percentage: w })
         else if (tilt === 'China / Hong Kong')   allocations.push({ etf: ETFS.HMCH, percentage: w })
       })
     } else {
-      allocations.push({ etf: ETFS.CSPX, percentage: satelliteWeight })
+      allocations.push({ etf: ETFS.XUS, percentage: satelliteWeight })
     }
     const bondNote = bondWeight > 0 ? ` A ${bondWeight}% global bond sleeve (AGGU) cushions drawdowns to match your conservative risk preference.` : ''
-    whyItWorks = `By combining a global core (VWRA) with targeted satellites, you maintain broad diversification while tilting towards ${prefs.tilts.length > 0 ? prefs.tilts.join(' and ') : 'the US market'}. This approach balances stability with your specific market convictions.${bondNote}`
+    whyItWorks = `By combining a global core (VWRA) with targeted satellites, you maintain broad diversification while tilting towards ${prefs.tilts.length > 0 ? prefs.tilts.join(' and ') : 'the US market'}. This approach balances stability with your specific market convictions.${bondNote} The US satellite is XUS rather than the older CSPX/VUSA — same S&P 500 exposure, lower fee, and it settles in SGD on SGX directly.`
 
   } else {
     title = 'The Precision Portfolio'
@@ -176,7 +207,7 @@ export function generatePortfolio(prefs) {
     if (prefs.risk === 'Growth')       { bondW=0;  gW=25; usW=40; emW=20; scW=10; otW=5 }
     if (bondW > 0) allocations.push({ etf: ETFS.AGGU, percentage: bondW })
     allocations.push({ etf: ETFS.VWRA, percentage: gW })
-    allocations.push({ etf: ETFS.CSPX, percentage: usW })
+    allocations.push({ etf: ETFS.XUS, percentage: usW })
     allocations.push({ etf: ETFS.EIMI, percentage: emW })
     allocations.push({ etf: ETFS.WSML, percentage: scW })
     // Split the "other tilt" slice evenly across every tilt the user
@@ -192,7 +223,7 @@ export function generatePortfolio(prefs) {
         prefs.tilts.forEach(tilt => {
           if      (tilt === 'Japan')             allocations.push({ etf: ETFS.VJPW, percentage: perTilt })
           else if (tilt === 'China / Hong Kong') allocations.push({ etf: ETFS.HMCH, percentage: perTilt })
-          else if (tilt === 'United States')     allocations.find(a => a.etf.ticker === 'CSPX').percentage += perTilt
+          else if (tilt === 'United States')     allocations.find(a => a.etf.ticker === 'XUS').percentage += perTilt
           else if (tilt === 'Emerging Markets')  allocations.find(a => a.etf.ticker === 'EIMI').percentage += perTilt
         })
       } else {
@@ -200,7 +231,7 @@ export function generatePortfolio(prefs) {
       }
     }
     const bondNote = bondW > 0 ? ' A global bond sleeve (AGGU) is included to temper volatility for your conservative risk preference.' : ''
-    whyItWorks = `This portfolio breaks down global exposure into specific building blocks, allowing you to overweight regions or factors (like small caps) while ensuring no single country dominates your entire wealth.${bondNote}`
+    whyItWorks = `This portfolio breaks down global exposure into specific building blocks, allowing you to overweight regions or factors (like small caps) while ensuring no single country dominates your entire wealth.${bondNote} The US building block is XUS, not CSPX — same index, lower fee, trades on SGX in SGD.`
   }
 
   return { title, description, allocations: normalizeTo100(allocations), whyItWorks }
@@ -298,6 +329,17 @@ const ANNUAL_RETURNS = {
   WSML: [-0.006, 0.127, 0.254, -0.142, 0.254, 0.140, 0.162, -0.184, 0.157, 0.090],
   HMCH: [-0.076, 0.011, 0.541, -0.187, 0.235, 0.295, -0.217, -0.219, -0.110, 0.190],
   AGGU: [ 0.006, 0.039, 0.030, -0.005, 0.068, 0.056, -0.014, -0.112, 0.057, 0.030],
+  // XUS tracks the identical S&P 500 index as CSPX/VUSA, so it shares their
+  // exact historical sequence at this precision (pre-fee return is the
+  // index return; only the fund's own TER differs, which computeBacktest
+  // doesn't model). generatePortfolio now defaults the "United States"
+  // slot to XUS, so this entry is load-bearing, not just for completeness.
+  // EUS/XND/XWR aren't in generatePortfolio's output yet and have no
+  // verified real annual sequence here — they'd fall through to VWRA's
+  // series via the `|| ANNUAL_RETURNS.VWRA` fallback below, which is wrong
+  // for a single-region fund; add their real sequences before wiring any
+  // of them into a user-facing allocation.
+  XUS: [ 0.014, 0.120, 0.218, -0.044, 0.315, 0.184, 0.287, -0.181, 0.263, 0.250],
 }
 
 /**
