@@ -1,15 +1,15 @@
 // src/lib/retire/cpf.js
 // CPF contribution and interest rules used by the retirement projection.
 // Contribution rates for ages above 55 are on a multi-year phase-in
-// (announced through Budget 2023) moving toward parity with the below-55
-// rate by around 2030 — they are revised periodically. Figures below are
-// a good-faith snapshot, not pulled live from CPF Board — verify against
-// the official CPF contribution rate tables before relying on this for
-// real planning, the same way BSD/SSD/ABSD in HouseMuch carry an AS_OF
-// date rather than being presented as permanently current.
-// Verified against CPF Board in docs/statutory-sources.md (audited
-// 2026-08-31). The 55-60 and 60-65 CPF_CONTRIBUTION_TABLE bands have
-// known open discrepancies recorded there (still at 2025 rates).
+// moving toward parity with the below-55 rate — they are raised in steps,
+// most recently on 1 Jan 2026, with a further step announced for 1 Jan
+// 2027 (tracked under "Scheduled changes" in docs/statutory-sources.md).
+// Figures below are a good-faith snapshot, not pulled live from CPF Board
+// — verify against the official CPF contribution rate tables before
+// relying on this for real planning, the same way BSD/SSD/ABSD in
+// HouseMuch carry an AS_OF date rather than being presented as
+// permanently current.
+// Verified against CPF Board in docs/statutory-sources.md.
 export const CPF_RATES_AS_OF = '2026-01-01'
 
 // Monthly Ordinary Wage ceiling — the salary CPF contributions are capped
@@ -24,11 +24,21 @@ export const CPF_OW_CEILING = 8_000
 // salary alone has used up most of the annual ceiling.
 export const CPF_ANNUAL_CEILING = 102_000
 
-// Age bands as at the start of the contribution year. `alloc` is the
-// share of the TOTAL contribution (not of salary) credited to each
-// sub-account; the three always sum to `total`. Employer/employee split
-// isn't modeled since it doesn't change what lands in CPF, only how much
-// hits your paycheck first.
+// Age bands as at the start of the contribution year. `oa`/`sa`/`ma` are
+// each sub-account's share of SALARY (not of the total contribution); the
+// three always sum to `total`. Employer/employee split isn't modeled since
+// it doesn't change what lands in CPF, only how much hits your paycheck
+// first.
+//
+// From 55 the Special Account no longer exists: the `sa` share is credited
+// to the Retirement Account (up to the Full Retirement Sum). The model
+// keeps the `sa` key and treats that balance as the SA/RA pot.
+//
+// 2026 rates (CPF Board, "CPF contribution rates from 1 Jan 2026" and
+// "CPF Allocation Rates from 1 Jan 2026"). The 2026 increase for ages
+// 55-65 (+1.5 points) goes entirely to the Retirement Account:
+//   55-60: 34% = OA 12 + RA 11.5 + MA 10.5  (allocation ratios .353/.3382/.3088)
+//   60-65: 25% = OA 3.5 + RA 11 + MA 10.5   (allocation ratios .14/.44/.42)
 //
 // Boundaries are deliberately CONTIGUOUS (each band's minAge equals the
 // previous band's maxAge, not maxAge+1) with no gap between them — a
@@ -45,8 +55,8 @@ export const CPF_ANNUAL_CEILING = 102_000
 // (55+) this table exists to model precisely.
 export const CPF_CONTRIBUTION_TABLE = [
   { minAge: 0, maxAge: 55, total: 0.37, oa: 0.23, sa: 0.06, ma: 0.08 },
-  { minAge: 55, maxAge: 60, total: 0.325, oa: 0.15, sa: 0.055, ma: 0.12 },
-  { minAge: 60, maxAge: 65, total: 0.235, oa: 0.085, sa: 0.02, ma: 0.13 },
+  { minAge: 55, maxAge: 60, total: 0.34, oa: 0.12, sa: 0.115, ma: 0.105 },
+  { minAge: 60, maxAge: 65, total: 0.25, oa: 0.035, sa: 0.11, ma: 0.105 },
   { minAge: 65, maxAge: 70, total: 0.165, oa: 0.035, sa: 0.025, ma: 0.105 },
   { minAge: 70, maxAge: 999, total: 0.125, oa: 0.01, sa: 0.01, ma: 0.105 },
 ]

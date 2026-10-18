@@ -20,8 +20,12 @@ export { MAINTENANCE_BY_BRAND, getAnnualMaintenance, getTotalMaintenance }
 // keeping its own copy. Previously this file duplicated the formulas locally
 // and they had drifted out of sync with page.js's copy (which used the wrong
 // PARF percentages) — see src/lib/calc.js for the corrected, tested version.
-import { calcARF, parfPct, calcPARF, calcCOERebate } from '@/lib/drive/calc.js'
-export { calcARF, parfPct, calcPARF, calcCOERebate }
+import {
+  calcARF, parfPct, calcPARF, calcCOERebate, calcEEAI, parfRegimeFor, parfRegimeForAge, registrationDateForAge,
+} from '@/lib/drive/calc.js'
+export {
+  calcARF, parfPct, calcPARF, calcCOERebate, calcEEAI, parfRegimeFor, parfRegimeForAge, registrationDateForAge,
+}
 
 // ─── CORE CALCULATION: annual cost ───────────────────────────────────────────
 // Annual cost = (total money out − total money recovered) / years
@@ -42,10 +46,11 @@ function annualCost(totalOut, totalRecovered, years) {
 //   brandKey,        for maintenance
 //   renewYears,      5 or 10
 //   customMaintenance  optional S$/yr override
+//   now,             optional Date (tests); dates the car's registration
 // }
 export function calcRenewOption(inputs) {
   const { carAge, monthsRemaining, pqp, omv, ves, isEV,
-          brandKey, renewYears, customMaintenance } = inputs
+          brandKey, renewYears, customMaintenance, now = new Date() } = inputs
 
   // LTA rule: 5yr = 50% PQP, 10yr = 100% PQP
   const renewalCost = renewYears === 5 ? pqp * 0.5 : pqp
@@ -53,10 +58,12 @@ export function calcRenewOption(inputs) {
   const endAge = carAge + renewYears
 
   // Scrap value given up now (by choosing to renew instead of scrap)
+  // The existing car's registration date fixes its PARF schedule for life.
   const arf = calcARF(omv || 20000)
-  const eeai = isEV ? Math.min(arf * 0.45, 7500) : 0
+  const eeai = isEV ? calcEEAI(arf, registrationDateForAge(carAge, now)) : 0
   const netArf = Math.max(0, arf - eeai)
-  const parfNow = calcPARF(netArf, carAge)
+  const regime = parfRegimeForAge(carAge, now)
+  const parfNow = calcPARF(netArf, carAge, regime)
   const coeRebateNow = calcCOERebate(pqp, monthsRemaining) // approx using current PQP
   const opportunityCost = parfNow + coeRebateNow
 
@@ -68,7 +75,7 @@ export function calcRenewOption(inputs) {
   // Recovery at end of renewal period
   // 5yr: car must be deregistered → PARF at endAge (if <10), zero COE rebate
   // 10yr: car can renew again → PARF at endAge (if <10), zero COE rebate (fully used)
-  const parfAtEnd = endAge <= 10 ? calcPARF(netArf, endAge) : 0
+  const parfAtEnd = endAge <= 10 ? calcPARF(netArf, endAge, regime) : 0
   // Zero COE rebate because the renewed COE will be fully consumed
   const recoveryAtEnd = parfAtEnd
 
@@ -107,10 +114,11 @@ export function calcRenewOption(inputs) {
 //   brandKey,     for maintenance
 //   years,        comparison horizon (default 10 to match 10yr renew)
 //   customMaintenance
+//   now,          optional Date (tests); the new car is registered "now"
 // }
 export function calcBuyNewOption(inputs) {
   const { price, omv, ves, isEV, salary, downpayment, tenure,
-          loanCap, rateTier, brandKey, years = 10, customMaintenance } = inputs
+          loanCap, rateTier, brandKey, years = 10, customMaintenance, now = new Date() } = inputs
 
   const RATES = { ice: 0.0260, green: 0.0208, tesla: 0.0168 }
   const rate = RATES[rateTier] || 0.0260
@@ -122,10 +130,11 @@ export function calcBuyNewOption(inputs) {
   const totalRepaid = actualDown + loan + interest
 
   // PARF + COE recovery at end of comparison horizon
+  // Registered today, so the current PARF schedule and (until it ceases) EEAI.
   const arf = calcARF(omv || 20000)
-  const eeai = isEV ? Math.min(arf * 0.45, 7500) : 0
+  const eeai = isEV ? calcEEAI(arf, now) : 0
   const netArf = Math.max(0, arf - eeai)
-  const parfAtHorizon = calcPARF(netArf, years)
+  const parfAtHorizon = calcPARF(netArf, years, parfRegimeFor(now))
   // COE rebate: if years < 10, some COE months remain
   // Assume COE paid ≈ price - (omv + netArf + duty + regFee)
   const duty = (omv || 20000) * 0.308
@@ -168,9 +177,10 @@ export function calcBuyNewOption(inputs) {
 //   omv,             for PARF recovery calc
 //   brandKey,
 //   customMaintenance
+//   now,             optional Date (tests); dates the used car's registration
 // }
 export function calcBuyUsedOption(inputs) {
-  const { price, carAge, monthsRemaining, mileage, omv, brandKey, customMaintenance } = inputs
+  const { price, carAge, monthsRemaining, mileage, omv, brandKey, customMaintenance, now = new Date() } = inputs
 
   const usefulYears = monthsRemaining / 12
 
@@ -181,7 +191,7 @@ export function calcBuyUsedOption(inputs) {
 
   const arf = calcARF(omv || 20000)
   const netArf = arf  // used cars typically have no EEAI left to worry about
-  const parfAtExpiry = canGetPARF ? calcPARF(netArf, ageAtExpiry) : 0
+  const parfAtExpiry = canGetPARF ? calcPARF(netArf, ageAtExpiry, parfRegimeForAge(carAge, now)) : 0
   // COE fully used at expiry → no rebate
   const recoveryAtEnd = parfAtExpiry
 
