@@ -22,6 +22,7 @@
 import { C, RATE_TIERS } from './theme.js'
 import {
   isPureEV, calcNetARF, getCOEPremium, calcPARF, calcCOERebate, TDSR_LIMIT, omvToLtv, minDownFor,
+  parfRegimeForAge, registrationDateForAge,
 } from './calc.js'
 
 /**
@@ -32,13 +33,17 @@ import {
  * @param {object} usedCar - The used car record (price, omv, ves, ageNow, monthsRemaining, coe).
  * @param {number} y - Years of further ownership to evaluate.
  * @param {?number} [liveCOEPremium=null] - Live COE premium override.
+ * @param {Date} [now=new Date()] - The current date; with `ageNow` it dates the car's registration, which decides the PARF schedule and whether EEAI applied.
  * @returns {{grossArf: number, netArf: number, eeai: number, coePaid: number, parf: number, coeRebate: number, paperValue: number, totalDepr: number, annualDepr: number, monthlyDepr: number}}
  *   The depreciation breakdown.
  */
-export function calcUsedDepr(usedCar, y, liveCOEPremium = null) {
+export function calcUsedDepr(usedCar, y, liveCOEPremium = null, now = new Date()) {
   const pureEV = isPureEV(usedCar)
   const ves = usedCar.ves ?? 0
-  const { grossArf, netArf, eeai } = calcNetARF(usedCar.omv, ves, pureEV)
+  // The car's registration date (today minus its age) fixes both the PARF
+  // schedule it deregisters under and whether it got EEAI, however long we hold it.
+  const { grossArf, netArf, eeai } = calcNetARF(usedCar.omv, ves, pureEV, registrationDateForAge(usedCar.ageNow, now))
+  const regime = parfRegimeForAge(usedCar.ageNow, now)
   const coe = getCOEPremium(usedCar, liveCOEPremium)
   const ageAtY = usedCar.ageNow + y
   const monthsRemainingAtY = Math.max(0, usedCar.monthsRemaining - y * 12)
@@ -46,7 +51,7 @@ export function calcUsedDepr(usedCar, y, liveCOEPremium = null) {
   // PARF rebate left — matches calcPARF/parfPct's own cutoff, made explicit
   // here since ageAtY can exceed that range for a used car in ways a fresh
   // new-car purchase (calcDepr) never has to check.
-  const parf = ageAtY <= 10 ? calcPARF(netArf, ageAtY) : 0
+  const parf = ageAtY <= 10 ? calcPARF(netArf, ageAtY, regime) : 0
   const coeR = calcCOERebate(coe, monthsRemainingAtY)
   const paper = parf + coeR
   const totalDepr = usedCar.price - paper

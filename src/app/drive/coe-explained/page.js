@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
-import { calcARF, calcPARF, COE_FALLBACK, omvToLtv, minDownFor } from '@/lib/drive/calc'
+import { calcARF, calcPARF, calcEEAI, COE_FALLBACK, omvToLtv, minDownFor } from '@/lib/drive/calc'
 import { CoeHistoryChart } from '@/components/drive/CoeHistoryChart'
 import { CoeTimingSignal } from '@/components/drive/CoeTimingSignal'
 import ShellHeader from '@/components/shared/ShellHeader'
@@ -31,7 +31,7 @@ function calcTotal(car, coe) {
   const totalPrice = car.basePrice + coe
   const arf = calcARF(car.omv)
   const isEV = car.rateTier === 'green'
-  const eeai = isEV ? Math.min(arf * 0.45, 7500) : 0
+  const eeai = isEV ? calcEEAI(arf) : 0
   const netArf = arf - eeai
   const duty = car.omv * 0.308
   const govtExCOE = car.omv + netArf + duty + 350
@@ -119,7 +119,7 @@ export default function COEExplainerPage() {
           ))}
         </div>
         <p style={{ fontSize: C.base, color: C.text, lineHeight: 1.8, margin: '0 0 14px' }}>
-          For EVs, you also get the EEAI (Electric Vehicle Early Adoption Incentive) — 45% off ARF, capped at S$7,500 in 2026. This is why EVs can be surprisingly affordable despite high sticker prices.
+          For EVs, you also get the EEAI (Electric Vehicle Early Adoption Incentive) — 45% off ARF, capped at S$7,500 for cars registered in 2026. The incentive ends for registrations from 1 January 2027, so EVs registered after that pay full ARF. Until then, this is why EVs can be surprisingly affordable despite high sticker prices.
         </p>
 
         {/* Section 3: PARF */}

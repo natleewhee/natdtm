@@ -26,7 +26,7 @@ function approx(a, b, tol = 1) {
 
 // ─── CPF contribution ────────────────────────────────────────────────────
 assert('Below-55 contribution rate is 37%', contributionRatesForAge(30).total === 0.37)
-assert('Age 58 falls in the 56-60 band', contributionRatesForAge(58).total === 0.325)
+assert('Age 58 falls in the 55-60 band (34% from 1 Jan 2026)', contributionRatesForAge(58).total === 0.34)
 assert('Age 100 falls back to the oldest band', contributionRatesForAge(100).total === 0.125)
 
 // Fractional ages fall between EVERY boundary in this table every month
@@ -35,10 +35,30 @@ assert('Age 100 falls back to the oldest band', contributionRatesForAge(100).tot
 // just at integers — this is exactly the gap the CPF_CONTRIBUTION_TABLE
 // bug (non-contiguous minAge/maxAge, e.g. 56 instead of 55) hid.
 assert('Age exactly 55 stays in the below-55 band (37%)', contributionRatesForAge(55).total === 0.37)
-assert('Age 55.5 falls in the 55-60 band (32.5%), not the 71+ fallback', contributionRatesForAge(55.5).total === 0.325)
-assert('Age exactly 60 stays in the 55-60 band (32.5%)', contributionRatesForAge(60).total === 0.325)
-assert('Age 60.5 falls in the 60-65 band (23.5%), not the 71+ fallback', contributionRatesForAge(60.5).total === 0.235)
-assert('Age exactly 65 stays in the 60-65 band (23.5%)', contributionRatesForAge(65).total === 0.235)
+assert('Age 55.5 falls in the 55-60 band (34%), not the 71+ fallback', contributionRatesForAge(55.5).total === 0.34)
+assert('Age exactly 60 stays in the 55-60 band (34%)', contributionRatesForAge(60).total === 0.34)
+assert('Age 60.5 falls in the 60-65 band (25%), not the 71+ fallback', contributionRatesForAge(60.5).total === 0.25)
+assert('Age exactly 65 stays in the 60-65 band (25%)', contributionRatesForAge(65).total === 0.25)
+
+// 2026 allocation (CPF Board, "CPF Allocation Rates from 1 Jan 2026"): from 55
+// the SA share is the Retirement Account, and the 2026 increase went to it.
+const band5560 = contributionRatesForAge(58)
+assert('55-60 allocation is OA 12% / RA 11.5% / MA 10.5%',
+  approx(band5560.oa, 0.12, 1e-9) && approx(band5560.sa, 0.115, 1e-9) && approx(band5560.ma, 0.105, 1e-9))
+const band6065 = contributionRatesForAge(62)
+assert('60-65 allocation is OA 3.5% / RA 11% / MA 10.5%',
+  approx(band6065.oa, 0.035, 1e-9) && approx(band6065.sa, 0.11, 1e-9) && approx(band6065.ma, 0.105, 1e-9))
+
+// Every band's sub-accounts must sum to its total — this is the check that
+// catches a total being updated without re-deriving the allocation.
+for (const age of [30, 58, 62, 67, 72]) {
+  const b = contributionRatesForAge(age)
+  assert(`Age ${age}: OA + SA + MA sums to the band total (${b.total})`, approx(b.oa + b.sa + b.ma, b.total, 1e-9))
+}
+
+const c58 = monthlyCpfContribution(6_000, 58)
+assert('Age 58 on $6,000 contributes 34% in total ($2,040)', approx(c58.total, 2_040, 0.01))
+assert('Age 62 on $6,000 contributes 25% in total ($1,500)', approx(monthlyCpfContribution(6_000, 62).total, 1_500, 0.01))
 assert('Age 65.5 falls in the 65-70 band (16.5%), not the 71+ fallback', contributionRatesForAge(65.5).total === 0.165)
 assert('Age exactly 70 stays in the 65-70 band (16.5%)', contributionRatesForAge(70).total === 0.165)
 assert('Age 70.5 falls in the 70+ band (12.5%)', contributionRatesForAge(70.5).total === 0.125)

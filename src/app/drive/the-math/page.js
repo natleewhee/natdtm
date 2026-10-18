@@ -183,7 +183,16 @@ Example (OMV = S$50,000):
         {/* PARF */}
         <Section title="PARF — Preferential Additional Registration Fee rebate">
           <BodyText>When you deregister your car (scrap or export), you get back a portion of the ARF you paid. This is the PARF rebate. It decreases the longer you keep the car.</BodyText>
-          <Formula>{`PARF schedule:
+          <Formula>{`PARF schedule — cars with COEs from the 2nd Feb 2026 bidding exercise onwards:
+  Deregistered at year ≤5:    30% of ARF paid (capped at S$30,000)
+  Deregistered at year 6:     25% of ARF paid (capped at S$30,000)
+  Deregistered at year 7:     20% of ARF paid (capped at S$30,000)
+  Deregistered at year 8:     15% of ARF paid (capped at S$30,000)
+  Deregistered at year 9:     10% of ARF paid (capped at S$30,000)
+  Deregistered at year 10:     5% of ARF paid (capped at S$30,000)
+  After year 10:                0% (no PARF rebate)
+
+PARF schedule — earlier cars (COE before that exercise):
   Deregistered at year ≤5:    75% of ARF paid (capped at S$60,000)
   Deregistered at year 6:     70% of ARF paid (capped at S$60,000)
   Deregistered at year 7:     65% of ARF paid (capped at S$60,000)
@@ -191,7 +200,8 @@ Example (OMV = S$50,000):
   Deregistered at year 9:     55% of ARF paid (capped at S$60,000)
   Deregistered at year 10:    50% of ARF paid (capped at S$60,000)
   After year 10:                0% (no PARF rebate)`}</Formula>
-          <Caveat>The S$60,000 PARF cap applies to cars registered with COEs from the February 2023 second bidding exercise onwards (Budget 2023). Always verify current rates on the LTA website.</Caveat>
+          <Caveat>Budget 2026 cut the PARF schedule and halved the cap to S$30,000 for cars registered with COEs from the second February 2026 bidding exercise (16–20 Feb) onwards. Cars registered before that keep the earlier schedule for life, so the schedule used here depends on the car&apos;s registration date: a car you are buying new today gets the revised one, while a used car is matched by its age. (The S$60,000 cap on the earlier schedule dates from Budget 2023.) Source: LTA news release, 12 Feb 2026. Always verify current rates on the LTA website.</Caveat>
+          <Caveat>EV Early Adoption Incentive (EEAI): pure EVs registered in 2026 get 45% off ARF, capped at S$7,500. The incentive ceases for registrations from 1 January 2027, after which this calculator applies none. A car registered late in December may land in January once delivered, so check the registration date with the dealer.</Caveat>
         </Section>
 
         {/* COE */}

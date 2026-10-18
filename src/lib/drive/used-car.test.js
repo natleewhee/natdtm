@@ -2,7 +2,7 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import { calcUsed, calcUsedDepr } from './used-car.js'
-import { TDSR_LIMIT } from './calc.js'
+import { TDSR_LIMIT, calcPARF } from './calc.js'
 
 function approx(a, b, eps = 0.5) {
   assert.ok(Math.abs(a - b) <= eps, `expected ${a} ≈ ${b}`)
@@ -101,6 +101,30 @@ test('calcUsedDepr grants PARF while total age is still within 10 years', () => 
   const car = { ...USED_CAR, ageNow: 3, omv: 25_000 }
   const d = calcUsedDepr(car, 2, 100_000) // ageAtY = 5
   assert.ok(d.parf > 0)
+})
+
+// A used car's registration date (today minus its age) decides its PARF
+// schedule: a 3-year-old car bought in Oct 2026 was registered in 2023, so
+// it keeps the legacy schedule for life.
+test('calcUsedDepr uses the legacy PARF schedule for a car registered before Feb 2026', () => {
+  const now = new Date('2026-10-18')
+  const car = { ...USED_CAR, ageNow: 3, omv: 25_000 }
+  const d = calcUsedDepr(car, 2, 100_000, now) // ageAtY = 5
+  approx(d.parf, calcPARF(d.netArf, 5, 'legacy'))
+})
+
+test('calcUsedDepr uses the revised PARF schedule for a car registered after the cutover', () => {
+  const now = new Date('2028-10-18')
+  const car = { ...USED_CAR, ageNow: 1, omv: 25_000 } // registered ~Oct 2027
+  const d = calcUsedDepr(car, 2, 100_000, now)        // ageAtY = 3
+  approx(d.parf, calcPARF(d.netArf, 3, 'revised2026'))
+})
+
+test('calcUsedDepr keeps EEAI for an EV registered before it ceased, even after 2027', () => {
+  const now = new Date('2028-10-18')
+  const car = { ...USED_CAR, ageNow: 4, omv: 25_000, type: 'Electric SUV' } // registered ~2024
+  const d = calcUsedDepr(car, 1, 100_000, now)
+  assert.ok(d.eeai > 0)
 })
 
 test('calcUsedDepr COE rebate reflects the car\'s actual remaining months, not a fresh 120', () => {

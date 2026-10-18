@@ -1,13 +1,15 @@
 // src/lib/shared/statutory-currency.test.js
-// Currency gate for Singapore statutory constants. Fails CI when the
-// audit in docs/statutory-sources.md goes stale or when a new `*_AS_OF`
-// marker is added to the engines without being recorded there.
+// Currency gate for Singapore statutory constants. Fails CI when:
+//   - the audit in docs/statutory-sources.md is more than ~3 months old,
+//   - a known wrong value is still listed under "Open discrepancies",
+//   - a "Scheduled changes" row has reached its effective date unapplied, or
+//   - a new `*_AS_OF` marker is added to the engines without being recorded.
 //
 // Note: this checks that the *audit* is recent, not that each constant's
 // underlying rate changed recently — BSD tiers, for example, are years
-// old and still correct. "Wrong value" findings live in the register's
-// "Open discrepancies" section, not here (fixing a value is a product
-// decision, not a test failure).
+// old and still correct. That is also why the UI's per-dataset freshness
+// windows (src/lib/shared/freshness.js) stay long: they age an `AS_OF`
+// revision date, which is not the same as when someone last checked.
 
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
@@ -17,11 +19,13 @@ import { fileURLToPath } from 'node:url'
 const REGISTER = new URL('../../../docs/statutory-sources.md', import.meta.url)
 const LIB_DIR = new URL('../', import.meta.url)
 
-// How long an audit stays valid. Singapore rates move at the annual
-// Budget (mid-Feb) plus occasional cooling measures, so 365 days forces
-// a re-verification pass every year. Do the re-audit in Budget season
-// (Feb–Mar) and this never trips; leave it and CI goes red one year on.
-const MAX_AUDIT_AGE_DAYS = 365
+// How long an audit stays valid. Singapore rates move at the Budget
+// (mid-Feb), at the 1 Jan CPF/LTA effective dates and on occasional
+// policy announcements (the PARF cut and the CPF senior-worker steps were
+// each missed for months under the old once-a-year gate), so a re-audit is
+// due every quarter. 100 days is a quarter plus a little grace so a
+// quarterly cadence doesn't trip at the edge; leave it longer and CI goes red.
+const MAX_AUDIT_AGE_DAYS = 100
 
 function registerText() {
   return readFileSync(REGISTER, 'utf8')
@@ -55,6 +59,16 @@ test('statutory-sources.md carries a recent audit date', () => {
   )
 })
 
+// The lines of a `## <heading>` section, up to the next `## ` heading.
+function sectionLines(text, heading) {
+  const lines = text.split('\n')
+  const start = lines.findIndex((l) => new RegExp(`^##\\s+${heading}\\b`).test(l))
+  if (start === -1) return null
+  const rest = lines.slice(start + 1)
+  const end = rest.findIndex((l) => /^##\s/.test(l))
+  return end === -1 ? rest : rest.slice(0, end)
+}
+
 test('every *_AS_OF marker in the engines is recorded in the register', () => {
   const text = registerText()
   const missing = asOfMarkersInEngines().filter(({ name }) => !text.includes(name))
@@ -70,4 +84,43 @@ test('the register keeps an Open discrepancies section', () => {
   // Its presence (even empty) proves the audit ran and looked for
   // wrong values, rather than silently omitting the check.
   assert.match(registerText(), /##\s*Open discrepancies/)
+})
+
+test('no known wrong constant is left open', () => {
+  // A known-wrong shipping value is a follow-up to do now, not a note to
+  // leave: fix the value, then move the entry to "Resolved discrepancies".
+  const lines = sectionLines(registerText(), 'Open discrepancies')
+  assert.ok(lines, 'register must have an Open discrepancies section')
+  const open = lines.filter((l) => /^\s*(\d+\.|[-*])\s+\S/.test(l))
+  assert.deepEqual(
+    open,
+    [],
+    `${open.length} open discrepanc${open.length === 1 ? 'y' : 'ies'} in docs/statutory-sources.md: ` +
+      `fix the value(s), then move them to "Resolved discrepancies".`,
+  )
+})
+
+test('no scheduled change is past its effective date and still pending', () => {
+  const lines = sectionLines(registerText(), 'Scheduled changes')
+  assert.ok(lines, 'register must have a Scheduled changes section')
+  const rows = lines
+    .map((l) => l.match(/^\|\s*(\d{4}-\d{2}-\d{2})\s*\|(.*)\|\s*(pending|applied)\s*\|\s*$/))
+    .filter(Boolean)
+  assert.ok(rows.length > 0, 'Scheduled changes must list at least one row (or its parser is out of step with the table)')
+  const due = rows.filter(([, date, , status]) => status === 'pending' && new Date(date) <= new Date())
+  assert.deepEqual(
+    due.map(([, date, what]) => `${date}:${what.split('|')[0].trim().slice(0, 80)}`),
+    [],
+    'these changes have taken effect but are still pending in docs/statutory-sources.md: ' +
+      'update the code and the register, then mark the row applied.',
+  )
+})
+
+test('every Scheduled changes row ends in a recognised status', () => {
+  // Guards the table format: a typo'd status (e.g. "done") would silently
+  // exempt a row from the check above.
+  const lines = sectionLines(registerText(), 'Scheduled changes')
+  const dataRows = lines.filter((l) => /^\|\s*\d{4}-\d{2}-\d{2}\s*\|/.test(l))
+  const parsed = dataRows.filter((l) => /\|\s*(pending|applied)\s*\|\s*$/.test(l))
+  assert.equal(parsed.length, dataRows.length, 'every Scheduled changes row must end in "pending" or "applied"')
 })
