@@ -58,7 +58,10 @@ function buildCharacter() {
 export default function DataAvatar({ score = 50, label = 'Score' }) {
   const mountRef = useRef(null)
   const scoreRef = useRef(score)
-  scoreRef.current = score
+
+  useEffect(() => {
+    scoreRef.current = score
+  }, [score])
 
   useEffect(() => {
     const mount = mountRef.current
