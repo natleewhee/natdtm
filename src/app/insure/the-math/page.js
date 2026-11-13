@@ -481,7 +481,7 @@ Band inputs → band midpoint used as proxy → score shown as "estimated"`}
               </table>
             </div>
             <p style={{ margin: '12px 0 0', fontSize: '12px', color: 'var(--color-faint)', lineHeight: 1.5 }}>
-              Outstanding loans are always added on top of whichever target applies — the profile only changes the income-multiple portion.
+              Loans are always added on top of whichever target applies, and the profile only changes the income-multiple portion. Life/TPD adds your outstanding loan balance; CI adds {BENCHMARKS.CI_LOAN_COVER_MONTHS} months of your monthly loan payments.
             </p>
           </div>
 
@@ -614,7 +614,7 @@ At S$48k income: (48k × 3) + 100k = S$244k ≈ 5.1× income
 
 We use 5× as a rounded, conservative benchmark ("Balanced" profile).
 
-CI target = (5 × income) + your outstanding loans (mortgage, car, etc.)
+CI target = (5 × income) + (${BENCHMARKS.CI_LOAN_COVER_MONTHS} × your monthly loan payments)
 CI score = min(your CI cover ÷ target, 1.0) × 100
 
 Band scoring (if exact amount unknown):
@@ -622,6 +622,14 @@ Band scoring (if exact amount unknown):
   2–5× income → midpoint 3.5× used
   More than 5× income → midpoint 6× used`}
                   </Formula>
+                  <p style={{ fontSize: '13px', color: 'var(--color-text)', lineHeight: 1.6, margin: '8px 0' }}>
+                    Loans enter the CI target as instalments, not as the balance you owe. A CI payout
+                    doesn&apos;t clear a loan and the bank doesn&apos;t call it in, so the risk is missing
+                    instalments while you can&apos;t work. The {BENCHMARKS.CI_LOAN_COVER_MONTHS}-month buffer is a
+                    deliberate, conservative cushion on top of the income replacement above, and it is
+                    a judgement call rather than an industry rule. Life/TPD is different: it can clear
+                    the debt, so it uses the full balance.
+                  </p>
                   <Caveat>
                     The S$100k treatment cost estimate is based on Singapore Cancer Registry data
                     and LIA Singapore industry studies. The LIA estimates Singaporeans are underinsured
