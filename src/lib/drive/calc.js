@@ -6,18 +6,105 @@
 // KEY LTA RULES:
 // - ARF tiers effective Feb 2023: 100% on first $20k of OMV, 140% on next $20k,
 //   190% on next $20k, 250% on next $20k, 320% above $80k.
-// - PARF rebate (car deregistered at age ≤10yr): 75% of ARF at ≤5yr, stepping
-//   down 5%/yr to 50% at 9–10yr, nil after 10yr. Capped at S$60,000 for cars
-//   registered with COEs from the Feb 2023 second bidding onwards (Budget 2023).
+// - PARF rebate (car deregistered at age ≤10yr), TWO schedules chosen by when
+//   the car's COE was issued — see PARF_SCHEDULES below:
+//     legacy       75% of ARF at ≤5yr, stepping down 5 pts/yr to 50% at 9–10yr,
+//                  capped at S$60,000 (Budget 2023).
+//     revised2026  30% at ≤5yr, stepping down 5 pts/yr to 5% at 9–10yr, capped
+//                  at S$30,000, for COEs from the 2nd Feb 2026 bidding exercise
+//                  onwards (Budget 2026).
+//   Nil after 10yr in both.
 // - COE rebate: unused months / 120 × COE paid.
-// - EEAI (EV Early Adoption Incentive): 45% of ARF, capped at S$7,500,
-//   pure EVs only.
+// - EEAI (EV Early Adoption Incentive): 45% of ARF, capped at S$7,500 for 2026
+//   registrations, pure EVs only. Ceases for registrations from 1 Jan 2027.
 
 import { C, RATE_TIERS } from './theme.js'
 
 export { RATE_TIERS }
 
-export const PARF_CAP = 60000
+// ─── PARF / EEAI REGIMES ─────────────────────────────────────────────────────
+// Which PARF schedule a car gets is fixed by WHEN ITS COE WAS ISSUED, not by
+// the date it is sold, so every caller picks a regime per car (parfRegimeFor /
+// parfRegimeForAge) and passes it down. Cars registered before the cutover
+// keep the legacy schedule for life.
+// Source: https://www.lta.gov.sg/content/ltagov/en/newsroom/2026/2/news-releases/revision-parf-rebate-schedule-cap.html
+// (12 Feb 2026). Verified in docs/statutory-sources.md.
+//
+// First day of the 2nd February 2026 COE bidding exercise (16–20 Feb) — the
+// first COE the revised schedule applies to. Month-level inputs make a car
+// registered in Feb 2026 ambiguous; that edge is not worth modeling.
+export const PARF_AS_OF = '2026-02-16'
+
+// pcts[i] is the rebate share of ARF paid for a car deregistered at age ≤ i+5
+// (so pcts[0] covers ≤5yr, pcts[5] covers 9–10yr). Nothing after 10yr.
+export const PARF_SCHEDULES = {
+  legacy:      { cap: 60000, pcts: [0.75, 0.70, 0.65, 0.60, 0.55, 0.50] },
+  revised2026: { cap: 30000, pcts: [0.30, 0.25, 0.20, 0.15, 0.10, 0.05] },
+}
+
+// What a car registered today gets — the default for new-car math.
+export const PARF_REGIME_CURRENT = 'revised2026'
+
+// Legacy cap, kept as a named export for existing importers.
+export const PARF_CAP = PARF_SCHEDULES.legacy.cap
+
+// EEAI ceases for vehicles registered from this date (LTA/NEA, Sep 2025:
+// "extended until 31 December 2026 and ceased from 1 January 2027").
+// https://www.lta.gov.sg/content/ltagov/en/newsroom/2025/9/news-releases/extension_of_ves_and_eeai_to_support_vehicle_electrification.html
+export const EEAI_AS_OF = '2026-01-01'
+export const EEAI_END = '2027-01-01'
+// 45% of ARF, S$7,500 cap for 2026 registrations (S$15,000 in 2025). Older
+// registrations are modeled at the 2026 cap too — a conservative simplification
+// that only touches EVs already on the road.
+const EEAI_RATE = 0.45
+const EEAI_CAP = 7500
+
+const MS_PER_YEAR = 365.25 * 86_400_000
+
+/**
+ * Which PARF schedule applies to a car whose COE was issued on a given date.
+ * An unparseable date falls back to the current schedule.
+ * @param {Date|string|number} coeIssuedOn - COE issue / registration date.
+ * @returns {'legacy'|'revised2026'} The schedule key.
+ */
+export function parfRegimeFor(coeIssuedOn) {
+  const t = new Date(coeIssuedOn).getTime()
+  if (!Number.isFinite(t)) return PARF_REGIME_CURRENT
+  return t >= new Date(PARF_AS_OF).getTime() ? 'revised2026' : 'legacy'
+}
+
+/**
+ * Approximate registration date of a car that is `ageYears` old today.
+ * @param {number} ageYears - The car's current age in years.
+ * @param {Date} [now=new Date()] - The current date.
+ * @returns {Date} The registration date (invalid Date if ageYears isn't a number).
+ */
+export function registrationDateForAge(ageYears, now = new Date()) {
+  return new Date(now.getTime() - Number(ageYears) * MS_PER_YEAR)
+}
+
+/**
+ * PARF schedule for a car that is `ageYears` old today — the lookup for used
+ * cars and the user's existing car, where only the age is known.
+ * @param {number} ageYears - The car's current age in years.
+ * @param {Date} [now=new Date()] - The current date.
+ * @returns {'legacy'|'revised2026'} The schedule key.
+ */
+export function parfRegimeForAge(ageYears, now = new Date()) {
+  return parfRegimeFor(registrationDateForAge(ageYears, now))
+}
+
+/**
+ * EV Early Adoption Incentive: 45% of (post-VES) ARF up to S$7,500 for pure
+ * EVs registered before it ceases on 1 Jan 2027, nothing afterwards.
+ * @param {number} arfAfterVes - ARF after any VES rebate/surcharge, in dollars.
+ * @param {Date|string|number} [registeredOn=new Date()] - Registration date.
+ * @returns {number} The EEAI rebate in dollars.
+ */
+export function calcEEAI(arfAfterVes, registeredOn = new Date()) {
+  if (new Date(registeredOn).getTime() >= new Date(EEAI_END).getTime()) return 0
+  return Math.min(arfAfterVes * EEAI_RATE, EEAI_CAP)
+}
 
 // MAS Total Debt Servicing Ratio: all monthly debt obligations (this loan's
 // instalment plus any existing loans/credit facilities) capped at 55% of
@@ -75,30 +162,28 @@ export function calcARF(omv) {
 }
 
 /**
- * PARF rebate percentage by age at deregistration: 75% at ≤5yr, stepping
- * down 5%/yr to 50% at 9–10yr, nil after 10yr.
+ * PARF rebate percentage by age at deregistration, stepping down 5 points a
+ * year over ten years and nil after (see PARF_SCHEDULES for each regime).
  * @param {number} ageYears - Vehicle age in years at deregistration.
- * @returns {number} PARF rebate rate as a decimal (e.g. 0.75 for 75%).
+ * @param {'legacy'|'revised2026'} [regime=PARF_REGIME_CURRENT] - Schedule to use.
+ * @returns {number} PARF rebate rate as a decimal (e.g. 0.30 for 30%).
  */
-export function parfPct(ageYears) {
-  if (ageYears <= 5)  return 0.75
-  if (ageYears <= 6)  return 0.70
-  if (ageYears <= 7)  return 0.65
-  if (ageYears <= 8)  return 0.60
-  if (ageYears <= 9)  return 0.55
-  if (ageYears <= 10) return 0.50
-  return 0
+export function parfPct(ageYears, regime = PARF_REGIME_CURRENT) {
+  if (!(ageYears <= 10)) return 0
+  const { pcts } = PARF_SCHEDULES[regime]
+  return pcts[Math.max(0, Math.ceil(ageYears) - 5)]
 }
 
 /**
- * PARF rebate in dollars, capped at PARF_CAP (S$60,000, for cars
- * registered with COEs from the Feb 2023 second bidding onwards).
+ * PARF rebate in dollars, capped at the regime's cap (S$60,000 legacy,
+ * S$30,000 revised).
  * @param {number} netArf - Net ARF (after VES/EEAI) in dollars.
  * @param {number} ageYears - Vehicle age in years at deregistration.
+ * @param {'legacy'|'revised2026'} [regime=PARF_REGIME_CURRENT] - Schedule to use.
  * @returns {number} PARF rebate in dollars.
  */
-export function calcPARF(netArf, ageYears) {
-  return Math.min(netArf * parfPct(ageYears), PARF_CAP)
+export function calcPARF(netArf, ageYears, regime = PARF_REGIME_CURRENT) {
+  return Math.min(netArf * parfPct(ageYears, regime), PARF_SCHEDULES[regime].cap)
 }
 
 /**
@@ -181,18 +266,19 @@ export function minDownFor(price, loanCap) {
 
 /**
  * Net ARF: gross ARF minus VES rebate/surcharge minus EEAI (EV Early
- * Adoption Incentive, pure EVs only — 45% of post-VES ARF, capped at $7,500).
+ * Adoption Incentive, pure EVs only — see calcEEAI).
  * @param {number} omv - Open Market Value in dollars.
  * @param {number} ves - VES rebate (positive) or surcharge (negative), in dollars.
  * @param {boolean} pureEV - Whether the car qualifies for EEAI.
+ * @param {Date|string|number} [registeredOn=new Date()] - Registration date, which decides whether EEAI still exists.
  * @returns {{grossArf: number, vesAmount: number, eeai: number, netArf: number}} The ARF breakdown.
  */
-export function calcNetARF(omv, ves, pureEV) {
+export function calcNetARF(omv, ves, pureEV, registeredOn = new Date()) {
   // Gross ARF → minus VES rebate/surcharge → minus EEAI for pure EVs only
   const grossArf = calcARF(omv || 0)
   const vesAmount = (ves ?? 0)
   const afterVES = Math.max(0, grossArf - vesAmount)
-  const eeai = pureEV ? Math.min(afterVES * 0.45, 7500) : 0
+  const eeai = pureEV ? calcEEAI(afterVES, registeredOn) : 0
   return { grossArf, vesAmount, eeai, netArf: Math.max(0, afterVES - eeai) }
 }
 
@@ -299,7 +385,9 @@ export function calcDepr(car, y, liveCOEPremium = null) {
   const ves = car.ves ?? 0
   const { grossArf, netArf, eeai } = calcNetARF(car.omv, ves, pureEV)
   const coe = getCOEPremium(car, liveCOEPremium)
-  const parf = calcPARF(netArf, y)
+  // A car bought today is registered today, so it gets the current schedule
+  // unless the caller pins one (car.parfRegime).
+  const parf = calcPARF(netArf, y, car.parfRegime)
   const coeR = calcCOERebate(coe, Math.max(0, 120 - y * 12))
   const paper = parf + coeR
   const totalDepr = car.price - paper

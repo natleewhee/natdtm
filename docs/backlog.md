@@ -191,3 +191,34 @@ through the shared `C.*` tokens the light/dark audit already covers,
 every other grid in the module uses the safe `auto-fit` pattern, and the
 collapsed-section toggle on `/ledger` doesn't introduce a new
 interactive pattern outside what PR #11 already audited.
+
+## Rates accuracy follow-ups (2026-10-18)
+
+Found while fixing PARF, EEAI, the 55–65 CPF rates and the SRS age (see
+`docs/statutory-sources.md` "Resolved discrepancies"). These rest on
+third-party calculators whose figures reconcile arithmetically with CPF's
+published totals, not on the CPF Board allocation PDF itself (`cpf.gov.sg`
+wasn't reachable from the session), so verify against the official table
+before changing a value. Once verified, a wrong value belongs under *Open
+discrepancies* in the register, which fails CI until it is fixed.
+
+- **`CPF_CONTRIBUTION_TABLE` has one "0–55" band using the under-35 split
+  (OA 23 / SA 6 / MA 8).** The published 2026 allocation splits it by age:
+  35–45 is OA 21 / SA 7 / MA 9, 45–50 is OA 19 / SA 8 / MA 10, 50–55 is
+  OA 15 / SA 11.5 / MA 10.5 (all % of wages, total still 37%). Most users
+  are in 35–55, so SA/MA, and therefore interest, are understated for them in
+  RetireWell. Fix means splitting the band in `src/lib/retire/cpf.js` and
+  re-checking `golden-masters.test.js`.
+- **The 65–70 band allocates OA 3.5 / SA 2.5 / MA 10.5.** The published split
+  is OA 1 / RA 5 / MA 10.5 (16.5% total). Same file. The 70+ band (OA 1 /
+  RA 1 / MA 10.5) matches.
+- **CPF senior-worker rates step up again on 1 Jan 2027** (55–60 to 35.5%,
+  60–65 to 26%). Tracked as a `pending` row under *Scheduled changes*, so CI
+  goes red on that date until `cpf.js` and the register are updated.
+- **EEAI cap for older EVs.** The cap was S$15,000 for 2025 registrations;
+  `calcEEAI` applies the 2026 cap of S$7,500 to every pre-2027 registration,
+  which slightly overstates a used EV's net ARF. Only matters for EVs
+  already on the road.
+- **VES bands were revised for 2026–27 (hybrids lose rebates, only EVs get
+  them).** Confirm the `ves` values in `public/data/cars.json` (from LTA's
+  Car Cost Update) reflect the new bands.

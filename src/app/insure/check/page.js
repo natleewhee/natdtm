@@ -252,6 +252,7 @@ const INITIAL = {
   lifeBand: null,
   lifeUseBand: false,
   outstandingDebt: '',
+  monthlyLoanPayments: '',
   monthlyPremium: '',
   yearlyPremium: '',
   premiumMode: 'monthly',
@@ -433,6 +434,7 @@ export default function CheckPage() {
           lifeBand: parsed.lifeBand ?? null,
           lifeUseBand: parsed.lifeBand !== null,
           outstandingDebt: parsed.outstandingDebt ?? '',
+          monthlyLoanPayments: parsed.monthlyLoanPayments ?? '',
           monthlyPremium: parsed.monthlyPremium ?? '',
           yearlyPremium: parsed.yearlyPremium ?? '',
           premiumMode: parsed.premiumMode ?? 'monthly',
@@ -546,6 +548,7 @@ export default function CheckPage() {
       lifeAmount: form.lifeUseBand ? null : parseNum(form.lifeAmount),
       lifeBand: form.lifeUseBand ? form.lifeBand : null,
       outstandingDebt: parseNum(form.outstandingDebt) || 0,
+      monthlyLoanPayments: parseNum(form.monthlyLoanPayments) || 0,
       monthlyPremium: parseNum(form.monthlyPremium),
       yearlyPremium: parseNum(form.yearlyPremium),
       premiumMode: form.premiumMode,
@@ -947,15 +950,29 @@ export default function CheckPage() {
         <>
           <label style={s.label}>Do you have any outstanding loans?</label>
           <p style={s.hint}>
-            Mortgage, car loan, personal loan, education loan — anything you&apos;d
-            want your insurance to help clear if something happened to you.
-            Optional, but it raises the coverage benchmark for CI and Life/TPD
-            so it reflects what you&apos;d actually need.
+            Mortgage, car loan, personal loan, education loan: the total you
+            still owe. Optional. This raises your Life/TPD benchmark, because
+            that cover can clear your debts so no one inherits them.
           </p>
           <AmountInput
             value={form.outstandingDebt}
             onChange={v => set('outstandingDebt', v)}
             placeholder="e.g. 300k"
+          />
+
+          <label style={{ ...s.label, marginTop: 28 }}>
+            What do you pay towards these loans each month?
+          </label>
+          <p style={s.hint}>
+            Add up all your monthly instalments. Optional. A critical illness
+            payout doesn&apos;t clear a loan, but it can keep the instalments
+            paid while you can&apos;t work, so we add {BENCHMARKS.CI_LOAN_COVER_MONTHS} months
+            of them to your CI benchmark.
+          </p>
+          <AmountInput
+            value={form.monthlyLoanPayments}
+            onChange={v => set('monthlyLoanPayments', v)}
+            placeholder="e.g. 2,500"
           />
         </>
       )

@@ -5,6 +5,7 @@ import Link from 'next/link'
 import {
   calcRenewOption, calcBuyNewOption, calcBuyUsedOption, getVerdict,
   calcARF, calcPARF, calcCOERebate, getAnnualMaintenance,
+  calcEEAI, parfRegimeForAge, registrationDateForAge,
   MAINTENANCE_BY_BRAND
 } from './renew-math'
 import { COE_FALLBACK } from '@/lib/drive/calc'
@@ -210,9 +211,9 @@ export default function RenewOrReplacePage() {
   const activePQP = pqpOverride ? parseInt(pqpOverride,10) : pqp[coeType]
   const omv = parseInt(omvRaw||'0', 10)
   const arf = calcARF(omv)
-  const eeai = isEVCurrent ? Math.min(arf*0.45, 7500) : 0
+  const eeai = isEVCurrent ? calcEEAI(arf, registrationDateForAge(carAge)) : 0
   const netArf = Math.max(0, arf - eeai)
-  const parfNow = calcPARF(netArf, carAge)
+  const parfNow = calcPARF(netArf, carAge, parfRegimeForAge(carAge))
   const coeRebateNow = calcCOERebate(activePQP, monthsLeft)
   const customMaint = maintOverride ? parseInt(maintOverride,10) : null
 

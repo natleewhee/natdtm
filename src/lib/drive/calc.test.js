@@ -6,6 +6,8 @@ import {
   getCOEPremium, calcGovtCosts, calcPriceGap, calcDepr, calc, calcCeiling,
   isCoeFallbackStale, PARF_CAP, TDSR_LIMIT, COE_FALLBACK, COE_FALLBACK_AS_OF,
   omvToLtv, minDownFor, resolveJointSharePct,
+  PARF_SCHEDULES, PARF_AS_OF, PARF_REGIME_CURRENT, EEAI_END,
+  parfRegimeFor, parfRegimeForAge, registrationDateForAge, calcEEAI,
 } from './calc.js'
 
 function approx(a, b, eps = 0.5) {
@@ -43,28 +45,121 @@ test('calcARF is monotonic across tier boundaries', () => {
 
 // ─── PARF ────────────────────────────────────────────────────────────────
 
-test('parfPct steps down 5 points a year from 75% to 50%', () => {
-  assert.equal(parfPct(3), 0.75)
-  assert.equal(parfPct(5), 0.75)
-  assert.equal(parfPct(6), 0.70)
-  assert.equal(parfPct(7), 0.65)
-  assert.equal(parfPct(8), 0.60)
-  assert.equal(parfPct(9), 0.55)
-  assert.equal(parfPct(10), 0.50)
+test('legacy parfPct steps down 5 points a year from 75% to 50%', () => {
+  assert.equal(parfPct(3, 'legacy'), 0.75)
+  assert.equal(parfPct(5, 'legacy'), 0.75)
+  assert.equal(parfPct(6, 'legacy'), 0.70)
+  assert.equal(parfPct(7, 'legacy'), 0.65)
+  assert.equal(parfPct(8, 'legacy'), 0.60)
+  assert.equal(parfPct(9, 'legacy'), 0.55)
+  assert.equal(parfPct(10, 'legacy'), 0.50)
+})
+
+// LTA news release 12 Feb 2026: 30% / 25% / 20% / 15% / 10% / 5%, cap $30k.
+test('revised parfPct steps down 5 points a year from 30% to 5%', () => {
+  assert.equal(parfPct(0, 'revised2026'), 0.30)
+  assert.equal(parfPct(5, 'revised2026'), 0.30)
+  assert.equal(parfPct(6, 'revised2026'), 0.25)
+  assert.equal(parfPct(7, 'revised2026'), 0.20)
+  assert.equal(parfPct(8, 'revised2026'), 0.15)
+  assert.equal(parfPct(9, 'revised2026'), 0.10)
+  assert.equal(parfPct(10, 'revised2026'), 0.05)
+})
+
+test('fractional ages round up into the next band under both schedules', () => {
+  assert.equal(parfPct(5.5, 'legacy'), 0.70)
+  assert.equal(parfPct(5.5, 'revised2026'), 0.25)
+  assert.equal(parfPct(9.01, 'revised2026'), 0.05)
 })
 
 test('parfPct is nil beyond ten years — the COE expiry cliff', () => {
-  assert.equal(parfPct(10.5), 0)
-  assert.equal(parfPct(11), 0)
+  for (const regime of Object.keys(PARF_SCHEDULES)) {
+    assert.equal(parfPct(10.5, regime), 0)
+    assert.equal(parfPct(11, regime), 0)
+    assert.equal(parfPct(NaN, regime), 0)
+  }
 })
 
-test('calcPARF is capped at the Budget 2023 ceiling', () => {
-  approx(calcPARF(200_000, 5), PARF_CAP) // 75% of 200k = 150k, capped to 60k
-  approx(calcPARF(40_000, 5), 30_000)    // 75% of 40k = 30k, under the cap
+test('parfPct defaults to the schedule a car registered today gets', () => {
+  assert.equal(PARF_REGIME_CURRENT, 'revised2026')
+  assert.equal(parfPct(5), 0.30)
+})
+
+test('calcPARF is capped at the Budget 2023 ceiling on the legacy schedule', () => {
+  assert.equal(PARF_CAP, 60_000)
+  approx(calcPARF(200_000, 5, 'legacy'), PARF_CAP) // 75% of 200k = 150k, capped to 60k
+  approx(calcPARF(40_000, 5, 'legacy'), 30_000)    // 75% of 40k = 30k, under the cap
+})
+
+test('calcPARF is capped at $30,000 on the revised schedule', () => {
+  approx(calcPARF(200_000, 5, 'revised2026'), 30_000) // 30% of 200k = 60k, capped to 30k
+  approx(calcPARF(40_000, 5, 'revised2026'), 12_000)  // 30% of 40k, under the cap
+})
+
+// LTA Annex A worked example: ARF $200,000, deregistered at 5-6 years.
+test('calcPARF reproduces the LTA Annex A worked example', () => {
+  approx(calcPARF(200_000, 6, 'revised2026'), 30_000) // 25% = $50,000, capped
+  approx(calcPARF(200_000, 6, 'legacy'), 60_000)      // 70% = $140,000, capped
 })
 
 test('calcPARF is zero once the car is over ten years old', () => {
-  approx(calcPARF(100_000, 11), 0)
+  approx(calcPARF(100_000, 11, 'legacy'), 0)
+  approx(calcPARF(100_000, 11, 'revised2026'), 0)
+})
+
+test('a typical new car recovers far less PARF under the revised schedule', () => {
+  // $40k OMV -> ARF $40k + 20k*... = calcARF(40_000); at 7 years.
+  const arf = calcARF(40_000)
+  assert.ok(calcPARF(arf, 7, 'revised2026') < calcPARF(arf, 7, 'legacy') / 3)
+})
+
+// ─── PARF regime selection ───────────────────────────────────────────────
+
+test('parfRegimeFor switches on the 2nd Feb 2026 bidding exercise', () => {
+  assert.equal(PARF_AS_OF, '2026-02-16')
+  assert.equal(parfRegimeFor('2026-02-15'), 'legacy')
+  assert.equal(parfRegimeFor('2026-02-16'), 'revised2026')
+  assert.equal(parfRegimeFor('2026-10-01'), 'revised2026')
+  assert.equal(parfRegimeFor('2023-04-01'), 'legacy')
+})
+
+test('parfRegimeFor falls back to the current schedule for an unparseable date', () => {
+  assert.equal(parfRegimeFor('not a date'), PARF_REGIME_CURRENT)
+  assert.equal(parfRegimeFor(undefined), PARF_REGIME_CURRENT)
+})
+
+test('parfRegimeForAge dates the car from its age and today', () => {
+  const now = new Date('2026-10-18')
+  assert.equal(parfRegimeForAge(1, now), 'legacy')    // registered ~Oct 2025
+  assert.equal(parfRegimeForAge(5, now), 'legacy')
+  assert.equal(parfRegimeForAge(0.5, now), 'revised2026') // registered ~Apr 2026
+  assert.equal(parfRegimeForAge(0, now), 'revised2026')
+})
+
+test('a car aged 1 year today moves to the revised schedule once enough time has passed', () => {
+  // Registered Oct 2025 (legacy) stays legacy; a car registered Mar 2026
+  // is one year old in Mar 2027 and must still read as revised.
+  assert.equal(parfRegimeForAge(1, new Date('2027-03-10')), 'revised2026')
+  assert.equal(parfRegimeForAge(1, new Date('2027-01-10')), 'legacy')
+})
+
+test('registrationDateForAge subtracts the age from today', () => {
+  const d = registrationDateForAge(2, new Date('2026-10-18T00:00:00Z'))
+  assert.equal(d.getUTCFullYear(), 2024)
+  assert.equal(d.getUTCMonth(), 9) // October
+})
+
+// A new car is bought and registered today, so calcDepr uses the revised
+// schedule unless the car pins one.
+test('calcDepr uses the revised PARF schedule for a car registered today', () => {
+  const d = calcDepr(CAR, 5)
+  approx(d.parf, calcPARF(d.netArf, 5, 'revised2026'))
+  assert.ok(d.parf <= PARF_SCHEDULES.revised2026.cap)
+})
+
+test('calcDepr honours a pinned legacy schedule', () => {
+  const d = calcDepr({ ...CAR, parfRegime: 'legacy' }, 5)
+  approx(d.parf, calcPARF(d.netArf, 5, 'legacy'))
 })
 
 // ─── COE rebate ──────────────────────────────────────────────────────────
@@ -120,6 +215,30 @@ test('calcNetARF applies EEAI at 45% of ARF for pure EVs', () => {
 test('calcNetARF caps EEAI at $7,500', () => {
   const ev = calcNetARF(80_000, 0, true)
   approx(ev.eeai, 7_500, 0.01)
+})
+
+// EEAI: 45% of ARF capped at $7,500 for 2026 registrations, ceasing for
+// registrations from 1 Jan 2027 (LTA/NEA, Sep 2025).
+test('calcEEAI applies through 31 Dec 2026 and ceases from 1 Jan 2027', () => {
+  assert.equal(EEAI_END, '2027-01-01')
+  approx(calcEEAI(20_000, '2026-12-31'), 7_500)
+  approx(calcEEAI(20_000, '2027-01-01'), 0)
+  approx(calcEEAI(20_000, '2027-06-30'), 0)
+})
+
+test('calcEEAI is 45% of ARF below the cap', () => {
+  approx(calcEEAI(10_000, '2026-06-01'), 4_500)
+})
+
+test('calcNetARF grants no EEAI to an EV registered in 2027', () => {
+  const ev = calcNetARF(20_000, 0, true, new Date('2027-02-01'))
+  approx(ev.eeai, 0)
+  approx(ev.netArf, 20_000)
+})
+
+test('calcNetARF still grants EEAI to an EV registered in 2025, even when asked in 2027', () => {
+  const ev = calcNetARF(20_000, 0, true, new Date('2025-06-01'))
+  approx(ev.eeai, 7_500)
 })
 
 test('calcNetARF grants no EEAI to non-EVs', () => {
@@ -193,7 +312,8 @@ test('calcDepr splits total depreciation into annual and monthly', () => {
 test('calcDepr leaves no paper value at the ten-year COE cliff', () => {
   const d = calcDepr(CAR, 10, 100_000)
   approx(d.coeRebate, 0)      // no months left
-  approx(d.parf, Math.min(d.netArf * 0.5, PARF_CAP))
+  // A new car is registered today, so the revised schedule: 5% at year 10.
+  approx(d.parf, Math.min(d.netArf * 0.05, PARF_SCHEDULES.revised2026.cap))
 })
 
 test('calcDepr depreciates more the longer the car is held', () => {

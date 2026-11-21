@@ -127,15 +127,12 @@ receives a dual write. `/drive/data-status` shows live feed health.
 Every hard-coded Singapore rate, bracket, and cap in the engines is
 listed in [`docs/statutory-sources.md`](docs/statutory-sources.md) with
 its authoritative source and verification date.
-`src/lib/shared/statutory-currency.test.js` fails CI if that audit goes
-stale. `src/lib/shared/golden-masters.test.js` checks engine output
-against figures IRAS and CPF Board publish.
-
-> **Known open discrepancies** (see `docs/statutory-sources.md`): the CPF
-> contribution rates for ages 55–60 and 60–65 are still at 2025 values
-> (32.5% / 23.5%; 2026 is 34% / 25%), and `SRS_RETIREMENT_AGE` is 63
-> (rises to 64 on 1 Jul 2026). Fixing a constant changes calculator
-> output, so these are left for a deliberate follow-up.
+`src/lib/shared/statutory-currency.test.js` fails CI if that audit is more
+than ~3 months old, if any known wrong constant is left under *Open
+discrepancies*, or if a *Scheduled changes* entry (for example the 1 Jan
+2027 CPF senior-worker step) reaches its effective date still `pending`.
+`src/lib/shared/golden-masters.test.js` checks engine output against
+figures IRAS and CPF Board publish.
 
 ## Development
 

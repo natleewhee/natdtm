@@ -69,15 +69,16 @@ export default function RenewOrReplaceTheMath() {
 
         <H2>PARF Rebate Calculation</H2>
         <P>PARF (Preferential Additional Registration Fee) rebate is returned when you deregister a car under 10 years old. It is calculated as a percentage of the ARF (Additional Registration Fee) you paid when registering the car.</P>
+        <P>The schedule depends on when the car&apos;s COE was issued. Budget 2026 cut the rebate and halved the cap for cars with COEs from the second February 2026 bidding exercise onwards; earlier cars keep the old schedule. The tool matches your current car and any used car by age, and treats a new car as registered today.</P>
         <Table rows={[
-          ['Car Age at Deregistration', 'PARF Rebate (% of ARF paid)', 'Cap'],
-          ['≤ 5 years', '75%', 'S$60,000'],
-          ['6 years', '70%', 'S$60,000'],
-          ['7 years', '65%', 'S$60,000'],
-          ['8 years', '60%', 'S$60,000'],
-          ['9 years', '55%', 'S$60,000'],
-          ['10 years', '50%', 'S$60,000'],
-          ['> 10 years', '0%', '—'],
+          ['Car Age at Deregistration', 'Revised (COE from 2nd Feb 2026)', 'Earlier cars'],
+          ['≤ 5 years', '30% (cap S$30,000)', '75% (cap S$60,000)'],
+          ['6 years', '25%', '70%'],
+          ['7 years', '20%', '65%'],
+          ['8 years', '15%', '60%'],
+          ['9 years', '10%', '55%'],
+          ['10 years', '5%', '50%'],
+          ['> 10 years', '0%', '0%'],
         ]} />
         <P>ARF is calculated using the current tiered structure (effective Feb 2023): 100% of first S$20,000 OMV, 140% of next S$20,000, 190% of next S$20,000, 250% of next S$20,000, 320% above S$80,000.</P>
 

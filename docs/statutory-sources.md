@@ -6,6 +6,14 @@ asserts this file stays current and lists every `*_AS_OF` marker in the code.
 
 **Audit date: 2026-08-31**
 
+`src/lib/shared/statutory-currency.test.js` fails CI when this audit is more
+than ~3 months old, when anything is left under *Open discrepancies*, or when
+an entry under *Scheduled changes* has reached its effective date while still
+`pending`. Rows re-checked on 2026-10-18 (marked below) were verified against
+excerpts of the official CPF Board and LTA pages; `cpf.gov.sg` could not be
+fetched directly from that session, so a full re-audit should still open
+each source in a browser and move the Audit date.
+
 When re-verifying: check each source URL, update the value **and** its
 `*_AS_OF` marker in the code if it changed, update the "Verified" column and
 the Audit date above, and move any resolved discrepancy out of the section
@@ -31,8 +39,8 @@ at the bottom.
 | `CPF_OW_CEILING` | $8,000/month (from 1 Jan 2026; phase-in from $6,000) | [CPFB — CPF changes 2026](https://www.cpf.gov.sg/employer/infohub/news/cpf-related-announcements) | 2026-08-31 ✓ |
 | `CPF_ANNUAL_CEILING` | $102,000/year (unchanged since 2016) | [CPFB — How much CPF contributions to pay](https://www.cpf.gov.sg/employer/employer-obligations/how-much-cpf-contributions-to-pay) | 2026-08-31 ✓ |
 | `CPF_CONTRIBUTION_TABLE` — 55 and below | total 37% | [CPFB — Contribution rates from 1 Jan 2026 (Table 1)](https://www.cpf.gov.sg/content/dam/web/employer/employer-obligations/documents/CPFcontributionratesfrom1Jan2026.pdf) | 2026-08-31 ✓ |
-| `CPF_CONTRIBUTION_TABLE` — above 55 to 60 | code has **32.5%**, 2026 rate is **34%** | same | 2026-08-31 **✗ see discrepancies** |
-| `CPF_CONTRIBUTION_TABLE` — above 60 to 65 | code has **23.5%**, 2026 rate is **25%** | same | 2026-08-31 **✗ see discrepancies** |
+| `CPF_CONTRIBUTION_TABLE` — above 55 to 60 | total 34% (16% employer + 18% employee); allocation OA 12% / RA 11.5% / MA 10.5% (CPF ratios .353 / .3382 / .3088 of the total) | [CPFB — Contribution rates from 1 Jan 2026](https://www.cpf.gov.sg/content/dam/web/employer/employer-obligations/documents/CPFcontributionratesfrom1Jan2026.pdf), [CPFB — Allocation rates from 1 Jan 2026](https://www.cpf.gov.sg/content/dam/web/employer/employer-obligations/documents/CPFAllocationRatesfromJanuary2026.pdf) | 2026-10-18 ✓ |
+| `CPF_CONTRIBUTION_TABLE` — above 60 to 65 | total 25% (12.5% + 12.5%); allocation OA 3.5% / RA 11% / MA 10.5% (CPF ratios .14 / .44 / .42 of the total) | same | 2026-10-18 ✓ |
 | `CPF_CONTRIBUTION_TABLE` — above 65 to 70 / above 70 | total 16.5% / 12.5% | same | 2026-08-31 ✓ |
 | `CPF_OA_RATE` | 2.5% p.a. | [CPFB — CPF interest rates Q1 2026](https://www.cpf.gov.sg/member/infohub/news/news-releases/cpf-interest-rates-from-1-january-to-31-march-2026-and-basic-healthcare-sum-for-2026) | 2026-08-31 ✓ |
 | `CPF_SA_RATE` / `CPF_MA_RATE` | 4% p.a. (4% floor extended to 31 Dec 2026) | [CPFB — 4% floor extended](https://www.cpf.gov.sg/member/infohub/news/news-releases/government-extends-4-per-cent-interest-rate-floor-on-special-medisave-and-retirement-account-monies-until-31-december-2026) | 2026-08-31 ✓ |
@@ -46,7 +54,7 @@ at the bottom.
 
 | Constant | Value | Source | Verified |
 |---|---|---|---|
-| `SRS_RETIREMENT_AGE` | code has **63**; statutory retirement age rises to **64 from 1 Jul 2026** | [MOM — Retirement age](https://www.mom.gov.sg/employment-practices/retirement) | 2026-08-31 **✗ see discrepancies** |
+| `SRS_RETIREMENT_AGE` | 64 — the statutory retirement age from 1 Jul 2026, which is the penalty-free age locked in by a first SRS contribution made from then (63 for first contributions 1 Jul 2022–30 Jun 2026; 62 before) | [MOM — Retirement age](https://www.mom.gov.sg/employment-practices/retirement), [IRAS — Withdrawing from SRS](https://www.iras.gov.sg/taxes/individual-income-tax/basics-of-individual-income-tax/special-tax-schemes/withdrawing-from-srs) | 2026-10-18 ✓ |
 | `SRS_WITHDRAWAL_TAXABLE_FRACTION` | 50% (from statutory retirement age, spread over up to 10 years) | [IRAS — Withdrawing from SRS](https://www.iras.gov.sg/taxes/individual-income-tax/basics-of-individual-income-tax/special-tax-schemes/withdrawing-from-srs) | 2026-08-31 ✓ |
 | `SRS_EARLY_WITHDRAWAL_PENALTY_PCT` / `SRS_MAX_WITHDRAWAL_YEARS` | 5% / 10 years | same | 2026-08-31 ✓ |
 
@@ -59,6 +67,21 @@ at the bottom.
 | `calcSSD` schedules (`SSD_AS_OF = '2025-07-03'`, `SSD_REGIME_CUTOVER_DATE = '2025-07-04'`) | old: 12/8/4% over 3 yrs; new: 16/12/8/4% over 4 yrs (purchases on/after 4 Jul 2025) | [IRAS — Seller's Stamp Duty](https://www.iras.gov.sg/taxes/stamp-duty/for-property/selling-or-disposing-property/seller's-stamp-duty-(ssd)-for-residential-property) | 2026-08-31 ✓ |
 | `HDB_MOP_YEARS` | 5 years | [HDB — Minimum Occupation Period](https://www.hdb.gov.sg/residential/selling-a-flat/eligibility) | 2026-08-31 ✓ |
 
+## PARF rebate — `src/lib/drive/calc.js` (`PARF_AS_OF = '2026-02-16'`)
+
+Two schedules, chosen by when the car's COE was issued (`parfRegimeFor` / `parfRegimeForAge`). `PARF_AS_OF` is the first day of the 2nd Feb 2026 COE bidding exercise, the first COE the revised schedule applies to.
+
+| Constant | Value | Source | Verified |
+|---|---|---|---|
+| `PARF_SCHEDULES.revised2026` | 30% of ARF at ≤5yr, 25% / 20% / 15% / 10% / 5% at 6 / 7 / 8 / 9 / 10yr, nil after; cap **S$30,000**. Applies to COEs from the 2nd Feb 2026 bidding exercise onwards (and COE-exempt vehicles registered on/after 13 Feb 2026) | [LTA — Revision of PARF rebate schedule and cap (12 Feb 2026)](https://www.lta.gov.sg/content/ltagov/en/newsroom/2026/2/news-releases/revision-parf-rebate-schedule-cap.html) | 2026-10-18 ✓ |
+| `PARF_SCHEDULES.legacy` | 75% of ARF at ≤5yr, 70% / 65% / 60% / 55% / 50% at 6 / 7 / 8 / 9 / 10yr, nil after; cap **S$60,000**. Cars registered before the cutover keep this for life | same | 2026-10-18 ✓ |
+
+## EV Early Adoption Incentive — `src/lib/drive/calc.js` (`EEAI_AS_OF = '2026-01-01'`, `EEAI_END = '2027-01-01'`)
+
+| Constant | Value | Source | Verified |
+|---|---|---|---|
+| `calcEEAI` | 45% of ARF, capped at S$7,500 for registrations in 2026 (S$15,000 in 2025, not modeled: older EVs use the 2026 cap); **ceases for registrations from 1 Jan 2027** | [LTA/NEA — Extension of VES and EEAI (Sep 2025)](https://www.lta.gov.sg/content/ltagov/en/newsroom/2025/9/news-releases/extension_of_ves_and_eeai_to_support_vehicle_electrification.html) | 2026-10-18 ✓ |
+
 ## COE fallback — `src/lib/drive/calc.js` (`COE_FALLBACK_AS_OF = '2026-07-01'`)
 
 `COE_FALLBACK` is a stale-data fallback only; the live figure comes from data.gov.sg's mirror of LTA's COE Bidding Results. Freshness is surfaced on `/drive/data-status`. Not re-verified here — it self-heals from the live feed.
@@ -69,19 +92,28 @@ Illustrative historical returns, broker fee tables, and expense-ratio benchmarks
 
 ---
 
-## Open discrepancies (audit 2026-08-31)
+## Open discrepancies
 
-These are wrong shipping constants. Per the plan's Goal Capsule stop
-condition, U17 does not change a value — fixing one changes calculator
-output and is a product decision. Each needs a follow-up.
+Wrong shipping constants that are known but not yet fixed. **This section must be
+empty for CI to pass**: fixing a value changes calculator output, so each entry is
+a follow-up to do now, not a note to leave. Format: one numbered item each.
 
-1. **`CPF_CONTRIBUTION_TABLE`, age band "above 55 to 60"** — `total: 0.325`. The rate from 1 Jan 2026 is **34%** (18% employee + 16% employer). The sub-account allocation (`oa`/`sa`/`ma`) for this band also needs re-deriving from the 1 Jan 2026 CPF Allocation Rates table. Effect: RetireWell under-projects CPF accumulation for members aged 55–60.
-2. **`CPF_CONTRIBUTION_TABLE`, age band "above 60 to 65"** — `total: 0.235`. The rate from 1 Jan 2026 is **25%** (12.5% + 12.5%). Same allocation re-derivation needed. Effect: under-projection for members aged 60–65.
-3. **`SRS_RETIREMENT_AGE = 63`** — the statutory retirement age rises to **64 on 1 Jul 2026**. The SRS 10-year penalty-free withdrawal window keys off the retirement age *at first contribution*, so this is a minor imprecision for anyone whose first SRS contribution is in H2 2026 or later. Decide whether to bump to 64 or model the mid-year change.
+None.
 
-When fixing discrepancies 1 and 2, the characterization assertions in
-`src/lib/retire/calc.test.js` (`contributionRatesForAge(58).total === 0.325`,
-`contributionRatesForAge(60.5).total === 0.235`, and the boundary cases
-around them) pin the current values and must be updated in the same change.
-`src/lib/shared/golden-masters.test.js` deliberately golden-masters only the
-below-55 band, so it needs no change.
+## Resolved discrepancies
+
+- **2026-10-18** — `CPF_CONTRIBUTION_TABLE` 55–60 (was 32.5%) and 60–65 (was 23.5%) updated to the 1 Jan 2026 rates of 34% and 25%, with the sub-account allocation re-derived from CPF Board's allocation table (the 2026 increase goes to the Retirement Account).
+- **2026-10-18** — `SRS_RETIREMENT_AGE` raised from 63 to 64 (statutory retirement age from 1 Jul 2026).
+- **2026-10-18** — PARF: Budget 2026 schedule and S$30,000 cap added; the old schedule is kept for cars registered before the cutover. Previously every car was given the old 75% / S$60,000 schedule.
+
+## Scheduled changes
+
+Known future changes to a rule the app encodes. When an effective date arrives
+and the row is still `pending`, CI fails until the code, this register and the
+row are updated together (set the last column to `applied`). Format of each row:
+`| <effective date> | <what changes> | <where it lives> | pending or applied |`.
+
+| Effective | Change | Where | Status |
+|---|---|---|---|
+| 2027-01-01 | EEAI ceases for new registrations; `calcEEAI` is date-gated, so no code change is needed | `src/lib/drive/calc.js` | applied |
+| 2027-01-01 | CPF senior-worker contribution rates rise a further 1.5 points for 55–60 (to 35.5%) and 1 point for 60–65 (to 26%); the `CPF_CONTRIBUTION_TABLE` bands and their Retirement Account allocation need updating (or the table made date-aware) | `src/lib/retire/cpf.js` | pending |

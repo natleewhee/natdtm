@@ -3,12 +3,19 @@ import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import {
   projectSrsBalance, srsWithdrawalSchedule, srsWithdrawalTax, compareSrsWithdrawalPlans,
-  SRS_WITHDRAWAL_TAXABLE_FRACTION, SRS_MAX_WITHDRAWAL_YEARS,
+  SRS_WITHDRAWAL_TAXABLE_FRACTION, SRS_MAX_WITHDRAWAL_YEARS, SRS_RETIREMENT_AGE,
 } from './srs.js'
 
 function approx(a, b, eps = 0.5) {
   assert.ok(Math.abs(a - b) <= eps, `expected ${a} ≈ ${b}`)
 }
+
+// MOM: statutory retirement age rose from 63 to 64 on 1 Jul 2026; the SRS
+// penalty-free age is locked in at the first contribution, so a new
+// contributor today is on 64.
+test('SRS penalty-free age is 64 for a first contribution made after 1 Jul 2026', () => {
+  assert.equal(SRS_RETIREMENT_AGE, 64)
+})
 
 test('projectSrsBalance: zero contribution and zero return leaves the balance unchanged', () => {
   const result = projectSrsBalance({ startBalance: 10000, monthlyContribution: 0, annualReturnPct: 0, yearsToRetirement: 10 })
