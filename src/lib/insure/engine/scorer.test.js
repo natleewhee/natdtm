@@ -89,10 +89,12 @@ assert('band → estimated', ci5.isEstimated === true);
 const ci6 = scoreCIBase('yes', 360000, null, income); // above 5× → capped
 assertEqual('above 5× → capped at 100', ci6.score, 100);
 
-// Outstanding debt raises the target: 5×60k + 100k debt = 400k
-const ci7 = scoreCIBase('yes', 200000, null, income, 100000);
-assertEqual('debt-adjusted target: 200k / 400k → 50', ci7.score, 50);
-assertEqual('debt-adjusted target exposed on result', ci7.target, 400000);
+// Unlike Life/TPD, outstanding debt must NOT affect the CI target — CI
+// bridges temporary income loss, which already funds loan repayments;
+// adding the full loan principal on top would double-count it.
+const ci7 = scoreResilience('yes', 200000, null, 'no', null, null, income, 100000);
+assertEqual('scoreResilience ignores outstandingDebt for CI target', ci7.ci.target, 300000);
+assertEqual('so a 200k/300k CI amount scores 67, not debt-adjusted', ci7.ci.score, 67);
 
 // ---------------------------------------------------------------------------
 console.log('\n[ECI boost]');
@@ -330,13 +332,13 @@ assertEqual('balanced Life multiple = default', balanced.lifeAdequateMultiple, B
 const unknownProfile = getProfileBenchmarks('not-a-real-profile');
 assertEqual('unknown profile falls back to balanced', unknownProfile.ciAdequateMultiple, BENCHMARKS.CI_ADEQUATE_MULTIPLE);
 
-// Conservative profile raises the CI target: 7×60k = 420k (no debt)
-const ciConservative = scoreCIBase('yes', 300000, null, income, 0, 7, 2.8);
+// Conservative profile raises the CI target: 7×60k = 420k
+const ciConservative = scoreCIBase('yes', 300000, null, income, 7, 2.8);
 assertEqual('conservative CI target = 7× income', ciConservative.target, 420000);
 assertEqual('conservative CI: 300k / 420k → 71', ciConservative.score, 71);
 
-// Self-insured profile lowers the CI target: 3×60k = 180k (no debt)
-const ciSelfInsured = scoreCIBase('yes', 180000, null, income, 0, 3, 1.2);
+// Self-insured profile lowers the CI target: 3×60k = 180k
+const ciSelfInsured = scoreCIBase('yes', 180000, null, income, 3, 1.2);
 assertEqual('self-insured CI target = 3× income', ciSelfInsured.target, 180000);
 assertEqual('self-insured CI: 180k / 180k → 100', ciSelfInsured.score, 100);
 
@@ -465,8 +467,8 @@ assertEqual('family preset: before life target = debt + buffer', familySim.befor
 assertEqual('family preset: after life target = 9×income + debt', familySim.after.pillars.life.target, 590000);
 
 const homeSim = simulateLifeEvent(scoreD.inputs, 'home');
-assertEqual('home preset: before CI target (no debt)', homeSim.before.pillars.resilience.ci.target, 180000);
-assertEqual('home preset: after CI target (+300k mortgage)', homeSim.after.pillars.resilience.ci.target, 480000);
+assertEqual('home preset: before CI target', homeSim.before.pillars.resilience.ci.target, 180000);
+assertEqual('home preset: CI target unaffected by the new mortgage (debt doesn\'t enter the CI target)', homeSim.after.pillars.resilience.ci.target, 180000);
 
 const debtFreeSim = simulateLifeEvent(scoreDebtLife.inputs, 'debt-free');
 assertEqual('debt-free preset: before life target includes debt', debtFreeSim.before.pillars.life.target, 740000);
@@ -483,7 +485,7 @@ assert('unknown preset id returns null', unknownSim === null);
 const combinedSim = simulateLifeEvents(scoreD.inputs, ['family', 'home']);
 assertEqual('combined presets: count', combinedSim.presets.length, 2);
 assertEqual('combined family+home: life target = 9×income + debt', combinedSim.after.pillars.life.target, 624000);
-assertEqual('combined family+home: CI target = 5×income + debt', combinedSim.after.pillars.resilience.ci.target, 480000);
+assertEqual('combined family+home: CI target unaffected by debt from either preset', combinedSim.after.pillars.resilience.ci.target, 180000);
 
 // Later preset in LIFE_EVENT_PRESETS order overrides an earlier one on the same field
 const cancelSim = simulateLifeEvents(scoreD.inputs, ['home', 'debt-free']);
@@ -580,12 +582,11 @@ const diExplainAnswered = explainPillar('di', scoreWithDI);
 assert('DI explanation (answered, no cover) mentions the benchmark', diExplainAnswered.includes('$3,000'));
 
 // ─── Zero-income/zero-debt edge case (target <= 0) ────────────────────────
-// annualIncome=0 and outstandingDebt=0 makes target=0; if amount is also 0
-// (e.g. hasCI='yes' but no amount/band resolved), the naive amount/target
-// division is 0/0 = NaN. A $0 target is trivially met, so this should
-// score 100, not NaN.
-const ciZeroTarget = scoreCIBase('yes', 0, null, 0, 0);
-assert('scoreCIBase with zero income/debt/amount does not produce NaN', !Number.isNaN(ciZeroTarget.score));
+// annualIncome=0 makes target=0; if amount is also 0 (e.g. hasCI='yes' but
+// no amount/band resolved), the naive amount/target division is 0/0 = NaN.
+// A $0 target is trivially met, so this should score 100, not NaN.
+const ciZeroTarget = scoreCIBase('yes', 0, null, 0);
+assert('scoreCIBase with zero income/amount does not produce NaN', !Number.isNaN(ciZeroTarget.score));
 assert('scoreCIBase with a zero target (trivially met) scores 100', ciZeroTarget.score === 100);
 
 const lifeZeroTarget = scoreLife('yes', 0, null, 0, 0);
@@ -595,7 +596,7 @@ assert('scoreLife with a zero target (trivially met) scores 100', lifeZeroTarget
 // Non-zero amount against a zero target should still cap at 100, not
 // Infinity — this path already worked before the fix, kept as a guard
 // against a future regression.
-const ciZeroTargetWithAmount = scoreCIBase('yes', 50000, null, 0, 0);
+const ciZeroTargetWithAmount = scoreCIBase('yes', 50000, null, 0);
 assert('scoreCIBase with a zero target and positive amount caps at 100, not Infinity', ciZeroTargetWithAmount.score === 100);
 
 // ---------------------------------------------------------------------------

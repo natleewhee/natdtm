@@ -178,9 +178,16 @@ export function scoreHospitalisation(hasHosp) {
 /**
  * Critical illness base score (0–100).
  * Uses continuous ratio formula when exact amount known.
- * Target = adequateMultiple× income + outstanding debt, so existing loans
- * count toward the benchmark. adequateMultiple/partialMultiple default to
- * the standard 5×/2× benchmarks but can be swapped for a risk profile's
+ * Target = adequateMultiple× income only — unlike Life/TPD, outstanding
+ * debt is NOT added here. CI pays out while you're alive, to bridge a
+ * temporary income disruption during treatment/recovery; the income
+ * multiple already stands in for that income, which is what services your
+ * loan repayments in the first place. Adding the full loan principal on
+ * top would double-count a few years of debt servicing against a
+ * multi-decade balance. (Life/TPD pays out on death, where the debt has
+ * to be cleared in full with no more income coming — that's why it adds
+ * debt and CI doesn't.) adequateMultiple/partialMultiple default to the
+ * standard 5×/2× benchmarks but can be swapped for a risk profile's
  * multiples (see getProfileBenchmarks).
  */
 /**
@@ -188,18 +195,17 @@ export function scoreHospitalisation(hasHosp) {
  * @param {?number} ciAmount - Exact CI sum assured in SGD, or null if unknown.
  * @param {?string} ciBand - Band fallback ('low'|'partial'|'high') if ciAmount is null.
  * @param {number} annualIncome - Annual income in SGD.
- * @param {number} [outstandingDebt=0] - Outstanding debt in SGD, added to the target.
  * @param {number} [adequateMultiple=BENCHMARKS.CI_ADEQUATE_MULTIPLE] - Income multiple for full marks.
  * @param {number} [partialMultiple=BENCHMARKS.CI_PARTIAL_MULTIPLE] - Income multiple for the "partial" band midpoint.
  * @returns {{score: number, amount: number, isEstimated: boolean, multiple: number, target: number, adequateMultiple: number}}
  *   The CI base score (0-100) and supporting figures.
  */
 export function scoreCIBase(
-  hasCI, ciAmount, ciBand, annualIncome, outstandingDebt = 0,
+  hasCI, ciAmount, ciBand, annualIncome,
   adequateMultiple = BENCHMARKS.CI_ADEQUATE_MULTIPLE,
   partialMultiple = BENCHMARKS.CI_PARTIAL_MULTIPLE,
 ) {
-  const target = adequateMultiple * annualIncome + outstandingDebt;
+  const target = adequateMultiple * annualIncome;
 
   if (hasCI === 'no' || hasCI === 'unsure') {
     return { score: 0, amount: 0, isEstimated: true, multiple: 0, target, adequateMultiple };
@@ -265,7 +271,7 @@ export function scoreECIBoost(hasECI, eciAmount, eciBand, annualIncome) {
  * @param {?number} eciAmount - Exact ECI sum assured in SGD, or null.
  * @param {?string} eciBand - ECI band fallback.
  * @param {number} annualIncome - Annual income in SGD.
- * @param {number} [outstandingDebt=0] - Outstanding debt in SGD.
+ * @param {number} [outstandingDebt=0] - Unused by CI (kept for call-site compatibility with scoreLife, which does use debt) — see scoreCIBase for why CI's target excludes it.
  * @param {number} [ciAdequateMultiple=BENCHMARKS.CI_ADEQUATE_MULTIPLE] - Income multiple for full CI marks.
  * @param {number} [ciPartialMultiple=BENCHMARKS.CI_PARTIAL_MULTIPLE] - Income multiple for the CI "partial" band midpoint.
  * @returns {{score: number, ci: object, eci: object, isEstimated: boolean}} The combined resilience score and its components.
@@ -275,7 +281,7 @@ export function scoreResilience(
   ciAdequateMultiple = BENCHMARKS.CI_ADEQUATE_MULTIPLE,
   ciPartialMultiple = BENCHMARKS.CI_PARTIAL_MULTIPLE,
 ) {
-  const ci  = scoreCIBase(hasCI, ciAmount, ciBand, annualIncome, outstandingDebt, ciAdequateMultiple, ciPartialMultiple);
+  const ci  = scoreCIBase(hasCI, ciAmount, ciBand, annualIncome, ciAdequateMultiple, ciPartialMultiple);
   const eci = scoreECIBoost(hasECI, eciAmount, eciBand, annualIncome);
   const combined = roundScore(Math.min(ci.score + eci.boost, 100));
 
@@ -537,10 +543,10 @@ if (resilience.ci.score < 50) {
         ? "You're not sure about your critical illness cover"
         : "You have no critical illness coverage",
     body: hasAnyCi
-      ? `Your CI cover of ${prefix}${currentAmount} is below your ${ciMultipleLabel} income benchmark${debtClause} (${targetAmount}). A serious diagnosis like cancer or a stroke can stop your income for months — your cover needs to bridge that gap, not just pay for the first week of treatment.`
+      ? `Your CI cover of ${prefix}${currentAmount} is below your ${ciMultipleLabel} income benchmark (${targetAmount}). A serious diagnosis like cancer or a stroke can stop your income for months — your cover needs to bridge that gap, not just pay for the first week of treatment.`
       : isUnsureCi
-        ? `Check your policy documents or your insurer's app for a critical illness rider or standalone plan. If you're not covered, a serious diagnosis means your savings take the full hit — lost income, treatment costs, and everything in between. Your benchmark is ${ciMultipleLabel} your annual income${debtClause} (${targetAmount}).`
-        : `Without CI cover, a serious diagnosis means your savings take the full hit — lost income, treatment costs, and everything in between. Your benchmark is ${ciMultipleLabel} your annual income${debtClause} (${targetAmount}).`,
+        ? `Check your policy documents or your insurer's app for a critical illness rider or standalone plan. If you're not covered, a serious diagnosis means your savings take the full hit — lost income, treatment costs, and everything in between. Your benchmark is ${ciMultipleLabel} your annual income (${targetAmount}).`
+        : `Without CI cover, a serious diagnosis means your savings take the full hit — lost income, treatment costs, and everything in between. Your benchmark is ${ciMultipleLabel} your annual income (${targetAmount}).`,
     action: hasAnyCi
       ? "A CI top-up rider can often be added to your existing plan — usually cheaper than a new standalone policy. Ask an adviser to check if your current plan allows it."
       : "A standalone term CI plan is usually the most cost-efficient starting point. An adviser can compare options based on your age and health profile.",
@@ -1000,17 +1006,17 @@ export function explainPillar(id, result) {
       const ciMultipleLabel = `${adequateMultiple}×`;
       if (hasCI !== 'yes') {
         return hasCI === 'unsure'
-          ? `You're not sure if you have critical illness (CI) cover, so this scores 0. Your benchmark for adequate cover is ${formatSGD(target)} — ${ciMultipleLabel} your annual income${debtNote}.`
-          : `You have no CI cover, so this scores 0. Your benchmark for adequate cover is ${formatSGD(target)} — ${ciMultipleLabel} your annual income${debtNote}.`;
+          ? `You're not sure if you have critical illness (CI) cover, so this scores 0. Your benchmark for adequate cover is ${formatSGD(target)} — ${ciMultipleLabel} your annual income.`
+          : `You have no CI cover, so this scores 0. Your benchmark for adequate cover is ${formatSGD(target)} — ${ciMultipleLabel} your annual income.`;
       }
       if (amount >= target * BENCHMARKS.OVER_INSURED_MULTIPLE) {
-        return `Your CI cover of ${formatSGD(amount)} is well above your ${formatSGD(target)} benchmark (${ciMultipleLabel} income${debtNote}) — capped at 100, but you may be over-insured here. Extra CI cover isn't wasted since claims pay a lump sum once, but if the gap is large, the premium difference could likely do more for you in an underinsured area, or in savings.`;
+        return `Your CI cover of ${formatSGD(amount)} is well above your ${formatSGD(target)} benchmark (${ciMultipleLabel} income) — capped at 100, but you may be over-insured here. Extra CI cover isn't wasted since claims pay a lump sum once, but if the gap is large, the premium difference could likely do more for you in an underinsured area, or in savings.`;
       }
       if (score >= 100) {
-        return `Your CI cover of ${formatSGD(amount)} meets your ${formatSGD(target)} benchmark (${ciMultipleLabel} income${debtNote}) — a full score, and not far enough above it to flag as over-insurance.`;
+        return `Your CI cover of ${formatSGD(amount)} meets your ${formatSGD(target)} benchmark (${ciMultipleLabel} income) — a full score, and not far enough above it to flag as over-insurance.`;
       }
       const shortfall = target - amount;
-      return `Your CI cover of ${formatSGD(amount)} is ${formatSGD(shortfall)} below your ${formatSGD(target)} benchmark (${ciMultipleLabel} income${debtNote}), so this pillar scores ${score}/100 — proportional to how much of the benchmark you've reached.`;
+      return `Your CI cover of ${formatSGD(amount)} is ${formatSGD(shortfall)} below your ${formatSGD(target)} benchmark (${ciMultipleLabel} income), so this pillar scores ${score}/100 — proportional to how much of the benchmark you've reached.`;
     }
 
     case 'eci': {

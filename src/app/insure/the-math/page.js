@@ -481,7 +481,7 @@ Band inputs → band midpoint used as proxy → score shown as "estimated"`}
               </table>
             </div>
             <p style={{ margin: '12px 0 0', fontSize: '12px', color: 'var(--color-faint)', lineHeight: 1.5 }}>
-              Outstanding loans are always added on top of whichever target applies — the profile only changes the income-multiple portion.
+              Outstanding loans are added on top of the Life/TPD target only. CI target is income-multiple only — it bridges a temporary income disruption, which already funds your loan repayments, so adding the full loan principal on top would double-count it. (Life/TPD pays out on death, where the debt has to be cleared in full with no more income coming, which is why it adds debt and CI doesn&apos;t.)
             </p>
           </div>
 
@@ -614,7 +614,7 @@ At S$48k income: (48k × 3) + 100k = S$244k ≈ 5.1× income
 
 We use 5× as a rounded, conservative benchmark ("Balanced" profile).
 
-CI target = (5 × income) + your outstanding loans (mortgage, car, etc.)
+CI target = 5 × income (outstanding loans are NOT added — see note below)
 CI score = min(your CI cover ÷ target, 1.0) × 100
 
 Band scoring (if exact amount unknown):
@@ -628,6 +628,13 @@ Band scoring (if exact amount unknown):
                     on CI by approximately 70% on average. If your cover comes in well above the
                     benchmark, your results page will flag it as possibly over-insured rather than
                     just showing a full score — a high number doesn&apos;t automatically mean the right amount.
+                    <br /><br />
+                    Unlike Life/TPD, outstanding debt is deliberately left out of the CI target.
+                    CI pays out while you&apos;re alive, bridging a temporary income disruption during
+                    treatment and recovery — the income multiple already stands in for that income,
+                    which is what services your loan repayments anyway. Adding the full remaining loan
+                    principal on top would double-count a few years of debt servicing against a
+                    multi-decade balance.
                   </Caveat>
                 </>
               }
