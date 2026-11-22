@@ -541,6 +541,8 @@ function PortfolioContent() {
             </p>
           </div>
 
+          <DiversificationAvatarCard allocations={portfolio.allocations} />
+
           <div className="pf-grid">
 
             {/* ── Left Column ── */}
@@ -585,8 +587,6 @@ function PortfolioContent() {
               </div>
 
               <LookThroughCard allocations={portfolio.allocations} />
-
-              <DiversificationAvatarCard allocations={portfolio.allocations} />
 
               <PerformanceChart allocations={portfolio.allocations} />
 
