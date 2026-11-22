@@ -5,7 +5,7 @@
 // reacts to a live score, as a candidate pattern for a real tool page.
 
 import { useState } from 'react'
-import DataAvatar from '@/components/lab/DataAvatar'
+import DataAvatar from '@/components/shared/DataAvatar'
 
 export default function AvatarLabPage() {
   const [score, setScore] = useState(50)

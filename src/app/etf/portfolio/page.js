@@ -13,6 +13,7 @@ import {
 } from '@/lib/etf/logic'
 import { checkFreshness, freshnessLabel, FRESHNESS_WINDOWS } from '@/lib/shared/freshness'
 import { saveEtfNumbers } from '@/lib/shared/profile'
+import DataAvatar from '@/components/shared/DataAvatar'
 import styles from './portfolio.module.css'
 
 const FUND_PALETTE = ['#e0763f', '#d9a441', '#5b9bd1', '#c4b5fd', '#e2564a', '#4caf7d', '#f0cf8f', '#ab9a8c']
@@ -426,6 +427,27 @@ function LookThroughCard({ allocations }) {
   )
 }
 
+// ─── DIVERSIFICATION AVATAR (proof of concept) ───────────────────────────────
+// Score = 100 - largest true-regional weight from computeLookThrough above,
+// so a portfolio concentrated in one region (e.g. 100% VWRA's ~60% US
+// weight) scores low, while a well-spread one scores high. Derived from
+// data already computed for LookThroughCard, not a new engine calculation.
+function DiversificationAvatarCard({ allocations }) {
+  const buckets = computeLookThrough(allocations)
+  const topWeight = buckets.length > 0 ? buckets[0].percentage : 100
+  const score = Math.max(0, Math.round(100 - topWeight))
+
+  return (
+    <div className={`${styles.card} ${styles.lookThroughCard}`}>
+      <h3 className={styles.lookThroughTitle}>Diversification, at a glance</h3>
+      <p className={styles.lookThroughDesc}>
+        Proof-of-concept view of the same look-through data above — a character whose state reflects how spread out your true regional exposure is, instead of reading the bars.
+      </p>
+      <DataAvatar score={score} label="Diversification score" />
+    </div>
+  )
+}
+
 // ─── EXPANDABLE NOTE ──────────────────────────────────────────────────────────
 function ExpandableNote({ question, answer }) {
   const [open, setOpen] = useState(false)
@@ -563,6 +585,8 @@ function PortfolioContent() {
               </div>
 
               <LookThroughCard allocations={portfolio.allocations} />
+
+              <DiversificationAvatarCard allocations={portfolio.allocations} />
 
               <PerformanceChart allocations={portfolio.allocations} />
 
