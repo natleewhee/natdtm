@@ -17,7 +17,7 @@ function scoreToState(score) {
   return 'celebrate'
 }
 
-function buildCharacter() {
+export function buildCharacter() {
   const group = new THREE.Group()
   const material = new THREE.MeshStandardMaterial({ color: 0x4f8ef7 })
   const accent = new THREE.MeshStandardMaterial({ color: 0xf7c04f })
