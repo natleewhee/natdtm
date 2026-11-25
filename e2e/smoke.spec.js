@@ -25,7 +25,7 @@ test('home page renders all seven tool cards', async ({ page }) => {
 
   for (const tool of TOOLS) {
     await expect(
-      page.locator(`a[href="/${tool}"]`),
+      page.locator(`a.home-tool-card[href="/${tool}"]`),
       `home card link to /${tool}`,
     ).toBeVisible()
   }

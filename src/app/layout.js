@@ -1,6 +1,8 @@
 import './globals.css'
 import Footer from '@/components/shared/Footer'
 import ThemeBoot from '@/components/shared/ThemeBoot'
+import SWRegister from '@/components/shared/SWRegister'
+import TabBar from '@/components/shared/TabBar'
 
 export const metadata = {
   metadataBase: new URL('https://natdtm.vercel.app'),
@@ -11,6 +13,16 @@ export const metadata = {
     locale: 'en_SG',
     type: 'website',
   },
+  appleWebApp: { capable: true, title: 'ndtm', statusBarStyle: 'black-translucent' },
+  icons: {
+    icon: '/icon.svg',
+    apple: '/icons/apple-touch-icon.png',
+  },
+}
+
+export const viewport = {
+  themeColor: '#17120f',
+  viewportFit: 'cover',
 }
 
 export default function RootLayout({ children }) {
@@ -20,7 +32,9 @@ export default function RootLayout({ children }) {
         <ThemeBoot>
           <main>{children}</main>
           <Footer />
+          <TabBar />
         </ThemeBoot>
+        <SWRegister />
       </body>
     </html>
   )

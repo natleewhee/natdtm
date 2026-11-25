@@ -15,9 +15,12 @@ import { useState } from 'react'
 import { C } from '@/lib/shared/theme'
 import { parseMoney, parseMoneyOrNull } from '@/lib/shared/money'
 
-const labelStyle = { display: 'block', fontSize: C.sm, fontWeight: 600, color: C.primary, marginBottom: 7 }
-const hintStyle = { marginTop: 5, fontSize: C.xs, color: C.muted, lineHeight: 1.5 }
-const affixStyle = { position: 'absolute', top: '50%', transform: 'translateY(-50%)', fontSize: C.sm, fontWeight: 600, pointerEvents: 'none' }
+// Styles are built at render, never at module load: `C` is mutated in
+// place on a light/dark switch, so a style object captured once would
+// freeze one mode's colours (kit-guard.test.js checks for this).
+const labelStyle = () => ({ display: 'block', fontSize: C.sm, fontWeight: 600, color: C.primary, marginBottom: 7 })
+const hintStyle = () => ({ marginTop: 5, fontSize: C.xs, color: C.muted, lineHeight: 1.5 })
+const affixStyle = () => ({ position: 'absolute', top: '50%', transform: 'translateY(-50%)', fontSize: C.sm, fontWeight: 600, pointerEvents: 'none' })
 
 function fieldStyle(focused, { padding = '11px 12px', fontSize = C.lg, fontFamily = C.fontMono, border } = {}) {
   return {
@@ -31,12 +34,12 @@ function fieldStyle(focused, { padding = '11px 12px', fontSize = C.lg, fontFamil
 
 function Label({ id, children }) {
   if (children == null || children === '') return null
-  return <label htmlFor={id} style={labelStyle}>{children}</label>
+  return <label htmlFor={id} style={labelStyle()}>{children}</label>
 }
 
 function Hint({ id, children }) {
   if (!children) return null
-  return <p id={id} style={hintStyle}>{children}</p>
+  return <p id={id} style={hintStyle()}>{children}</p>
 }
 
 /**
@@ -93,7 +96,7 @@ export function MoneyInput({ id, label, hint, value, onChange, placeholder = '0'
     <div>
       <Label id={id}>{label}</Label>
       <div style={{ position: 'relative' }}>
-        <span aria-hidden="true" style={{ ...affixStyle, left: 13, color: focused || value ? C.accent : C.faint, transition: 'color 0.2s' }}>S$</span>
+        <span aria-hidden="true" style={{ ...affixStyle(), left: 13, color: focused || value ? C.accent : C.faint, transition: 'color 0.2s' }}>S$</span>
         <input
           id={id} type="text" inputMode={grouped ? 'numeric' : 'text'} value={value ?? ''} onChange={onChange}
           placeholder={placeholder} aria-describedby={hintId}
@@ -120,7 +123,7 @@ export function PercentInput({ id, label, hint, value, onChange, placeholder = '
           onFocus={() => setFocused(true)} onBlur={() => setFocused(false)}
           style={fieldStyle(focused, { padding: '11px 32px 11px 12px' })}
         />
-        <span aria-hidden="true" style={{ ...affixStyle, right: 13, color: C.faint }}>%</span>
+        <span aria-hidden="true" style={{ ...affixStyle(), right: 13, color: C.faint }}>%</span>
       </div>
       <Hint id={hintId}>{hint}</Hint>
     </div>
@@ -141,7 +144,7 @@ export function NumberInput({ id, label, hint, value, onChange, suffix }) {
           onFocus={() => setFocused(true)} onBlur={() => setFocused(false)}
           style={fieldStyle(focused, { padding: suffix ? '11px 40px 11px 12px' : '11px 12px' })}
         />
-        {suffix && <span aria-hidden="true" style={{ ...affixStyle, right: 13, color: C.faint }}>{suffix}</span>}
+        {suffix && <span aria-hidden="true" style={{ ...affixStyle(), right: 13, color: C.faint }}>{suffix}</span>}
       </div>
       <Hint id={hintId}>{hint}</Hint>
     </div>
@@ -287,7 +290,7 @@ export function OverrideField({ id, label, computedValue, computedHint, override
         <div style={{ padding: '11px 12px', background: C.bg, border: `1.5px dashed ${C.border}`, borderRadius: C.r, fontFamily: C.fontMono, fontSize: C.lg, color: C.text }}>
           {display}
         </div>
-        {computedHint && <p style={hintStyle}>{computedHint}</p>}
+        {computedHint && <p style={hintStyle()}>{computedHint}</p>}
       </div>
     )
   }

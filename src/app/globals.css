@@ -508,3 +508,57 @@ main { min-height: 60vh; }
     position: absolute; top: 8px; right: 8px; margin: 0 !important;
   }
 }
+
+/* ── mobile tab bar (src/components/shared/TabBar.js) ───────────── */
+.tabbar, .tabbar-sheet, .tabbar-scrim { display: none; }
+@media (max-width: 640px) {
+  body { padding-bottom: calc(64px + env(safe-area-inset-bottom)); }
+  /* The tab bar's Tools tab names the current tool, so the header's
+     switcher would say it twice. */
+  .shell-tool-switcher { display: none; }
+  /* The page title repeats the tool name the Tools tab already shows;
+     dropping it keeps the header on one row at 375px. */
+  .shell-header-title { display: none; }
+  .tabbar {
+    display: grid; grid-template-columns: repeat(3, 1fr);
+    position: fixed; left: 0; right: 0; bottom: 0; z-index: 60;
+    padding: 6px 8px calc(6px + env(safe-area-inset-bottom));
+    background: var(--color-surface);
+    border-top: 1px solid var(--color-border);
+    box-shadow: 0 -4px 16px rgba(0,0,0,0.08);
+  }
+  .tabbar-tab {
+    display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px;
+    min-height: 52px; border: none; background: none; border-radius: 12px;
+    color: var(--color-muted); font: 600 11px/1 var(--font-body, inherit); letter-spacing: 0.02em;
+    text-decoration: none; cursor: pointer;
+  }
+  .tabbar-tab[aria-current="page"], .tabbar-tab[data-active="true"], .tabbar-tab[aria-expanded="true"] {
+    color: var(--color-accent); background: var(--color-accent-bg);
+  }
+  .tabbar-tab:focus-visible { outline: 2px solid var(--color-accent); outline-offset: 2px; }
+  .tabbar-scrim { display: block; position: fixed; inset: 0; z-index: 58; background: rgba(0,0,0,0.45); }
+  .tabbar-sheet {
+    display: block; position: fixed; left: 0; right: 0; z-index: 59;
+    bottom: calc(64px + env(safe-area-inset-bottom));
+    background: var(--color-surface); border-top: 1px solid var(--color-border);
+    border-radius: 18px 18px 0 0; padding: 8px 12px 12px;
+    max-height: 70vh; overflow-y: auto; animation: fadeUp 0.18s ease both;
+  }
+  .tabbar-sheet-grip { width: 36px; height: 4px; border-radius: 2px; background: var(--color-border); margin: 4px auto 10px; }
+  .tabbar-sheet-list { list-style: none; display: grid; gap: 4px; }
+  .tabbar-sheet-item {
+    display: flex; align-items: center; gap: 12px; padding: 12px; min-height: 52px;
+    border-radius: 12px; color: var(--color-primary); text-decoration: none;
+  }
+  .tabbar-sheet-item[aria-current="page"], .tabbar-sheet-item:hover { background: var(--color-accent-bg); }
+  .tabbar-sheet-icon {
+    display: inline-flex; align-items: center; justify-content: center; width: 36px; height: 36px;
+    border-radius: 10px; background: var(--color-bg); color: var(--color-accent); flex-shrink: 0;
+  }
+  .tabbar-sheet-name { display: block; font-weight: 600; font-size: 15px; }
+  .tabbar-sheet-eyebrow { display: block; font-size: 12px; color: var(--color-muted); margin-top: 2px; }
+}
+@media (max-width: 640px) and (prefers-reduced-motion: reduce) {
+  .tabbar-sheet { animation: none; }
+}

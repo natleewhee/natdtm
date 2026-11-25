@@ -38,3 +38,12 @@ test('reducing-balance and annuity formulas live only in lib/shared/loan.js', ()
 test('SGD is defined once, in lib/shared/money.js', () => {
   assert.deepEqual(definers(/(const|function) SGD\b(?!Compact)/), ['src/lib/shared/money.js'])
 })
+
+test('the shared kit reads theme tokens at render, not at module load', () => {
+  // C is mutated in place on a theme switch; a module-level object holding
+  // C.* values would freeze the first mode's colours (seen as unreadable
+  // labels in light mode).
+  const src = readFileSync(join(ROOT, 'src/components/shared/inputs.js'), 'utf8')
+  const moduleLevel = src.split('\n').filter((l) => /^const \w+ = \{[^}]*\bC\.\w+/.test(l))
+  assert.deepEqual(moduleLevel, [])
+})
