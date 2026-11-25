@@ -131,6 +131,14 @@ U5's WhatETF CSS-module conversion and `.v-<tool>` wrapper removal move to PR 2 
 - WhatETF's CSS modules are *kept*: on inspection they already read the shared `--color-*` / `--font-*` tokens (170+ references, no hard-coded colours bar `#fff`), so converting them would be churn with no consistency gain. `.v-drive` / `.v-insure` are removed (their only job, `min-height`, moved to `<main>`); `.v-etf` stays because it scopes WhatETF-only custom properties.
 - R6's "TrustBadges once in the shell" is replaced: most badges are tool-specific product claims ("BSD/SSD auto-computed"), not trust lines. Only the pair every tool repeated ("Zero data collected", "Free, forever") is now defined once (`TRUST_COMMON` in `ToolHero`).
 - `ToolHero` ships two layouts (`center`, `left`), not three. InsureCheck and WhatETF keep their own distinct heroes, so there are four hero shapes across the seven tools.
+**As built in PR 3 (2026-11-25):**
+- OQ1 resolved as recommended: `/` shows the summary; `/ledger` is the **Plan** tab and keeps its URL.
+- OQ2 measured: a realistic three-profile store compresses to a link of roughly 200–800 characters, well inside the QR budget; the active-profile fallback (`QR_MAX_URL_CHARS` 2,300) only triggers for unusually large stores.
+- OQ3 resolved as recommended: CPF balances are optional fields with a "find these in the CPF app" hint.
+- U10 shipped four rules. "Retirement-age impact of a planned car" was replaced by "living costs not yet counted": the profile has no "planned car" slot, and onboarding does not ask for one.
+- U12 per-*result* OG images were scoped down to per-*tool* cards: TaxWise is a client page, so a result-specific image would need a server wrapper with `generateMetadata` reading the share params. Share links themselves ship for TaxWise; DriveReady and WhatETF already had URL state.
+- R12's `FAQPage`/`HowTo` markup was not added: the site has no FAQ content, and inventing it for markup would misrepresent the pages. `TechArticle` + `BreadcrumbList` describe what the-math pages actually are.
+- One new dependency: `qrcode-generator` (MIT, no dependencies) for the transfer QR code.
 - The 375px two-row header is deferred: hiding the page title on phones helps, but DriveReady's header carries two links plus a live COE status that cannot fit one row.
 
 ## Implementation Units
