@@ -42,7 +42,7 @@ Findings from a full read of the repo at the merge of PR #32 (2026-11-24):
 #### Phase A: Foundations (no calculator output change)
 
 - R1. One tool registry, `src/lib/shared/tools.js`, holds each tool's id, name, route, tagline, icon, the-math route, disclaimer key and profile slot. The home page, `ShellHeader` switcher, `sitemap.js`, `Footer` and MyLedger all read it, and no other file lists the tools.
-- R2. One input kit, `src/components/shared/inputs/`, provides `MoneyInput`, `PercentInput`, `NumberInput`, `DateInput`, `TextInput`, `SelectInput`, `Segmented`, `Toggle`, `Slider`, `SectionDivider`, `StatBox` and `OverrideField`. The six local copies are deleted, and a per-tool `ui.js` survives only for components that really are specific to that tool (e.g. drive's `GaugeBar`).
+- R2. One input kit, `src/components/shared/inputs.js`, provides `MoneyInput`, `PercentInput`, `NumberInput`, `DateInput`, `TextInput`, `SelectInput`, `Segmented`, `Toggle`, `Slider`, `SectionDivider`, `StatBox` and `OverrideField`. The six local copies are deleted, and a per-tool `ui.js` survives only for components that really are specific to that tool (e.g. drive's `GaugeBar`).
 - R3. Shared finance primitives: `src/lib/shared/money.js` (`parseMoney` with k/m suffixes, `fmtSGD`, `fmtPct`) and `src/lib/shared/loan.js` (`monthlyPayment`, `balanceAfter`, `fvAnnuity`, `interestPaid`). Every engine imports them, and `theme.js` files hold tokens only.
 - R4. The profile store becomes declarative. A `MODULE_SCHEMA` table (`{ tool: { fields: { key: coerce } } }`) and a generic `saveModule(tool, values)` / `clearModule(tool)` replace the 13 hand-written functions. The old names stay as one-line wrappers for one release. InsureCheck score history moves into the profile as its own `insureHistory` slot (inner data v7, with a migration from `iga_score_history*`). It is a separate slot, not `insure.history`, so clearing InsureCheck's synced numbers keeps the history, as it did before.
 - R5. Canonical layout everywhere: `lib/insure/calc.js` (from `engine/scorer.js`) and `lib/etf/calc.js` (from `logic.js`), `lib/flow/` moved to `lib/ledger/capacity/`, the five re-export `theme.js` shims deleted, and the `.v-<tool>` wrappers removed. WhatETF's CSS modules are converted to the shared tokens.
@@ -126,6 +126,12 @@ PR grouping (settled 2026-11-25: the whole plan lands in three PRs):
 | PR 3 | U8, U9, U10, U11, U12 | Super app: dashboard home, onboarding, insights, device transfer, share + SEO | New home, `/start`, `/me`, share links |
 
 U5's WhatETF CSS-module conversion and `.v-<tool>` wrapper removal move to PR 2 (they are visual and belong behind U2/U6's new baselines); PR 1 does U5's `lib/` moves only.
+
+**As built in PR 2 (2026-11-25):**
+- WhatETF's CSS modules are *kept*: on inspection they already read the shared `--color-*` / `--font-*` tokens (170+ references, no hard-coded colours bar `#fff`), so converting them would be churn with no consistency gain. `.v-drive` / `.v-insure` are removed (their only job, `min-height`, moved to `<main>`); `.v-etf` stays because it scopes WhatETF-only custom properties.
+- R6's "TrustBadges once in the shell" is replaced: most badges are tool-specific product claims ("BSD/SSD auto-computed"), not trust lines. Only the pair every tool repeated ("Zero data collected", "Free, forever") is now defined once (`TRUST_COMMON` in `ToolHero`).
+- `ToolHero` ships two layouts (`center`, `left`), not three. InsureCheck and WhatETF keep their own distinct heroes, so there are four hero shapes across the seven tools.
+- The 375px two-row header is deferred: hiding the page title on phones helps, but DriveReady's header carries two links plus a live COE status that cannot fit one row.
 
 ## Implementation Units
 

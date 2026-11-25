@@ -58,7 +58,7 @@ export default function ShellHeader({
         <div className="shell-header-left">
           <Link href="/" className="shell-header-brand">ndtm</Link>
           {active && (
-            <div className="shell-switcher" ref={menuRef}>
+            <div className="shell-switcher shell-tool-switcher" ref={menuRef}>
               <button
                 type="button"
                 className="shell-switcher-btn"

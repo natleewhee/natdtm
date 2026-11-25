@@ -11,9 +11,12 @@ import {
 import { COE_FALLBACK } from '@/lib/drive/calc'
 import { COE_ENDPOINT } from '@/lib/drive/endpoints'
 import ShellHeader from '@/components/shared/ShellHeader'
+import { SGD } from '@/lib/shared/money'
+import { MoneyInput, Slider, SelectInput } from '@/components/shared/inputs'
 import { C } from '@/lib/drive/theme'
 
-const SGD = n => `S$${Math.round(Math.abs(n)).toLocaleString('en-SG')}`
+// Magnitudes only: signs are carried by the surrounding copy.
+const absSGD = n => SGD(Math.abs(n))
 // Reuses the same fallback constant as the main calculator (src/lib/calc.js)
 // instead of keeping a second copy that can drift out of sync with it.
 const PQP_FALLBACK = COE_FALLBACK
@@ -22,55 +25,25 @@ const BRAND_OPTIONS = Object.entries(MAINTENANCE_BY_BRAND)
   .map(([key,val]) => ({ key, label: val.label }))
 
 // ─── SMALL UI COMPONENTS ─────────────────────────────────────────────────────
+// Form fields come from the shared kit (components/shared/inputs.js); the
+// layout pieces below are this page's own.
+
+// The money fields here keep digits only (no k/m shorthand), as before.
+const digitsInto = (set) => (e) => set(e.target.value.replace(/[^0-9]/g, ''))
+
+function BrandSelect({ id, value, onChange }) {
+  return (
+    <SelectInput
+      id={id} label="Brand" value={value} onChange={e => onChange(e.target.value)}
+      options={BRAND_OPTIONS.map(b => ({ value: b.key, label: b.label }))}
+    />
+  )
+}
 function Label({ children }) {
   return <div style={{fontSize:C.xs,fontWeight:700,color:C.primary,textTransform:'uppercase',letterSpacing:'0.1em',marginBottom:4}}>{children}</div>
 }
 function Hint({ children }) {
   return <div style={{fontSize:'10px',color:C.faint,marginBottom:6,lineHeight:1.5}}>{children}</div>
-}
-function MoneyInput({ label, hint, value, onChange, placeholder='0' }) {
-  const [focused, setFocused] = useState(false)
-  return (
-    <div>
-      <Label>{label}</Label>
-      {hint && <Hint>{hint}</Hint>}
-      <div style={{display:'flex',alignItems:'center',gap:6,padding:'10px 14px',border:`1.5px solid ${focused?C.accent:C.borderControl}`,borderRadius:C.rL,background:C.surface,boxShadow:focused?`0 0 0 3px ${C.accentBg}`:'none',transition:'all 0.15s'}}>
-        <span style={{fontSize:C.sm,color:C.faint,flexShrink:0}}>S$</span>
-        <input type="text" value={value} placeholder={placeholder}
-          onChange={e=>onChange(e.target.value.replace(/[^0-9]/g,''))}
-          onFocus={()=>setFocused(true)} onBlur={()=>setFocused(false)}
-          style={{flex:1,minWidth:0,border:'none',outline:'none',fontSize:C.sm,fontFamily:C.fontMono,fontWeight:600,color:C.primary,background:'transparent',padding:0}}/>
-      </div>
-    </div>
-  )
-}
-function Slider({ label, hint, value, onChange, min, max, step=1, unit='' }) {
-  return (
-    <div>
-      <div style={{display:'flex',justifyContent:'space-between',marginBottom:4}}>
-        <Label>{label}</Label>
-        <span style={{fontSize:C.sm,fontFamily:C.fontMono,fontWeight:700,color:C.primary}}>{value}{unit}</span>
-      </div>
-      {hint && <Hint>{hint}</Hint>}
-      <input type="range" min={min} max={max} step={step} value={value}
-        onChange={e=>onChange(Number(e.target.value))}
-        style={{width:'100%',accentColor:C.accent}}/>
-      <div style={{display:'flex',justifyContent:'space-between',fontSize:'10px',color:C.faint,marginTop:2}}>
-        <span>{min}{unit}</span><span>{max}{unit}</span>
-      </div>
-    </div>
-  )
-}
-function BrandSelect({ value, onChange }) {
-  return (
-    <div>
-      <Label>Brand</Label>
-      <select value={value} onChange={e=>onChange(e.target.value)}
-        style={{width:'100%',padding:'10px 14px',border:`1.5px solid ${C.border}`,borderRadius:C.rL,fontSize:C.sm,color:C.primary,fontFamily:C.fontBody,background:C.surface,outline:'none'}}>
-        {BRAND_OPTIONS.map(b=><option key={b.key} value={b.key}>{b.label}</option>)}
-      </select>
-    </div>
-  )
 }
 function Card({ children, highlight=false }) {
   return (
@@ -101,38 +74,38 @@ function ResultCard({ result, isWinner }) {
         {/* Annual cost — the headline */}
         <div style={{marginBottom:14,padding:'12px 14px',background:isWinner?C.accentBg:C.bg,borderRadius:C.r}}>
           <div style={{fontSize:C.xs,color:C.muted,marginBottom:2}}>Annual cost</div>
-          <div style={{fontFamily:C.fontMono,fontSize:C.xl,fontWeight:700,color:isWinner?C.accent:C.primary}}>{SGD(result.annual)}<span style={{fontSize:C.xs,fontWeight:400,color:C.faint}}> /year</span></div>
+          <div style={{fontFamily:C.fontMono,fontSize:C.xl,fontWeight:700,color:isWinner?C.accent:C.primary}}>{absSGD(result.annual)}<span style={{fontSize:C.xs,fontWeight:400,color:C.faint}}> /year</span></div>
         </div>
         {/* Total cost secondary */}
         <div style={{display:'flex',justifyContent:'space-between',marginBottom:10,paddingBottom:10,borderBottom:`1px solid ${C.border}`}}>
           <span style={{fontSize:C.xs,color:C.muted}}>Total over {result.renewYears || result.usefulYears?.toFixed(0) || result.years} years</span>
-          <span style={{fontSize:C.sm,fontFamily:C.fontMono,fontWeight:700,color:C.text}}>{SGD(result.totalCost)}</span>
+          <span style={{fontSize:C.sm,fontFamily:C.fontMono,fontWeight:700,color:C.text}}>{absSGD(result.totalCost)}</span>
         </div>
         {/* Breakdown */}
         <div style={{display:'flex',flexDirection:'column',gap:5}}>
           {result.type === 'renew' && <>
-            <Row k={`COE renewal (${result.renewYears===5?'50%':'100%'} of PQP)`} v={SGD(result.breakdown.renewalCost)} />
-            <Row k="Scrap value given up" v={SGD(result.breakdown.opportunityCost)} />
-            <Row k={`Maintenance (${result.renewYears}yr)`} v={SGD(result.breakdown.maintenance)} />
-            <Row k="Recovery at end (PARF)" v={`−${SGD(result.breakdown.recoveryAtEnd)}`} positive />
+            <Row k={`COE renewal (${result.renewYears===5?'50%':'100%'} of PQP)`} v={absSGD(result.breakdown.renewalCost)} />
+            <Row k="Scrap value given up" v={absSGD(result.breakdown.opportunityCost)} />
+            <Row k={`Maintenance (${result.renewYears}yr)`} v={absSGD(result.breakdown.maintenance)} />
+            <Row k="Recovery at end (PARF)" v={`−${absSGD(result.breakdown.recoveryAtEnd)}`} positive />
           </>}
           {result.type === 'new' && <>
-            <Row k="Downpayment" v={SGD(result.breakdown.downpayment)} />
-            <Row k="Loan + interest" v={SGD(result.breakdown.instalments)} />
-            <Row k={`Maintenance (${result.years}yr)`} v={SGD(result.breakdown.maintenance)} />
-            <Row k="Recovery at end (PARF+COE)" v={`−${SGD(result.breakdown.recoveryAtEnd)}`} positive />
+            <Row k="Downpayment" v={absSGD(result.breakdown.downpayment)} />
+            <Row k="Loan + interest" v={absSGD(result.breakdown.instalments)} />
+            <Row k={`Maintenance (${result.years}yr)`} v={absSGD(result.breakdown.maintenance)} />
+            <Row k="Recovery at end (PARF+COE)" v={`−${absSGD(result.breakdown.recoveryAtEnd)}`} positive />
           </>}
           {result.type === 'used' && <>
-            <Row k="Purchase price" v={SGD(result.breakdown.purchasePrice)} />
-            <Row k={`Maintenance (${result.usefulYears?.toFixed(0)}yr)`} v={SGD(result.breakdown.maintenance)} />
-            <Row k="Recovery at end (PARF)" v={`−${SGD(result.breakdown.recoveryAtEnd)}`} positive />
+            <Row k="Purchase price" v={absSGD(result.breakdown.purchasePrice)} />
+            <Row k={`Maintenance (${result.usefulYears?.toFixed(0)}yr)`} v={absSGD(result.breakdown.maintenance)} />
+            <Row k="Recovery at end (PARF)" v={`−${absSGD(result.breakdown.recoveryAtEnd)}`} positive />
             <div style={{marginTop:6,padding:'7px 10px',background:C.blueBg,borderRadius:C.r,fontSize:C.xs,color:C.blueText}}>
-              Cost per remaining COE year: <strong>{SGD(result.costPerCOEYear)}/yr</strong>
+              Cost per remaining COE year: <strong>{absSGD(result.costPerCOEYear)}/yr</strong>
             </div>
           </>}
           {result.type === 'new' && result.monthly > 0 && (
             <div style={{marginTop:6,padding:'7px 10px',background:result.canAfford?C.accentBg:C.amberBg,borderRadius:C.r,fontSize:C.xs,color:result.canAfford?C.accentText:C.amberText}}>
-              Monthly: <strong>{SGD(result.monthly)}</strong>{result.ratio?` · ${(result.ratio*100).toFixed(0)}% of take-home`:''}
+              Monthly: <strong>{absSGD(result.monthly)}</strong>{result.ratio?` · ${(result.ratio*100).toFixed(0)}% of take-home`:''}
             </div>
           )}
         </div>
@@ -290,7 +263,7 @@ export default function RenewOrReplacePage() {
           <p style={{fontSize:C.base,color:C.muted,maxWidth:540,margin:'0 auto 12px',lineHeight:1.7}}>Compare every option by annual cost — renewing your COE for 5 or 10 years, buying a new car, or buying used.</p>
           {pqpLive ? (
             <div style={{display:'inline-flex',alignItems:'center',gap:8,padding:'5px 14px',background:C.accentBg,borderRadius:100,border:`1px solid ${C.accent}33`,fontSize:C.xs,color:C.accentText}}>
-              Live COE · Cat A: <strong>{SGD(pqp.catA)}</strong> · Cat B: <strong>{SGD(pqp.catB)}</strong> · via data.gov.sg
+              Live COE · Cat A: <strong>{absSGD(pqp.catA)}</strong> · Cat B: <strong>{absSGD(pqp.catB)}</strong> · via data.gov.sg
             </div>
           ) : (
             <div style={{display:'inline-flex',alignItems:'center',gap:8,padding:'5px 14px',background:C.amberBg,borderRadius:100,border:`1px solid ${C.amber}33`,fontSize:C.xs,color:C.amberText}}>
@@ -326,10 +299,10 @@ export default function RenewOrReplacePage() {
         <Card>
           <SectionTitle>Your current car</SectionTitle>
           <div style={{display:'grid',gridTemplateColumns:'minmax(0,1fr) minmax(0,1fr)',gap:18}}>
-            <Slider label="Car age" value={carAge} onChange={setCarAge} min={1} max={15} unit=" years" hint="How old is your car now?" />
-            <Slider label="Months remaining on COE" value={monthsLeft} onChange={setMonthsLeft} min={1} max={120} unit=" months" />
-            <BrandSelect value={brandKey} onChange={setBrandKey}/>
-            <MoneyInput label="Car OMV" hint="Check via OneMotoring vehicle enquiry" value={omvRaw} onChange={setOmvRaw}/>
+            <Slider id="ror-car-age" label="Car age" value={carAge} onChange={setCarAge} min={1} max={15} unit=" years" hint="How old is your car now?"/>
+            <Slider id="ror-months-remaining-on-coe" label="Months remaining on COE" value={monthsLeft} onChange={setMonthsLeft} min={1} max={120} unit=" months"/>
+            <BrandSelect id="ror-brand-1" value={brandKey} onChange={setBrandKey}/>
+            <MoneyInput id="ror-car-omv" label="Car OMV" hint="Check via OneMotoring vehicle enquiry" value={omvRaw} onChange={digitsInto(setOmvRaw)}/>
             <div>
               <Label>COE Category</Label>
               <div style={{display:'grid',gridTemplateColumns:'minmax(0,1fr) minmax(0,1fr)',gap:8}}>
@@ -357,10 +330,10 @@ export default function RenewOrReplacePage() {
           {/* Computed values */}
           <div style={{marginTop:16,display:'grid',gridTemplateColumns:'repeat(4,minmax(0,1fr))',gap:10}}>
             {[
-              ['PARF if scrapped now', SGD(parfNow), C.accent],
-              ['COE rebate now', SGD(coeRebateNow), C.accent],
-              ['Total scrap value', SGD(parfNow+coeRebateNow), C.primary],
-              ['Est. annual maintenance', SGD(getAnnualMaintenance(brandKey, carAge))+'/yr', C.muted],
+              ['PARF if scrapped now', absSGD(parfNow), C.accent],
+              ['COE rebate now', absSGD(coeRebateNow), C.accent],
+              ['Total scrap value', absSGD(parfNow+coeRebateNow), C.primary],
+              ['Est. annual maintenance', absSGD(getAnnualMaintenance(brandKey, carAge))+'/yr', C.muted],
             ].map(([k,v,col])=>(
               <div key={k} style={{background:C.bg,borderRadius:C.r,padding:'10px 12px',border:`1px solid ${C.border}`}}>
                 <div style={{fontSize:'10px',color:C.faint,marginBottom:3}}>{k}</div>
@@ -373,25 +346,25 @@ export default function RenewOrReplacePage() {
           <div style={{marginTop:14,padding:'10px 14px',background:C.bg,borderRadius:C.r,border:`1px solid ${C.border}`}}>
             <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:6}}>
               <div style={{fontSize:C.xs,color:C.muted}}>
-                COE renewal price (PQP — {coeType==='catA'?'Cat A':'Cat B'}): <strong style={{color:C.primary}}>{SGD(activePQP)}</strong>
+                COE renewal price (PQP — {coeType==='catA'?'Cat A':'Cat B'}): <strong style={{color:C.primary}}>{absSGD(activePQP)}</strong>
                 {pqpLive && !pqpOverride && <span style={{color:C.accent,marginLeft:6,fontSize:'10px'}}>· live from LTA</span>}
               </div>
             </div>
             <div style={{display:'grid',gridTemplateColumns:'minmax(0,1fr) minmax(0,1fr)',gap:10}}>
               <div style={{padding:'8px 12px',background:C.accentBg,borderRadius:C.r,border:`1px solid ${C.accent}33`}}>
                 <div style={{fontSize:'10px',color:C.accentText,marginBottom:2}}>5-year renewal cost (50% PQP)</div>
-                <div style={{fontFamily:C.fontMono,fontWeight:700,color:C.primary,fontSize:C.base}}>{SGD(activePQP*0.5)}</div>
+                <div style={{fontFamily:C.fontMono,fontWeight:700,color:C.primary,fontSize:C.base}}>{absSGD(activePQP*0.5)}</div>
               </div>
               <div style={{padding:'8px 12px',background:C.blueBg,borderRadius:C.r,border:`1px solid ${C.blue}33`}}>
                 <div style={{fontSize:'10px',color:C.blueText,marginBottom:2}}>10-year renewal cost (100% PQP)</div>
-                <div style={{fontFamily:C.fontMono,fontWeight:700,color:C.primary,fontSize:C.base}}>{SGD(activePQP)}</div>
+                <div style={{fontFamily:C.fontMono,fontWeight:700,color:C.primary,fontSize:C.base}}>{absSGD(activePQP)}</div>
               </div>
             </div>
             <details style={{marginTop:10}}>
               <summary style={{fontSize:'10px',color:C.muted,cursor:'pointer',userSelect:'none'}}>Override PQP or maintenance estimate</summary>
               <div style={{display:'grid',gridTemplateColumns:'minmax(0,1fr) minmax(0,1fr)',gap:10,marginTop:10}}>
-                <MoneyInput label="Override PQP" hint="Leave blank to use live LTA value" value={pqpOverride} onChange={setPqpOverride}/>
-                <MoneyInput label="Annual maintenance override" hint={`Our estimate: ${SGD(getAnnualMaintenance(brandKey,carAge))}/yr`} value={maintOverride} onChange={setMaintOverride}/>
+                <MoneyInput id="ror-override-pqp" label="Override PQP" hint="Leave blank to use live LTA value" value={pqpOverride} onChange={digitsInto(setPqpOverride)}/>
+                <MoneyInput id="ror-annual-maintenance-override" label="Annual maintenance override" hint={`Our estimate: ${absSGD(getAnnualMaintenance(brandKey,carAge))}/yr`} value={maintOverride} onChange={digitsInto(setMaintOverride)}/>
               </div>
             </details>
           </div>
@@ -404,9 +377,9 @@ export default function RenewOrReplacePage() {
             <Card>
               <SectionTitle>Replacement — new car</SectionTitle>
               <div style={{display:'grid',gridTemplateColumns:'minmax(0,1fr) minmax(0,1fr)',gap:18}}>
-                <MoneyInput label="Car price (incl. COE)" hint="Enter the price the dealer quoted you" value={newPrice} onChange={setNewPrice}/>
-                <MoneyInput label="Car OMV" hint="From the dealer's price breakdown" value={newOmvRaw} onChange={setNewOmvRaw}/>
-                <BrandSelect value={newBrand} onChange={setNewBrand}/>
+                <MoneyInput id="ror-car-price-incl-coe" label="Car price (incl. COE)" hint="Enter the price the dealer quoted you" value={newPrice} onChange={digitsInto(setNewPrice)}/>
+                <MoneyInput id="ror-car-omv-2" label="Car OMV" hint="From the dealer's price breakdown" value={newOmvRaw} onChange={digitsInto(setNewOmvRaw)}/>
+                <BrandSelect id="ror-brand-2" value={newBrand} onChange={setNewBrand}/>
                 <div>
                   <Label>Electric vehicle?</Label>
                   <div style={{display:'grid',gridTemplateColumns:'minmax(0,1fr) minmax(0,1fr)',gap:8,marginTop:4}}>
@@ -426,13 +399,13 @@ export default function RenewOrReplacePage() {
                     ))}
                   </div>
                 </div>
-                <Slider label="Loan tenure" value={tenure} onChange={setTenure} min={1} max={7} unit=" years"/>
+                <Slider id="ror-loan-tenure" label="Loan tenure" value={tenure} onChange={setTenure} min={1} max={7} unit=" years"/>
               </div>
               <details style={{marginTop:14}}>
                 <summary style={{fontSize:C.xs,color:C.muted,cursor:'pointer',userSelect:'none'}}>Add salary & downpayment (for affordability check)</summary>
                 <div style={{display:'grid',gridTemplateColumns:'minmax(0,1fr) minmax(0,1fr)',gap:14,marginTop:12}}>
-                  <MoneyInput label="Monthly gross salary" value={salary} onChange={setSalary}/>
-                  <MoneyInput label="Downpayment available" value={downpayment} onChange={setDownpayment}/>
+                  <MoneyInput id="ror-monthly-gross-salary" label="Monthly gross salary" value={salary} onChange={digitsInto(setSalary)}/>
+                  <MoneyInput id="ror-downpayment-available" label="Downpayment available" value={downpayment} onChange={digitsInto(setDownpayment)}/>
                 </div>
               </details>
             </Card>
@@ -446,12 +419,12 @@ export default function RenewOrReplacePage() {
             <Card>
               <SectionTitle>Replacement — used car</SectionTitle>
               <div style={{display:'grid',gridTemplateColumns:'minmax(0,1fr) minmax(0,1fr)',gap:18}}>
-                <MoneyInput label="Asking price" hint="What the seller is asking" value={usedPrice} onChange={setUsedPrice}/>
-                <Slider label="Age of used car" value={usedAge} onChange={setUsedAge} min={1} max={9} unit=" years" hint="How old is the used car?" />
-                <Slider label="Remaining COE months" value={usedMonths} onChange={setUsedMonths} min={1} max={119} unit=" months" hint="Check the car's log card or OneMotoring"/>
-                <Slider label="Mileage" value={usedMileage} onChange={setUsedMileage} min={10000} max={200000} step={5000} unit=" km" hint="Higher mileage = higher maintenance estimate"/>
-                <BrandSelect value={usedBrand} onChange={setUsedBrand}/>
-                <MoneyInput label="Car OMV" hint="For PARF recovery calculation" value={usedOmvRaw} onChange={setUsedOmvRaw}/>
+                <MoneyInput id="ror-asking-price" label="Asking price" hint="What the seller is asking" value={usedPrice} onChange={digitsInto(setUsedPrice)}/>
+                <Slider id="ror-age-of-used-car" label="Age of used car" value={usedAge} onChange={setUsedAge} min={1} max={9} unit=" years" hint="How old is the used car?"/>
+                <Slider id="ror-remaining-coe-months" label="Remaining COE months" value={usedMonths} onChange={setUsedMonths} min={1} max={119} unit=" months" hint="Check the car's log card or OneMotoring"/>
+                <Slider id="ror-mileage" label="Mileage" value={usedMileage} onChange={setUsedMileage} min={10000} max={200000} step={5000} unit=" km" hint="Higher mileage = higher maintenance estimate"/>
+                <BrandSelect id="ror-brand-3" value={usedBrand} onChange={setUsedBrand}/>
+                <MoneyInput id="ror-car-omv-3" label="Car OMV" hint="For PARF recovery calculation" value={usedOmvRaw} onChange={digitsInto(setUsedOmvRaw)}/>
               </div>
               <div style={{marginTop:14,padding:'10px 14px',background:C.bg,borderRadius:C.r,border:`1px solid ${C.border}`,fontSize:C.xs,color:C.muted,lineHeight:1.6}}>
                 Useful life: <strong style={{color:C.primary}}>{(usedMonths/12).toFixed(1)} years</strong> of remaining COE ·
@@ -488,7 +461,7 @@ export default function RenewOrReplacePage() {
               )}
               {results.verdict.pctDearer > 0 && (
                 <div style={{marginTop:14,padding:'10px 14px',background:'rgba(255,255,255,0.07)',borderRadius:C.r,fontSize:C.xs,color:'rgba(255,255,255,0.6)'}}>
-                  The next cheapest option costs <strong style={{color:'#fff'}}>{results.verdict.pctDearer.toFixed(0)}% more per year</strong> — equivalent to <strong style={{color:'#fff'}}>{SGD(results.verdict.diff)}/year</strong> extra.
+                  The next cheapest option costs <strong style={{color:'#fff'}}>{results.verdict.pctDearer.toFixed(0)}% more per year</strong> — equivalent to <strong style={{color:'#fff'}}>{absSGD(results.verdict.diff)}/year</strong> extra.
                 </div>
               )}
             </div>

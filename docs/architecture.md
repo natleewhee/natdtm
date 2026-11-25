@@ -50,7 +50,8 @@ src/app/<tool>/
 
 src/components/<tool>/
   <Feature>.js       presentational components for this tool
-  ui.js              the tool's small input/layout primitives
+  ui.js              optional: primitives only this tool uses (form fields
+                     come from src/components/shared/inputs.js)
 
 src/lib/<tool>/
   calc.js            the pure calculation engine — no React, no fetch
@@ -62,9 +63,9 @@ src/lib/<tool>/
 
 All seven verticals now match this shape (`insure/calc.js`, `etf/calc.js`;
 MyLedger's Capacity engine, formerly FlowState, is
-`src/lib/ledger/capacity/calc.js`). WhatETF's CSS modules and the
-`.v-<tool>` wrappers are the remaining drift, scheduled for PR 2 of the
-super-app plan.
+`src/lib/ledger/capacity/calc.js`). WhatETF keeps CSS modules (they
+already read the shared `--color-*` tokens) and its `.v-etf` wrapper,
+which scopes a few WhatETF-only custom properties.
 
 ## Shared engine core
 

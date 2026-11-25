@@ -19,5 +19,5 @@ export const metadata = {
 }
 
 export default function InsureLayout({ children }) {
-  return <ProfileScope><div className="v-insure">{children}</div></ProfileScope>
+  return <ProfileScope>{children}</ProfileScope>
 }

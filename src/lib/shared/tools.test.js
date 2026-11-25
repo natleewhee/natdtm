@@ -67,6 +67,9 @@ test('no shell file hard-codes the tool list', () => {
     'src/app/sitemap.js',
     'src/components/shared/ShellHeader.js',
     'src/components/shared/Footer.js',
+    'src/components/shared/TabBar.js',
+    'src/app/manifest.js',
+    'src/app/sw.js/route.js',
   ]
   const literal = new RegExp(`["'\`]/(${TOOLS.map((t) => t.id).join('|')})(/the-math)?["'\`]`)
   for (const f of SHELL) {

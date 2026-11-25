@@ -6,7 +6,7 @@ import { SSD_AS_OF } from '@/lib/house/stampDuty'
 import ResultHero from '@/components/shared/ResultHero'
 import InsightPill from '@/components/shared/InsightPill'
 import ExploreSection from '@/components/shared/ExploreSection'
-import { OverrideField } from './ui'
+import { OverrideField } from '@/components/shared/inputs'
 
 function Row({ label, value, tone, bold, indent }) {
   const color = tone === 'red' ? C.redText : tone === 'green' ? C.greenText : tone === 'blue' ? C.blueText : C.text

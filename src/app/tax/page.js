@@ -5,10 +5,10 @@ import { C } from '@/lib/shared/theme'
 import { SGD, parseMoney } from '@/lib/shared/money'
 import { calcTax, NSMAN_RELIEF, SRS_CAP_CITIZEN_PR, SRS_CAP_FOREIGNER, RSTU_RELIEF_CAP_SELF, RSTU_RELIEF_CAP_FAMILY, COURSE_FEES_CAP } from '@/lib/tax/calc'
 import { loadMyNumbers, saveTaxNumbers, saveToolInputs, loadToolInputs } from '@/lib/shared/profile'
-import { MoneyInput, NumberInput, SectionDivider, Segmented } from '@/components/tax/ui'
+import { MoneyInput, NumberInput, SectionDivider, Segmented } from '@/components/shared/inputs'
 import TaxResults from '@/components/tax/Results'
 import ShellHeader from '@/components/shared/ShellHeader'
-import TrustBadges from '@/components/shared/TrustBadges'
+import ToolHero from '@/components/shared/ToolHero'
 import Button from '@/components/shared/Button'
 import AutosaveIndicator from '@/components/shared/AutosaveIndicator'
 
@@ -145,19 +145,13 @@ export default function TaxWisePage() {
     <div style={{ minHeight: '100vh', background: C.bg, fontFamily: C.fontBody }}>
       <ShellHeader title="TaxWise" links={[{ href: '/tax/the-math', label: 'The Math' }]} />
 
-      {/* Hero */}
-      <div style={{ background: C.ndtm, padding: '48px 32px 52px', textAlign: 'center' }}>
-        <div style={{ fontFamily: C.fontNdtm, fontSize: 10, fontWeight: 600, color: 'rgba(255,255,255,0.35)', letterSpacing: '0.18em', textTransform: 'uppercase', marginBottom: 14 }}>
-          Singapore Income Tax &amp; Relief Calculator
-        </div>
-        <h1 style={{ fontFamily: C.fontDisplay, fontSize: 'clamp(30px, 5.5vw, 48px)', color: '#fff', marginBottom: 10, lineHeight: 1.2 }}>
-          What do you actually owe IRAS?
-        </h1>
-        <p style={{ fontFamily: C.fontDisplay, fontSize: 18, color: 'rgba(255,255,255,0.5)', marginBottom: 24, fontStyle: 'italic' }}>
-          And what every relief is really worth — in dollars saved, not percentages.
-        </p>
-        <TrustBadges tone="dark" items={['Every relief cap modeled', 'Shows what the next $1k saves', 'Zero data collected', 'Free, forever']} />
-      </div>
+      <ToolHero
+        layout="left"
+        eyebrow="Singapore Income Tax & Relief Calculator"
+        title="What do you actually owe IRAS?"
+        lede="And what every relief is really worth — in dollars saved, not percentages."
+        badges={['Every relief cap modeled', 'Shows what the next $1k saves']}
+      />
 
       {/* Compliance line */}
       <div style={{ background: C.surface, borderBottom: `1px solid ${C.border}`, padding: '8px 24px', textAlign: 'center' }}>

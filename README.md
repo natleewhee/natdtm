@@ -41,10 +41,13 @@ src/app/
                                     that have no shared-token equivalent
 
 src/components/
-  shared/                          ShellHeader, Footer, Button, VerdictBadge,
-                                    ResultHero, ExploreSection, TrustBadges,
-                                    MathTOC, ProfileSwitcher, AutosaveIndicator
-  <tool>/                          each tool's own components + ui.js
+  shared/                          ShellHeader, Footer, TabBar, ToolHero,
+                                    inputs.js (the one form kit), Button,
+                                    VerdictBadge, ResultHero, ExploreSection,
+                                    TrustBadges, MathTOC, ProfileSwitcher,
+                                    AutosaveIndicator, SWRegister, ToolIcon
+  <tool>/                          each tool's own components; ui.js only
+                                    where a tool has primitives of its own
 
 src/lib/
   shared/                          tools.js (the tool registry), site.js,
@@ -102,7 +105,19 @@ Shared components carry one visual language across all seven tools:
 `Button` (press feedback), `VerdictBadge` (mono uppercase stamp),
 `ExploreSection` (terminal-style "show the math" collapsible),
 `ResultHero` (verdict + big mono number + plain sentence), `MathTOC`,
-`TrustBadges`, and the site-wide `ShellHeader` / `Footer`.
+`ToolHero` + `TrustBadges` (landing hero bands, `center` or `left`
+layout), the form kit in `inputs.js`, and the site-wide `ShellHeader` /
+`Footer` / `TabBar` (bottom navigation below 640px).
+
+## Installable app
+
+The whole site is one PWA: `src/app/manifest.js` (PNG + maskable icons
+in `public/icons/`) and a service worker served from
+`src/app/sw.js/route.js`, generated at build time from the tool registry
+(scope `/`). Pages are network-first with an offline fallback; static
+assets cache-first; `/drive/api/*` network-first with a cached copy.
+`SWRegister` registers it in production only and removes the pre-2026-11
+`/etf/`-scoped registration.
 
 ## Cross-tool "My Numbers"
 
@@ -161,6 +176,5 @@ and the Playwright suite on every push and PR.
 - **Visual baselines** for the Playwright `visual` project must be
   generated on the CI runner image (`ci.yml` `workflow_dispatch`), not a
   dev machine — font rendering differs.
-- **PNG manifest icons** for WhatETF's PWA (currently SVG-only).
 - **Engine JSDoc** — `@param`/`@returns` annotations across the `calc.js`
   modules are incomplete.

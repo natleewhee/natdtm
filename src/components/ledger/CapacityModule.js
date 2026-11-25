@@ -17,7 +17,7 @@ import {
   emergencyFundTarget, DEFAULT_MA_HEALTH_PREMIUM,
 } from '@/lib/ledger/capacity/calc'
 import { loadMyNumbers, saveFlowNumbers, saveFlowInputs, loadFlowInputs } from '@/lib/shared/profile'
-import { MoneyInput, NumberInput, PercentInput, SectionDivider, Segmented, Toggle } from '@/components/ledger/ui'
+import { MoneyInput, NumberInput, PercentInput, SectionDivider, Segmented, Toggle } from '@/components/shared/inputs'
 import CapacityResults from './CapacityResults'
 import Button from '@/components/shared/Button'
 import AutosaveIndicator from '@/components/shared/AutosaveIndicator'
