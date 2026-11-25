@@ -1,3 +1,5 @@
+import JsonLd from '@/components/shared/JsonLd'
+import { toolAppLd } from '@/lib/shared/structuredData'
 import ProfileScope from '@/components/shared/ProfileScope'
 export const metadata = {
   title: { default: 'HouseMuch', template: '%s · HouseMuch · nat does the math' },
@@ -11,5 +13,10 @@ export const metadata = {
 }
 
 export default function HouseLayout({ children }) {
-  return <ProfileScope>{children}</ProfileScope>
+  return (
+    <ProfileScope>
+      <JsonLd data={toolAppLd('house')} />
+      {children}
+    </ProfileScope>
+  )
 }
