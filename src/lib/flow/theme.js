@@ -4,8 +4,6 @@
 // dictionaries alongside it.
 import { C as BASE, applyMode as applyBaseMode } from '../shared/theme.js'
 
-export { SGD, parseMoney } from '../shared/theme.js'
-
 export const C = { ...BASE }
 
 /** @param {'light'|'dark'} mode */

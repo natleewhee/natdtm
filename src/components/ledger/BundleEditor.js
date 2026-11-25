@@ -4,7 +4,8 @@
 // a fixed (equity return, property appreciation, inflation) triple.
 // Editing any rate re-runs every scenario (R12).
 
-import { C, parseMoney } from '@/lib/ledger/theme'
+import { C } from '@/lib/shared/theme'
+import { parseMoney } from '@/lib/shared/money'
 import { BUNDLE_KEYS } from '@/lib/ledger/scenario/index'
 import { PercentInput } from './ui'
 

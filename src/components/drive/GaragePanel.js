@@ -1,7 +1,8 @@
 'use client'
 
 import { useState } from 'react'
-import { C, SGD } from '@/lib/drive/theme'
+import { C } from '@/lib/drive/theme'
+import { SGD } from '@/lib/shared/money'
 
 function timeAgo(iso) {
   const ms = Date.now() - new Date(iso).getTime()

@@ -1,7 +1,8 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { C, SGD } from '@/lib/drive/theme'
+import { C } from '@/lib/drive/theme'
+import { SGD } from '@/lib/shared/money'
 import { estimateAnnualRunningCosts } from '@/lib/drive/tco'
 
 export function RunningCostCard({ r, visible }) {

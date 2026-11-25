@@ -1,6 +1,7 @@
 'use client'
 
-import { C, SGD } from '@/lib/house/theme'
+import { C } from '@/lib/shared/theme'
+import { SGD } from '@/lib/shared/money'
 import { SSD_AS_OF } from '@/lib/house/stampDuty'
 import ResultHero from '@/components/shared/ResultHero'
 import InsightPill from '@/components/shared/InsightPill'

@@ -5,6 +5,7 @@
 // year-by-year depletion simulation. Pure functions — no React, no
 // fetch. Covered by calc.test.js.
 
+import { fvAnnuityFactor } from '../shared/loan.js'
 import {
   monthlyCpfContribution, monthlyCpfInterest, splitContribution, creditWithMaOverflow,
   CPF_OW_CEILING, CPF_ANNUAL_CEILING, prevailingFRS, prevailingBHS,
@@ -223,7 +224,7 @@ export function calcRetirementTarget(inputs, accumulation) {
   let extraMonthlyNeeded = null
   if (gap != null && gap > 0 && months > 0) {
     if (monthlyInvReturn > 0) {
-      const fvFactor = (Math.pow(1 + monthlyInvReturn, months) - 1) / monthlyInvReturn
+      const fvFactor = fvAnnuityFactor(monthlyInvReturn, months)
       extraMonthlyNeeded = gap / fvFactor
     } else {
       extraMonthlyNeeded = gap / months

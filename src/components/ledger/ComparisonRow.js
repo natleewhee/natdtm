@@ -5,7 +5,8 @@
 // the Base value marked, the enough/tight/short chip, net worth and asset
 // mix at retirement, then the secondary today's-net-worth / TDSR reads.
 
-import { C, SGD } from '@/lib/ledger/theme'
+import { C } from '@/lib/shared/theme'
+import { SGD } from '@/lib/shared/money'
 import { VerdictChip } from './ui'
 
 function HeadCell({ children, accent }) {

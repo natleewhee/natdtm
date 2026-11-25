@@ -1,7 +1,7 @@
 'use client'
 
 import { useRouter } from 'next/navigation'
-import { C } from '@/lib/ledger/theme'
+import { C } from '@/lib/shared/theme'
 import { TDSR_LIMIT, TAKE_HOME_RATE, MSR_LIMIT } from '@/lib/ledger/calc'
 import { DEFAULT_EMERGENCY_FUND_MONTHS } from '@/lib/flow/calc'
 import ShellHeader from '@/components/shared/ShellHeader'

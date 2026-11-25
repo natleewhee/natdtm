@@ -8,7 +8,8 @@
 // shell instead of owning one.
 
 import { useEffect, useMemo, useState } from 'react'
-import { C, SGD, parseMoney } from '@/lib/ledger/theme'
+import { C } from '@/lib/shared/theme'
+import { SGD, parseMoney } from '@/lib/shared/money'
 import {
   buildMonthlyFlow, quickLivingExpenses, detailedLivingExpenses,
   backSolveLivingExpenses, reconciliationGap, buildTwelveMonthSchedule,

@@ -2,7 +2,8 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
-import { C, SGD } from '@/lib/drive/theme'
+import { C } from '@/lib/drive/theme'
+import { SGD } from '@/lib/shared/money'
 import { calcPriceGap } from '@/lib/drive/calc'
 
 export function DepreciationCard({ r, tenure, visible }) {

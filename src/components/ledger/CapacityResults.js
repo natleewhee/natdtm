@@ -1,6 +1,7 @@
 'use client'
 
-import { C, SGD } from '@/lib/ledger/theme'
+import { C } from '@/lib/shared/theme'
+import { SGD } from '@/lib/shared/money'
 import { findTightestMonth, monthsToCloseEmergencyFundGap, DEFAULT_EMERGENCY_FUND_MONTHS } from '@/lib/flow/calc'
 import { CPF_OW_CEILING, CPF_ANNUAL_CEILING } from '@/lib/retire/cpf'
 import Sankey from './Sankey'

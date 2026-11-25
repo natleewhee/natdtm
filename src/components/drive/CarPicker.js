@@ -1,7 +1,8 @@
 'use client'
 
 import { useState, useRef, useEffect } from 'react'
-import { C, SGD, RATE_TIERS, brandTier, parseMoneyKM } from '@/lib/drive/theme'
+import { C, RATE_TIERS, brandTier } from '@/lib/drive/theme'
+import { SGD, parseMoneyOrNull } from '@/lib/shared/money'
 import { calcPriceGap, minDownFor } from '@/lib/drive/calc'
 
 // Common SG car-shopping shorthand that doesn't literally appear in our
@@ -54,7 +55,7 @@ export function CarPicker({ value, onChange, slot, ceiling, down, allCars = [], 
   // just caused, which would otherwise immediately overwrite mid-typed
   // text like "1.2" with the already-rounded "1" it committed.
   useEffect(() => {
-    const parsed = parseMoneyKM(priceText)
+    const parsed = parseMoneyOrNull(priceText)
     if (parsed != null && String(parsed) === String(customPrice)) return
     setPriceText(customPrice)
     // priceText intentionally omitted: this effect reacts to customPrice
@@ -67,11 +68,11 @@ export function CarPicker({ value, onChange, slot, ceiling, down, allCars = [], 
   // recognizes its own commits and leaves mid-typed text alone.
   const commitPrice = (text) => {
     setPriceText(text)
-    const parsed = parseMoneyKM(text)
+    const parsed = parseMoneyOrNull(text)
     onCustomPrice && onCustomPrice(parsed != null ? String(parsed) : '')
   }
   const blurPrice = () => {
-    const parsed = parseMoneyKM(priceText)
+    const parsed = parseMoneyOrNull(priceText)
     if (parsed != null) setPriceText(parsed.toLocaleString('en-SG'))
   }
   const slotCol = slot === 'A' ? C.ndtm : C.blue

@@ -43,36 +43,12 @@ export function yearsBetween(startISO, endISO) {
   return (end - start) / MS_PER_DAY / DAYS_PER_YEAR
 }
 
-/**
- * Standard reducing-balance monthly instalment: M = P·r(1+r)^n / ((1+r)^n − 1).
- * @param {number} principal - Loan principal in dollars.
- * @param {number} annualRatePct - Annual interest rate as a percentage (e.g. 3 for 3%).
- * @param {number} tenureYears - Loan tenure in years.
- * @returns {number} Monthly instalment in dollars.
- */
-export function calcMonthlyInstalment(principal, annualRatePct, tenureYears) {
-  const P = Number(principal), r = Number(annualRatePct) / 100 / 12, n = Number(tenureYears) * 12
-  if (!Number.isFinite(P) || P <= 0 || !Number.isFinite(n) || n <= 0) return 0
-  if (!Number.isFinite(r) || r <= 0) return P / n
-  return P * (r * Math.pow(1 + r, n)) / (Math.pow(1 + r, n) - 1)
-}
-
-/**
- * Outstanding principal balance after `monthsElapsed` of a standard
- * reducing-balance loan: B(t) = P·[(1+r)^n − (1+r)^t] / [(1+r)^n − 1].
- * @param {number} principal - Loan principal in dollars.
- * @param {number} annualRatePct - Annual interest rate as a percentage.
- * @param {number} tenureYears - Loan tenure in years.
- * @param {number} monthsElapsed - Months elapsed since the loan started, clamped to [0, tenureYears*12].
- * @returns {number} Outstanding principal balance in dollars.
- */
-export function calcOutstandingBalance(principal, annualRatePct, tenureYears, monthsElapsed) {
-  const P = Number(principal), r = Number(annualRatePct) / 100 / 12, n = Number(tenureYears) * 12
-  if (!Number.isFinite(P) || P <= 0 || !Number.isFinite(n) || n <= 0) return 0
-  const t = Math.min(Math.max(0, Number(monthsElapsed) || 0), n)
-  if (!Number.isFinite(r) || r <= 0) return P * (1 - t / n)
-  return P * (Math.pow(1 + r, n) - Math.pow(1 + r, t)) / (Math.pow(1 + r, n) - 1)
-}
+// Reducing-balance loan maths lives in src/lib/shared/loan.js (one
+// implementation for every engine); these names are kept because
+// HouseMuch, MyLedger's property moves and their tests import them.
+import { monthlyPayment, balanceAfter } from '../shared/loan.js'
+export const calcMonthlyInstalment = monthlyPayment
+export const calcOutstandingBalance = balanceAfter
 
 // CPF principal used for a property must be refunded on sale together with
 // the interest it would have earned had it stayed in the Ordinary Account

@@ -20,6 +20,7 @@
 import { calcRetirement } from '../retire/calc.js'
 import { TDSR_LIMIT } from '../drive/calc.js'
 import { calcMonthlyInstalment, calcBSD, calcNextPurchase, resolveSharePct } from '../house/calc.js'
+import { fvAnnuityFactor } from '../shared/loan.js'
 
 export { TDSR_LIMIT, resolveSharePct }
 
@@ -445,7 +446,7 @@ export function levelEquivalentContribution(schedule, annualReturnPct) {
   // for however many months remain after it.
   let fv = 0
   for (let m = 0; m < n; m++) fv += schedule[m] * Math.pow(1 + r, n - m - 1)
-  const annuityFactor = (Math.pow(1 + r, n) - 1) / r
+  const annuityFactor = fvAnnuityFactor(r, n)
   return annuityFactor > 0 ? fv / annuityFactor : 0
 }
 

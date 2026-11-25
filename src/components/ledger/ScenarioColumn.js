@@ -4,7 +4,8 @@
 // (MoveEditor), and a live mini-readout of the current band + verdict so
 // the effect of an edit is visible without scrolling to the comparison.
 
-import { C, SGD } from '@/lib/ledger/theme'
+import { C } from '@/lib/shared/theme'
+import { SGD } from '@/lib/shared/money'
 import MoveEditor from './MoveEditor'
 import { VerdictChip } from './ui'
 

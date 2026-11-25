@@ -20,6 +20,7 @@ export { MAINTENANCE_BY_BRAND, getAnnualMaintenance, getTotalMaintenance }
 // keeping its own copy. Previously this file duplicated the formulas locally
 // and they had drifted out of sync with page.js's copy (which used the wrong
 // PARF percentages) — see src/lib/calc.js for the corrected, tested version.
+import { SGD } from '@/lib/shared/money'
 import {
   calcARF, parfPct, calcPARF, calcCOERebate, calcEEAI, parfRegimeFor, parfRegimeForAge, registrationDateForAge,
 } from '@/lib/drive/calc.js'
@@ -270,5 +271,5 @@ export function getVerdict(options) {
 }
 
 function fmtSGD(n) {
-  return `S$${Math.round(Math.abs(n)).toLocaleString('en-SG')}`
+  return SGD(Math.abs(n))
 }

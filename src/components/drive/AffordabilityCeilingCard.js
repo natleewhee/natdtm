@@ -1,7 +1,8 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { C, SGD } from '@/lib/drive/theme'
+import { C } from '@/lib/drive/theme'
+import { SGD } from '@/lib/shared/money'
 import { calcCeiling } from '@/lib/drive/calc'
 
 export function AffordabilityCeilingCard({ salary, down, tenure, existingDebt = 0, mySharePct = 100 }) {
