@@ -20,7 +20,7 @@ import { ResultPanel } from '@/components/drive/ResultPanel'
 import { AffordabilityCeilingCard } from '@/components/drive/AffordabilityCeilingCard'
 import { GaragePanel } from '@/components/drive/GaragePanel'
 import ShellHeader from '@/components/shared/ShellHeader'
-import TrustBadges from '@/components/shared/TrustBadges'
+import ToolHero from '@/components/shared/ToolHero'
 import Button from '@/components/shared/Button'
 import AutosaveIndicator from '@/components/shared/AutosaveIndicator'
 
@@ -343,13 +343,12 @@ export default function DriveReadyPage() {
         }
       />
 
-      {/* ── HERO ── */}
-      <div style={{background:C.ndtm,padding:'48px 32px 52px',textAlign:'center'}}>
-        <div style={{fontFamily:C.fontNdtm,fontSize:10,fontWeight:600,color:'rgba(255,255,255,0.35)',letterSpacing:'0.18em',textTransform:'uppercase',marginBottom:14}}>Singapore Car Loan Calculator</div>
-        <h1 style={{fontFamily:C.fontDisplay,fontSize:'clamp(30px, 5.5vw, 48px)',color:'#fff',marginBottom:10,lineHeight:1.2}}>Be Ready to Drive.</h1>
-        <p style={{fontFamily:C.fontDisplay,fontSize:18,color:'rgba(255,255,255,0.5)',marginBottom:24,fontStyle:'italic'}}>Your salary, your cash, your real number. I&apos;ll do the math.</p>
-        <TrustBadges tone="dark" items={['50+ SG models', 'True cost incl. depreciation', 'Zero data collected', 'Free, forever']} />
-      </div>
+      <ToolHero
+        eyebrow="Singapore Car Loan Calculator"
+        title="Be Ready to Drive."
+        lede="Your salary, your cash, your real number. I'll do the math."
+        badges={['50+ SG models', 'True cost incl. depreciation']}
+      />
 
       {/* ── MAS disclaimer ── */}
       <div style={{background:C.surface,borderBottom:`1px solid ${C.border}`,padding:'8px 24px',textAlign:'center'}}>

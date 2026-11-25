@@ -234,8 +234,30 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
   .shell-footer-col-divided { padding-left: 0; border-left: none; }
 }
 
-/* ── vertical wrapper hooks ──────────────────────────────────────── */
-.v-insure, .v-drive, .v-etf { min-height: 60vh; }
+/* Keeps the footer off mid-screen on short pages (was the .v-insure /
+   .v-drive / .v-etf wrappers' only job). */
+main { min-height: 60vh; }
+
+/* ── tool hero band (src/components/shared/ToolHero.js) ─────────── */
+.tool-hero { background: var(--color-ndtm); padding: 48px 32px 52px; text-align: center; }
+.tool-hero-title {
+  font-family: var(--font-display); font-size: clamp(30px, 5.5vw, 48px);
+  color: #fff; margin-bottom: 10px; line-height: 1.2;
+}
+.tool-hero-lede {
+  font-family: var(--font-display); font-size: 18px; font-style: italic;
+  color: rgba(255,255,255,0.5); margin-bottom: 24px;
+}
+.tool-hero--left { text-align: left; padding: 56px 24px 56px; }
+.tool-hero--left .tool-hero-inner {
+  max-width: 1040px; margin: 0 auto; display: grid; gap: 32px;
+  grid-template-columns: minmax(0, 1fr); align-items: end;
+}
+.tool-hero--left .tool-hero-title { font-size: clamp(34px, 6vw, 60px); line-height: 1.05; letter-spacing: -0.02em; max-width: 18ch; margin-bottom: 14px; }
+.tool-hero--left .tool-hero-lede { max-width: 52ch; }
+@media (min-width: 900px) {
+  .tool-hero--left .tool-hero-inner:has(.tool-hero-aside) { grid-template-columns: minmax(0, 3fr) minmax(0, 2fr); }
+}
 
 /* ── shared header (src/components/shared/ShellHeader.js) ──────────
    One header, not a shell-nav bar stacked on a per-page sub-nav bar.

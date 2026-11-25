@@ -11,7 +11,7 @@ import { MoneyInput, PercentInput, NumberInput, DateInput, Segmented, SectionDiv
 import SaleResults from '@/components/house/SaleResults'
 import NextPurchase from '@/components/house/NextPurchase'
 import ShellHeader from '@/components/shared/ShellHeader'
-import TrustBadges from '@/components/shared/TrustBadges'
+import ToolHero from '@/components/shared/ToolHero'
 import Button from '@/components/shared/Button'
 import AutosaveIndicator from '@/components/shared/AutosaveIndicator'
 import ExploreSection from '@/components/shared/ExploreSection'
@@ -262,19 +262,12 @@ export default function HouseMuchPage() {
     <div style={{ minHeight: '100vh', background: C.bg, fontFamily: C.fontBody }}>
       <ShellHeader title="HouseMuch" links={[{ href: '/house/the-math', label: 'The Math' }]} />
 
-      {/* Hero */}
-      <div style={{ background: C.ndtm, padding: '48px 32px 52px', textAlign: 'center' }}>
-        <div style={{ fontFamily: C.fontNdtm, fontSize: 10, fontWeight: 600, color: 'rgba(255,255,255,0.35)', letterSpacing: '0.18em', textTransform: 'uppercase', marginBottom: 14 }}>
-          Singapore Property Profit/Loss Calculator
-        </div>
-        <h1 style={{ fontFamily: C.fontDisplay, fontSize: 'clamp(30px, 5.5vw, 48px)', color: '#fff', marginBottom: 10, lineHeight: 1.2 }}>
-          What did this house really make you?
-        </h1>
-        <p style={{ fontFamily: C.fontDisplay, fontSize: 18, color: 'rgba(255,255,255,0.5)', marginBottom: 24, fontStyle: 'italic' }}>
-          Sale price minus purchase price is a myth. I&apos;ll show you the real number — CPF and all.
-        </p>
-        <TrustBadges tone="dark" items={['CPF accrued interest, done right', 'BSD/SSD auto-computed', 'Zero data collected', 'Free, forever']} />
-      </div>
+      <ToolHero
+        eyebrow="Singapore Property Profit/Loss Calculator"
+        title="What did this house really make you?"
+        lede="Sale price minus purchase price is a myth. I'll show you the real number — CPF and all."
+        badges={['CPF accrued interest, done right', 'BSD/SSD auto-computed']}
+      />
 
       {/* Compliance line */}
       <div style={{ background: C.surface, borderBottom: `1px solid ${C.border}`, padding: '8px 24px', textAlign: 'center' }}>

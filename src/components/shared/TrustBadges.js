@@ -3,10 +3,10 @@
 // no checkmark. Same underlying claim (no sign-up, no data collected,
 // etc), three different presentations. `tone` adapts the colors for a
 // light paper hero (Insure) vs a dark-ink hero band (Drive, Invest).
-export default function TrustBadges({ items, tone = 'light' }) {
+export default function TrustBadges({ items, tone = 'light', align = 'center' }) {
   const isDark = tone === 'dark'
   return (
-    <div style={{ display: 'flex', justifyContent: 'center', gap: 10, flexWrap: 'wrap' }}>
+    <div style={{ display: 'flex', justifyContent: align === 'start' ? 'flex-start' : 'center', gap: 10, flexWrap: 'wrap' }}>
       {items.map((item) => (
         <span
           key={item}

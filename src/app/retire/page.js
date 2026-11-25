@@ -10,7 +10,7 @@ import { loadMyNumbers, saveRetireNumbers, saveToolInputs, loadToolInputs } from
 import { MoneyInput, PercentInput, NumberInput, SectionDivider, Segmented } from '@/components/shared/inputs'
 import RetireResults from '@/components/retire/Results'
 import ShellHeader from '@/components/shared/ShellHeader'
-import TrustBadges from '@/components/shared/TrustBadges'
+import ToolHero from '@/components/shared/ToolHero'
 import Button from '@/components/shared/Button'
 import AutosaveIndicator from '@/components/shared/AutosaveIndicator'
 
@@ -204,19 +204,12 @@ export default function RetireWellPage() {
     <div style={{ minHeight: '100vh', background: C.bg, fontFamily: C.fontBody }}>
       <ShellHeader title="RetireWell" links={[{ href: '/retire/the-math', label: 'The Math' }]} />
 
-      {/* Hero */}
-      <div style={{ background: C.ndtm, padding: '48px 32px 52px', textAlign: 'center' }}>
-        <div style={{ fontFamily: C.fontNdtm, fontSize: 10, fontWeight: 600, color: 'rgba(255,255,255,0.35)', letterSpacing: '0.18em', textTransform: 'uppercase', marginBottom: 14 }}>
-          Singapore Retirement Readiness Calculator
-        </div>
-        <h1 style={{ fontFamily: C.fontDisplay, fontSize: 'clamp(30px, 5.5vw, 48px)', color: '#fff', marginBottom: 10, lineHeight: 1.2 }}>
-          Will you actually have enough?
-        </h1>
-        <p style={{ fontFamily: C.fontDisplay, fontSize: 18, color: 'rgba(255,255,255,0.5)', marginBottom: 24, fontStyle: 'italic' }}>
-          CPF projected properly, your investments stress-tested — not a rule of thumb.
-        </p>
-        <TrustBadges tone="dark" items={['CPF contribution rates modeled', 'Depletion-tested, not just the 3% rule', 'Zero data collected', 'Free, forever']} />
-      </div>
+      <ToolHero
+        eyebrow="Singapore Retirement Readiness Calculator"
+        title="Will you actually have enough?"
+        lede="CPF projected properly, your investments stress-tested — not a rule of thumb."
+        badges={['CPF contribution rates modeled', 'Depletion-tested, not just the 3% rule']}
+      />
 
       {/* Compliance line */}
       <div style={{ background: C.surface, borderBottom: `1px solid ${C.border}`, padding: '8px 24px', textAlign: 'center' }}>

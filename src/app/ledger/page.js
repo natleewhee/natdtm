@@ -26,7 +26,7 @@ import ScenarioColumn from '@/components/ledger/ScenarioColumn'
 import BundleEditor from '@/components/ledger/BundleEditor'
 import ComparisonRow from '@/components/ledger/ComparisonRow'
 import ShellHeader from '@/components/shared/ShellHeader'
-import TrustBadges from '@/components/shared/TrustBadges'
+import ToolHero from '@/components/shared/ToolHero'
 import Button from '@/components/shared/Button'
 import AutosaveIndicator from '@/components/shared/AutosaveIndicator'
 
@@ -285,18 +285,13 @@ export default function MyLedgerPage() {
     <div style={{ minHeight: '100vh', background: C.bg, fontFamily: C.fontBody }}>
       <ShellHeader title="MyLedger" links={[{ href: '/ledger/the-math', label: 'The Math' }]} />
 
-      <div style={{ background: C.ndtm, padding: '44px 32px 48px', textAlign: 'center' }}>
-        <div style={{ fontFamily: C.fontNdtm, fontSize: 10, fontWeight: 600, color: 'rgba(255,255,255,0.35)', letterSpacing: '0.18em', textTransform: 'uppercase', marginBottom: 14 }}>
-          Timed Scenario Planner
-        </div>
-        <h1 style={{ fontFamily: C.fontDisplay, fontSize: 'clamp(28px, 5vw, 44px)', color: '#fff', marginBottom: 10, lineHeight: 1.2 }}>
-          Sell, buy, upgrade, add a car — see the whole path.
-        </h1>
-        <p style={{ fontFamily: C.fontDisplay, fontSize: 17, color: 'rgba(255,255,255,0.5)', marginBottom: 22, fontStyle: 'italic' }}>
-          A dated sequence of moves, projected against doing nothing, across three sets of assumptions.
-        </p>
-        <TrustBadges tone="dark" items={['Pulls from your other ndtm tools', 'Compare up to 3 paths', 'Zero data collected', 'Free, forever']} />
-      </div>
+      <ToolHero
+        layout="left"
+        eyebrow="Timed Scenario Planner"
+        title="Sell, buy, upgrade, add a car — see the whole path."
+        lede="A dated sequence of moves, projected against doing nothing, across three sets of assumptions."
+        badges={['Pulls from your other ndtm tools', 'Compare up to 3 paths']}
+      />
 
       <div style={{ background: C.surface, borderBottom: `1px solid ${C.border}`, padding: '8px 24px', textAlign: 'center' }}>
         <p style={{ fontSize: 11, color: C.faint, margin: 0 }}>Educational tool only · Not financial advice · Not affiliated with CPF Board or MAS</p>

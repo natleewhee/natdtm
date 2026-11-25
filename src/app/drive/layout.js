@@ -13,5 +13,5 @@ export const metadata = {
 }
 
 export default function DriveLayout({ children }) {
-  return <ProfileScope><div className="v-drive">{children}</div></ProfileScope>
+  return <ProfileScope>{children}</ProfileScope>
 }
