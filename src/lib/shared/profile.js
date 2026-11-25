@@ -28,7 +28,7 @@ export const MAX_PROFILES = 3
 const DEFAULT_PROFILE_NAME = 'My Numbers'
 
 const EMPTY = {
-  version: 6,
+  version: 7,
   // { source: 'auto'|'manual', savedAt,
   //   outstandingBalance, rate, tenureRemaining, monthlyInstalment, propertyValue, cpfServicing,
   //   cashProceeds, totalCPFRefund, salePrice, saleDate }
@@ -61,6 +61,11 @@ const EMPTY = {
   // slot only ever holds `inputs` (via saveToolInputs/loadToolInputs
   // below), so its own retirement-planning fields can be restored.
   ledger: null,
+  // v7: InsureCheck's score history, oldest-first [{ score, date }], capped
+  // at 24 by src/lib/insure/scoreHistory.js. Its own slot (not inside
+  // `insure`) so clearing InsureCheck's synced numbers keeps the history,
+  // as it did when history lived under its own localStorage key.
+  insureHistory: null,
 }
 
 function migrateV1(parsed) {
@@ -103,6 +108,13 @@ function migrateV5(parsed) {
   return { ...parsed, version: 6, ledger: parsed.ledger ?? null }
 }
 
+// v6 → v7 adds the insureHistory slot. Moving each profile's legacy
+// `iga_score_history:<profileId>` key into it needs the profile id, so
+// that half happens in loadStore (adoptLegacyScoreHistory).
+function migrateV6(parsed) {
+  return { ...parsed, version: 7, insureHistory: parsed.insureHistory ?? null }
+}
+
 // Migrates one profile's inner per-module data (the shape EMPTY
 // describes) up to the current version — same logic that used to run
 // directly against the raw localStorage payload, before profiles
@@ -110,12 +122,13 @@ function migrateV5(parsed) {
 // loadMyNumbers() used to return wholesale.
 function migrateInnerData(parsed) {
   if (!parsed || typeof parsed !== 'object') return null
-  if (parsed.version === 6) return parsed
-  if (parsed.version === 5) return migrateV5(parsed)
-  if (parsed.version === 4) return migrateV5(migrateV4(parsed))
-  if (parsed.version === 3) return migrateV5(migrateV4(migrateV3(parsed)))
-  if (parsed.version === 2) return migrateV5(migrateV4(migrateV3(migrateV2(parsed))))
-  if (parsed.version === 1) return migrateV5(migrateV1(parsed))
+  if (parsed.version === 7) return parsed
+  const steps = { 1: migrateV1, 2: migrateV2, 3: migrateV3, 4: migrateV4, 5: migrateV5, 6: migrateV6 }
+  if (!steps[parsed.version]) return null
+  let data = parsed
+  // migrateV1 jumps straight to v5; every other step advances one version.
+  while (data.version !== 7) data = steps[data.version](data)
+  return data
   return null
 }
 
@@ -189,6 +202,45 @@ export function subscribeToProfileChanges(callback) {
 // the result immediately (rather than only on the next write) — a
 // read-only call like getActiveProfileId() must return the SAME id on
 // every call, not mint a fresh, un-persisted profile each time.
+// The pre-v7 InsureCheck history keys. `iga_score_history` (unscoped)
+// was only written before profiles existed, so it belongs to whichever
+// profile is active when it is first found.
+const LEGACY_HISTORY_KEY = 'iga_score_history'
+
+function readLegacyHistory(key) {
+  try {
+    const raw = window.localStorage.getItem(key)
+    if (!raw) return null
+    const parsed = JSON.parse(raw)
+    return Array.isArray(parsed) ? parsed : null
+  } catch {
+    return null
+  }
+}
+
+// Moves legacy history keys into each profile's insureHistory slot.
+// Returns the keys that were adopted; the caller removes them only after
+// the store write succeeds, so a failed write loses nothing.
+function adoptLegacyScoreHistory(store) {
+  const adopted = []
+  for (const p of store.profiles) {
+    if (p.data.insureHistory != null) continue
+    const key = `${LEGACY_HISTORY_KEY}:${p.id}`
+    const hist = readLegacyHistory(key)
+    if (hist) { p.data = { ...p.data, insureHistory: hist }; adopted.push(key) }
+  }
+  const active = store.profiles.find(p => p.id === store.activeProfileId)
+  if (active && active.data.insureHistory == null) {
+    const hist = readLegacyHistory(LEGACY_HISTORY_KEY)
+    if (hist) { active.data = { ...active.data, insureHistory: hist }; adopted.push(LEGACY_HISTORY_KEY) }
+  }
+  return adopted
+}
+
+function removeKeys(keys) {
+  for (const k of keys) { try { window.localStorage.removeItem(k) } catch { /* ignore */ } }
+}
+
 function loadStore() {
   if (typeof window === 'undefined') return { schemaVersion: 1, activeProfileId: null, profiles: [makeProfile(DEFAULT_PROFILE_NAME)] }
   let parsed = null
@@ -218,10 +270,12 @@ function loadStore() {
     // parsed.profiles[i], so the id-by-id comparison below sees no
     // change and a truncated store never gets written back, leaving a
     // 4th+ profile silently un-persisted-away instead of actually gone.
+    const adopted = adoptLegacyScoreHistory(store)
     const changed = profiles.length !== parsed.profiles.length
-      || profiles.some((p, i) => p.id !== parsed.profiles[i]?.id)
+      || profiles.some((p, i) => p.id !== parsed.profiles[i]?.id || parsed.profiles[i]?.data?.version !== p.data.version)
       || activeProfileId !== parsed.activeProfileId
-    if (changed) saveStore(store)
+      || adopted.length > 0
+    if (changed && saveStore(store)) removeKeys(adopted)
     return store
   }
 
@@ -230,7 +284,8 @@ function loadStore() {
   const migrated = migrateInnerData(parsed)
   const profile = makeProfile(DEFAULT_PROFILE_NAME, migrated ? { ...EMPTY, ...migrated } : { ...EMPTY })
   const store = { schemaVersion: 1, activeProfileId: profile.id, profiles: [profile] }
-  saveStore(store)
+  const adopted = adoptLegacyScoreHistory(store)
+  if (saveStore(store)) removeKeys(adopted)
   return store
 }
 
@@ -388,165 +443,102 @@ export function setActiveProfile(id) {
   notifyProfileChange()
 }
 
-// Every save<Module>Numbers function below shares this read-merge-write
-// skeleton: load the whole store, merge the new fields onto whatever's
-// already in that tool's slot (never a full overwrite, so this auto-sync
-// never clobbers a saved `inputs` blob written by saveToolInputs), stamp
-// savedAt, save. Only the skeleton is shared — each field's own
-// coercion (plain `Number(x) || 0`, a nullable variant that preserves
-// `null` over defaulting to 0, or falling back to the existing stored
-// value) stays inline at the call site, since that per-field policy is
-// the part that actually differs module to module and is worth reading
-// in place rather than hiding behind a declarative spec.
-function mergeModuleSlot(tool, fields) {
+// ─── Per-module numbers (declarative) ──────────────────────────────────
+
+// Field coercers. Each takes (value, existingSlot, key) and returns what is
+// stored. A field absent from a save call is still coerced, so omitting it
+// stores its default (0 / null) exactly as the hand-written savers did,
+// except `keep`, which falls back to the stored value.
+const num = (v) => Number(v) || 0
+const numOrNull = (v) => (v != null ? Number(v) || 0 : null)
+const strOrNull = (v) => v || null
+const orDefault = (d) => (v) => v || d
+// Keep the stored value when the caller omits the field — WhatETF's
+// portfolio page (DCA plan) and rebalance page (holdings) each know only
+// their own half of the etf slot.
+const keep = (v, existing, key) => (v != null ? Number(v) || 0 : (existing[key] ?? 0))
+
+/**
+ * What each tool's synced-numbers slot holds and how each field is
+ * coerced. The single description of the store's per-module shape: the
+ * savers, onboarding and the dashboard all read it.
+ * NOTE: drive.rate is a FLAT rate (how car loans are quoted in Singapore),
+ * unlike house.rate, which is a reducing-balance annual rate.
+ */
+export const MODULE_SCHEMA = {
+  house: {
+    cashProceeds: num, totalCPFRefund: num, salePrice: num, saleDate: strOrNull,
+    outstandingBalance: numOrNull, rate: numOrNull, tenureRemaining: numOrNull,
+    monthlyInstalment: numOrNull, propertyValue: numOrNull, cpfServicing: numOrNull,
+    propertyType: orDefault('private'),
+  },
+  drive: {
+    monthlyInstalment: num, carLabel: strOrNull, salary: num,
+    loanOutstanding: numOrNull, rate: numOrNull, tenureRemaining: numOrNull, carValue: numOrNull,
+  },
+  retire: {
+    salary: num, oaBalance: num, saBalance: num, maBalance: num,
+    investmentBalance: num, monthlyContribution: num,
+  },
+  insure: { monthlyPremium: num, score: numOrNull },
+  tax: { monthlyTakeHome: num, annualTax: num, marginalRate: num, age: num },
+  etf: { portfolioValue: keep, monthlyContribution: keep },
+  // FlowState's measured monthly figures, now produced by MyLedger's
+  // Capacity module; the slot name is kept so stored data stays valid.
+  flow: { livingExpenses: num, monthlySurplus: numOrNull, trueSavingsRate: numOrNull, cashSavingsRate: numOrNull },
+}
+
+/**
+ * Merge a tool's synced numbers into its slot on the active profile —
+ * never a full overwrite, so a saved `inputs` blob survives. Every schema
+ * field is coerced; `source` defaults to 'auto'; `savedAt` is stamped.
+ * @param {keyof MODULE_SCHEMA} tool
+ * @param {Record<string, unknown>} [values]
+ * @returns {boolean} whether the write landed
+ */
+export function saveModule(tool, values = {}) {
+  const schema = MODULE_SCHEMA[tool]
+  if (!schema) return false
   const data = loadMyNumbers()
   const existing = data[tool] || {}
+  const fields = { source: values.source || 'auto' }
+  for (const [key, coerce] of Object.entries(schema)) fields[key] = coerce(values[key], existing, key)
   data[tool] = { ...existing, ...fields, savedAt: Date.now() }
   return save(data)
 }
 
-export function saveHouseNumbers({
-  cashProceeds, totalCPFRefund, salePrice, saleDate,
-  outstandingBalance, rate, tenureRemaining, monthlyInstalment, propertyValue, cpfServicing,
-  propertyType, source = 'auto',
-}) {
-  return mergeModuleSlot('house', {
-    source,
-    cashProceeds: Number(cashProceeds) || 0,
-    totalCPFRefund: Number(totalCPFRefund) || 0,
-    salePrice: Number(salePrice) || 0,
-    saleDate: saleDate || null,
-    outstandingBalance: outstandingBalance != null ? Number(outstandingBalance) || 0 : null,
-    rate: rate != null ? Number(rate) || 0 : null,
-    tenureRemaining: tenureRemaining != null ? Number(tenureRemaining) || 0 : null,
-    monthlyInstalment: monthlyInstalment != null ? Number(monthlyInstalment) || 0 : null,
-    propertyValue: propertyValue != null ? Number(propertyValue) || 0 : null,
-    cpfServicing: cpfServicing != null ? Number(cpfServicing) || 0 : null,
-    propertyType: propertyType || 'private',
-  })
-}
-
-export function saveDriveNumbers({
-  monthlyInstalment, carLabel, salary,
-  loanOutstanding, rate, tenureRemaining, carValue,
-  source = 'auto',
-}) {
-  return mergeModuleSlot('drive', {
-    source,
-    monthlyInstalment: Number(monthlyInstalment) || 0,
-    carLabel: carLabel || null,
-    salary: Number(salary) || 0,
-    loanOutstanding: loanOutstanding != null ? Number(loanOutstanding) || 0 : null,
-    rate: rate != null ? Number(rate) || 0 : null,
-    tenureRemaining: tenureRemaining != null ? Number(tenureRemaining) || 0 : null,
-    carValue: carValue != null ? Number(carValue) || 0 : null,
-  })
-}
-
-export function saveRetireNumbers({
-  salary, oaBalance, saBalance, maBalance, investmentBalance, monthlyContribution,
-  source = 'auto',
-}) {
-  return mergeModuleSlot('retire', {
-    source,
-    salary: Number(salary) || 0,
-    oaBalance: Number(oaBalance) || 0,
-    saBalance: Number(saBalance) || 0,
-    maBalance: Number(maBalance) || 0,
-    investmentBalance: Number(investmentBalance) || 0,
-    monthlyContribution: Number(monthlyContribution) || 0,
-  })
-}
-
-export function saveInsureNumbers({ monthlyPremium, score, source = 'auto' }) {
-  return mergeModuleSlot('insure', {
-    source,
-    monthlyPremium: Number(monthlyPremium) || 0,
-    score: score != null ? Number(score) || 0 : null,
-  })
-}
-
-export function saveTaxNumbers({ monthlyTakeHome, annualTax, marginalRate, age, source = 'auto' }) {
-  return mergeModuleSlot('tax', {
-    source,
-    monthlyTakeHome: Number(monthlyTakeHome) || 0,
-    annualTax: Number(annualTax) || 0,
-    marginalRate: Number(marginalRate) || 0,
-    age: Number(age) || 0,
-  })
-}
-
-// The portfolio page (DCA plan) and rebalance page (actual holdings) each
-// know only their own half of this slot, so an omitted field falls back
-// to whatever's already stored instead of clobbering it with a default 0.
-export function saveEtfNumbers({ portfolioValue, monthlyContribution, source = 'auto' }) {
-  const existing = loadMyNumbers().etf || {}
-  return mergeModuleSlot('etf', {
-    source,
-    portfolioValue: portfolioValue != null ? Number(portfolioValue) || 0 : (existing.portfolioValue ?? 0),
-    monthlyContribution: monthlyContribution != null ? Number(monthlyContribution) || 0 : (existing.monthlyContribution ?? 0),
-  })
-}
-
-export function clearEtfNumbers() {
+/**
+ * Empty a slot on the active profile (synced numbers and saved inputs).
+ * @param {string} slot - a MODULE_SCHEMA tool, 'ledger' or 'insureHistory'
+ */
+export function clearModule(slot) {
+  if (!(slot in EMPTY) || slot === 'version') return false
   const data = loadMyNumbers()
-  data.etf = null
+  data[slot] = null
   return save(data)
 }
 
-// Auto-recomputed metrics (called continuously while FlowState is open,
-// not just on an explicit save) — merges onto whatever's already in the
-// flow slot so it never clobbers a saved `inputs` blob written by
-// saveFlowInputs below.
-export function saveFlowNumbers({ livingExpenses, monthlySurplus, trueSavingsRate, cashSavingsRate, source = 'auto' }) {
-  return mergeModuleSlot('flow', {
-    source,
-    livingExpenses: Number(livingExpenses) || 0,
-    monthlySurplus: monthlySurplus != null ? Number(monthlySurplus) || 0 : null,
-    trueSavingsRate: trueSavingsRate != null ? Number(trueSavingsRate) || 0 : null,
-    cashSavingsRate: cashSavingsRate != null ? Number(cashSavingsRate) || 0 : null,
-  })
+/** Raw read of one slot on the active profile (null when empty). */
+export function loadSlot(slot) {
+  if (!(slot in EMPTY) || slot === 'version') return null
+  return loadMyNumbers()[slot] ?? null
 }
 
-export function clearFlowNumbers() {
+/** Raw replace of one slot on the active profile. */
+export function writeSlot(slot, value) {
+  if (!(slot in EMPTY) || slot === 'version') return false
   const data = loadMyNumbers()
-  data.flow = null
+  data[slot] = value
   return save(data)
 }
 
-// FlowState's own raw form inputs (every field on the page — age,
-// mortgage, insurance, living-expense mode, lumpy items, all of it) —
-// distinct from the auto-recomputed metrics above, which other tools
-// (MyLedger) actually consume. Nothing else reads this; it exists so
-// "Save" on the FlowState page can restore exactly what you typed,
-// scoped to whichever profile is active, the next time you open it.
-// Written only on an explicit save, never automatically — merges onto
-// the flow slot so it doesn't clobber the metrics saveFlowNumbers keeps
-// current in the background.
-export function saveFlowInputs(inputs) {
-  const data = loadMyNumbers()
-  const existing = data.flow || {}
-  data.flow = {
-    ...existing,
-    inputs,
-    inputsSavedAt: Date.now(),
-  }
-  return save(data)
-}
+// ─── Raw form inputs ───────────────────────────────────────────────────
 
-export function loadFlowInputs() {
-  const data = loadMyNumbers()
-  return data.flow?.inputs || null
-}
-
-// Generic version of saveFlowInputs/loadFlowInputs above, for every other
-// tool's own raw form inputs — HouseMuch, DriveReady, RetireWell, TaxWise,
-// WhatETF, MyLedger. Each tool's "Save my inputs" button calls
-// saveToolInputs(tool, {...every field on the page}); the tool restores it
-// on mount via loadToolInputs(tool). Merges onto whatever's already in
-// that tool's slot so it never clobbers the auto-synced metrics fields
-// (e.g. saveHouseNumbers) that other tools read.
-const TOOLS_WITH_INPUTS = ['house', 'drive', 'retire', 'insure', 'tax', 'etf', 'ledger']
+// Each tool's "Save my inputs" button calls saveToolInputs(tool, {...});
+// the tool restores it on mount via loadToolInputs(tool). Merges onto the
+// tool's slot so it never clobbers the synced numbers other tools read.
+// 'flow' holds the Capacity module's inputs (formerly FlowState's).
+const TOOLS_WITH_INPUTS = ['house', 'drive', 'retire', 'insure', 'tax', 'etf', 'flow', 'ledger']
 
 export function saveToolInputs(tool, inputs) {
   if (!TOOLS_WITH_INPUTS.includes(tool)) return false
@@ -562,32 +554,40 @@ export function loadToolInputs(tool) {
   return data[tool]?.inputs || null
 }
 
-export function clearInsureNumbers() {
-  const data = loadMyNumbers()
-  data.insure = null
-  return save(data)
-}
+// ─── Named wrappers (deprecated) ───────────────────────────────────────
+// Kept for one release so existing call sites keep working; new code
+// calls saveModule / clearModule / saveToolInputs directly.
 
-export function clearTaxNumbers() {
-  const data = loadMyNumbers()
-  data.tax = null
-  return save(data)
-}
+/** @deprecated use saveModule('house', …) */
+export const saveHouseNumbers = (v) => saveModule('house', v)
+/** @deprecated use saveModule('drive', …) */
+export const saveDriveNumbers = (v) => saveModule('drive', v)
+/** @deprecated use saveModule('retire', …) */
+export const saveRetireNumbers = (v) => saveModule('retire', v)
+/** @deprecated use saveModule('insure', …) */
+export const saveInsureNumbers = (v) => saveModule('insure', v)
+/** @deprecated use saveModule('tax', …) */
+export const saveTaxNumbers = (v) => saveModule('tax', v)
+/** @deprecated use saveModule('etf', …) */
+export const saveEtfNumbers = (v) => saveModule('etf', v)
+/** @deprecated use saveModule('flow', …) */
+export const saveFlowNumbers = (v) => saveModule('flow', v)
+/** @deprecated use saveToolInputs('flow', …) */
+export const saveFlowInputs = (inputs) => saveToolInputs('flow', inputs)
+/** @deprecated use loadToolInputs('flow') */
+export const loadFlowInputs = () => loadToolInputs('flow')
 
-export function clearHouseNumbers() {
-  const data = loadMyNumbers()
-  data.house = null
-  return save(data)
-}
-
-export function clearDriveNumbers() {
-  const data = loadMyNumbers()
-  data.drive = null
-  return save(data)
-}
-
-export function clearRetireNumbers() {
-  const data = loadMyNumbers()
-  data.retire = null
-  return save(data)
-}
+/** @deprecated use clearModule('house') */
+export const clearHouseNumbers = () => clearModule('house')
+/** @deprecated use clearModule('drive') */
+export const clearDriveNumbers = () => clearModule('drive')
+/** @deprecated use clearModule('retire') */
+export const clearRetireNumbers = () => clearModule('retire')
+/** @deprecated use clearModule('insure') */
+export const clearInsureNumbers = () => clearModule('insure')
+/** @deprecated use clearModule('tax') */
+export const clearTaxNumbers = () => clearModule('tax')
+/** @deprecated use clearModule('etf') */
+export const clearEtfNumbers = () => clearModule('etf')
+/** @deprecated use clearModule('flow') */
+export const clearFlowNumbers = () => clearModule('flow')

@@ -44,7 +44,7 @@ Findings from a full read of the repo at the merge of PR #32 (2026-11-24):
 - R1. One tool registry, `src/lib/shared/tools.js`, holds each tool's id, name, route, tagline, icon, the-math route, disclaimer key and profile slot. The home page, `ShellHeader` switcher, `sitemap.js`, `Footer` and MyLedger all read it, and no other file lists the tools.
 - R2. One input kit, `src/components/shared/inputs/`, provides `MoneyInput`, `PercentInput`, `NumberInput`, `DateInput`, `TextInput`, `SelectInput`, `Segmented`, `Toggle`, `Slider`, `SectionDivider`, `StatBox` and `OverrideField`. The six local copies are deleted, and a per-tool `ui.js` survives only for components that really are specific to that tool (e.g. drive's `GaugeBar`).
 - R3. Shared finance primitives: `src/lib/shared/money.js` (`parseMoney` with k/m suffixes, `fmtSGD`, `fmtPct`) and `src/lib/shared/loan.js` (`monthlyPayment`, `balanceAfter`, `fvAnnuity`, `interestPaid`). Every engine imports them, and `theme.js` files hold tokens only.
-- R4. The profile store becomes declarative. A `MODULE_SCHEMA` table (`{ tool: { fields: { key: coerce } } }`) and a generic `saveModule(tool, values)` / `clearModule(tool)` replace the 13 hand-written functions. The old names stay as one-line wrappers for one release. InsureCheck score history moves into the profile (`schemaVersion` v7, with a migration from `iga_score_history*`).
+- R4. The profile store becomes declarative. A `MODULE_SCHEMA` table (`{ tool: { fields: { key: coerce } } }`) and a generic `saveModule(tool, values)` / `clearModule(tool)` replace the 13 hand-written functions. The old names stay as one-line wrappers for one release. InsureCheck score history moves into the profile as its own `insureHistory` slot (inner data v7, with a migration from `iga_score_history*`). It is a separate slot, not `insure.history`, so clearing InsureCheck's synced numbers keeps the history, as it did before.
 - R5. Canonical layout everywhere: `lib/insure/calc.js` (from `engine/scorer.js`) and `lib/etf/calc.js` (from `logic.js`), `lib/flow/` moved to `lib/ledger/capacity/`, the five re-export `theme.js` shims deleted, and the `.v-<tool>` wrappers removed. WhatETF's CSS modules are converted to the shared tokens.
 - R6. Page templates: a `ToolLanding` component with 2–3 distinct hero shapes replaces the copy-pasted heroes, and `TrustBadges` is shown once in the shell instead of 6–8 times. Copy is unchanged except where a hero shape needs it.
 
@@ -84,7 +84,7 @@ Findings from a full read of the repo at the merge of PR #32 (2026-11-24):
 ### Success Criteria
 
 - `rg "export function MoneyInput" src` returns exactly one hit; amortisation and annuity formulas exist only in `lib/shared/loan.js`.
-- `profile.js` loses at least 150 lines; `profile.test.js` passes unchanged against the wrapper names, plus new v7 migration tests.
+- The 13 hand-written save/clear bodies in `profile.js` become one `MODULE_SCHEMA` table and `saveModule`/`clearModule`. `profile.test.js` passes against the wrapper names (only the expected `version` 6 → 7 assertions change), plus new v7 migration tests.
 - No tool list exists outside `lib/shared/tools.js` (checked by a test that greps for tool route literals in shell files).
 - Every engine's `golden-masters.test.js` and `statutory-currency.test.js` pass with no fixture changes throughout Phase A. Playwright visual diffs stay within the existing tolerance, except for pages R6 deliberately reshapes, which get new baselines in the same PR.
 - A returning user with data sees their own figures on `/` within one paint (no flash of the empty state). A new user completes onboarding and opens any tool pre-filled.
@@ -150,7 +150,7 @@ U5's WhatETF CSS-module conversion and `.v-<tool>` wrapper removal move to PR 2 
 ### U4. Declarative profile store (v7)
 - **Goal:** Replace the 13 hand-written save/clear functions; bring insure history into the store (R4).
 - **Files:** `src/lib/shared/profile.js`, `profile.test.js`, `lib/insure/scoreHistory.js`, `lib/insure/recheckReminder.js`.
-- **Approach:** `MODULE_SCHEMA` + `saveModule` / `clearModule`. Old exports become wrappers marked `@deprecated`. `migrateV6` moves `iga_score_history:<profileId>` into `data.insure.history` and deletes the old key only after the write succeeds.
+- **Approach:** `MODULE_SCHEMA` + `saveModule` / `clearModule`. Old exports become wrappers marked `@deprecated`. `migrateV6` adds `insureHistory`; `loadStore` moves `iga_score_history:<profileId>` (and the unscoped pre-profiles key, to the active profile) into it, deleting an old key only after the store write succeeds.
 - **Test scenarios:** all existing `profile.test.js` cases pass; v6→v7 migration with and without legacy history; export→import round-trip includes history; a failed localStorage write leaves the old key intact.
 
 ### U5. Canonical module layout
