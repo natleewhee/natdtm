@@ -23,7 +23,7 @@ import {
   scoreDI,
   getProfileBenchmarks,
   BENCHMARKS,
-} from './scorer.js';
+} from './calc.js';
 
 let passed = 0;
 let failed = 0;

@@ -1,4 +1,4 @@
-// src/lib/flow/calc.test.js
+// src/lib/ledger/capacity/calc.test.js
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import {

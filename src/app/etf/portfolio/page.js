@@ -10,7 +10,7 @@ import {
   computeBlendedTER, decodePrefsFromParams, generatePortfolio, RETURNS_AS_OF,
   projectGoal, computeStressTest, computeBrokerCosts, BROKER_DATA_AS_OF,
   computeFeeComparison, FEE_BENCHMARK_AS_OF, encodeComparePrefs,
-} from '@/lib/etf/logic'
+} from '@/lib/etf/calc'
 import { checkFreshness, freshnessLabel, FRESHNESS_WINDOWS } from '@/lib/shared/freshness'
 import { saveEtfNumbers } from '@/lib/shared/profile'
 import DataAvatar from '@/components/shared/DataAvatar'

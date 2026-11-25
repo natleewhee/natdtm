@@ -47,15 +47,17 @@ src/components/
   <tool>/                          each tool's own components + ui.js
 
 src/lib/
-  shared/                          site.js, profile.js (the cross-tool "My
-                                    Numbers" store), theme.js (the design-token
-                                    object + money helpers), freshness.js,
+  shared/                          tools.js (the tool registry), site.js,
+                                    profile.js (the cross-tool "My Numbers"
+                                    store), theme.js (design tokens),
+                                    money.js, loan.js, freshness.js,
                                     tieredTax.js, supabase.js
   shared/*.test.js                 statutory-currency, golden-masters,
-                                    profile, freshness, tieredTax
+                                    profile, tools, money, loan, freshness,
+                                    tieredTax
   <tool>/calc.js (+ .test.js)     the pure calculation engine per vertical
-  <tool>/theme.js                 re-exports shared/theme.js, spread with any
-                                    vertical-specific keys
+  ledger/capacity/                MyLedger's Capacity engine (ex-FlowState)
+  drive/theme.js                  DriveReady's own tokens (RATE_TIERS)
   drive/lta-parse.js, coe-history.js   DriveReady's PDF/CSV parsing
   drive/__fixtures__/             committed LTA PDF fixture for the parser tests
 
@@ -108,7 +110,7 @@ Shared components carry one visual language across all seven tools:
 lets the tools hand figures to each other and to MyLedger's holistic
 dashboard, without re-typing. It holds up to three named profiles
 ("Me", "Joint with Alex", …), each with a full per-tool slot set, and a
-v6 schema with in-place migrations from v1. `ProfileSwitcher` in the
+v7 schema with in-place migrations from v1. `ProfileSwitcher` in the
 shell header switches the active profile. See `docs/architecture.md` for
 the schema history.
 

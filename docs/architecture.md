@@ -1,6 +1,6 @@
 # Architecture
 
-How the eight verticals share one app. Companion to the top-level
+How the seven verticals share one app. Companion to the top-level
 `README.md`.
 
 ## The shell
@@ -8,14 +8,25 @@ How the eight verticals share one app. Companion to the top-level
 One root layout (`src/app/layout.js`) sets the permanent dark theme
 (`data-theme` on `<html>`), loads the self-hosted fonts, and provides the
 title template (`%s · nat does the math`). The home page (`src/app/page.js`)
-renders the eight tool cards from a local `TOOLS` array.
+renders one card per tool from the tool registry.
+
+## The tool registry
+
+`src/lib/shared/tools.js` is the only list of tools. Each entry is plain
+data (`id`, `name`, `label`, `eyebrow`, `route`, `mathRoute`, `desc`,
+`disclaimer`, extra `sitemap` routes); icons are drawn by
+`src/components/shared/ToolIcon.js`, keyed by `id`. The home page, the
+header's tool switcher (`getToolByPath`), the footer's the-math links and
+disclaimers, and `sitemap.js` (`sitemapRoutes()`) all read it, and
+`tools.test.js` fails if one of those files hard-codes a tool route
+again. Adding a vertical starts with a registry entry.
 
 `src/components/shared/ShellHeader.js` is the one header for every page:
 the `ndtm` wordmark, a tool switcher (shown only on a tool route), the
 `ProfileSwitcher`, and an optional context row a page passes props for
 (back link, title, step count, "the math" link). `src/components/shared/Footer.js`
 is the one footer: wordmark, blurb, "the math" links, and a per-vertical
-regulatory disclaimer keyed off the pathname. The footer also shows the
+regulatory disclaimer from the registry entry matching the pathname. The footer also shows the
 build stamp (`NEXT_PUBLIC_APP_VERSION` / `_BUILD_SHA` / `_BUILD_TIME`,
 injected by `next.config.mjs`).
 
@@ -44,13 +55,27 @@ src/components/<tool>/
 src/lib/<tool>/
   calc.js            the pure calculation engine — no React, no fetch
   calc.test.js       node --test coverage for calc.js
-  theme.js           re-exports src/lib/shared/theme.js, spread with any
-                     vertical-specific keys (drive: iceBg/iceText; flow: surface2)
+  theme.js           only when the vertical has tokens of its own (drive:
+                     RATE_TIERS, brandTier); otherwise import C from
+                     src/lib/shared/theme.js directly
 ```
 
-`insure` and `etf` predate this and vary (`insure/engine/scorer.js`,
-`etf/logic.js` instead of `calc.js`; no `theme.js` — they read tokens
-directly). New verticals should match the canonical layout.
+All seven verticals now match this shape (`insure/calc.js`, `etf/calc.js`;
+MyLedger's Capacity engine, formerly FlowState, is
+`src/lib/ledger/capacity/calc.js`). WhatETF's CSS modules and the
+`.v-<tool>` wrappers are the remaining drift, scheduled for PR 2 of the
+super-app plan.
+
+## Shared engine core
+
+- `src/lib/shared/money.js`: `SGD`, `SGDCompact`, `parseMoney` (0 for
+  empty) and `parseMoneyOrNull` (rounded, null for empty; DriveReady's
+  convention). `theme.js` files hold design tokens only.
+- `src/lib/shared/loan.js`: `monthlyPayment`, `balanceAfter`,
+  `interestPaid` (reducing-balance) and `fvAnnuityFactor`. HouseMuch,
+  MyLedger and RetireWell use it; `loan.test.js` pins it to the formulas
+  it replaced. Car loans are flat-rate and stay in `drive/calc.js`.
+- `src/lib/shared/tieredTax.js`, `jointShare.js`, `freshness.js` as before.
 
 ## The "My Numbers" store
 
@@ -62,15 +87,21 @@ sent to a server.
 - **Shape.** A wrapper `{ schemaVersion, activeProfileId, profiles: [...] }`.
   Each profile is `{ id, name, createdAt, updatedAt, data }` where `data`
   is the per-module slot set: `house`, `drive`, `retire`, `insure`, `tax`,
-  `etf`, `flow`, `ledger`. Up to `MAX_PROFILES` (3) named profiles.
-- **Schema history.** The inner `data.version` has migrated v1 → v6 in
-  place (`migrateV1`…`migrateV5`): v1 carried one-shot snapshot fields for
+  `etf`, `flow` (MyLedger's Capacity module), `ledger`, `insureHistory`.
+  Up to `MAX_PROFILES` (3) named profiles.
+- **Schema history.** The inner `data.version` has migrated v1 → v7 in
+  place (`migrateV1`…`migrateV6`, table-driven): v1 carried one-shot snapshot fields for
   the RetireWell prefill; v2 added fuller per-module state for MyLedger's
   net-worth/TDSR math; v3 added `insure`/`tax`; v4 added `etf`; v5 added
-  `flow`; v6 added `ledger`. A browser that has never seen profiles has
+  `flow`; v6 added `ledger`; v7 added `insureHistory`, adopting each
+  profile's legacy `iga_score_history[:profileId]` key (removed only after
+  the store write lands) so export/import carries score history. A browser that has never seen profiles has
   its old flat payload migrated into one profile named "My Numbers".
-- **API.** `loadMyNumbers()` / `save<Module>Numbers()` / `clear<Module>Numbers()`
-  operate on the active profile; `listProfiles` / `createProfile` /
+- **API.** `MODULE_SCHEMA` declares each synced slot's fields and their
+  coercion; `saveModule(tool, values)` / `clearModule(slot)` /
+  `loadSlot` / `writeSlot` operate on the active profile (the old
+  `save<Module>Numbers` / `clear<Module>Numbers` names remain as
+  deprecated wrappers); `listProfiles` / `createProfile` /
   `renameProfile` / `deleteProfile` / `setActiveProfile` manage the set;
   `saveToolInputs` / `loadToolInputs` persist a tool's raw form state.
 - **Switching.** `src/components/shared/ProfileSwitcher.js` (in the shell

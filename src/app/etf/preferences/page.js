@@ -4,7 +4,7 @@ import { Suspense, useState, useEffect, useMemo, useRef } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { OptionCard, RISK_OPTIONS, SIMPLICITY_OPTIONS, TILT_OPTIONS, savePrefs, loadPrefs, savePortfolio } from '@/components/etf/shared'
 import ShellHeader from '@/components/shared/ShellHeader'
-import { generatePortfolio, encodePrefsToParams, decodePrefsFromParams } from '@/lib/etf/logic'
+import { generatePortfolio, encodePrefsToParams, decodePrefsFromParams } from '@/lib/etf/calc'
 import styles from './preferences.module.css'
 
 const INVESTMENT_CHIPS = [500, 1000, 2000, 5000]

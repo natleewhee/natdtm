@@ -16,7 +16,6 @@
 //     subtree on a mode change.
 import { applyMode as applyShared } from './theme.js'
 import { applyMode as applyDrive } from '../drive/theme.js'
-import { applyMode as applyFlow } from '../flow/theme.js'
 
 const STORAGE_KEY = 'ndtm_theme_mode'
 const THEME_CHANGE_EVENT = 'ndtm:theme-change'
@@ -66,7 +65,6 @@ export function getEffectiveMode() {
 export function applyThemeEverywhere(mode) {
   applyShared(mode)
   applyDrive(mode)
-  applyFlow(mode)
   if (hasWindow()) document.documentElement.dataset.theme = mode
 }
 

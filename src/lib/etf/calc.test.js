@@ -1,10 +1,10 @@
-// src/lib/etf/logic.test.js
+// src/lib/etf/calc.test.js
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import {
   normalizeTo100, generatePortfolio, encodePrefsToParams, decodePrefsFromParams,
   encodeComparePrefs, decodeComparePrefs, computeRebalance, ETFS,
-} from './logic.js'
+} from './calc.js'
 
 function approx(a, b, eps = 0.5) {
   assert.ok(Math.abs(a - b) <= eps, `expected ${a} ≈ ${b}`)

@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { LIFE_EVENT_PRESETS, simulateLifeEvents, formatSGD } from '@/lib/insure/engine/scorer'
+import { LIFE_EVENT_PRESETS, simulateLifeEvents, formatSGD } from '@/lib/insure/calc'
 
 function TargetDelta({ label, before, after }) {
   if (before === after) return null

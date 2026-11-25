@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { calculateScore, generateInsights } from '@/lib/insure/engine/scorer'
+import { calculateScore, generateInsights } from '@/lib/insure/calc'
 import { appendScoreHistory } from '@/lib/insure/scoreHistory'
 
 const MESSAGES = [

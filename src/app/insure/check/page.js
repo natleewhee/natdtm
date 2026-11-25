@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { BENCHMARKS, RISK_PROFILES, getProfileBenchmarks } from '@/lib/insure/engine/scorer'
+import { BENCHMARKS, RISK_PROFILES, getProfileBenchmarks } from '@/lib/insure/calc'
 import { saveToolInputs, loadToolInputs } from '@/lib/shared/profile'
 import ShellHeader from '@/components/shared/ShellHeader'
 import { SGDCompact } from '@/lib/shared/money'

@@ -1,4 +1,4 @@
-import { formatSGD } from '@/lib/insure/engine/scorer'
+import { formatSGD } from '@/lib/insure/calc'
 
 const printStyles = {
   page: { fontFamily: 'Georgia, serif', color: '#111', maxWidth: '680px' },

@@ -12,7 +12,7 @@ import { suggestAdjustments } from '@/lib/drive/solve'
 import VerdictBadge from '@/components/shared/VerdictBadge'
 import { calc } from '@/lib/drive/calc'
 import { calcUsed } from '@/lib/drive/used-car'
-import { encodePrefsToParams } from '@/lib/etf/logic'
+import { encodePrefsToParams } from '@/lib/etf/calc'
 
 export function ResultPanel({ r, tenure, visible, slim=false }) {
   const [phase, setPhase] = useState(0)

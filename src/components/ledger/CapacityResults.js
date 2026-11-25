@@ -2,7 +2,7 @@
 
 import { C } from '@/lib/shared/theme'
 import { SGD } from '@/lib/shared/money'
-import { findTightestMonth, monthsToCloseEmergencyFundGap, DEFAULT_EMERGENCY_FUND_MONTHS } from '@/lib/flow/calc'
+import { findTightestMonth, monthsToCloseEmergencyFundGap, DEFAULT_EMERGENCY_FUND_MONTHS } from '@/lib/ledger/capacity/calc'
 import { CPF_OW_CEILING, CPF_ANNUAL_CEILING } from '@/lib/retire/cpf'
 import Sankey from './Sankey'
 import TroughChart from './TroughChart'
