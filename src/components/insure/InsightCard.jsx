@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { getSeverityStyle } from '@/lib/insure/engine/scorer';
+import { getSeverityStyle } from '@/lib/insure/calc';
 
 const TRUNCATE_AT = 120;
 

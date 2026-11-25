@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { RISK_PROFILES, BENCHMARKS } from '@/lib/insure/engine/scorer'
+import { RISK_PROFILES, BENCHMARKS } from '@/lib/insure/calc'
 import ShellHeader from '@/components/shared/ShellHeader'
 import MathTOC from '@/components/shared/MathTOC'
 

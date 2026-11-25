@@ -1,6 +1,7 @@
 'use client'
 
-import { C, SGD } from '@/lib/tax/theme'
+import { C } from '@/lib/shared/theme'
+import { SGD } from '@/lib/shared/money'
 import { PERSONAL_RELIEF_CAP } from '@/lib/tax/calc'
 import ResultHero from '@/components/shared/ResultHero'
 import InsightPill from '@/components/shared/InsightPill'

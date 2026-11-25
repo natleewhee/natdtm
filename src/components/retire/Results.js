@@ -1,6 +1,7 @@
 'use client'
 
-import { C, SGD } from '@/lib/retire/theme'
+import { C } from '@/lib/shared/theme'
+import { SGD } from '@/lib/shared/money'
 import { SRS_RETIREMENT_AGE } from '@/lib/retire/srs'
 import ResultHero from '@/components/shared/ResultHero'
 import InsightPill from '@/components/shared/InsightPill'

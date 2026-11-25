@@ -2,19 +2,20 @@
 
 // The Capacity module — FlowState's measurement flow, relocated into
 // MyLedger as a section (KD2/KD6) rather than a standalone tool. Same calc
-// engine (src/lib/flow/calc.js) and the same saveFlowNumbers/saveFlowInputs
+// engine (src/lib/ledger/capacity/calc.js) and the same saveFlowNumbers/saveFlowInputs
 // persistence calls FlowState always used (KTD2) — only the page chrome
 // (hero, ShellHeader) is gone, since it now lives inside /ledger's own
 // shell instead of owning one.
 
 import { useEffect, useMemo, useState } from 'react'
-import { C, SGD, parseMoney } from '@/lib/ledger/theme'
+import { C } from '@/lib/shared/theme'
+import { SGD, parseMoney } from '@/lib/shared/money'
 import {
   buildMonthlyFlow, quickLivingExpenses, detailedLivingExpenses,
   backSolveLivingExpenses, reconciliationGap, buildTwelveMonthSchedule,
   trueSavingsRate, cashSavingsRate, fixedCostRatio, runwayMonths,
   emergencyFundTarget, DEFAULT_MA_HEALTH_PREMIUM,
-} from '@/lib/flow/calc'
+} from '@/lib/ledger/capacity/calc'
 import { loadMyNumbers, saveFlowNumbers, saveFlowInputs, loadFlowInputs } from '@/lib/shared/profile'
 import { MoneyInput, NumberInput, PercentInput, SectionDivider, Segmented, Toggle } from '@/components/ledger/ui'
 import CapacityResults from './CapacityResults'

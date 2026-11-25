@@ -2,9 +2,10 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { BENCHMARKS, RISK_PROFILES, getProfileBenchmarks } from '@/lib/insure/engine/scorer'
+import { BENCHMARKS, RISK_PROFILES, getProfileBenchmarks } from '@/lib/insure/calc'
 import { saveToolInputs, loadToolInputs } from '@/lib/shared/profile'
 import ShellHeader from '@/components/shared/ShellHeader'
+import { SGDCompact } from '@/lib/shared/money'
 
 // ─── Shared styles ───────────────────────────────────────────────────────────
 
@@ -270,11 +271,7 @@ function parseNum(val) {
   return n
 }
 
-function fmtAmount(n) {
-  if (!n || n <= 0) return null
-  if (n >= 1000000) return `S$${(n / 1000000).toFixed(1)}m`
-  return `S$${(n / 1000).toFixed(0)}k`
-}
+const fmtAmount = SGDCompact
 
 // ─── Sub-components ───────────────────────────────────────────────────────────
 

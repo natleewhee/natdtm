@@ -1,7 +1,8 @@
 'use client'
 
 import { useRouter } from 'next/navigation'
-import { C, SGD } from '@/lib/tax/theme'
+import { C } from '@/lib/shared/theme'
+import { SGD } from '@/lib/shared/money'
 import {
   TAX_RATES_AS_OF, TAX_BANDS, PERSONAL_RELIEF_CAP, EARNED_INCOME_RELIEF,
   SRS_CAP_CITIZEN_PR, SRS_CAP_FOREIGNER, RSTU_RELIEF_CAP_SELF, RSTU_RELIEF_CAP_FAMILY,

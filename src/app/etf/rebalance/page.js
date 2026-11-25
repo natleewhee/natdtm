@@ -4,7 +4,7 @@ import { Suspense, useState, useEffect, useMemo } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { loadPortfolio } from '@/components/etf/shared'
 import ShellHeader from '@/components/shared/ShellHeader'
-import { computeRebalance, decodePrefsFromParams, generatePortfolio } from '@/lib/etf/logic'
+import { computeRebalance, decodePrefsFromParams, generatePortfolio } from '@/lib/etf/calc'
 import { saveEtfNumbers } from '@/lib/shared/profile'
 import styles from './rebalance.module.css'
 

@@ -4,7 +4,7 @@
  * All monetary values in SGD. Income = annual.
  */
 
-import { C } from '../../shared/theme.js'
+import { C } from '../shared/theme.js'
 
 // ---------------------------------------------------------------------------
 // CONSTANTS

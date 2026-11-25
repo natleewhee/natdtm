@@ -1,7 +1,8 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { C, SGD } from '@/lib/drive/theme'
+import { C } from '@/lib/drive/theme'
+import { SGD } from '@/lib/shared/money'
 import { StatBox, GaugeBar } from './ui'
 import { OwnershipCurve } from './OwnershipCurve'
 import { DepreciationCard } from './DepreciationCard'
@@ -11,7 +12,7 @@ import { suggestAdjustments } from '@/lib/drive/solve'
 import VerdictBadge from '@/components/shared/VerdictBadge'
 import { calc } from '@/lib/drive/calc'
 import { calcUsed } from '@/lib/drive/used-car'
-import { encodePrefsToParams } from '@/lib/etf/logic'
+import { encodePrefsToParams } from '@/lib/etf/calc'
 
 export function ResultPanel({ r, tenure, visible, slim=false }) {
   const [phase, setPhase] = useState(0)

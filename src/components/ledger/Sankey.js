@@ -1,8 +1,9 @@
 'use client'
 
 import { useMemo, useRef, useState } from 'react'
-import { C, SGD } from '@/lib/ledger/theme'
-import { SOURCE } from '@/lib/flow/calc.js'
+import { C } from '@/lib/shared/theme'
+import { SGD } from '@/lib/shared/money'
+import { SOURCE } from '@/lib/ledger/capacity/calc.js'
 
 // Fate colors — the Sankey's semantic palette, separate from the brand
 // accent. A getter, not a static snapshot, so it tracks `C` across a mode

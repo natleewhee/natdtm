@@ -6,7 +6,7 @@
 // non-negative integers inside [0, years-to-retirement) (KTD1).
 
 import { useState } from 'react'
-import { C } from '@/lib/ledger/theme'
+import { C } from '@/lib/shared/theme'
 import { yearError } from '@/lib/ledger/scenario/adapt'
 import { MoneyInput, NumberInput, PercentInput, TextInput, SelectInput, Segmented } from './ui'
 

@@ -1,7 +1,8 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { C, SGD, parseMoney } from '@/lib/tax/theme'
+import { C } from '@/lib/shared/theme'
+import { SGD, parseMoney } from '@/lib/shared/money'
 import { calcTax, NSMAN_RELIEF, SRS_CAP_CITIZEN_PR, SRS_CAP_FOREIGNER, RSTU_RELIEF_CAP_SELF, RSTU_RELIEF_CAP_FAMILY, COURSE_FEES_CAP } from '@/lib/tax/calc'
 import { loadMyNumbers, saveTaxNumbers, saveToolInputs, loadToolInputs } from '@/lib/shared/profile'
 import { MoneyInput, NumberInput, SectionDivider, Segmented } from '@/components/tax/ui'

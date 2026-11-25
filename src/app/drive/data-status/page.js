@@ -24,6 +24,7 @@ import ShellHeader from '@/components/shared/ShellHeader'
 import { COE_FALLBACK, COE_FALLBACK_AS_OF } from '@/lib/drive/calc'
 import { COE_ENDPOINT, CAR_CATALOG_ENDPOINT } from '@/lib/drive/endpoints'
 import { C } from '@/lib/drive/theme'
+import { SGD } from '@/lib/shared/money'
 
 // A verdict is stored as a semantic tone name, never as a color string:
 // `C` is mutated in place on a light/dark switch, so a hex captured at
@@ -34,7 +35,7 @@ const TONES = { ok: 'greenText', warn: 'amberText', bad: 'redText' }
 const toneColor = (tone) => C[TONES[tone]] ?? C.muted
 
 function fmtSGD(n) {
-  return typeof n === 'number' ? `S$${n.toLocaleString('en-SG')}` : '—'
+  return typeof n === 'number' ? SGD(n) : '—'
 }
 
 function fmtWhen(iso) {

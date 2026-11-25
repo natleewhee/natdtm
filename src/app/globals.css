@@ -2,7 +2,7 @@
    One theme, permanently dark (see design.md). Governs the shared shell
    (root layout, header, footer, home page); the verticals' own literal-
    hex copies of this palette (src/lib/drive/theme.js and its per-page
-   duplicates, src/lib/insure/engine/scorer.js's band/severity maps) are
+   duplicates, src/lib/insure/calc.js's band/severity maps) are
    kept in sync by hand — see the comment in theme.js for why those can't
    just be var() references. */
 

@@ -1,7 +1,7 @@
 'use client'
 
 import { useRouter } from 'next/navigation'
-import { C } from '@/lib/retire/theme'
+import { C } from '@/lib/shared/theme'
 import ShellHeader from '@/components/shared/ShellHeader'
 import MathTOC from '@/components/shared/MathTOC'
 import {

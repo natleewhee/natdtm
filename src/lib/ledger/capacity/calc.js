@@ -1,4 +1,4 @@
-// src/lib/flow/calc.js
+// src/lib/ledger/capacity/calc.js
 // FlowState's cashflow engine. Where MyLedger answers "what do I own and
 // owe" (a balance-sheet snapshot), this answers "where does each dollar
 // actually go" (a flow) — the two pipes a Singapore salary splits into
@@ -9,10 +9,10 @@
 // single source of truth. Pure functions — no React, no fetch. Covered
 // by calc.test.js.
 
-import { monthlyEmployeeCpf, calcTax } from '../tax/calc.js'
-import { monthlyCpfContribution } from '../retire/cpf.js'
+import { monthlyEmployeeCpf, calcTax } from '../../tax/calc.js'
+import { monthlyCpfContribution } from '../../retire/cpf.js'
 
-export { CPF_OW_CEILING, CPF_ANNUAL_CEILING } from '../retire/cpf.js'
+export { CPF_OW_CEILING, CPF_ANNUAL_CEILING } from '../../retire/cpf.js'
 
 // Fraction of gross salary treated as take-home when NEITHER TaxWise has
 // been run NOR can be estimated (age missing) — last-resort fallback

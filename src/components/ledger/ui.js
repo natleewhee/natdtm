@@ -1,7 +1,8 @@
 'use client'
 
 import { useState } from 'react'
-import { C, parseMoney } from '@/lib/ledger/theme'
+import { C } from '@/lib/shared/theme'
+import { parseMoney } from '@/lib/shared/money'
 
 export function SectionDivider({ label }) {
   return (

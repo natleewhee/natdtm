@@ -8,7 +8,8 @@
 // read. Engine: src/lib/ledger/scenario/*.
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { C, SGD, parseMoney } from '@/lib/ledger/theme'
+import { C } from '@/lib/shared/theme'
+import { SGD, parseMoney } from '@/lib/shared/money'
 import { calcNetWorth, calcTDSR, calcInvestmentCapacity, buildBaselineState } from '@/lib/ledger/calc'
 import { calcMonthlyInstalment } from '@/lib/house/calc'
 import { loadMyNumbers, saveToolInputs, loadToolInputs } from '@/lib/shared/profile'

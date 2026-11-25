@@ -7,7 +7,7 @@
 // to zero. Local to the planner — editing here does not change what the
 // other tools have saved.
 
-import { C } from '@/lib/ledger/theme'
+import { C } from '@/lib/shared/theme'
 import { MoneyInput, PercentInput, NumberInput } from './ui'
 
 function Group({ title, children }) {

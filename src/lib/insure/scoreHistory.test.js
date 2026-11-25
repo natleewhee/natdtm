@@ -10,17 +10,17 @@ function makeStorage() {
     removeItem: k => store.delete(k),
   }
 }
-global.localStorage = makeStorage()
+global.window = { localStorage: makeStorage() }
 
 const { appendScoreHistory, loadScoreHistory, clearScoreHistory } = await import('./scoreHistory.js')
 
 test('loadScoreHistory returns [] when nothing has been saved', () => {
-  global.localStorage = makeStorage()
+  window.localStorage = makeStorage()
   assert.deepEqual(loadScoreHistory(), [])
 })
 
 test('appendScoreHistory / loadScoreHistory round-trips a score with a date', () => {
-  global.localStorage = makeStorage()
+  window.localStorage = makeStorage()
   appendScoreHistory(72)
   const history = loadScoreHistory()
   assert.equal(history.length, 1)
@@ -29,14 +29,14 @@ test('appendScoreHistory / loadScoreHistory round-trips a score with a date', ()
 })
 
 test('appendScoreHistory ignores non-numeric or NaN scores instead of corrupting history', () => {
-  global.localStorage = makeStorage()
+  window.localStorage = makeStorage()
   appendScoreHistory('not a number')
   appendScoreHistory(NaN)
   assert.deepEqual(loadScoreHistory(), [])
 })
 
 test('appendScoreHistory keeps entries in append order (oldest-first)', () => {
-  global.localStorage = makeStorage()
+  window.localStorage = makeStorage()
   appendScoreHistory(50)
   appendScoreHistory(60)
   appendScoreHistory(70)
@@ -45,7 +45,7 @@ test('appendScoreHistory keeps entries in append order (oldest-first)', () => {
 })
 
 test('appendScoreHistory caps at MAX_ENTRIES (24), dropping the oldest', () => {
-  global.localStorage = makeStorage()
+  window.localStorage = makeStorage()
   for (let i = 0; i < 30; i++) appendScoreHistory(i)
   const history = loadScoreHistory()
   assert.equal(history.length, 24)
@@ -54,20 +54,29 @@ test('appendScoreHistory caps at MAX_ENTRIES (24), dropping the oldest', () => {
 })
 
 test('clearScoreHistory empties the history', () => {
-  global.localStorage = makeStorage()
+  window.localStorage = makeStorage()
   appendScoreHistory(50)
   clearScoreHistory()
   assert.deepEqual(loadScoreHistory(), [])
 })
 
-test('loadScoreHistory returns [] for malformed JSON instead of throwing', () => {
-  global.localStorage = makeStorage()
-  global.localStorage.setItem('iga_score_history', '{not valid json')
+test('loadScoreHistory returns [] when the store is malformed JSON instead of throwing', () => {
+  window.localStorage = makeStorage()
+  window.localStorage.setItem('ndtm_my_numbers_v1', '{not valid json')
   assert.deepEqual(loadScoreHistory(), [])
 })
 
-test('loadScoreHistory returns [] when the stored value is valid JSON but not an array', () => {
-  global.localStorage = makeStorage()
-  global.localStorage.setItem('iga_score_history', JSON.stringify({ not: 'an array' }))
+test('a legacy iga_score_history key is adopted into the profile, not lost', () => {
+  window.localStorage = makeStorage()
+  window.localStorage.setItem('iga_score_history', JSON.stringify([{ score: 41, date: '2025-11-01' }]))
+  assert.deepEqual(loadScoreHistory().map(h => h.score), [41])
+  appendScoreHistory(58)
+  assert.deepEqual(loadScoreHistory().map(h => h.score), [41, 58])
+  assert.equal(window.localStorage.getItem('iga_score_history'), null)
+})
+
+test('a legacy key holding a non-array is ignored', () => {
+  window.localStorage = makeStorage()
+  window.localStorage.setItem('iga_score_history', JSON.stringify({ not: 'an array' }))
   assert.deepEqual(loadScoreHistory(), [])
 })

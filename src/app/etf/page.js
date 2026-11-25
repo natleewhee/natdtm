@@ -1,6 +1,6 @@
 'use client'
 
-import { generatePortfolio } from '@/lib/etf/logic'
+import { generatePortfolio } from '@/lib/etf/calc'
 import ShellHeader from '@/components/shared/ShellHeader'
 import TrustBadges from '@/components/shared/TrustBadges'
 import Button from '@/components/shared/Button'

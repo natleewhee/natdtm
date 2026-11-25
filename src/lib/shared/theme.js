@@ -83,30 +83,5 @@ export function applyMode(mode) {
   Object.assign(C, mode === 'light' ? LIGHT : DARK)
 }
 
-/** Format a number as Singapore dollars, rounded, with thousands separators. */
-export const SGD = (n) => `S$${Math.round(n || 0).toLocaleString('en-SG')}`
-
-/**
- * Parse a money input string, honoring `k` (thousand) and `m` (million)
- * suffixes: `"800k"` → 800000, `"1.2m"` → 1200000. Strips currency
- * symbols, commas, and stray characters. Returns 0 for empty or
- * unparseable input.
- * @param {string|number|null|undefined} raw
- * @returns {number}
- */
-export function parseMoney(raw) {
-  if (raw == null) return 0
-  let s = String(raw).trim().toLowerCase().replace(/,/g, '')
-  if (!s) return 0
-  let mult = 1
-  if (s.endsWith('k')) { mult = 1_000; s = s.slice(0, -1) }
-  else if (s.endsWith('m')) { mult = 1_000_000; s = s.slice(0, -1) }
-  // Strip anything that isn't a digit or decimal point — a pasted
-  // "$1,500,000" (leading $ survives the comma strip) or a
-  // space-separated "1 500 000" would otherwise make parseFloat choke on
-  // the first non-numeric character and silently truncate.
-  s = s.replace(/[^0-9.]/g, '')
-  if (!s) return 0
-  const n = parseFloat(s)
-  return Number.isFinite(n) ? n * mult : 0
-}
+// Money formatting and parsing moved to src/lib/shared/money.js — this
+// file holds design tokens only.

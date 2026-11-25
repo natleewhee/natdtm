@@ -6,7 +6,7 @@
 
 import { buildBaselineState, calcInvestmentCapacity } from '../calc.js'
 import { checkFreshness } from '../../shared/freshness.js'
-import { parseMoney } from '../../shared/theme.js'
+import { parseMoney } from '../../shared/money.js'
 
 // The same money/number coercion the surface's inputs use (honours "k"/"m"
 // shorthand, strips currency symbols). theme.js is pure constants + this

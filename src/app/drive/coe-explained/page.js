@@ -6,7 +6,8 @@ import { calcARF, calcPARF, calcEEAI, COE_FALLBACK, omvToLtv, minDownFor } from 
 import { CoeHistoryChart } from '@/components/drive/CoeHistoryChart'
 import { CoeTimingSignal } from '@/components/drive/CoeTimingSignal'
 import ShellHeader from '@/components/shared/ShellHeader'
-import { C, SGD } from '@/lib/drive/theme'
+import { C } from '@/lib/drive/theme'
+import { SGD } from '@/lib/shared/money'
 
 // Short car list for the interactive element. basePrice is ex-COE — the
 // slider adds COE on top (calcTotal below) — so it must be the real

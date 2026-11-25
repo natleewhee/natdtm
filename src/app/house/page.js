@@ -1,7 +1,8 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { C, SGD, parseMoney } from '@/lib/house/theme'
+import { C } from '@/lib/shared/theme'
+import { SGD, parseMoney } from '@/lib/shared/money'
 import { calcSale, calcBSD } from '@/lib/house/calc'
 import { resolveJointSharePct } from '@/lib/shared/jointShare'
 import { saveHouseNumbers, saveToolInputs, loadToolInputs } from '@/lib/shared/profile'

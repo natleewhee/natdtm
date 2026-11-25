@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { getBandColor } from '@/lib/insure/engine/scorer';
+import { getBandColor } from '@/lib/insure/calc';
 import VerdictBadge from '@/components/shared/VerdictBadge';
 
 const RADIUS = 80;

@@ -3,7 +3,7 @@
 import { Suspense, useState, useMemo } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { RISK_OPTIONS, SIMPLICITY_OPTIONS, TILT_OPTIONS } from '@/components/etf/shared'
-import { summarizePortfolio, encodeComparePrefs, decodeComparePrefs } from '@/lib/etf/logic'
+import { summarizePortfolio, encodeComparePrefs, decodeComparePrefs } from '@/lib/etf/calc'
 import ShellHeader from '@/components/shared/ShellHeader'
 import styles from './compare.module.css'
 

@@ -1,7 +1,8 @@
 'use client'
 
 import { useState, useRef, useEffect } from 'react'
-import { C, SGD, parseMoneyKM } from '@/lib/drive/theme'
+import { C } from '@/lib/drive/theme'
+import { SGD, parseMoneyOrNull } from '@/lib/shared/money'
 import { calc, calcCeiling, resolveJointSharePct, COE_FALLBACK, COE_FALLBACK_AS_OF, isCoeFallbackStale, omvToLtv } from '@/lib/drive/calc'
 import { COE_ENDPOINT, CAR_CATALOG_ENDPOINT } from '@/lib/drive/endpoints'
 import { calcUsed } from '@/lib/drive/used-car'
@@ -260,10 +261,10 @@ export default function DriveReadyPage() {
   // normalizes the display once typing is done; salaryRaw (used for calc,
   // persistence, URL-sync) is kept in sync live either way, always as a
   // plain digit string, same shape it's always been.
-  const handleSalary = e => { const v=e.target.value; setSalary(v); const p=parseMoneyKM(v); setSalaryRaw(p!=null?String(p):'') }
-  const handleDown   = e => { const v=e.target.value; setDown(v);   const p=parseMoneyKM(v); setDownRaw(p!=null?String(p):'') }
-  const handleExistingDebt = e => { const v=e.target.value; setExistingDebt(v); const p=parseMoneyKM(v); setExistingDebtRaw(p!=null?String(p):'') }
-  const handleCoBorrowerIncome = e => { const v=e.target.value; setCoBorrowerIncome(v); const p=parseMoneyKM(v); setCoBorrowerIncomeRaw(p!=null?String(p):'') }
+  const handleSalary = e => { const v=e.target.value; setSalary(v); const p=parseMoneyOrNull(v); setSalaryRaw(p!=null?String(p):'') }
+  const handleDown   = e => { const v=e.target.value; setDown(v);   const p=parseMoneyOrNull(v); setDownRaw(p!=null?String(p):'') }
+  const handleExistingDebt = e => { const v=e.target.value; setExistingDebt(v); const p=parseMoneyOrNull(v); setExistingDebtRaw(p!=null?String(p):'') }
+  const handleCoBorrowerIncome = e => { const v=e.target.value; setCoBorrowerIncome(v); const p=parseMoneyOrNull(v); setCoBorrowerIncomeRaw(p!=null?String(p):'') }
   const isReady = salaryRaw && downRaw && effCarA && (mode==='single' || effCarB)
   // Garage saves rely on IDs to restore new-car selections — used-car
   // scenarios (manually entered, not persisted) can't round-trip through

@@ -1,7 +1,8 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { C, RATE_TIERS, parseMoneyKM } from '@/lib/drive/theme'
+import { C, RATE_TIERS } from '@/lib/drive/theme'
+import { parseMoneyOrNull } from '@/lib/shared/money'
 import { MAINTENANCE_BY_BRAND } from '@/lib/drive/maintenance'
 
 const BRAND_OPTIONS = Object.entries(MAINTENANCE_BY_BRAND)
@@ -34,7 +35,7 @@ export function UsedCarForm({ slot, onChange }) {
   // mid-typing. Reformatting on every keystroke (the previous approach)
   // corrupted decimals: converting "1." to "1" the instant it's typed
   // means a "2" typed next appends to "1" instead of "1.", turning
-  // "1.2m" into "12m". parseMoneyKM is applied fresh wherever the actual
+  // "1.2m" into "12m". parseMoneyOrNull is applied fresh wherever the actual
   // number is needed; the field only snaps to a clean formatted number
   // on blur, once typing is done.
   const [priceText, setPriceText] = useState('')
@@ -46,12 +47,12 @@ export function UsedCarForm({ slot, onChange }) {
   const [rateTier, setRateTier] = useState('ice')
   const [isElectric, setIsElectric] = useState(false)
 
-  const blurPrice = () => { const p = parseMoneyKM(priceText); if (p != null) setPriceText(p.toLocaleString('en-SG')) }
-  const blurOmv = () => { const p = parseMoneyKM(omvText); if (p != null) setOmvText(p.toLocaleString('en-SG')) }
+  const blurPrice = () => { const p = parseMoneyOrNull(priceText); if (p != null) setPriceText(p.toLocaleString('en-SG')) }
+  const blurOmv = () => { const p = parseMoneyOrNull(omvText); if (p != null) setOmvText(p.toLocaleString('en-SG')) }
 
   useEffect(() => {
-    const price = parseMoneyKM(priceText)
-    const omv = parseMoneyKM(omvText)
+    const price = parseMoneyOrNull(priceText)
+    const omv = parseMoneyOrNull(omvText)
     if (!price || !omv) { onChange(null); return }
     onChange({
       price, omv, ves: 0, ageNow, monthsRemaining, mileage, brandKey, rateTier,

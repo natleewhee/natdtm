@@ -1,7 +1,8 @@
 'use client'
 
 import { useState } from 'react'
-import { C, SGD, parseMoney } from '@/lib/house/theme'
+import { C } from '@/lib/shared/theme'
+import { SGD, parseMoney } from '@/lib/shared/money'
 import { calcNextPurchase } from '@/lib/house/calc'
 import { ABSD_REFERENCE, ABSD_AS_OF } from '@/lib/house/stampDuty'
 import { MoneyInput, PercentInput, NumberInput } from './ui'

@@ -1,7 +1,8 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { C, SGD, parseMoney } from '@/lib/retire/theme'
+import { C } from '@/lib/shared/theme'
+import { SGD, parseMoney } from '@/lib/shared/money'
 import { calcRetirement } from '@/lib/retire/calc'
 import { monthlyCpfContribution, CPF_OW_CEILING } from '@/lib/retire/cpf'
 import { projectSrsBalance, compareSrsWithdrawalPlans, SRS_RETIREMENT_AGE } from '@/lib/retire/srs'

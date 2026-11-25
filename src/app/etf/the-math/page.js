@@ -2,7 +2,7 @@
 
 import ShellHeader from '@/components/shared/ShellHeader'
 import MathTOC from '@/components/shared/MathTOC'
-import { RETURNS_AS_OF } from '@/lib/etf/logic'
+import { RETURNS_AS_OF } from '@/lib/etf/calc'
 import styles from './theMath.module.css'
 
 function slug(title) {

@@ -1,7 +1,8 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { C, parseMoneyKM } from '@/lib/drive/theme'
+import { C } from '@/lib/drive/theme'
+import { parseMoneyOrNull } from '@/lib/shared/money'
 import { useCountUp } from '@/lib/drive/hooks'
 
 export function SectionDivider({ label }) {
@@ -78,7 +79,7 @@ export function MoneyInput({ id, label, hint, value, onChange }) {
     setFocused(false)
     e.target.style.borderColor = value ? C.accent : C.borderControl
     e.target.style.boxShadow = 'none'
-    const parsed = parseMoneyKM(value)
+    const parsed = parseMoneyOrNull(value)
     if (parsed != null && String(parsed) !== String(value ?? '')) {
       onChange({ target: { value: parsed.toLocaleString('en-SG') } })
     }
