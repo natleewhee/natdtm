@@ -133,7 +133,7 @@ U5's WhatETF CSS-module conversion and `.v-<tool>` wrapper removal move to PR 2 
 - `ToolHero` ships two layouts (`center`, `left`), not three. InsureCheck and WhatETF keep their own distinct heroes, so there are four hero shapes across the seven tools.
 **As built in PR 3 (2026-11-25):**
 - OQ1 resolved as recommended: `/` shows the summary; `/ledger` is the **Plan** tab and keeps its URL.
-- OQ2 measured: a realistic three-profile store compresses to a link of roughly 200–800 characters, well inside the QR budget; the active-profile fallback (`QR_MAX_URL_CHARS` 2,300) only triggers for unusually large stores.
+- OQ2 measured: one fully filled profile (every tool, with saved form inputs and score history) compresses to a link of about 1,100 characters. Three fully filled profiles with different numbers will often exceed the 2,300-character QR budget (`QR_MAX_URL_CHARS`), in which case the link carries only the active profile and `/me` says to switch and repeat. Lightly filled stores fit all profiles in one QR.
 - OQ3 resolved as recommended: CPF balances are optional fields with a "find these in the CPF app" hint.
 - U10 shipped four rules. "Retirement-age impact of a planned car" was replaced by "living costs not yet counted": the profile has no "planned car" slot, and onboarding does not ask for one.
 - U12 per-*result* OG images were scoped down to per-*tool* cards: TaxWise is a client page, so a result-specific image would need a server wrapper with `generateMetadata` reading the share params. Share links themselves ship for TaxWise; DriveReady and WhatETF already had URL state.
