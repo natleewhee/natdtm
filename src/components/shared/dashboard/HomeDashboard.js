@@ -19,12 +19,14 @@ import { summarise, formatTile } from '@/lib/ledger/summary'
 import { buildInsights } from '@/lib/shared/insights'
 import { getTool } from '@/lib/shared/tools'
 import { needsBackup } from '@/lib/shared/transfer'
+import { maskFigures, readPrivacy, setPrivacy, subscribeToPrivacy } from '@/lib/shared/privacy'
 import ToolIcon from '@/components/shared/ToolIcon'
 
 const SERVER = '\u0000server'
 const getServerSnapshot = () => SERVER
 
-function Tile({ t }) {
+function Tile({ t, hide }) {
+  const mask = hide ? maskFigures : (x) => x
   const tool = getTool(t.toolId)
   const value = formatTile(t)
   if (value == null) {
@@ -39,8 +41,8 @@ function Tile({ t }) {
   return (
     <Link href={tool.route} className={`dash-tile${t.tone === 'warn' ? ' dash-tile--warn' : ''}`}>
       <span className="dash-tile-label">{t.label}</span>
-      <span className="dash-tile-value">{value}</span>
-      <span className="dash-tile-sub">{t.sub}</span>
+      <span className="dash-tile-value">{mask(value)}</span>
+      <span className="dash-tile-sub">{mask(t.sub)}</span>
       {t.checked && (
         <span className={`dash-tile-checked${t.stale ? ' dash-tile-checked--stale' : ''}`}>
           {t.stale ? `Checked ${t.checked} · worth a re-check` : `Checked ${t.checked}`}
@@ -50,21 +52,34 @@ function Tile({ t }) {
   )
 }
 
-function InsightCard({ insight }) {
+function InsightCard({ insight, hide }) {
+  const mask = hide ? maskFigures : (x) => x
   return (
     <div className="dash-insight">
       <span className="dash-insight-icon"><ToolIcon id={insight.toolId} size={18} /></span>
       <div>
-        <p className="dash-insight-title">{insight.title}</p>
-        <p className="dash-insight-fact">{insight.fact}</p>
+        <p className="dash-insight-title">{mask(insight.title)}</p>
+        <p className="dash-insight-fact">{mask(insight.fact)}</p>
         <Link href={insight.href} className="dash-insight-link">{insight.linkLabel} →</Link>
       </div>
     </div>
   )
 }
 
+function EyeGlyph({ off }) {
+  return (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z" />
+      <circle cx="12" cy="12" r="3" />
+      {off && <path d="M4 4l16 16" />}
+    </svg>
+  )
+}
+
 export default function HomeDashboard() {
   const snapshot = useSyncExternalStore(subscribeToNumbers, readStoreSnapshot, getServerSnapshot)
+  // Privacy mode: off by default, remembered per device (lib/shared/privacy.js).
+  const hide = useSyncExternalStore(subscribeToPrivacy, readPrivacy, () => false)
 
   const view = useMemo(() => {
     if (snapshot === SERVER) return null
@@ -95,19 +110,30 @@ export default function HomeDashboard() {
   }
 
   return (
-    <section className="dash" aria-labelledby="dash-title">
+    <section className={`dash${hide ? ' dash--private' : ''}`} aria-labelledby="dash-title">
       <div className="dash-head">
         <h2 id="dash-title" className="dash-title">
           Your money{profileName ? <span className="dash-profile"> · {profileName}</span> : null}
+          {hide && <span className="dash-private-tag">Numbers hidden</span>}
         </h2>
-        <Link href="/start" className="dash-update">Update my numbers</Link>
+        <div className="dash-actions">
+          <button
+            type="button" className="dash-privacy"
+            aria-pressed={hide}
+            onClick={() => setPrivacy(!hide)}
+          >
+            <EyeGlyph off={hide} />
+            {hide ? 'Show numbers' : 'Hide numbers'}
+          </button>
+          <Link href="/start" className="dash-update">Update my numbers</Link>
+        </div>
       </div>
       <div className="dash-tiles">
-        {summary.tiles.map((t) => <Tile key={t.id} t={t} />)}
+        {summary.tiles.map((t) => <Tile key={t.id} t={t} hide={hide} />)}
       </div>
       {insights.length > 0 && (
         <div className="dash-insights" aria-label="What your numbers say">
-          {insights.map((i) => <InsightCard key={i.id} insight={i} />)}
+          {insights.map((i) => <InsightCard key={i.id} insight={i} hide={hide} />)}
         </div>
       )}
       {backup && (
