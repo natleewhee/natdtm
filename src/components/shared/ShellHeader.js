@@ -5,16 +5,7 @@ import { usePathname } from 'next/navigation'
 import { useEffect, useRef, useState } from 'react'
 import ProfileSwitcher from './ProfileSwitcher'
 import ThemeToggle from './ThemeToggle'
-
-const TOOLS = [
-  { key: 'insure', href: '/insure', label: 'Insure' },
-  { key: 'drive', href: '/drive', label: 'Drive' },
-  { key: 'etf', href: '/etf', label: 'Invest' },
-  { key: 'house', href: '/house', label: 'House' },
-  { key: 'retire', href: '/retire', label: 'Retire' },
-  { key: 'tax', href: '/tax', label: 'Tax' },
-  { key: 'ledger', href: '/ledger', label: 'MyLedger' },
-]
+import { TOOLS, getToolByPath } from '@/lib/shared/tools'
 
 // One header, not two stacked bars. The ndtm wordmark and "which tool am I
 // in" are said exactly once — the tool switcher — so a page's own context
@@ -35,7 +26,7 @@ export default function ShellHeader({
   const [scrolled, setScrolled] = useState(false)
   const menuRef = useRef(null)
 
-  const active = TOOLS.find(t => pathname === t.href || pathname?.startsWith(t.href + '/'))
+  const active = getToolByPath(pathname)
 
   useEffect(() => {
     if (!open) return
@@ -80,8 +71,8 @@ export default function ShellHeader({
               </button>
               {open && (
                 <div className="shell-switcher-menu" role="menu">
-                  {TOOLS.filter(t => t.key !== active.key).map(t => (
-                    <Link key={t.key} href={t.href} className="shell-switcher-item" role="menuitem">
+                  {TOOLS.filter(t => t.id !== active.id).map(t => (
+                    <Link key={t.id} href={t.route} className="shell-switcher-item" role="menuitem">
                       {t.label}
                     </Link>
                   ))}
