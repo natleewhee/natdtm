@@ -4,26 +4,11 @@ import { useState, useEffect } from 'react'
 import { C, RATE_TIERS } from '@/lib/drive/theme'
 import { parseMoneyOrNull } from '@/lib/shared/money'
 import { MAINTENANCE_BY_BRAND } from '@/lib/drive/maintenance'
+import { Slider } from '@/components/shared/inputs'
 
 const BRAND_OPTIONS = Object.entries(MAINTENANCE_BY_BRAND)
   .sort((a, b) => a[1].label.localeCompare(b[1].label))
   .map(([key, val]) => ({ key, label: val.label }))
-
-function Slider({ label, hint, value, onChange, min, max, step = 1, unit = '' }) {
-  return (
-    <div>
-      <div style={{display:'flex',justifyContent:'space-between',marginBottom:4}}>
-        <label style={{fontSize:C.sm,fontWeight:600,color:C.primary}}>{label}</label>
-        <span style={{fontSize:C.sm,fontFamily:C.fontMono,fontWeight:700,color:C.primary}}>{value}{unit}</span>
-      </div>
-      <input type="range" min={min} max={max} step={step} value={value}
-        onChange={e => onChange(Number(e.target.value))}
-        aria-label={label}
-        style={{width:'100%',accentColor:C.accent}}/>
-      {hint && <p style={{marginTop:4,fontSize:C.xs,color:C.muted,lineHeight:1.5}}>{hint}</p>}
-    </div>
-  )
-}
 
 // Manual entry form for a used car — there's no database of used-car
 // listings to pick from (asking prices are set by individual sellers, not
@@ -96,9 +81,9 @@ export function UsedCarForm({ slot, onChange }) {
           </div>
           <p style={{marginTop:5,fontSize:C.xs,color:C.muted,lineHeight:1.5}}>From the log card or OneMotoring — determines Cat A/B and PARF</p>
         </div>
-        <Slider label="Age of car now" value={ageNow} onChange={setAgeNow} min={1} max={10} unit=" years"/>
-        <Slider label="COE months remaining" value={monthsRemaining} onChange={setMonthsRemaining} min={1} max={119} unit=" months" hint="Check the log card or OneMotoring"/>
-        <Slider label="Mileage" value={mileage} onChange={setMileage} min={10000} max={200000} step={5000} unit=" km" hint="Higher mileage raises the maintenance estimate"/>
+        <Slider id={`used-age-${slot}`} showRange={false} label="Age of car now" value={ageNow} onChange={setAgeNow} min={1} max={10} unit=" years"/>
+        <Slider id={`used-coe-months-${slot}`} showRange={false} label="COE months remaining" value={monthsRemaining} onChange={setMonthsRemaining} min={1} max={119} unit=" months" hint="Check the log card or OneMotoring"/>
+        <Slider id={`used-mileage-${slot}`} showRange={false} label="Mileage" value={mileage} onChange={setMileage} min={10000} max={200000} step={5000} unit=" km" hint="Higher mileage raises the maintenance estimate"/>
         <div style={{display:'grid',gridTemplateColumns:'minmax(0,1fr) minmax(0,1fr)',gap:12}}>
           <div>
             <label htmlFor={`used-brand-${slot}`} style={{fontSize:C.sm,fontWeight:600,color:C.primary,display:'block',marginBottom:6}}>Brand</label>

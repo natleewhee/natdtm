@@ -13,7 +13,7 @@ import {
 } from '@/lib/drive/persist'
 import { loadGarage, saveGarage, makeGarageEntry, addEntry, removeEntry, renameEntry, defaultEntryName } from '@/lib/drive/garage'
 import { saveDriveNumbers, saveToolInputs, loadToolInputs } from '@/lib/shared/profile'
-import { SectionDivider, MoneyInput, Segmented, PercentInput } from '@/components/drive/ui'
+import { SectionDivider, MoneyInput, Segmented, PercentInput } from '@/components/shared/inputs'
 import { CarPicker } from '@/components/drive/CarPicker'
 import { UsedCarForm } from '@/components/drive/UsedCarForm'
 import { ResultPanel } from '@/components/drive/ResultPanel'
@@ -385,15 +385,15 @@ export default function DriveReadyPage() {
             </div>
             <div style={{padding:'22px 28px 26px'}}>
               <div style={{display:'grid',gridTemplateColumns:'minmax(0,1fr) minmax(0,1fr)',gap:18,marginBottom:4}}>
-                <MoneyInput id="salary-input" label="Monthly Gross Salary" value={salary} onChange={handleSalary}
+                <MoneyInput grouped id="salary-input" label="Monthly Gross Salary" value={salary} onChange={handleSalary}
                   hint={salaryRaw && parseInt(salaryRaw)>0
                     ? `Take-home after CPF: S$${Math.floor(parseInt(salaryRaw)*0.8).toLocaleString('en-SG')}/mo · 30% limit: S$${Math.floor(parseInt(salaryRaw)*0.8*0.3).toLocaleString('en-SG')}/mo`
                     : 'Your gross income before CPF deductions'}/>
-                <MoneyInput id="down-input" label="Cash Downpayment" value={down} onChange={handleDown}
+                <MoneyInput grouped id="down-input" label="Cash Downpayment" value={down} onChange={handleDown}
                   hint="More cash above the minimum means a smaller loan and less interest"/>
               </div>
               <div style={{marginTop:18}}>
-                <MoneyInput id="debt-input" label="Existing Monthly Debt Payments (optional)" value={existingDebt} onChange={handleExistingDebt}
+                <MoneyInput grouped id="debt-input" label="Existing Monthly Debt Payments (optional)" value={existingDebt} onChange={handleExistingDebt}
                   hint="Other loans, credit cards, etc. — counted against the bank's 55% TDSR limit alongside this car's instalment"/>
               </div>
 
@@ -419,7 +419,7 @@ export default function DriveReadyPage() {
                     />
                     {carShareMode === 'income' ? (
                       <div style={{marginTop:10}}>
-                        <MoneyInput id="co-borrower-income" label="Co-borrower's monthly gross income" value={coBorrowerIncome} onChange={handleCoBorrowerIncome}
+                        <MoneyInput grouped id="co-borrower-income" label="Co-borrower's monthly gross income" value={coBorrowerIncome} onChange={handleCoBorrowerIncome}
                           hint="Your share of the instalment = your income ÷ (your income + theirs) — the same income-weighted apportionment a bank uses on a joint TDSR assessment."/>
                         {dSalary > 0 && (
                           <p style={{marginTop:8,fontSize:C.xs,color:C.muted,lineHeight:1.5}}>
@@ -429,7 +429,7 @@ export default function DriveReadyPage() {
                       </div>
                     ) : (
                       <div style={{marginTop:10,maxWidth:160}}>
-                        <PercentInput id="manual-car-share-pct" label="Your share" value={manualCarSharePctRaw} onChange={e => setManualCarSharePctRaw(e.target.value)}/>
+                        <PercentInput placeholder="0" id="manual-car-share-pct" label="Your share" value={manualCarSharePctRaw} onChange={e => setManualCarSharePctRaw(e.target.value)}/>
                       </div>
                     )}
                     <p style={{marginTop:10,fontSize:C.xs,color:C.muted,lineHeight:1.5}}>
@@ -439,10 +439,10 @@ export default function DriveReadyPage() {
                 )}
               </div>
 
-              <SectionDivider label="Your budget range"/>
+              <SectionDivider align="center" label="Your budget range"/>
               <AffordabilityCeilingCard salary={dSalary} down={dDown} tenure={dTenure} existingDebt={dExistingDebt} mySharePct={carSharePct}/>
 
-              <SectionDivider label="Loan tenure"/>
+              <SectionDivider align="center" label="Loan tenure"/>
               <div style={{marginBottom:26}}>
                 <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:12}}>
                   <div>
@@ -474,7 +474,7 @@ export default function DriveReadyPage() {
                 </div>
               </div>
 
-              <SectionDivider label="Choose your car"/>
+              <SectionDivider align="center" label="Choose your car"/>
               <div style={{display:'grid',gridTemplateColumns:mode==='compare'?'minmax(0,1fr) minmax(0,1fr)':'minmax(0,1fr)',gap:28,marginBottom:4}}>
                 <div>
                   <div style={{display:'flex',background:C.surface,border:`1.5px solid ${C.border}`,borderRadius:C.r,padding:3,marginBottom:14,width:'fit-content'}}>

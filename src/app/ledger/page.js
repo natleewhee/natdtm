@@ -19,7 +19,7 @@ import {
   toEngineMove, yearError, EMPTY_POSITION, positionFromStore,
 } from '@/lib/ledger/scenario/adapt'
 import { CAR_CATALOG_ENDPOINT } from '@/lib/drive/endpoints'
-import { MoneyInput, PercentInput, NumberInput, SectionDivider } from '@/components/ledger/ui'
+import { MoneyInput, PercentInput, NumberInput, SectionDivider } from '@/components/shared/inputs'
 import PositionEditor from '@/components/ledger/PositionEditor'
 import CapacityModule from '@/components/ledger/CapacityModule'
 import ScenarioColumn from '@/components/ledger/ScenarioColumn'

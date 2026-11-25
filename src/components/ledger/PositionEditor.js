@@ -8,7 +8,7 @@
 // other tools have saved.
 
 import { C } from '@/lib/shared/theme'
-import { MoneyInput, PercentInput, NumberInput } from './ui'
+import { MoneyInput, PercentInput, NumberInput } from '@/components/shared/inputs'
 
 function Group({ title, children }) {
   return (

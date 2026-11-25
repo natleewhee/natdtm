@@ -19,6 +19,7 @@
 //   registrations, pure EVs only. Ceases for registrations from 1 Jan 2027.
 
 import { C, RATE_TIERS } from './theme.js'
+import { SGD } from '../shared/money.js'
 
 export { RATE_TIERS }
 
@@ -314,7 +315,6 @@ export function calcGovtCosts(car, liveCOEPremium = null) {
            total: car.omv + netArf + duty + regFee + coe }
 }
 
-const SGD = n => `S$${Math.round(n).toLocaleString('en-SG')}`
 
 /**
  * Estimated distributor margin: car price minus all known government

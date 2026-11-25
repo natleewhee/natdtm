@@ -5,7 +5,7 @@ import { C } from '@/lib/shared/theme'
 import { SGD, parseMoney } from '@/lib/shared/money'
 import { calcNextPurchase } from '@/lib/house/calc'
 import { ABSD_REFERENCE, ABSD_AS_OF } from '@/lib/house/stampDuty'
-import { MoneyInput, PercentInput, NumberInput } from './ui'
+import { MoneyInput, PercentInput, NumberInput } from '@/components/shared/inputs'
 import Button from '@/components/shared/Button'
 import ExploreSection from '@/components/shared/ExploreSection'
 

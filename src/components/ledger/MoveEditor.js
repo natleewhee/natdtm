@@ -8,7 +8,7 @@
 import { useState } from 'react'
 import { C } from '@/lib/shared/theme'
 import { yearError } from '@/lib/ledger/scenario/adapt'
-import { MoneyInput, NumberInput, PercentInput, TextInput, SelectInput, Segmented } from './ui'
+import { MoneyInput, NumberInput, PercentInput, TextInput, SelectInput, Segmented } from '@/components/shared/inputs'
 
 let seq = 0
 const nextId = () => { seq += 1; return `mv-${Date.now()}-${seq}` }

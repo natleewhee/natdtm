@@ -7,7 +7,7 @@
 import { C } from '@/lib/shared/theme'
 import { parseMoney } from '@/lib/shared/money'
 import { BUNDLE_KEYS } from '@/lib/ledger/scenario/index'
-import { PercentInput } from './ui'
+import { PercentInput } from '@/components/shared/inputs'
 
 const num = parseMoney
 const NAME = { conservative: 'Conservative', base: 'Base', optimistic: 'Optimistic' }
