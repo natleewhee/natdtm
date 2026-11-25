@@ -177,6 +177,39 @@ function notifyProfileChange() {
   if (hasEventTarget()) window.dispatchEvent(new Event(PROFILE_CHANGE_EVENT))
 }
 
+// Fired after any successful write of a profile's numbers in this tab.
+// Separate from PROFILE_CHANGE_EVENT so ProfileScope's remount logic is
+// untouched; the dashboard subscribes to both via subscribeToNumbers.
+const NUMBERS_CHANGE_EVENT = 'ndtm:numbers-change'
+
+/**
+ * Subscribe to any change in the active profile's numbers: a write in
+ * this tab, a profile switch, or a change from another tab.
+ */
+export function subscribeToNumbers(callback) {
+  if (!hasEventTarget()) return () => {}
+  const off = subscribeToProfileChanges(callback)
+  window.addEventListener(NUMBERS_CHANGE_EVENT, callback)
+  return () => { off(); window.removeEventListener(NUMBERS_CHANGE_EVENT, callback) }
+}
+
+/**
+ * The raw stored string, for React's useSyncExternalStore: a string
+ * snapshot compares by value, so components re-render only when the
+ * store really changed. null on the server or without storage.
+ */
+export function readStoreSnapshot() {
+  if (typeof window === 'undefined') return null
+  try { return window.localStorage.getItem(STORAGE_KEY) } catch { return null }
+}
+
+/** Display name of the active profile ("My Numbers"). */
+export function getActiveProfileName() {
+  if (typeof window === 'undefined') return null
+  const id = getActiveProfileId()
+  return listProfiles().find((p) => p.id === id)?.name ?? null
+}
+
 // Subscribe to active-profile changes from this tab (create/switch/delete)
 // or another tab (the browser's own `storage` event). Returns an
 // unsubscribe function; a no-op unsubscribe when there is no window.
@@ -308,7 +341,9 @@ function save(data) {
   const idx = store.profiles.findIndex(p => p.id === store.activeProfileId)
   if (idx === -1) return false
   store.profiles[idx] = { ...store.profiles[idx], data, updatedAt: Date.now() }
-  return saveStore(store)
+  const ok = saveStore(store)
+  if (ok && hasEventTarget()) window.dispatchEvent(new Event(NUMBERS_CHANGE_EVENT))
+  return ok
 }
 
 // ─── Backup / restore ──────────────────────────────────────────────────
