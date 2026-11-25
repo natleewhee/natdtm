@@ -18,6 +18,7 @@ import {
 import { summarise, formatTile } from '@/lib/ledger/summary'
 import { buildInsights } from '@/lib/shared/insights'
 import { getTool } from '@/lib/shared/tools'
+import { needsBackup } from '@/lib/shared/transfer'
 import ToolIcon from '@/components/shared/ToolIcon'
 
 const SERVER = '\u0000server'
@@ -69,14 +70,14 @@ export default function HomeDashboard() {
     if (snapshot === SERVER) return null
     const data = loadMyNumbers()
     const summary = summarise(data)
-    return { summary, insights: summary.hasData ? buildInsights(data) : [], profileName: getActiveProfileName() }
+    return { summary, insights: summary.hasData ? buildInsights(data) : [], profileName: getActiveProfileName(), backup: needsBackup(summary.hasData) }
   }, [snapshot])
 
   if (!view) {
     return <section className="dash dash--pending" aria-hidden="true" />
   }
 
-  const { summary, insights, profileName } = view
+  const { summary, insights, profileName, backup } = view
 
   if (!summary.hasData) {
     return (
@@ -108,6 +109,11 @@ export default function HomeDashboard() {
         <div className="dash-insights" aria-label="What your numbers say">
           {insights.map((i) => <InsightCard key={i.id} insight={i} />)}
         </div>
+      )}
+      {backup && (
+        <p className="dash-backup">
+          These numbers live only in this browser. <Link href="/me">Back up or send them to your phone →</Link>
+        </p>
       )}
       <p className="dash-note">
         Figures come from what you entered in each tool, on this device only. Educational, not financial advice.

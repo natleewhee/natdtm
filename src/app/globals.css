@@ -520,7 +520,7 @@ main { min-height: 60vh; }
      dropping it keeps the header on one row at 375px. */
   .shell-header-title { display: none; }
   .tabbar {
-    display: grid; grid-template-columns: repeat(3, 1fr);
+    display: grid; grid-template-columns: repeat(4, 1fr);
     position: fixed; left: 0; right: 0; bottom: 0; z-index: 60;
     padding: 6px 8px calc(6px + env(safe-area-inset-bottom));
     background: var(--color-surface);
@@ -599,6 +599,8 @@ main { min-height: 60vh; }
 .dash-insight-title { font-weight: 600; font-size: 14.5px; margin-bottom: 4px; }
 .dash-insight-fact { font-size: 13px; color: var(--l-sub); line-height: 1.5; margin-bottom: 6px; }
 .dash-insight-link { font-size: 12.5px; font-weight: 600; color: var(--color-accent); text-decoration: none; }
+.dash-backup { margin-top: 12px; font-size: 13px; color: var(--l-sub); }
+.dash-backup a { color: var(--color-accent); font-weight: 600; text-decoration: none; }
 .dash-note { margin-top: 12px; font-size: 11.5px; color: var(--color-muted); }
 .dash--empty {
   display: flex; align-items: center; justify-content: space-between; gap: 20px; flex-wrap: wrap;
@@ -637,3 +639,32 @@ main { min-height: 60vh; }
 }
 .start-next:focus-visible, .start-back:focus-visible, .start-skip:focus-visible { outline: 2px solid var(--color-accent); outline-offset: 3px; }
 .start-privacy { margin-top: 18px; font-size: 12px; color: var(--color-muted); text-align: center; }
+
+/* ── /me and /import ───────────────────────────────────────────────── */
+.me-wrap { max-width: 640px; margin: 0 auto; padding: 40px 20px 64px; min-height: 60vh; }
+.me-title { font-family: var(--l-font-display); font-weight: 600; font-size: clamp(26px, 5vw, 34px); margin-bottom: 8px; }
+.me-lede { color: var(--l-sub); font-size: 15px; line-height: 1.5; margin-bottom: 20px; }
+.me-card { padding: 20px; border-radius: 16px; border: 1.5px solid var(--color-border); background: var(--color-surface); margin-bottom: 14px; }
+.me-h2 { font-family: var(--l-font-display); font-weight: 600; font-size: 18px; margin-bottom: 10px; }
+.me-hint { font-size: 13.5px; color: var(--l-sub); line-height: 1.55; margin-bottom: 12px; }
+.me-hint code { font-family: var(--l-font-mono); }
+.me-warn { font-size: 12.5px; color: var(--color-amber-text); margin-top: 10px; }
+.me-profiles { list-style: none; display: grid; gap: 6px; margin-bottom: 12px; }
+.me-profiles li { display: flex; justify-content: space-between; gap: 12px; padding: 10px 12px; border-radius: 10px; background: var(--color-bg); font-weight: 600; font-size: 14.5px; }
+.me-badge { font-size: 11px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--color-accent); }
+.me-row { display: flex; gap: 8px; flex-wrap: wrap; }
+.me-btn {
+  display: inline-flex; align-items: center; min-height: 44px; padding: 0 18px; border-radius: 999px;
+  border: none; background: var(--color-accent); color: #fff; font-weight: 700; font-size: 14px;
+  cursor: pointer; text-decoration: none;
+}
+.me-btn--ghost { background: none; border: 1.5px solid var(--color-border); color: var(--color-primary); }
+.me-btn:focus-visible { outline: 2px solid var(--color-accent); outline-offset: 3px; }
+.me-link { font-size: 13.5px; font-weight: 600; color: var(--color-accent); text-decoration: none; }
+.me-msg { padding: 10px 14px; border-radius: 12px; font-size: 13.5px; margin-bottom: 14px; }
+.me-msg--ok { background: var(--color-green-bg, var(--color-accent-bg)); color: var(--color-green-text, var(--color-primary)); }
+.me-msg--error { background: var(--color-red-bg); color: var(--color-red-text); }
+.me-transfer { display: grid; grid-template-columns: 180px 1fr; gap: 16px; align-items: start; }
+.me-qr { background: #fff; border-radius: 12px; padding: 6px; width: 180px; }
+.me-qr svg { display: block; width: 100%; height: auto; }
+@media (max-width: 480px) { .me-transfer { grid-template-columns: 1fr; } .me-qr { margin: 0 auto; } }
