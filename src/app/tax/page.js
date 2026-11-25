@@ -11,6 +11,7 @@ import ShellHeader from '@/components/shared/ShellHeader'
 import ToolHero from '@/components/shared/ToolHero'
 import Button from '@/components/shared/Button'
 import AutosaveIndicator from '@/components/shared/AutosaveIndicator'
+import { buildShareUrl, parseShare, shareOrCopy } from '@/lib/shared/share'
 
 const num = parseMoney
 
@@ -35,6 +36,10 @@ export default function TaxWisePage() {
   const [calculated, setCalculated] = useState(false)
   const [prefilled, setPrefilled] = useState(false)
 
+  // Opened from a share link: the form shows someone's shared inputs and
+  // nothing is saved to this visitor's profile until they keep them.
+  const [fromShare, setFromShare] = useState(false)
+  const [shareState, setShareState] = useState(null)
   const [restoredFromSave, setRestoredFromSave] = useState(false)
   const [hasRestored, setHasRestored] = useState(false)
   const [justSaved, setJustSaved] = useState(false)
@@ -48,6 +53,22 @@ export default function TaxWisePage() {
   // here before, that's a stronger signal than a salary borrowed from
   // another tool.
   useEffect(() => {
+    const shared = parseShare('tax', new URLSearchParams(window.location.search))
+    if (shared && Object.keys(shared).length > 0) {
+      const setters = {
+        age: setAge, residency: setResidency, monthlySalary: setMonthlySalary, annualBonus: setAnnualBonus,
+        otherIncome: setOtherIncome, srsContribution: setSrsContribution, rstuSelf: setRstuSelf,
+        rstuFamily: setRstuFamily, courseFees: setCourseFees, nsmanStatus: setNsmanStatus,
+        childCount: setChildCount, parentLivingWith: setParentLivingWith,
+        parentNotLivingWith: setParentNotLivingWith, otherReliefs: setOtherReliefs,
+      }
+      for (const [k, v] of Object.entries(shared)) setters[k]?.(v)
+      if (['srsContribution', 'rstuSelf', 'rstuFamily', 'courseFees', 'childCount', 'parentLivingWith', 'parentNotLivingWith', 'otherReliefs'].some((k) => shared[k])) setShowMoreReliefs(true)
+      setFromShare(true)
+      setCalculated(true)
+      setHasRestored(true)
+      return
+    }
     const saved = loadToolInputs('tax')
     if (saved) {
       setAge(saved.age ?? '')
@@ -83,7 +104,7 @@ export default function TaxWisePage() {
   // Autosave every keystroke, same as DriveReady's own persistence, just
   // scoped to whichever profile is active.
   useEffect(() => {
-    if (!hasRestored) return
+    if (!hasRestored || fromShare) return
     const ok = saveToolInputs('tax', {
       age, residency, monthlySalary, annualBonus, otherIncome,
       srsContribution, rstuSelf, rstuFamily, courseFees, nsmanStatus,
@@ -97,7 +118,7 @@ export default function TaxWisePage() {
       setSavedTick(t => t + 1)
     }
   }, [
-    hasRestored, age, residency, monthlySalary, annualBonus, otherIncome,
+    hasRestored, fromShare, age, residency, monthlySalary, annualBonus, otherIncome,
     srsContribution, rstuSelf, rstuFamily, courseFees, nsmanStatus,
     childCount, parentLivingWith, parentNotLivingWith, otherReliefs, showMoreReliefs,
   ])
@@ -129,7 +150,7 @@ export default function TaxWisePage() {
   // object every render (inputs is rebuilt each render too), so keying
   // off the object reference would re-save to localStorage every render.
   useEffect(() => {
-    if (!result) return
+    if (!result || fromShare) return
     saveTaxNumbers({
       monthlyTakeHome: result.monthlyTakeHome,
       annualTax: result.tax,
@@ -137,7 +158,20 @@ export default function TaxWisePage() {
       age: num(age),
     })
     // eslint-disable-next-line react-hooks/exhaustive-deps -- intentionally keyed off primitives, not `result` itself (a new object every render)
-  }, [result?.monthlyTakeHome, result?.tax, result?.marginal, age])
+  }, [result?.monthlyTakeHome, result?.tax, result?.marginal, age, fromShare])
+
+  const share = async () => {
+    const url = buildShareUrl('tax', {
+      age, residency, monthlySalary, annualBonus, otherIncome, srsContribution, rstuSelf, rstuFamily,
+      courseFees, nsmanStatus, childCount, parentLivingWith, parentNotLivingWith, otherReliefs,
+    }, window.location.origin)
+    setShareState(await shareOrCopy(url, 'My TaxWise result'))
+  }
+
+  const keepShared = () => {
+    setFromShare(false)
+    window.history.replaceState(null, '', '/tax')
+  }
 
   const srsCap = residency === 'foreigner' ? SRS_CAP_FOREIGNER : SRS_CAP_CITIZEN_PR
 
@@ -152,6 +186,13 @@ export default function TaxWisePage() {
         lede="And what every relief is really worth — in dollars saved, not percentages."
         badges={['Every relief cap modeled', 'Shows what the next $1k saves']}
       />
+
+      {fromShare && (
+        <div className="share-banner" role="status">
+          <span>You&apos;re viewing numbers someone shared. They aren&apos;t saved to your profile.</span>
+          <button type="button" className="share-banner-btn" onClick={keepShared}>Keep these as mine</button>
+        </div>
+      )}
 
       {/* Compliance line */}
       <div style={{ background: C.surface, borderBottom: `1px solid ${C.border}`, padding: '8px 24px', textAlign: 'center' }}>
@@ -266,6 +307,14 @@ export default function TaxWisePage() {
         </div>
 
         {result && <TaxResults result={result} />}
+        {result && !fromShare && (
+          <div className="share-row">
+            <button type="button" className="share-btn" onClick={share}>Share this result</button>
+            <span className="share-note" role="status">
+              {shareState === 'copied' ? 'Link copied.' : shareState === 'failed' ? 'Could not share. Copy the address bar instead.' : 'Shares the inputs only, never your profile.'}
+            </span>
+          </div>
+        )}
       </div>
     </div>
   )

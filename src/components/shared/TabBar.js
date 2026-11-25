@@ -4,7 +4,7 @@
 // App-style bottom navigation for phones (super-app plan U7). Shown below
 // 640px only (CSS in globals.css), where it replaces the header's tool
 // switcher. Tabs: Home · Plan (MyLedger) · Tools (a sheet of every tool in
-// the registry). "Me" (profiles, backup, send-to-phone) joins in PR 3.
+// the registry) · Me (profiles, backup, send to my phone).
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
@@ -19,6 +19,14 @@ function HomeGlyph() {
   return (
     <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
       <path d="M4 11l8-7 8 7" /><path d="M6 10v9h12v-9" />
+    </svg>
+  )
+}
+
+function MeGlyph() {
+  return (
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" aria-hidden="true">
+      <circle cx="12" cy="8.5" r="3.5" /><path d="M5 20c1.2-3.6 4-5.5 7-5.5s5.8 1.9 7 5.5" />
     </svg>
   )
 }
@@ -107,6 +115,10 @@ export default function TabBar() {
           {onTool ? <ToolIcon id={active.id} size={22} /> : <ToolsGlyph />}
           <span>{onTool ? active.label : 'Tools'}</span>
         </button>
+        <Link href="/me" className="tabbar-tab" aria-current={pathname === '/me' ? 'page' : undefined}>
+          <MeGlyph />
+          <span>Me</span>
+        </Link>
       </nav>
     </>
   )

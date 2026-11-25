@@ -1,10 +1,11 @@
 # ndtm — nat does the math
 
 One Next.js 16 app hosting seven free Singapore financial-decision
-calculators under a single shell, domain, and dark design system. Every
+calculators under a single shell, domain, and dark design system, with a
+home dashboard that pulls them into one picture of your money. Every
 number is traceable to a "the math" page that shows exactly how it was
 worked out. No accounts; everything runs client-side except DriveReady's
-own keyless data API routes.
+own keyless data API routes. It installs as an app and works offline.
 
 Deployed at **https://natdtm.vercel.app**. Full architecture notes in
 [`docs/architecture.md`](docs/architecture.md); statutory-constant sources
@@ -24,6 +25,20 @@ in [`docs/statutory-sources.md`](docs/statutory-sources.md).
 
 Each tool has a matching `/<tool>/the-math` page explaining its formulas
 and citing its sources.
+
+## The super app layer
+
+| Route | What it does |
+|---|---|
+| `/` | With numbers saved: a "Your money" dashboard (net worth, free to invest, TDSR, Insurance Score, tax, CPF), each tile linking to its tool with a "checked N days ago" stamp, plus up to three cross-tool insights. Without: a "Set up my numbers" card. The tool grid is always below. |
+| `/start` | Six skippable questions that fill every tool's slot at once (`lib/shared/onboarding.js`). Never overwrites a value typed in a tool. |
+| `/me` | Profiles, backup download/restore, and **Send to my phone**: a QR code / link carrying the numbers in the URL fragment, which browsers never send to a server. |
+| `/import` | The receiving end of a transfer link; confirms before replacing. |
+
+Insights (`lib/shared/insights.js`) state calculated facts and link to the
+working; they never recommend a product. TaxWise results can be shared as
+a link carrying only the inputs (`lib/shared/share.js`); opening one is
+view-only until the visitor keeps the numbers.
 
 ## Structure
 
@@ -122,7 +137,7 @@ assets cache-first; `/drive/api/*` network-first with a cached copy.
 ## Cross-tool "My Numbers"
 
 `src/lib/shared/profile.js` is a client-side (localStorage) store that
-lets the tools hand figures to each other and to MyLedger's holistic
+lets the tools hand figures to each other, to MyLedger and to the home
 dashboard, without re-typing. It holds up to three named profiles
 ("Me", "Joint with Alex", …), each with a full per-tool slot set, and a
 v7 schema with in-place migrations from v1. `ProfileSwitcher` in the

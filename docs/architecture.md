@@ -110,6 +110,31 @@ sent to a server.
   re-reads on mount. It is keyboard-operable — Escape closes the menu and
   returns focus to the trigger.
 
+## The super app layer
+
+- **Dashboard** (`components/shared/dashboard/HomeDashboard.js`) reads the
+  raw store string through `useSyncExternalStore` (`readStoreSnapshot` +
+  `subscribeToNumbers`), so it re-renders only on a real change and never
+  flashes the empty state for a returning user. Tiles come from
+  `lib/ledger/summary.js`, which calls MyLedger's own engine, so `/` and
+  `/ledger` cannot disagree.
+- **Insights** (`lib/shared/insights.js`): rules of
+  `{ applies, build, priority }`; at most three shown. Copy is
+  arithmetic, never advice (enforced by `insights.test.js`).
+- **Onboarding** (`lib/shared/onboarding.js`): `planOnboarding(answers,
+  existing)` is pure and returns `MODULE_SCHEMA` writes plus tool form
+  inputs to fill only where still empty; `/start` applies it.
+- **Transfer** (`lib/shared/transfer.js`): store → compact JSON →
+  `deflate-raw` (`CompressionStream`) → base64url in `/import#v1.…`.
+  Falls back to the active profile alone past `QR_MAX_URL_CHARS`. Import
+  uses `importProfiles`, the same validation path as a backup file.
+- **Share links** (`lib/shared/share.js`): per-tool whitelists of short
+  query params; values must be plain decimals or known enum values.
+- **SEO**: `lib/shared/structuredData.js` (WebApplication, TechArticle,
+  BreadcrumbList from the registry) rendered by `components/shared/JsonLd.js`
+  in layouts; `components/shared/OgCard.js` draws each tool's
+  `opengraph-image`.
+
 ## The "math" convention
 
 Every vertical has a `/<tool>/the-math` page that walks through its
