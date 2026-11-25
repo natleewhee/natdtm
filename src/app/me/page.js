@@ -111,7 +111,7 @@ function MePanel() {
       <section className="me-card" aria-labelledby="me-backup">
         <h2 id="me-backup" className="me-h2">Backup</h2>
         <p className="me-hint">
-          {last ? `Last backed up or sent ${relativeAge(last)}.` : 'Not backed up yet.'} Clearing this browser&apos;s data deletes your numbers; a backup file brings them back.
+          {last ? `Last backed up or sent ${relativeAge(last)}. ` : 'Not backed up yet. '}Clearing this browser&apos;s data deletes your numbers; a backup file brings them back.
         </p>
         <div className="me-row">
           <button type="button" className="me-btn" onClick={download}>Download backup</button>

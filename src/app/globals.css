@@ -613,6 +613,14 @@ main { min-height: 60vh; }
   background: var(--color-accent); color: var(--color-accent-ink, #fff); font-weight: 700; font-size: 14.5px; text-decoration: none;
 }
 .dash-start-btn:focus-visible { outline: 2px solid var(--color-primary); outline-offset: 3px; }
+@media (max-width: 640px) {
+  .dash-tiles { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+  .dash-tile { min-height: 0; padding: 12px 12px 10px; gap: 4px; border-radius: 14px; }
+  .dash-tile-label { font-size: 10px; letter-spacing: .06em; }
+  .dash-tile-value { font-size: 18px; }
+  .dash-tile-sub { font-size: 11.5px; }
+  .dash-tile-checked { font-size: 10px; }
+}
 .home-tools-title { font-family: var(--l-font-display); font-weight: 600; font-size: 22px; margin: 0 0 14px; }
 
 /* ── /start onboarding ─────────────────────────────────────────────── */

@@ -104,7 +104,7 @@ export function summarise(myNumbers, now = Date.now()) {
     const { exact } = calcTakeHome(state)
     tile({
       id: 'capacity', label: 'Free to invest', value: calcInvestmentCapacity(state), format: 'sgdMonthly',
-      sub: `${exact ? 'Take-home' : 'Est. take-home'} after loans, premiums${state.livingExpenses ? ' and living costs' : ''}`,
+      sub: `${exact ? 'Take-home' : 'Est. take-home'} after ${state.livingExpenses ? 'loans, premiums and living costs' : 'loans and premiums'}`,
       toolId: 'ledger',
       savedAt: latest(d.retire?.savedAt, d.drive?.savedAt, d.tax?.savedAt, d.flow?.savedAt, d.insure?.savedAt),
     })

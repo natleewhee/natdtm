@@ -21,11 +21,16 @@ export default function ImportPage() {
   useEffect(() => {
     let live = true
     const hash = window.location.hash
-    // Read once into memory, then drop the numbers from the address bar
-    // and this tab's history straight away, before any confirm.
-    if (hash) window.history.replaceState(null, '', '/import')
     decodeTransfer(hash)
-      .then((json) => { if (live) setState({ status: 'ready', json, summary: describeTransfer(json) }) })
+      .then((json) => {
+        if (!live) return
+        // Decoded into memory: now drop the numbers from the address bar
+        // and this tab's history, before any confirm. (Done here, not
+        // before decoding, so a remount re-running this effect still
+        // finds the fragment.)
+        window.history.replaceState(null, '', '/import')
+        setState({ status: 'ready', json, summary: describeTransfer(json) })
+      })
       .catch((err) => { if (live) setState({ status: 'error', error: err.message }) })
     return () => { live = false }
   }, [])
