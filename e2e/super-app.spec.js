@@ -109,3 +109,37 @@ test('tool pages carry JSON-LD and a share-preview image', async ({ page, reques
   expect(img.status()).toBe(200)
   expect(img.headers()['content-type']).toContain('image/png')
 })
+
+test('privacy mode masks every figure on the dashboard and is remembered', async ({ page }) => {
+  await page.goto('/')
+  await page.evaluate(() => {
+    const now = Date.now()
+    localStorage.setItem('ndtm_my_numbers_v1', JSON.stringify({ schemaVersion: 1, activeProfileId: 'p1', profiles: [{ id: 'p1', name: 'Me', createdAt: 1, updatedAt: 2, data: { version: 7,
+      house: { outstandingBalance: 400000, monthlyInstalment: 2000, propertyValue: 1200000, savedAt: now },
+      retire: { salary: 10000, oaBalance: 120000, saBalance: 80000, maBalance: 50000, savedAt: now },
+      tax: { annualTax: 6200, marginalRate: 11.5, monthlyTakeHome: 7600, savedAt: now } } }] }))
+  })
+  await page.reload()
+  const dash = page.locator('section.dash')
+  await expect(dash).toContainText('S$1,050,000')
+  const toggle = page.getByRole('button', { name: 'Hide numbers' })
+  await expect(toggle).toHaveAttribute('aria-pressed', 'false')
+
+  await toggle.click()
+  await expect(page.getByRole('button', { name: 'Show numbers' })).toHaveAttribute('aria-pressed', 'true')
+  await expect(dash).toContainText('Numbers hidden')
+  // No amount, rate or score digit is left in the tiles or insights.
+  // Public rules (the 55% TDSR limit, the S$15,300 SRS cap, "per S$1,000")
+  // stay readable; nothing of the user's own is left.
+  const raw = (await dash.locator('.dash-tiles, .dash-insights').allInnerTexts()).join(' ')
+  const text = raw.replace(/55%|S\$15,300|S\$1,000(?![\d,])/g, '')
+  expect(text).not.toMatch(/S\$\s?\d/)
+  expect(text).not.toMatch(/\d+(\.\d+)?%/)
+  expect(raw).toContain('S$••••••')
+  expect(raw).toContain('Bank limit 55%')
+
+  await page.reload()
+  await expect(page.getByRole('button', { name: 'Show numbers' })).toBeVisible()
+  await page.getByRole('button', { name: 'Show numbers' }).click()
+  await expect(dash).toContainText('S$1,050,000')
+})
