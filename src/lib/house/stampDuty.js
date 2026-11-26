@@ -43,12 +43,12 @@ export const ABSD_AS_OF = '2023-04-27' // last ABSD rate revision
 // ABSD input so you can look up your bracket and type the amount in
 // yourself.
 export const ABSD_REFERENCE = [
-  { profile: 'Singapore Citizen — 1st residential property', rate: '0%' },
-  { profile: 'Singapore Citizen — 2nd residential property', rate: '20%' },
-  { profile: 'Singapore Citizen — 3rd+ residential property', rate: '30%' },
-  { profile: 'Permanent Resident — 1st residential property', rate: '5%' },
-  { profile: 'Permanent Resident — 2nd+ residential property', rate: '30%' },
-  { profile: 'Foreigner — any residential property', rate: '60%' },
+  { profile: 'Singapore Citizen, 1st residential property', rate: '0%' },
+  { profile: 'Singapore Citizen, 2nd residential property', rate: '20%' },
+  { profile: 'Singapore Citizen, 3rd+ residential property', rate: '30%' },
+  { profile: 'Permanent Resident, 1st residential property', rate: '5%' },
+  { profile: 'Permanent Resident, 2nd+ residential property', rate: '30%' },
+  { profile: 'Foreigner, any residential property', rate: '60%' },
   { profile: 'Entity (company / trustee)', rate: '65%' },
 ]
 

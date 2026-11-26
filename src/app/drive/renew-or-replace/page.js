@@ -112,12 +112,12 @@ function ResultCard({ result, isWinner }) {
         {/* Warnings */}
         {result.finalCoe && (
           <div style={{marginTop:10,padding:'8px 10px',background:C.amberBg,borderRadius:C.r,fontSize:C.xs,color:C.amberText,lineHeight:1.5}}>
-            ⚠ After 5 years, this car must be deregistered. Budget for a replacement — this cost is not included above.
+            ⚠ After 5 years, this car must be deregistered. Budget for a replacement. This cost is not included above.
           </div>
         )}
         {result.batteryRisk && (
           <div style={{marginTop:8,padding:'8px 10px',background:C.amberBg,borderRadius:C.r,fontSize:C.xs,color:C.amberText,lineHeight:1.5}}>
-            ⚡ EV battery risk at age {result.endAge} — potential S$15k–30k replacement cost not included.
+            ⚡ EV battery risk at age {result.endAge}: potential S$15k–30k replacement cost not included.
           </div>
         )}
       </div>
@@ -260,14 +260,14 @@ export default function RenewOrReplacePage() {
         {/* Hero */}
         <div style={{textAlign:'center',marginBottom:32}}>
           <h1 style={{fontFamily:C.fontDisplay,fontSize:'clamp(26px,5vw,40px)',color:C.primary,margin:'0 0 10px',lineHeight:1.2}}>Renew or Replace?</h1>
-          <p style={{fontSize:C.base,color:C.muted,maxWidth:540,margin:'0 auto 12px',lineHeight:1.7}}>Compare every option by annual cost — renewing your COE for 5 or 10 years, buying a new car, or buying used.</p>
+          <p style={{fontSize:C.base,color:C.muted,maxWidth:540,margin:'0 auto 12px',lineHeight:1.7}}>Compare every option by annual cost: renewing your COE for 5 or 10 years, buying a new car, or buying used.</p>
           {pqpLive ? (
             <div style={{display:'inline-flex',alignItems:'center',gap:8,padding:'5px 14px',background:C.accentBg,borderRadius:100,border:`1px solid ${C.accent}33`,fontSize:C.xs,color:C.accentText}}>
               Live COE · Cat A: <strong>{absSGD(pqp.catA)}</strong> · Cat B: <strong>{absSGD(pqp.catB)}</strong> · via data.gov.sg
             </div>
           ) : (
             <div style={{display:'inline-flex',alignItems:'center',gap:8,padding:'5px 14px',background:C.amberBg,borderRadius:100,border:`1px solid ${C.amber}33`,fontSize:C.xs,color:C.amberText}}>
-              Using fallback COE rates — LTA live data unavailable
+              Using fallback COE rates because LTA live data is unavailable
             </div>
           )}
         </div>
@@ -289,7 +289,7 @@ export default function RenewOrReplacePage() {
             ))}
           </div>
           <div style={{marginTop:12,padding:'8px 12px',background:C.bg,borderRadius:C.r,fontSize:C.xs,color:C.muted,lineHeight:1.6}}>
-            <strong style={{color:C.primary}}>LTA rule:</strong> For Cat A/B cars, 5-year renewal can only be done <strong>once</strong> — after it expires, the car must be deregistered. 10-year renewal can be repeated indefinitely.
+            <strong style={{color:C.primary}}>LTA rule:</strong> For Cat A/B cars, 5-year renewal can only be done <strong>once</strong>. After it expires, the car must be deregistered. 10-year renewal can be repeated indefinitely.
           </div>
         </Card>
 
@@ -318,7 +318,7 @@ export default function RenewOrReplacePage() {
               <Label>Electric vehicle?</Label>
               <Hint>Affects PARF calculation (EEAI rebate on ARF)</Hint>
               <div style={{display:'grid',gridTemplateColumns:'minmax(0,1fr) minmax(0,1fr)',gap:8}}>
-                {[['yes','Yes — EV/PHEV'],['no','No — ICE/hybrid']].map(([v,l])=>(
+                {[['yes','Yes, EV/PHEV'],['no','No, ICE/hybrid']].map(([v,l])=>(
                   <button key={v} onClick={()=>setIsEVCurrent(v==='yes')} style={{padding:'9px 12px',borderRadius:C.r,border:`1.5px solid ${isEVCurrent===(v==='yes')?C.accent:C.border}`,background:isEVCurrent===(v==='yes')?C.accentBg:C.surface,cursor:'pointer',fontFamily:C.fontBody,fontSize:C.sm,fontWeight:700,color:isEVCurrent===(v==='yes')?C.accent:C.primary}}>
                     {l}
                   </button>
@@ -346,7 +346,7 @@ export default function RenewOrReplacePage() {
           <div style={{marginTop:14,padding:'10px 14px',background:C.bg,borderRadius:C.r,border:`1px solid ${C.border}`}}>
             <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:6}}>
               <div style={{fontSize:C.xs,color:C.muted}}>
-                COE renewal price (PQP — {coeType==='catA'?'Cat A':'Cat B'}): <strong style={{color:C.primary}}>{absSGD(activePQP)}</strong>
+                COE renewal price (PQP, {coeType==='catA'?'Cat A':'Cat B'}): <strong style={{color:C.primary}}>{absSGD(activePQP)}</strong>
                 {pqpLive && !pqpOverride && <span style={{color:C.accent,marginLeft:6,fontSize: '12px'}}>· live from LTA</span>}
               </div>
             </div>
@@ -375,7 +375,7 @@ export default function RenewOrReplacePage() {
           <>
             <div style={{height:20}}/>
             <Card>
-              <SectionTitle>Replacement — new car</SectionTitle>
+              <SectionTitle>Replacement: new car</SectionTitle>
               <div style={{display:'grid',gridTemplateColumns:'minmax(0,1fr) minmax(0,1fr)',gap:18}}>
                 <MoneyInput id="ror-car-price-incl-coe" label="Car price (incl. COE)" hint="Enter the price the dealer quoted you" value={newPrice} onChange={digitsInto(setNewPrice)}/>
                 <MoneyInput id="ror-car-omv-2" label="Car OMV" hint="From the dealer's price breakdown" value={newOmvRaw} onChange={digitsInto(setNewOmvRaw)}/>
@@ -383,7 +383,7 @@ export default function RenewOrReplacePage() {
                 <div>
                   <Label>Electric vehicle?</Label>
                   <div style={{display:'grid',gridTemplateColumns:'minmax(0,1fr) minmax(0,1fr)',gap:8,marginTop:4}}>
-                    {[['yes','Yes — EV/PHEV'],['no','No — ICE/hybrid']].map(([v,l])=>(
+                    {[['yes','Yes, EV/PHEV'],['no','No, ICE/hybrid']].map(([v,l])=>(
                       <button key={v} onClick={()=>setNewIsEV(v==='yes')} style={{padding:'9px 12px',borderRadius:C.r,border:`1.5px solid ${newIsEV===(v==='yes')?C.accent:C.border}`,background:newIsEV===(v==='yes')?C.accentBg:C.surface,cursor:'pointer',fontFamily:C.fontBody,fontSize:C.sm,fontWeight:700,color:newIsEV===(v==='yes')?C.accent:C.primary}}>{l}</button>
                     ))}
                   </div>
@@ -417,7 +417,7 @@ export default function RenewOrReplacePage() {
           <>
             <div style={{height:20}}/>
             <Card>
-              <SectionTitle>Replacement — used car</SectionTitle>
+              <SectionTitle>Replacement: used car</SectionTitle>
               <div style={{display:'grid',gridTemplateColumns:'minmax(0,1fr) minmax(0,1fr)',gap:18}}>
                 <MoneyInput id="ror-asking-price" label="Asking price" hint="What the seller is asking" value={usedPrice} onChange={digitsInto(setUsedPrice)}/>
                 <Slider id="ror-age-of-used-car" label="Age of used car" value={usedAge} onChange={setUsedAge} min={1} max={9} unit=" years" hint="How old is the used car?"/>
@@ -429,7 +429,7 @@ export default function RenewOrReplacePage() {
               <div style={{marginTop:14,padding:'10px 14px',background:C.bg,borderRadius:C.r,border:`1px solid ${C.border}`,fontSize:C.xs,color:C.muted,lineHeight:1.6}}>
                 Useful life: <strong style={{color:C.primary}}>{(usedMonths/12).toFixed(1)} years</strong> of remaining COE ·
                 Car will be <strong style={{color:C.primary}}>{(usedAge + usedMonths/12).toFixed(1)} years old</strong> at expiry ·
-                {(usedAge + usedMonths/12) <= 10 ? ' PARF rebate available at expiry' : ' No PARF — car will be over 10 years old at expiry'}
+                {(usedAge + usedMonths/12) <= 10 ? ' PARF rebate available at expiry' : ' No PARF, car will be over 10 years old at expiry'}
               </div>
             </Card>
           </>
@@ -461,7 +461,7 @@ export default function RenewOrReplacePage() {
               )}
               {results.verdict.pctDearer > 0 && (
                 <div style={{marginTop:14,padding:'10px 14px',background:'rgba(255,255,255,0.07)',borderRadius:C.r,fontSize:C.xs,color:'rgba(255,255,255,0.6)'}}>
-                  The next cheapest option costs <strong style={{color:'#fff'}}>{results.verdict.pctDearer.toFixed(0)}% more per year</strong> — equivalent to <strong style={{color:'#fff'}}>{absSGD(results.verdict.diff)}/year</strong> extra.
+                  The next cheapest option costs <strong style={{color:'#fff'}}>{results.verdict.pctDearer.toFixed(0)}% more per year</strong>, equivalent to <strong style={{color:'#fff'}}>{absSGD(results.verdict.diff)}/year</strong> extra.
                 </div>
               )}
             </div>

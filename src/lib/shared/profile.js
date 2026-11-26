@@ -397,7 +397,7 @@ export function importProfiles(text) {
       // A bare pre-profiles flat payload — wrap it into one profile.
       profiles = [makeProfile(DEFAULT_PROFILE_NAME, { ...EMPTY, ...migrateOrThrow(parsed) })]
     } else {
-      return { ok: false, imported: 0, truncated: 0, error: 'Unrecognised file — expected an exported profiles file.' }
+      return { ok: false, imported: 0, truncated: 0, error: 'Unrecognised file. Expected an exported profiles file.' }
     }
   } catch (err) {
     return { ok: false, imported: 0, truncated: 0, error: err.message }

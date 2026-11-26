@@ -6,10 +6,10 @@
 // 'SGX' funds are the same UCITS/Ireland-domiciled structure but list directly
 // on SGX in SGD — any SG brokerage already supports them, no FX leg needed.
 export const ETFS = {
-  VWRA: { ticker:'VWRA', name:'Vanguard FTSE All-World UCITS ETF',      region:'Global',             ter:0.22, exchange:'LSE', description:'Broad diversification across developed and emerging markets globally — 3,700+ companies.' },
+  VWRA: { ticker:'VWRA', name:'Vanguard FTSE All-World UCITS ETF',      region:'Global',             ter:0.22, exchange:'LSE', description:'Broad diversification across developed and emerging markets globally, 3,700+ companies.' },
   CSPX: { ticker:'CSPX', name:'iShares Core S&P 500 UCITS ETF',         region:'United States',      ter:0.07, exchange:'LSE', description:'Exposure to the 500 largest US companies. The bedrock of most growth portfolios. XUS below tracks the same index for less, and trades on SGX.' },
   EIMI: { ticker:'EIMI', name:'iShares Core MSCI EM IMI UCITS ETF',     region:'Emerging Markets',   ter:0.18, exchange:'LSE', description:'Broad exposure to emerging market companies across Asia, Latin America, and beyond.' },
-  VJPW: { ticker:'VJPW', name:'Vanguard FTSE Japan UCITS ETF',          region:'Japan',              ter:0.15, exchange:'LSE', description:'Focused exposure to the Japanese stock market — the world\'s third-largest economy.' },
+  VJPW: { ticker:'VJPW', name:'Vanguard FTSE Japan UCITS ETF',          region:'Japan',              ter:0.15, exchange:'LSE', description:'Focused exposure to the Japanese stock market, the world\'s third-largest economy.' },
   WSML: { ticker:'WSML', name:'iShares MSCI World Small Cap UCITS ETF', region:'Global Small Cap',   ter:0.35, exchange:'LSE', description:'Small-cap companies in developed markets. Higher growth potential, higher volatility.' },
   HMCH: { ticker:'HMCH', name:'HSBC MSCI China UCITS ETF',              region:'China / Hong Kong',  ter:0.28, exchange:'LSE', description:'Exposure to large and mid-cap Chinese companies. High growth potential, elevated risk.' },
   VUSA: { ticker:'VUSA', name:'Vanguard S&P 500 UCITS ETF',             region:'United States',      ter:0.07, exchange:'LSE', description:'Low-cost S&P 500 exposure. Slightly lower TER than CSPX. Distributing version available.' },
@@ -20,10 +20,10 @@ export const ETFS = {
   // access. Same Ireland domicile as the funds above, so the same 15%
   // US-dividend withholding tax treaty rate applies; all four are
   // physically replicated and accumulating (no distributions to manage).
-  XUS: { ticker:'XUS', name:'Xtrackers S&P 500 UCITS ETF',              region:'United States',      ter:0.03, exchange:'SGX', description:'Tracks the same S&P 500 index as CSPX/VUSA for about half the fee, and settles directly in SGD on SGX — no FX conversion needed.' },
-  EUS:  { ticker:'EUS', name:'Xtrackers S&P 500 Equal Weight UCITS ETF', region:'United States',      ter:0.15, exchange:'SGX', description:'The same 500 companies as XUS, each held at an equal weight instead of by market cap — less concentrated in the largest few names, at a higher fee.' },
-  XND: { ticker:'XND', name:'Xtrackers Nasdaq 100 UCITS ETF',           region:'United States',      ter:0.20, exchange:'SGX', description:'The 100 largest non-financial Nasdaq-listed companies — a tech-heavy tilt on top of a broad US or global core, not a substitute for one.' },
-  XWR: { ticker:'XWR', name:'Xtrackers MSCI World UCITS ETF',           region:'Global Developed',   ter:0.12, exchange:'SGX', description:'Developed-market companies worldwide — not emerging markets. Cheaper than VWRA, but VWRA already includes this exposure plus EM/China; pair XWR with EIMI instead of swapping it in for VWRA.' },
+  XUS: { ticker:'XUS', name:'Xtrackers S&P 500 UCITS ETF',              region:'United States',      ter:0.03, exchange:'SGX', description:'Tracks the same S&P 500 index as CSPX/VUSA for about half the fee, and settles directly in SGD on SGX, so no FX conversion needed.' },
+  EUS:  { ticker:'EUS', name:'Xtrackers S&P 500 Equal Weight UCITS ETF', region:'United States',      ter:0.15, exchange:'SGX', description:'The same 500 companies as XUS, each held at an equal weight instead of by market cap, so less concentrated in the largest few names, at a higher fee.' },
+  XND: { ticker:'XND', name:'Xtrackers Nasdaq 100 UCITS ETF',           region:'United States',      ter:0.20, exchange:'SGX', description:'The 100 largest non-financial Nasdaq-listed companies, a tech-heavy tilt on top of a broad US or global core, not a substitute for one.' },
+  XWR: { ticker:'XWR', name:'Xtrackers MSCI World UCITS ETF',           region:'Global Developed',   ter:0.12, exchange:'SGX', description:'Developed-market companies worldwide, not emerging markets. Cheaper than VWRA, but VWRA already includes this exposure plus EM/China; pair XWR with EIMI instead of swapping it in for VWRA.' },
 }
 
 // ─── LOOK-THROUGH COMPOSITION ─────────────────────────────────────────────────
@@ -171,7 +171,7 @@ export function generatePortfolio(prefs) {
     title = 'The Ultimate Simplicity'
     description = 'A single-fund solution that covers the entire world.'
     allocations = [{ etf: ETFS.VWRA, percentage: 100 }]
-    whyItWorks = 'VWRA provides instant diversification across 3,700+ companies globally. It is the gold standard for "set and forget" investing in Singapore due to its tax efficiency (UCITS, Ireland-domiciled) and broad coverage. One fund. One monthly buy. Done. Note: a single all-equity fund cannot be tailored by risk level or region — choose 2–3 ETFs to add a bond cushion or regional tilts. A lower-cost 2-fund alternative covering the same ground is XWR + EIMI (developed markets + emerging markets, blended TER well under VWRA\'s alone) — only worth the extra line if you don\'t mind two monthly buys instead of one.'
+    whyItWorks = 'VWRA provides instant diversification across 3,700+ companies globally. It is the gold standard for "set and forget" investing in Singapore due to its tax efficiency (UCITS, Ireland-domiciled) and broad coverage. One fund. One monthly buy. Done. Note: a single all-equity fund cannot be tailored by risk level or region. Choose 2–3 ETFs to add a bond cushion or regional tilts. A lower-cost 2-fund alternative covering the same ground is XWR + EIMI (developed markets + emerging markets, blended TER well under VWRA\'s alone). Only worth the extra line if you don\'t mind two monthly buys instead of one.'
 
   } else if (prefs.simplicity === '2-3 ETFs') {
     title = 'The Core & Satellite Approach'
@@ -194,7 +194,7 @@ export function generatePortfolio(prefs) {
       allocations.push({ etf: ETFS.XUS, percentage: satelliteWeight })
     }
     const bondNote = bondWeight > 0 ? ` A ${bondWeight}% global bond sleeve (AGGU) cushions drawdowns to match your conservative risk preference.` : ''
-    whyItWorks = `By combining a global core (VWRA) with targeted satellites, you maintain broad diversification while tilting towards ${prefs.tilts.length > 0 ? prefs.tilts.join(' and ') : 'the US market'}. This approach balances stability with your specific market convictions.${bondNote} The US satellite is XUS rather than the older CSPX/VUSA — same S&P 500 exposure, lower fee, and it settles in SGD on SGX directly.`
+    whyItWorks = `By combining a global core (VWRA) with targeted satellites, you maintain broad diversification while tilting towards ${prefs.tilts.length > 0 ? prefs.tilts.join(' and ') : 'the US market'}. This approach balances stability with your specific market convictions.${bondNote} The US satellite is XUS rather than the older CSPX/VUSA: same S&P 500 exposure, lower fee, and it settles in SGD on SGX directly.`
 
   } else {
     title = 'The Precision Portfolio'
@@ -231,7 +231,7 @@ export function generatePortfolio(prefs) {
       }
     }
     const bondNote = bondW > 0 ? ' A global bond sleeve (AGGU) is included to temper volatility for your conservative risk preference.' : ''
-    whyItWorks = `This portfolio breaks down global exposure into specific building blocks, allowing you to overweight regions or factors (like small caps) while ensuring no single country dominates your entire wealth.${bondNote} The US building block is XUS, not CSPX — same index, lower fee, trades on SGX in SGD.`
+    whyItWorks = `This portfolio breaks down global exposure into specific building blocks, allowing you to overweight regions or factors (like small caps) while ensuring no single country dominates your entire wealth.${bondNote} The US building block is XUS, not CSPX: same index, lower fee, trades on SGX in SGD.`
   }
 
   return { title, description, allocations: normalizeTo100(allocations), whyItWorks }

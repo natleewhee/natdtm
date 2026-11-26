@@ -56,7 +56,7 @@ export default function SaleResults({
           <div>
             <div style={{ fontSize: C.sm, fontWeight: 700, color: C.redText }}>This sale is before your Minimum Occupation Period</div>
             <div style={{ fontSize: C.xs, color: C.muted, marginTop: 3, lineHeight: 1.5 }}>
-              You&apos;ve held this flat for {yearsHeld.toFixed(1)} years — HDB flats can&apos;t legally be sold before 5 years from purchase. The numbers below are shown for planning purposes only.
+              You&apos;ve held this flat for {yearsHeld.toFixed(1)} years. HDB flats can&apos;t legally be sold before 5 years from purchase. The numbers below are shown for planning purposes only.
             </div>
           </div>
         </div>
@@ -69,8 +69,8 @@ export default function SaleResults({
         value={`${isProfit ? '+' : '−'}${SGD(Math.abs(trueProfitLoss))}`}
         sentence={
           isProfit
-            ? `That's your true return on the property itself — sale proceeds minus everything it actually cost you, including the mortgage interest you paid along the way.`
-            : `That's the true cost of this property — what you paid in, minus what you got back, including the mortgage interest you paid along the way.`
+            ? `That's your true return on the property itself: sale proceeds minus everything it actually cost you, including the mortgage interest you paid along the way.`
+            : `That's the true cost of this property: what you paid in, minus what you got back, including the mortgage interest you paid along the way.`
         }
       />
 
@@ -90,7 +90,7 @@ export default function SaleResults({
             {yourTrueProfitLoss >= 0 ? '+' : '−'}{SGD(Math.abs(yourTrueProfitLoss))}
           </div>
           <p style={{ fontSize: C.xs, color: C.muted, margin: '6px 0 0', lineHeight: 1.5 }}>
-            Everything else on this page is the full household figure — the property, loan, and stamp duty are real, whole-property numbers either way. This is what the {isProfit ? 'profit' : 'loss'} means for you specifically.
+            Everything else on this page is the full household figure: the property, loan, and stamp duty are real, whole-property numbers either way. This is what the {isProfit ? 'profit' : 'loss'} means for you specifically.
           </p>
         </div>
       )}
@@ -104,7 +104,7 @@ export default function SaleResults({
             {personBTrueProfitLoss >= 0 ? '+' : '−'}{SGD(Math.abs(personBTrueProfitLoss))}
           </div>
           <p style={{ fontSize: C.xs, color: C.muted, margin: '6px 0 0', lineHeight: 1.5 }}>
-            Based on their own CPF entered below — leave it blank and this assumes they put in no CPF at all.
+            Based on their own CPF entered below. Leave it blank and this assumes they put in no CPF at all.
           </p>
         </div>
       )}
@@ -141,7 +141,7 @@ export default function SaleResults({
       )}
       {roiOnOutlay != null && roiOnPrice != null && (
         <p style={{ fontSize: C.xs, color: C.faint, lineHeight: 1.6, textAlign: 'center', margin: '0 0 8px' }}>
-          The second number is usually bigger — your loan meant the profit above was earned on a smaller amount of your own money ({SGD(totalOutlay)}), not the full purchase price.
+          The second number is usually bigger: your loan meant the profit above was earned on a smaller amount of your own money ({SGD(totalOutlay)}), not the full purchase price.
         </p>
       )}
 
@@ -150,7 +150,7 @@ export default function SaleResults({
           {SGD(totalCPFRefund)} of that goes back to your CPF, not your bank account
         </div>
         <div style={{ fontSize: C.xs, color: C.muted, lineHeight: 1.6 }}>
-          CPF used on a property (principal + the interest it would&apos;ve earned had it stayed in your Ordinary Account) must be refunded to your CPF, not paid to you as cash. It&apos;s still your money — just locked in CPF instead of spendable today.
+          CPF used on a property (principal + the interest it would&apos;ve earned had it stayed in your Ordinary Account) must be refunded to your CPF, not paid to you as cash. It&apos;s still your money, just locked in CPF instead of spendable today.
         </div>
       </div>
 
@@ -178,39 +178,39 @@ export default function SaleResults({
 
       <div style={{ marginTop: 28 }}>
         <div style={{ fontSize: C.xs, fontWeight: 700, color: C.muted, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 10 }}>
-          These are estimates — swap in your real numbers if you have them
+          These are estimates. Swap in your real numbers if you have them
         </div>
         {saleIsInFuture && (
           <p style={{ fontSize: C.xs, color: C.muted, lineHeight: 1.6, margin: '0 0 14px' }}>
-            Your sale date is in the future, so the four figures below ask for what&apos;s true <strong style={{ color: C.text }}>today</strong> — check your banking app and CPF portal now, not what you expect at sale. I&apos;ll project them forward to your sale date automatically.
+            Your sale date is in the future, so the four figures below ask for what&apos;s true <strong style={{ color: C.text }}>today</strong>. Check your banking app and CPF portal now, not what you expect at sale. I&apos;ll project them forward to your sale date automatically.
           </p>
         )}
         <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
           <OverrideField
             id="ov-balance" label="Outstanding loan balance today"
             computedValue={outstandingBalanceComputed}
-            computedHint="Estimated from your loan amount, rate, and tenure — assumes the rate never changed and no lump-sum repayments. Your banking app has the real figure as of right now, no matter how long ago you bought."
+            computedHint="Estimated from your loan amount, rate, and tenure, and assumes the rate never changed and no lump-sum repayments. Your banking app has the real figure as of right now, no matter how long ago you bought."
             overrideValue={outstandingOverride} onOverrideChange={onOutstandingOverride}
             formatValue={SGD}
           />
           <OverrideField
             id="ov-interest" label="Total mortgage interest paid to date"
             computedValue={totalInterestPaidComputed}
-            computedHint="Estimated by assuming every dollar of principal came from your regular monthly instalment. If you've ever made a lump-sum repayment, this will read too low — check your bank's mortgage interest statement, or estimate roughly as your monthly interest portion × months held so far."
+            computedHint="Estimated by assuming every dollar of principal came from your regular monthly instalment. If you've ever made a lump-sum repayment, this will read too low. Check your bank's mortgage interest statement, or estimate roughly as your monthly interest portion × months held so far."
             overrideValue={totalInterestOverride} onOverrideChange={onTotalInterestOverride}
             formatValue={SGD}
           />
           <OverrideField
             id="ov-cpf-principal" label="CPF principal today"
             computedValue={cpfPrincipalComputed}
-            computedHint="Defaults to your CPF used at purchase (+ any grant), assuming it hasn't grown since. If you've been servicing your mortgage via CPF OA, your CPF portal's Property panel shows today's real refundable principal — enter it here."
+            computedHint="Defaults to your CPF used at purchase (+ any grant), assuming it hasn't grown since. If you've been servicing your mortgage via CPF OA, your CPF portal's Property panel shows today's real refundable principal; enter it here."
             overrideValue={cpfPrincipalOverride} onOverrideChange={onCpfPrincipalOverride}
             formatValue={SGD}
           />
           <OverrideField
             id="ov-cpf" label="CPF accrued interest today"
             computedValue={cpfAccruedInterestComputed}
-            computedHint="Estimated at a flat 2.5% p.a. compounded since purchase. CPF Board computes this per-withdrawal from each withdrawal's own date — your CPF portal's Property panel has today's exact figure."
+            computedHint="Estimated at a flat 2.5% p.a. compounded since purchase. CPF Board computes this per-withdrawal from each withdrawal's own date. Your CPF portal's Property panel has today's exact figure."
             overrideValue={cpfInterestOverride} onOverrideChange={onCpfInterestOverride}
             formatValue={SGD}
           />
@@ -218,7 +218,7 @@ export default function SaleResults({
             <OverrideField
               id="ov-ssd" label="Seller's Stamp Duty"
               computedValue={ssdComputed}
-              computedHint={`Estimated from your sale price and how long you've held the property, using whichever holding-period schedule applied when you BOUGHT (properties bought before 4 Jul 2025 use the old 3-year schedule; on or after, the new 4-year one). Verify against IRAS — last rechecked ${SSD_AS_OF}.`}
+              computedHint={`Estimated from your sale price and how long you've held the property, using whichever holding-period schedule applied when you BOUGHT (properties bought before 4 Jul 2025 use the old 3-year schedule; on or after, the new 4-year one). Verify against IRAS. Last rechecked ${SSD_AS_OF}.`}
               overrideValue={ssdOverride} onOverrideChange={onSsdOverride}
               formatValue={SGD}
             />
@@ -265,7 +265,7 @@ export default function SaleResults({
           <Row label="= Cash outlay (derived)" value={SGD(cashOutlay)} bold tone={cashOutlayUnclear ? 'red' : undefined} />
           {cashOutlayUnclear && (
             <p style={{ fontSize: C.xs, color: C.redText, lineHeight: 1.6, margin: '4px 0 0' }}>
-              This came out negative — your loan + CPF add up to more than the price and fees combined. Double-check those figures above.
+              This came out negative. Your loan + CPF add up to more than the price and fees combined. Double-check those figures above.
             </p>
           )}
           <div style={{ height: 10 }} />

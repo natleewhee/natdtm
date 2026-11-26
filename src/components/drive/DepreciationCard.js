@@ -65,7 +65,7 @@ export function DepreciationCard({ r, tenure, visible }) {
               <span style={{fontSize:C.base,fontFamily:C.fontMono,fontWeight:700,color:C.blue}}>{SGD(costPerCoeYear)}/yr</span>
             </div>
             <p style={{fontSize:C.xs,color:C.blueText,margin:0,lineHeight:1.5,opacity:0.8}}>
-              Asking price ÷ {usefulYears.toFixed(1)} years of COE left — the clearest apples-to-apples metric when comparing used cars with different remaining COE. Car will be <strong>{ageAtExpiry.toFixed(1)} years old</strong> when this COE expires.
+              Asking price ÷ {usefulYears.toFixed(1)} years of COE left, the clearest apples-to-apples metric when comparing used cars with different remaining COE. Car will be <strong>{ageAtExpiry.toFixed(1)} years old</strong> when this COE expires.
             </p>
           </div>
         ) : (
@@ -93,15 +93,15 @@ export function DepreciationCard({ r, tenure, visible }) {
         )}
 
         <p style={{fontSize:C.sm,color:C.muted,lineHeight:1.75}}>
-          On top of your instalment of <strong style={{color:C.primary}}>{SGD(monthly)}</strong>, this car depreciates ~<strong style={{color:col}}>{SGD(deprAtTenure.monthlyDepr)}/mo</strong> — making the true effective cost <strong style={{color:C.primary}}>{SGD(monthly+deprAtTenure.monthlyDepr)}/mo</strong>.
+          On top of your instalment of <strong style={{color:C.primary}}>{SGD(monthly)}</strong>, this car depreciates ~<strong style={{color:col}}>{SGD(deprAtTenure.monthlyDepr)}/mo</strong>, making the true effective cost <strong style={{color:C.primary}}>{SGD(monthly+deprAtTenure.monthlyDepr)}/mo</strong>.
         </p>
         {/* COE/PARF inline explainer */}
         <details style={{marginTop:12}}>
           <summary style={{fontSize:C.xs,color:C.primary,cursor:'pointer',userSelect:'none',fontWeight:600}}>What is COE and PARF? →</summary>
           <div style={{marginTop:10,padding:'12px 14px',background:C.bg,borderRadius:C.r,border:`1px solid ${C.border}`,fontSize:C.xs,color:C.muted,lineHeight:1.7}}>
-            <p style={{margin:'0 0 8px'}}><strong style={{color:C.text}}>COE (Certificate of Entitlement)</strong> is a 10-year right to own a car in Singapore. The price is set by open bidding twice a month. It&apos;s bundled into your car&apos;s sticker price — the single most volatile component of what you pay.</p>
+            <p style={{margin:'0 0 8px'}}><strong style={{color:C.text}}>COE (Certificate of Entitlement)</strong> is a 10-year right to own a car in Singapore. The price is set by open bidding twice a month. It&apos;s bundled into your car&apos;s sticker price, the single most volatile component of what you pay.</p>
             <p style={{margin:'0 0 8px'}}><strong style={{color:C.text}}>ARF (Additional Registration Fee)</strong> is a government tax paid on registration, calculated as a % of the car&apos;s OMV. It ranges from 100% to 320% depending on OMV tier.</p>
-            <p style={{margin:'0 0 8px'}}><strong style={{color:C.text}}>PARF rebate</strong> is money you get back when scrapping a car under 10 years old — a percentage of your ARF paid. The older the car, the less you recover.</p>
+            <p style={{margin:'0 0 8px'}}><strong style={{color:C.text}}>PARF rebate</strong> is money you get back when scrapping a car under 10 years old: a percentage of your ARF paid. The older the car, the less you recover.</p>
             <p style={{margin:'0 0 8px'}}><strong style={{color:C.text}}>COE rebate</strong> is the pro-rated refund of unused COE months when you deregister early. Together, PARF + COE rebate is why Singapore cars always have a minimum scrap value.</p>
             <Link href="/drive/coe-explained" style={{color:C.primary,fontWeight:600,fontSize:C.xs}}>Full COE explainer with interactive calculator →</Link>
           </div>

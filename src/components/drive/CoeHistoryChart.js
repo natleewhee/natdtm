@@ -51,7 +51,7 @@ export function CoeHistoryChart() {
     return card(
       <>
         <p style={{fontSize:C.sm,color:C.muted,lineHeight:1.7,marginBottom:12}}>
-          Only one bidding exercise recorded so far — not enough for a trend line yet. This builds up over time.
+          Only one bidding exercise recorded so far, not enough for a trend line yet. This builds up over time.
         </p>
         <div style={{display:'grid',gridTemplateColumns:'minmax(0,1fr) minmax(0,1fr)',gap:8}}>
           <div style={{background:C.bg,borderRadius:C.r,padding:'10px 12px',border:`1px solid ${C.border}`}}>

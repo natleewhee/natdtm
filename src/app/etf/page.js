@@ -16,7 +16,7 @@ export default function LandingPage() {
     <div className={styles.page}>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify({
         '@context':'https://schema.org','@type':'WebApplication',
-        name:'WhatETF — nat does the math', url:'https://natdtm.vercel.app/etf',
+        name:'WhatETF · nat does the math', url:'https://natdtm.vercel.app/etf',
         description:'Illustrative ETF portfolio allocations for Singapore investors.',
         applicationCategory:'FinanceApplication', operatingSystem:'Web',
         offers:{'@type':'Offer', price:'0', priceCurrency:'SGD'},
@@ -31,10 +31,10 @@ export default function LandingPage() {
             Your ETF portfolio,<br/>worked out for you.
           </h1>
           <p className={styles.heroBody}>
-            Answer three questions about risk and simplicity — I&apos;ll hand you a real fund allocation with the math shown, right there. Runs entirely in your browser.
+            Answer three questions about risk and simplicity, and I&apos;ll hand you a real fund allocation with the math shown, right there. Runs entirely in your browser.
           </p>
           <Button href="/etf/preferences">
-            Check my portfolio — it&apos;s free
+            Start the 3 questions
           </Button>
           <div className={styles.heroBadges}>
             <TrustBadges tone="dark" items={['No sign-up', 'No data stored', 'No ads', 'No commissions']} />
@@ -48,7 +48,7 @@ export default function LandingPage() {
         {/* Sample output — real logic output, so visitors see the actual product before clicking through */}
         <div className={styles.sampleSection}>
           <div className={styles.sampleCard}>
-            <span className={styles.sampleLabel}>What you&apos;ll get — a real example</span>
+            <span className={styles.sampleLabel}>What you&apos;ll get: a real example</span>
             <h2 className={styles.sampleTitle}>{SAMPLE.title}</h2>
             <div className={styles.sampleBars}>
               {SAMPLE.allocations.map((a, i) => (
@@ -68,19 +68,41 @@ export default function LandingPage() {
         </div>
 
         <div className={styles.content}>
-          <div className={styles.featureGrid}>
-            {[
-              { icon: '🛡️', title: 'Singapore Optimised', body: 'Focus on Ireland-domiciled UCITS ETFs for tax efficiency. Less withholding tax than US-domiciled funds.' },
-              { icon: '📈', title: 'DCA Ready',           body: 'Designed for long-term dollar-cost averaging. Set a monthly amount, buy on schedule, let time do the work.' },
-              { icon: '🔢', title: 'Neutral Math',        body: 'No commissions, no sales agenda. Just transparent logic, open for anyone to verify.' },
-            ].map(f => (
-              <div key={f.title} className={styles.featureCard}>
-                <div className={styles.featureIcon}>{f.icon}</div>
-                <h3 className={styles.featureTitle}>{f.title}</h3>
-                <p className={styles.featureBody}>{f.body}</p>
+          <section className={styles.why} aria-labelledby="etf-why">
+            <div className={styles.whyIntro}>
+              <h2 id="etf-why" className={styles.whyTitle}>Why these funds, and not others</h2>
+              <p className={styles.whyLede}>Three rules decide every allocation. None of them pays me anything.</p>
+            </div>
+            <dl className={styles.whyList}>
+              <div className={styles.whyRow}>
+                <dt className={styles.whyTerm}>
+                  <span className={styles.whyFigure}>15%</span>
+                  <span>not 30%</span>
+                </dt>
+                <dd className={styles.whyBody}>
+                  <strong>Ireland-domiciled UCITS funds only.</strong> US-domiciled ETFs lose 30% of every dividend to US withholding tax; the Irish versions lose 15%. Over decades that gap compounds.
+                </dd>
               </div>
-            ))}
-          </div>
+              <div className={styles.whyRow}>
+                <dt className={styles.whyTerm}>
+                  <span className={styles.whyFigure}>Monthly</span>
+                  <span>not market-timed</span>
+                </dt>
+                <dd className={styles.whyBody}>
+                  <strong>Built for dollar-cost averaging.</strong> Pick a monthly amount, buy on schedule, and let time do the work. The plan never asks you to guess the market.
+                </dd>
+              </div>
+              <div className={styles.whyRow}>
+                <dt className={styles.whyTerm}>
+                  <span className={styles.whyFigure}>$0</span>
+                  <span>in commissions</span>
+                </dt>
+                <dd className={styles.whyBody}>
+                  <strong>Neutral math, shown in full.</strong> No affiliate links and no sales agenda. Every weight and fee is on <a href="/etf/the-math">the math page</a> for anyone to check.
+                </dd>
+              </div>
+            </dl>
+          </section>
         </div>
       </main>
 

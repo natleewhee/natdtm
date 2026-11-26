@@ -380,10 +380,10 @@ function ECITooltip() {
       </button>
       {open && (
         <div style={s.tooltipBox}>
-          Standard CI policies pay out at <strong>late-stage</strong> diagnosis —
+          Standard CI policies pay out at <strong>late-stage</strong> diagnosis:
           confirmed heart failure, late-stage cancer, etc. ECI cover pays out{' '}
           <strong>earlier</strong>, at a minor heart attack, early-stage cancer, or
-          initial stroke — when treatment is most intensive and costs are highest.
+          initial stroke, when treatment is most intensive and costs are highest.
           Check your policy document for &quot;early stage&quot; or &quot;special benefit&quot; to see
           if you have it.
         </div>
@@ -731,12 +731,12 @@ export default function CheckPage() {
         <>
           <label style={s.label}>Who depends on your income?</label>
           <p style={s.hint}>
-            This changes how much life/TPD cover you actually need — the
+            This changes how much life/TPD cover you actually need: the
             benchmark drops a lot if no one relies on your income.
           </p>
           <div style={s.optionGrid}>
             {[
-              { value: 'yes',    label: 'Yes — spouse, children, or parents' },
+              { value: 'yes',    label: 'Yes: spouse, children, or parents' },
               { value: 'no',     label: "No one depends on my income" },
               { value: 'unsure', label: "I'm not sure" },
             ].map(opt => (
@@ -756,7 +756,7 @@ export default function CheckPage() {
           <label style={s.label}>How would you describe your risk tolerance?</label>
           <p style={s.hint}>
             This scales the coverage benchmarks up or down. &quot;Balanced&quot; is the
-            standard most financial planners use — change it if you want to
+            standard most financial planners use. Change it if you want to
             deviate from that norm.
           </p>
           <div style={s.optionGrid}>
@@ -978,7 +978,7 @@ export default function CheckPage() {
         <>
           <label style={s.label}>How much do you pay for all policies?</label>
           <p style={s.hint}>
-            Add up all your insurance premiums — life, CI, hospitalisation, etc.
+            Add up all your insurance premiums: life, CI, hospitalisation, etc.
             Optional but improves your score accuracy.
           </p>
 
@@ -1038,7 +1038,7 @@ export default function CheckPage() {
         <>
           <label style={s.label}>Do you have disability income (DI) insurance?</label>
           <p style={s.hint}>
-            Optional, and doesn&apos;t affect your main score — but a temporary
+            Optional, and doesn&apos;t affect your main score, but a temporary
             disability that keeps you off work isn&apos;t covered by CI (which
             needs a diagnosis) or hospitalisation (which only covers the
             hospital stay).
@@ -1120,7 +1120,7 @@ export default function CheckPage() {
             border: '1px solid var(--color-accent)', borderRadius: '6px',
             fontSize: '12px', color: 'var(--color-accent)', fontWeight: 600,
           }}>
-            Restored what you last had for this profile — edit freely.
+            Restored what you last had for this profile. Edit freely.
           </div>
         )}
         {renderStep()}

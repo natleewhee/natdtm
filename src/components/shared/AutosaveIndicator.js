@@ -14,7 +14,7 @@ export default function AutosaveIndicator({ justSaved, C, style }) {
       transition: 'color 0.4s ease',
       ...style,
     }}>
-      {justSaved ? 'Saved to this profile ✓' : 'Autosaved to this profile as you type — nothing to press.'}
+      {justSaved ? 'Saved to this profile ✓' : 'Autosaved to this profile as you type. Nothing to press.'}
     </p>
   )
 }

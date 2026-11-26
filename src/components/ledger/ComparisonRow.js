@@ -58,20 +58,20 @@ export default function ComparisonRow({ columns, today }) {
             {columns.map(c => <Cell key={c.label} bold>{SGD(c.result.netWorthAtRetirement)}</Cell>)}
           </tr>
           <tr style={{ borderBottom: `1px solid ${C.border}` }}>
-            <Label>Mix at retirement — liquid</Label>
+            <Label>Mix at retirement (liquid)</Label>
             {columns.map(c => <Cell key={c.label}>{SGD(c.result.assetMix.liquid)}</Cell>)}
           </tr>
           <tr style={{ borderBottom: `1px solid ${C.border}` }}>
-            <Label>Mix at retirement — property</Label>
+            <Label>Mix at retirement (property)</Label>
             {columns.map(c => <Cell key={c.label}>{SGD(c.result.assetMix.property)}</Cell>)}
           </tr>
           <tr style={{ borderBottom: `1px solid ${C.border}` }}>
-            <Label>Mix at retirement — cash</Label>
+            <Label>Mix at retirement (cash)</Label>
             {columns.map(c => <Cell key={c.label}>{SGD(c.result.assetMix.cash)}</Cell>)}
           </tr>
           {columns.some(c => c.result.assetMix.car > 0) && (
             <tr style={{ borderBottom: `1px solid ${C.border}` }}>
-              <Label>Mix at retirement — car</Label>
+              <Label>Mix at retirement (car)</Label>
               {columns.map(c => <Cell key={c.label}>{SGD(c.result.assetMix.car || 0)}</Cell>)}
             </tr>
           )}

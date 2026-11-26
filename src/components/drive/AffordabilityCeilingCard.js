@@ -45,7 +45,7 @@ export function AffordabilityCeilingCard({ salary, down, tenure, existingDebt = 
         <span style={{fontSize:14}}>{ceiling.tdsrBinding ? '⚠️' : '💡'}</span>
         <p style={{fontSize:C.sm,color:ceiling.tdsrBinding?C.amberText:C.accentText,lineHeight:1.5}}>
           {ceiling.tdsrBinding
-            ? <>Limited by your <strong>existing debt</strong>, not comfort — at <strong>{SGD(Math.round(ceiling.maxMonthly))}/mo</strong> max instalment, this keeps you under the bank&apos;s 55% TDSR ceiling. Without that debt your comfort limit alone would allow ~<strong>{SGD(Math.round(ceiling.maxMonthlyComfort))}/mo</strong>.</>
+            ? <>Limited by your <strong>existing debt</strong>, not comfort: at <strong>{SGD(Math.round(ceiling.maxMonthly))}/mo</strong> max instalment, this keeps you under the bank&apos;s 55% TDSR ceiling. Without that debt your comfort limit alone would allow ~<strong>{SGD(Math.round(ceiling.maxMonthlyComfort))}/mo</strong>.</>
             : <>At <strong>{SGD(Math.round(ceiling.maxMonthly))}/mo</strong> max instalment, staying within this range keeps your car spend comfortably under 30% of take-home pay.</>}
         </p>
       </div>

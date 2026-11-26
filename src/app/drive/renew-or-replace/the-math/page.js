@@ -54,16 +54,16 @@ export default function RenewOrReplaceTheMath() {
         ]} />
 
         <H2>Comparing different horizons</H2>
-        <P>The options on offer don&apos;t share one horizon: a 5-year renewal is compared over 5 years, a 10-year renewal (or buying new) over 10 years, and a used car over however many years its COE has left. Because these differ, we don&apos;t compare total cost directly — every option is reduced to <strong>annual cost</strong> (see below), which normalises them to the same per-year unit so a 5-year and a 10-year option are genuinely comparable. All costs are in today&apos;s dollars (no inflation adjustment), which is conservative and standard for short-horizon personal finance calculations.</P>
+        <P>The options on offer don&apos;t share one horizon: a 5-year renewal is compared over 5 years, a 10-year renewal (or buying new) over 10 years, and a used car over however many years its COE has left. Because these differ, we don&apos;t compare total cost directly. Every option is reduced to <strong>annual cost</strong> (see below), which normalises them to the same per-year unit so a 5-year and a 10-year option are genuinely comparable. All costs are in today&apos;s dollars (no inflation adjustment), which is conservative and standard for short-horizon personal finance calculations.</P>
 
-        <H2>Renew Option — Cost Components</H2>
+        <H2>Renew Option: Cost Components</H2>
         <Table rows={[
           ['Renewal Period', 'Cost', 'Can Renew Again?', 'Note'],
-          ['5 years', '50% of PQP', 'No — car must be deregistered after', 'Only allowed once for Cat A/B cars'],
-          ['10 years', '100% of PQP', 'Yes — indefinitely', 'Full flexibility for ongoing ownership'],
+          ['5 years', '50% of PQP', 'No, car must be deregistered after', 'Only allowed once for Cat A/B cars'],
+          ['10 years', '100% of PQP', 'Yes, indefinitely', 'Full flexibility for ongoing ownership'],
         ]} />
-        <P><strong>COE Renewal cost — LTA official rules:</strong> The Prevailing Quota Premium (PQP) is the 3-month moving average of successful COE bids. LTA publishes it monthly. To renew for <strong>5 years, you pay 50% of PQP</strong>. To renew for <strong>10 years, you pay 100% of PQP</strong>. Source: onemotoring.lta.gov.sg/coe-renewal.</P>
-        <P><strong>Critical LTA rule for Cars (Cat A/B):</strong> The 5-year renewal can only be done <strong>once</strong>. After the 5-year renewal expires, the car must be deregistered — you cannot renew again. The 10-year renewal can be repeated indefinitely in 10-year blocks.</P>
+        <P><strong>COE renewal cost (LTA official rules):</strong> The Prevailing Quota Premium (PQP) is the 3-month moving average of successful COE bids. LTA publishes it monthly. To renew for <strong>5 years, you pay 50% of PQP</strong>. To renew for <strong>10 years, you pay 100% of PQP</strong>. Source: onemotoring.lta.gov.sg/coe-renewal.</P>
+        <P><strong>Critical LTA rule for Cars (Cat A/B):</strong> The 5-year renewal can only be done <strong>once</strong>. After the 5-year renewal expires, the car must be deregistered. You cannot renew again. The 10-year renewal can be repeated indefinitely in 10-year blocks.</P>
         <P><strong>Opportunity cost:</strong> By renewing, you give up the PARF rebate and COE rebate you would have received by scrapping now. These are real money you forgo, so we count them as a cost of renewal.</P>
         <P><strong>Recovery at end:</strong> At the end of the renewal period, any remaining PARF value (if car is under 10 years old) is deducted from total cost. The renewed COE is fully consumed so there is no COE rebate at the end.</P>
 
@@ -82,12 +82,12 @@ export default function RenewOrReplaceTheMath() {
         ]} />
         <P>ARF is calculated using the current tiered structure (effective Feb 2023): 100% of first S$20,000 OMV, 140% of next S$20,000, 190% of next S$20,000, 250% of next S$20,000, 320% above S$80,000.</P>
 
-        <H2>Buy New Option — Cost Components</H2>
+        <H2>Buy New Option: Cost Components</H2>
         <P><strong>Loan calculation:</strong> Flat-rate interest. Green/EV rate 2.08%, ICE rate 2.60%, Tesla 1.68% (MAS published rates). Monthly instalment = (loan + total interest) ÷ (tenure × 12).</P>
-        <P><strong>Recovered value at the horizon (10 years by default):</strong> There is no flat depreciation percentage — recovery is the same PARF-rebate-plus-COE-rebate model used everywhere else on this page, applied at the chosen horizon. PARF is calculated from net ARF (after any EV rebate) at the schedule above; the COE rebate is the unused-months share of the COE premium paid. Actual recovery varies significantly by car, COE level, and how many years you hold it — the main DriveReady calculator gives the precise per-car figure.</P>
+        <P><strong>Recovered value at the horizon (10 years by default):</strong> There is no flat depreciation percentage. Recovery is the same PARF-rebate-plus-COE-rebate model used everywhere else on this page, applied at the chosen horizon. PARF is calculated from net ARF (after any EV rebate) at the schedule above; the COE rebate is the unused-months share of the COE premium paid. Actual recovery varies significantly by car, COE level, and how many years you hold it. The main DriveReady calculator gives the precise per-car figure.</P>
 
         <H2>Maintenance Estimates by Brand</H2>
-        <P>Annual servicing costs are based on Singapore workshop data (2026) from ValuePenguin, Revol Carz, and authorised dealer published schedules. Age-related repair costs follow a curve based on owner community data — costs accelerate non-linearly after year 5.</P>
+        <P>Annual servicing costs are based on Singapore workshop data (2026) from ValuePenguin, Revol Carz, and authorised dealer published schedules. Age-related repair costs follow a curve based on owner community data: costs accelerate non-linearly after year 5.</P>
         <Table rows={[
           ['Category', 'Annual Servicing', 'Age repair yr 1–3', 'yr 4–6', 'yr 7–8', 'yr 9–10'],
           ['Japanese (Toyota, Honda, Nissan)', 'S$620–900', 'S$0', 'S$400–800', 'S$1,500–2,500', 'S$3,500–5,000'],
@@ -103,14 +103,14 @@ export default function RenewOrReplaceTheMath() {
         <P>Every option is reduced to a single comparable number: <strong>annual cost</strong>.</P>
         <Table rows={[
           ['Formula', 'Annual cost = (total money paid out − total money recovered) ÷ years of use'],
-          ['Why annual?', 'Options have different time horizons — 5yr renewal vs 10yr renewal vs buying new. Annual cost normalises them to the same unit so comparison is fair.'],
+          ['Why annual?', 'Options have different time horizons: 5yr renewal vs 10yr renewal vs buying new. Annual cost normalises them to the same unit so comparison is fair.'],
           ['What counts as "paid out"?', 'Renewal cost or purchase price + maintenance over the period + opportunity cost (scrap value given up by not scrapping now)'],
           ['What counts as "recovered"?', 'PARF rebate + COE rebate at the end of the period (when you eventually scrap or sell)'],
         ]} />
-        <P>For the <strong>used car</strong> option, we also show cost per remaining COE year — simply the purchase price divided by COE years left. This cuts through everything and shows what you are paying purely for the right to drive that car.</P>
+        <P>For the <strong>used car</strong> option, we also show cost per remaining COE year: simply the purchase price divided by COE years left. This cuts through everything and shows what you are paying purely for the right to drive that car.</P>
 
         <H2>Limitations</H2>
-        <P>This calculator does not account for: resale value (only scrap value), changes in insurance premiums with car age, road tax differences, petrol/EV charging costs, or financing availability changes. Recovered value at the comparison horizon is estimated from the PARF/COE model above — use the main DriveReady calculator for a more precise per-car depreciation figure.</P>
+        <P>This calculator does not account for: resale value (only scrap value), changes in insurance premiums with car age, road tax differences, petrol/EV charging costs, or financing availability changes. Recovered value at the comparison horizon is estimated from the PARF/COE model above. Use the main DriveReady calculator for a more precise per-car depreciation figure.</P>
 
         <div style={{ marginTop: 40, padding: 20, background: C.surface, borderRadius: C.rL, border: `1px solid ${C.border}`, fontSize: C.xs, color: C.faint, lineHeight: 1.7 }}>
           This tool is for educational purposes only. It does not constitute financial advice. All figures are estimates. Consult a MAS-licensed financial adviser before making any financial decision. Not affiliated with LTA, any car dealer, or any financial institution.

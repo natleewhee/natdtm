@@ -27,7 +27,7 @@ export default function HomePage() {
         The math behind your biggest Singapore money decisions.
       </h1>
       <p style={{ color: 'var(--l-sub)', maxWidth: '58ch', fontSize: 16, margin: '0 0 32px' }}>
-        No accounts, no upsells. Each tool shows exactly how it got to its answer —
+        No accounts, no upsells. Each tool shows exactly how it got to its answer:
         pick the decision you&apos;re facing.
       </p>
 

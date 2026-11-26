@@ -13,15 +13,15 @@ import { VerdictChip } from './ui'
 function warningText(w) {
   switch (w.warning) {
     case 'cash-shortfall':
-      return `This path runs cash about ${SGD(w.amount)} short — it may not be fundable as laid out.`
+      return `This path runs cash about ${SGD(w.amount)} short, so it may not be fundable as laid out.`
     case 'investment-shortfall':
       return `This path draws the investment balance about ${SGD(w.amount)} negative along the way.`
     case 'after-retirement':
-      return `A ${w.type.replace('-', ' ')} move at year ${w.year} is at or past retirement — ignored.`
+      return `A ${w.type.replace('-', ' ')} move at year ${w.year} is at or past retirement. Ignored.`
     case 'lump-after-retirement':
-      return `An education lump at year ${w.year} lands after retirement — ignored.`
+      return `An education lump at year ${w.year} lands after retirement. Ignored.`
     case 'payoff-after-retirement':
-      return `A loan/support payoff at year ${w.year} lands after retirement — the cost is carried to retirement.`
+      return `A loan/support payoff at year ${w.year} lands after retirement, so the cost is carried to retirement.`
     case 'sale-inputs-incomplete':
       return `Year ${w.year}: fill in the sale's purchase and sale dates.`
     case 'car-inputs-incomplete':
@@ -65,7 +65,7 @@ export default function ScenarioColumn({
 
       {isBaseline ? (
         <p style={{ fontSize: C.xs, color: C.faint, lineHeight: 1.5, margin: '0 0 12px' }}>
-          Your current path — no moves. Every scenario is measured against this.
+          Your current path, no moves. Every scenario is measured against this.
         </p>
       ) : (
         <MoveEditor

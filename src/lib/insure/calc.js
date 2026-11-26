@@ -40,7 +40,7 @@ export const BENCHMARKS = {
 export const RISK_PROFILES = {
   conservative: {
     label: 'Conservative',
-    description: 'Prioritise full replacement cover — err on the side of more.',
+    description: 'Prioritise full replacement cover, and err on the side of more.',
     ciMultiple: 7,
     lifeMultiple: 12,
   },
@@ -52,7 +52,7 @@ export const RISK_PROFILES = {
   },
   selfInsured: {
     label: 'Self-insured',
-    description: 'You have savings or other assets that can absorb some risk — lower benchmarks, more room for other goals.',
+    description: 'You have savings or other assets that can absorb some risk: lower benchmarks, more room for other goals.',
     ciMultiple: 3,
     lifeMultiple: 6,
   },
@@ -534,9 +534,9 @@ export function generateInsights(result) {
         ? "You're not sure about your hospitalisation cover"
         : "You have no hospitalisation cover",
       body: hosp.isUnsure
-        ? "You may already be covered under MediShield Life — all Singapore Citizens and PRs are enrolled automatically. What matters is whether you have an Integrated Shield Plan on top, which covers private or restructured hospital wards. Check your CPF statement or your insurer's app under 'Active Policies'."
+        ? "You may already be covered under MediShield Life. All Singapore Citizens and PRs are enrolled automatically. What matters is whether you have an Integrated Shield Plan on top, which covers private or restructured hospital wards. Check your CPF statement or your insurer's app under 'Active Policies'."
         : "A single hospitalisation without insurance can cost $10,000–$50,000 or more out of pocket. This is your most urgent gap to close before anything else.",
-      action: "Integrated Shield Plans start from around $200–400 a year for someone in their 20s or 30s — roughly the cost of one night in a B1 ward without cover. One conversation with a licensed adviser is all it takes to get this sorted.",
+      action: "Integrated Shield Plans start from around $200–400 a year for someone in their 20s or 30s, roughly the cost of one night in a B1 ward without cover. One conversation with a licensed adviser is all it takes to get this sorted.",
     });
   }
 
@@ -561,12 +561,12 @@ if (resilience.ci.score < 50) {
         ? "You're not sure about your critical illness cover"
         : "You have no critical illness coverage",
     body: hasAnyCi
-      ? `Your CI cover of ${prefix}${currentAmount} is below your ${ciMultipleLabel} income benchmark${loanClause} (${targetAmount}). A serious diagnosis like cancer or a stroke can stop your income for months — your cover needs to bridge that gap, not just pay for the first week of treatment.`
+      ? `Your CI cover of ${prefix}${currentAmount} is below your ${ciMultipleLabel} income benchmark${loanClause} (${targetAmount}). A serious diagnosis like cancer or a stroke can stop your income for months. Your cover needs to bridge that gap, not just pay for the first week of treatment.`
       : isUnsureCi
-        ? `Check your policy documents or your insurer's app for a critical illness rider or standalone plan. If you're not covered, a serious diagnosis means your savings take the full hit — lost income, treatment costs, and everything in between. Your benchmark is ${ciMultipleLabel} your annual income${loanClause} (${targetAmount}).`
-        : `Without CI cover, a serious diagnosis means your savings take the full hit — lost income, treatment costs, and everything in between. Your benchmark is ${ciMultipleLabel} your annual income${loanClause} (${targetAmount}).`,
+        ? `Check your policy documents or your insurer's app for a critical illness rider or standalone plan. If you're not covered, a serious diagnosis means your savings take the full hit: lost income, treatment costs, and everything in between. Your benchmark is ${ciMultipleLabel} your annual income${loanClause} (${targetAmount}).`
+        : `Without CI cover, a serious diagnosis means your savings take the full hit: lost income, treatment costs, and everything in between. Your benchmark is ${ciMultipleLabel} your annual income${loanClause} (${targetAmount}).`,
     action: hasAnyCi
-      ? "A CI top-up rider can often be added to your existing plan — usually cheaper than a new standalone policy. Ask an adviser to check if your current plan allows it."
+      ? "A CI top-up rider can often be added to your existing plan, and is usually cheaper than a new standalone policy. Ask an adviser to check if your current plan allows it."
       : "A standalone term CI plan is usually the most cost-efficient starting point. An adviser can compare options based on your age and health profile.",
   });
 }
@@ -578,8 +578,8 @@ if (resilience.ci.score < 50) {
       priority: 3,
       severity: 'info',
       title: "Your CI only covers late-stage illness",
-      body: "Standard CI policies pay out at late-stage diagnosis — confirmed heart failure, late-stage cancer, and so on. Early Critical Illness (ECI) cover pays out earlier, at a minor heart attack, early-stage cancer, or initial stroke, when treatment is most intensive and costs are at their highest.",
-      action: "ECI isn't usually a separate policy — it's a rider you can add to your existing CI plan. It takes one conversation with your adviser to check if yours allows it, and what it would cost.",
+      body: "Standard CI policies pay out at late-stage diagnosis: confirmed heart failure, late-stage cancer, and so on. Early Critical Illness (ECI) cover pays out earlier, at a minor heart attack, early-stage cancer, or initial stroke, when treatment is most intensive and costs are at their highest.",
+      action: "ECI isn't usually a separate policy. It's a rider you can add to your existing CI plan. It takes one conversation with your adviser to check if yours allows it, and what it would cost.",
     });
   }
 
@@ -615,7 +615,7 @@ if (resilience.ci.score < 50) {
       priority: 4,
       severity: 'info',
       title: "Your premiums may be higher than needed",
-      body: `You're spending ${pct}% of your annual income on insurance premiums. The general guideline is under 10–15%. This could mean you're holding expensive whole-life or investment-linked policies where a term equivalent would give you the same cover for less — freeing up cash for other financial goals.`,
+      body: `You're spending ${pct}% of your annual income on insurance premiums. The general guideline is under 10–15%. This could mean you're holding expensive whole-life or investment-linked policies where a term equivalent would give you the same cover for less, freeing up cash for other financial goals.`,
       action: "A policy review can identify where you're paying for coverage you don't need, or where a cheaper structure gives you the same protection. This is worth doing before your next renewal.",
     });
   }
@@ -627,7 +627,7 @@ if (resilience.ci.score < 50) {
       priority: 5,
       severity: 'nudge',
       title: "Your score is an estimate",
-      body: "You used approximate ranges for some of your coverage amounts. Your actual score may be higher or lower. Check your policy documents or your insurer's app for your exact sum assured — it's usually listed under 'Policy Details' or 'Coverage Summary'.",
+      body: "You used approximate ranges for some of your coverage amounts. Your actual score may be higher or lower. Check your policy documents or your insurer's app for your exact sum assured. It's usually listed under 'Policy Details' or 'Coverage Summary'.",
       action: "Return and update your score with exact figures. It takes under a minute and gives you a more accurate picture.",
     });
   }
@@ -645,7 +645,7 @@ if (resilience.ci.score < 50) {
         priority: 6,
         severity: 'nudge',
         title: "Disability income isn't covered in this score",
-        body: "If an injury or illness leaves you unable to work — even temporarily, not just at critical-illness severity — Disability Income (DI) insurance replaces part of your salary while you recover. It's a common Singapore blind spot: many people have CI and hospitalisation cover but no DI, even though a temporary work disability is statistically more likely than a critical illness diagnosis.",
+        body: "If an injury or illness leaves you unable to work (even temporarily, not just at critical-illness severity), Disability Income (DI) insurance replaces part of your salary while you recover. It's a common Singapore blind spot: many people have CI and hospitalisation cover but no DI, even though a temporary work disability is statistically more likely than a critical illness diagnosis.",
         action: "Ask your adviser whether your employer benefits or existing riders already cover this, and if not, what a DI rider or standalone policy would cost.",
       });
     } else if (di.score < 50) {
@@ -801,7 +801,7 @@ export function generateActionPlan(result) {
         ? 'Confirm whether you have an Integrated Shield Plan'
         : 'Get hospitalisation cover',
       detail: hosp.isUnsure
-        ? "Check your CPF statement or insurer app under 'Active Policies'. MediShield Life is automatic — what you're confirming is the Integrated Shield Plan on top."
+        ? "Check your CPF statement or insurer app under 'Active Policies'. MediShield Life is automatic. What you're confirming is the Integrated Shield Plan on top."
         : 'This is the most urgent gap: one hospital stay without cover can cost S$10,000–S$50,000+ out of pocket.',
       ask: 'Which Integrated Shield Plan tier fits my budget, and what would the annual premium be at my age?',
     });
@@ -845,7 +845,7 @@ export function generateActionPlan(result) {
       id: 'plan-over',
       title: `Review possible over-insurance on ${overPillars}`,
       detail: 'Your cover sits well above the benchmark. Extra cover is not wasted, but the premium difference may serve you better elsewhere.',
-      ask: 'If I reduced this cover to the benchmark, how much premium would I free up — and are there surrender costs or re-underwriting risks in changing it?',
+      ask: 'If I reduced this cover to the benchmark, how much premium would I free up, and are there surrender costs or re-underwriting risks in changing it?',
     });
   }
 
@@ -853,7 +853,7 @@ export function generateActionPlan(result) {
     items.push({
       id: 'plan-premium',
       title: 'Review your total premium spend',
-      detail: `You're spending ${(premium.ratio * 100).toFixed(1)}% of income on premiums — above the 15% guideline.`,
+      detail: `You're spending ${(premium.ratio * 100).toFixed(1)}% of income on premiums, above the 15% guideline.`,
       ask: 'Which of my policies have the highest premium-to-cover ratio, and would a term equivalent give the same protection for less?',
     });
   }
@@ -1019,12 +1019,12 @@ export function explainPillar(id, result) {
   switch (id) {
     case 'hosp': {
       if (hosp.passed) {
-        return "You have hospitalisation cover — a serious illness won't immediately mean unaffordable ward bills. This pillar is a pass/fail gate: since you're covered, it doesn't cap your overall score.";
+        return "You have hospitalisation cover, so a serious illness won't immediately mean unaffordable ward bills. This pillar is a pass/fail gate: since you're covered, it doesn't cap your overall score.";
       }
       if (hosp.isUnsure) {
-        return "You're not sure if you're covered. All Singapore Citizens and PRs get MediShield Life automatically, but that only covers subsidised public wards — check if you also have an Integrated Shield Plan for private or restructured wards. Because this is unconfirmed, your overall score is capped at 50 until it's resolved.";
+        return "You're not sure if you're covered. All Singapore Citizens and PRs get MediShield Life automatically, but that only covers subsidised public wards. Check if you also have an Integrated Shield Plan for private or restructured wards. Because this is unconfirmed, your overall score is capped at 50 until it's resolved.";
       }
-      return "You have no hospitalisation cover on file. This is a pass/fail gate, not a partial score — without it, your overall score is capped at 50 regardless of how well covered you are elsewhere, because a single hospital stay could still wipe out your savings.";
+      return "You have no hospitalisation cover on file. This is a pass/fail gate, not a partial score. Without it, your overall score is capped at 50 regardless of how well covered you are elsewhere, because a single hospital stay could still wipe out your savings.";
     }
 
     case 'ci': {
@@ -1032,35 +1032,35 @@ export function explainPillar(id, result) {
       const ciMultipleLabel = `${adequateMultiple}×`;
       if (hasCI !== 'yes') {
         return hasCI === 'unsure'
-          ? `You're not sure if you have critical illness (CI) cover, so this scores 0. Your benchmark for adequate cover is ${formatSGD(target)} — ${ciMultipleLabel} your annual income${loanNote}.`
-          : `You have no CI cover, so this scores 0. Your benchmark for adequate cover is ${formatSGD(target)} — ${ciMultipleLabel} your annual income${loanNote}.`;
+          ? `You're not sure if you have critical illness (CI) cover, so this scores 0. Your benchmark for adequate cover is ${formatSGD(target)}: ${ciMultipleLabel} your annual income${loanNote}.`
+          : `You have no CI cover, so this scores 0. Your benchmark for adequate cover is ${formatSGD(target)}: ${ciMultipleLabel} your annual income${loanNote}.`;
       }
       if (amount >= target * BENCHMARKS.OVER_INSURED_MULTIPLE) {
-        return `Your CI cover of ${formatSGD(amount)} is well above your ${formatSGD(target)} benchmark (${ciMultipleLabel} income${loanNote}) — capped at 100, but you may be over-insured here. Extra CI cover isn't wasted since claims pay a lump sum once, but if the gap is large, the premium difference could likely do more for you in an underinsured area, or in savings.`;
+        return `Your CI cover of ${formatSGD(amount)} is well above your ${formatSGD(target)} benchmark (${ciMultipleLabel} income${loanNote}). It's capped at 100, but you may be over-insured here. Extra CI cover isn't wasted since claims pay a lump sum once, but if the gap is large, the premium difference could likely do more for you in an underinsured area, or in savings.`;
       }
       if (score >= 100) {
-        return `Your CI cover of ${formatSGD(amount)} meets your ${formatSGD(target)} benchmark (${ciMultipleLabel} income${loanNote}) — a full score, and not far enough above it to flag as over-insurance.`;
+        return `Your CI cover of ${formatSGD(amount)} meets your ${formatSGD(target)} benchmark (${ciMultipleLabel} income${loanNote}). That's a full score, and not far enough above it to flag as over-insurance.`;
       }
       const shortfall = target - amount;
-      return `Your CI cover of ${formatSGD(amount)} is ${formatSGD(shortfall)} below your ${formatSGD(target)} benchmark (${ciMultipleLabel} income${loanNote}), so this pillar scores ${score}/100 — proportional to how much of the benchmark you've reached.`;
+      return `Your CI cover of ${formatSGD(amount)} is ${formatSGD(shortfall)} below your ${formatSGD(target)} benchmark (${ciMultipleLabel} income${loanNote}), so this pillar scores ${score}/100, in proportion to how much of the benchmark you've reached.`;
     }
 
     case 'eci': {
       const { boost, amount } = resilience.eci;
       if (hasCI !== 'yes') {
-        return "ECI is a rider on a CI policy, so it doesn't apply until you have CI cover — this scores 0 until that gap is closed.";
+        return "ECI is a rider on a CI policy, so it doesn't apply until you have CI cover. This scores 0 until that gap is closed.";
       }
       if (boost >= 20) {
-        return `Your ECI cover of ${formatSGD(amount)} is at or above 1.5× your income — full marks. This is already strong early-stage protection; more ECI cover beyond this level has limited extra benefit.`;
+        return `Your ECI cover of ${formatSGD(amount)} is at or above 1.5× your income, so full marks. This is already strong early-stage protection; more ECI cover beyond this level has limited extra benefit.`;
       }
       if (boost >= 10) {
-        return `Your ECI cover of ${formatSGD(amount)} is between 0.8× and 1.5× your income — partial credit. Topping up toward 1.5× your income would get you the remaining points here.`;
+        return `Your ECI cover of ${formatSGD(amount)} is between 0.8× and 1.5× your income, so partial credit. Topping up toward 1.5× your income would get you the remaining points here.`;
       }
       if (boost > 0) {
-        return `Your ECI cover of ${formatSGD(amount)} is below 0.8× your income — light protection, worth only a small boost.`;
+        return `Your ECI cover of ${formatSGD(amount)} is below 0.8× your income: light protection, worth only a small boost.`;
       }
       return hasECI === 'unsure'
-        ? "You're not sure if you have ECI — check your policy for an \"early stage\" or \"special benefit\" clause. Until confirmed, this scores 0."
+        ? "You're not sure if you have ECI. Check your policy for an \"early stage\" or \"special benefit\" clause. Until confirmed, this scores 0."
         : "You don't have ECI cover, so your CI policy likely only pays out at late-stage diagnosis. This scores 0.";
     }
 
@@ -1075,10 +1075,10 @@ export function explainPillar(id, result) {
           : `You have no life/TPD cover, so this scores 0. Your benchmark is ${lifeBenchmarkLabel}.`;
       }
       if (amount >= target * BENCHMARKS.OVER_INSURED_MULTIPLE) {
-        return `Your life/TPD cover of ${formatSGD(amount)} (${multiple.toFixed(1)}× income) is well above your ${lifeBenchmarkLabel} — capped at 100, but you may be over-insured here. Worth checking whether that premium could be better used elsewhere, unless you have specific reasons (e.g. estate planning, business needs) for the extra cover.`;
+        return `Your life/TPD cover of ${formatSGD(amount)} (${multiple.toFixed(1)}× income) is well above your ${lifeBenchmarkLabel}. It's capped at 100, but you may be over-insured here. Worth checking whether that premium could be better used elsewhere, unless you have specific reasons (e.g. estate planning, business needs) for the extra cover.`;
       }
       if (score >= 100) {
-        return `Your life/TPD cover of ${formatSGD(amount)} meets your ${lifeBenchmarkLabel} — a full score, and not far enough above it to flag as over-insurance.`;
+        return `Your life/TPD cover of ${formatSGD(amount)} meets your ${lifeBenchmarkLabel}. That's a full score, and not far enough above it to flag as over-insurance.`;
       }
       const shortfall = target - amount;
       return `Your life/TPD cover of ${formatSGD(amount)} (${multiple.toFixed(1)}× income) is ${formatSGD(shortfall)} below your ${lifeBenchmarkLabel}, so this pillar scores ${score}/100.`;
@@ -1090,23 +1090,23 @@ export function explainPillar(id, result) {
       }
       const pct = (premium.ratio * 100).toFixed(1);
       if (premium.score === 100) {
-        return `You're spending ${pct}% of your income on premiums — at or below the 10% guideline, so this scores full marks. Spending this little isn't a red flag by itself, but it's worth double-checking the gaps above aren't the reason why.`;
+        return `You're spending ${pct}% of your income on premiums, at or below the 10% guideline, so this scores full marks. Spending this little isn't a red flag by itself, but it's worth double-checking the gaps above aren't the reason why.`;
       }
       if (premium.isOverpaying) {
-        return `You're spending ${pct}% of your income on premiums — above the 15% guideline, so this scores 0. This often means whole-life or investment-linked policies, where a term-insurance equivalent would give the same cover for less.`;
+        return `You're spending ${pct}% of your income on premiums, above the 15% guideline, so this scores 0. This often means whole-life or investment-linked policies, where a term-insurance equivalent would give the same cover for less.`;
       }
-      return `You're spending ${pct}% of your income on premiums — between the 10% efficient guideline and the 15% overpay threshold, so this scores partial marks. Not alarming, but there may be room to trim.`;
+      return `You're spending ${pct}% of your income on premiums, between the 10% efficient guideline and the 15% overpay threshold, so this scores partial marks. Not alarming, but there may be room to trim.`;
     }
 
     case 'di': {
       if (di.score === null) {
-        return "You haven't answered whether you have disability income (DI) cover. This is supplementary — it doesn't affect your main score — but it's worth checking, since it's a common gap even for well-insured people.";
+        return "You haven't answered whether you have disability income (DI) cover. This is supplementary and doesn't affect your main score, but it's worth checking, since it's a common gap even for well-insured people.";
       }
       if (inputs.hasDI !== 'yes') {
-        return `You have no DI cover, so this scores 0. The benchmark is ${formatSGD(di.target)}/month — 60% of your gross monthly income, the typical DI payout cap. This is separate from your main score and doesn't affect it.`;
+        return `You have no DI cover, so this scores 0. The benchmark is ${formatSGD(di.target)}/month: 60% of your gross monthly income, the typical DI payout cap. This is separate from your main score and doesn't affect it.`;
       }
       if (di.score >= 100) {
-        return `Your DI cover of ${formatSGD(di.amount)}/month meets the ${formatSGD(di.target)}/month benchmark (60% of gross income) — a full score on this supplementary check.`;
+        return `Your DI cover of ${formatSGD(di.amount)}/month meets the ${formatSGD(di.target)}/month benchmark (60% of gross income), a full score on this supplementary check.`;
       }
       const shortfall = di.target - di.amount;
       return `Your DI cover of ${formatSGD(di.amount)}/month is ${formatSGD(shortfall)}/month below the ${formatSGD(di.target)}/month benchmark, so this scores ${di.score}/100. This is separate from your main score and doesn't affect it.`;

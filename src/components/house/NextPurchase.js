@@ -57,7 +57,7 @@ export default function NextPurchase({ saleResult }) {
                 </div>
               ))}
               <p style={{ fontSize: 10, color: C.faint, marginTop: 8, lineHeight: 1.5 }}>
-                Reference rates as of {ABSD_AS_OF}, before any remission (e.g. married couples). Doesn&apos;t account for your specific situation — verify on IRAS and enter your own figure above.
+                Reference rates as of {ABSD_AS_OF}, before any remission (e.g. married couples). Doesn&apos;t account for your specific situation. Verify on IRAS and enter your own figure above.
               </p>
             </div>
           )}
@@ -111,7 +111,7 @@ export default function NextPurchase({ saleResult }) {
               <div style={{ display: 'flex', justifyContent: 'space-between', padding: '6px 0', fontSize: C.sm, color: C.text }}><span>At {newMortgageRate || 0}% over {newLoanTenure || 0} years</span><span style={{ fontFamily: C.fontMono, fontWeight: 700 }}>{SGD(result.newMonthlyInstalment)}/mo</span></div>
             </div>
             <p style={{ fontSize: C.xs, color: C.faint, lineHeight: 1.6, marginTop: 14 }}>
-              Cash and CPF are treated as interchangeable here for simplicity — in practice some costs may need to be cash-only depending on your CPF withdrawal limits, so confirm with your banker or lawyer before relying on this.
+              Cash and CPF are treated as interchangeable here for simplicity. In practice some costs may need to be cash-only depending on your CPF withdrawal limits, so confirm with your banker or lawyer before relying on this.
             </p>
           </ExploreSection>
         </div>

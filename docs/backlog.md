@@ -34,21 +34,9 @@ against the actual source, not just the rubric's hard-ban list.
 
 - ~~**The exact same hero shell is copy-pasted across 6 of 8 verticals.**~~ Fixed in PR #34: `ToolHero` (`center` / `left` layouts) replaces the pasted bands; InsureCheck and WhatETF keep their own heroes.
 - ~~**A single shared `TrustBadges` component renders an identical 4-pill trust row under every hero**~~ Fixed in PR #34: each tool lists only its own claims; the shared 'Zero data collected / Free, forever' pair is `TRUST_COMMON`, defined once.
-- **Duplicate CTA copy template.** `etf` and `insure` both render
-  `"Check my {noun} — it's free"` as their primary CTA
-  (`src/app/etf/page.js:37`, `src/app/insure/page.js:87`) — same
-  sentence shape, same em-dash, different noun.
-- **~380 visible em-dashes in rendered copy**, not just comments —
-  hero subtext, hints, disclaimers, CTA labels, error messages, right
-  down to `data-status`'s own UI strings. Confirmed by reading the
-  actual JSX text nodes, not a blind grep. taste-skill's hard ban is
-  zero; going to zero site-wide is a copy-voice rewrite touching
-  dozens of files, not a mechanical find-replace (an em-dash often
-  needs restructuring the sentence, not just swapping punctuation).
-- **`etf`'s "what you'll get" section is a literal 3-equal-column
-  feature-card row** (Singapore Optimised / DCA Ready / Neutral Math,
-  each an icon + heading + 2-line description) — the other explicitly
-  banned pattern, on top of the centered hero above it.
+- ~~**Duplicate CTA copy template.**~~ Fixed in the 2026-11-26 design-polish PR: WhatETF's hero CTA is "Start the 3 questions", InsureCheck's is "Score my cover in 3 minutes".
+- ~~**~380 visible em-dashes in rendered copy.**~~ Fixed in the 2026-11-26 design-polish PR: every em-dash in rendered copy (pages, components, `lib` message strings, metadata titles) was rewritten sentence by sentence. Brand titles use `·` as the separator. What's left is comments, the `OgCard` trim regex, lone `—` empty-value placeholders, and test names.
+- ~~**`etf`'s "what you'll get" section is a literal 3-equal-column feature-card row.**~~ Fixed in the 2026-11-26 design-polish PR: replaced with a ruled "Why these funds" list (heading column plus three rows, each led by a figure: 15% / Monthly / $0).
 
 Not flagged: no AI-purple gradients, no marquees, no Fraunces/Instrument
 Serif — the Clay & Cream palette and Space Grotesk/Inter/JetBrains Mono
@@ -74,7 +62,7 @@ padding, small touch targets) came back clean: either never present, or
 already fixed by PR #11's touch-target work. One item, logged rather
 than acted on:
 
-- **Inter is named in Impeccable's own "overused font" list** (with
+- **Decided 2026-11-26: keep Inter.** Inter is named in Impeccable's own "overused font" list (with
   Arial and system defaults), and it's `nat does the math`'s body font
   in the Space Grotesk (display) / Inter (body) / JetBrains Mono
   (numerics) stack. Not treating this as a defect — it's a deliberate,

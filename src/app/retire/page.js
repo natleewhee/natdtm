@@ -207,7 +207,7 @@ export default function RetireWellPage() {
       <ToolHero
         eyebrow="Singapore Retirement Readiness Calculator"
         title="Will you actually have enough?"
-        lede="CPF projected properly, your investments stress-tested — not a rule of thumb."
+        lede="CPF projected properly, your investments stress-tested. Not a rule of thumb."
         badges={['CPF contribution rates modeled', 'Depletion-tested, not just the 3% rule']}
       />
 
@@ -237,7 +237,7 @@ export default function RetireWellPage() {
         )}
         {houseApplied && (
           <div style={{ fontSize: C.xs, color: C.muted, marginBottom: 12 }}>
-            Prefilled from your HouseMuch sale — <button type="button" onClick={() => setHouseApplied(false)} style={{ background: 'none', border: 'none', padding: 0, color: C.accent, fontWeight: 600, cursor: 'pointer', fontSize: C.xs, fontFamily: C.fontBody }}>show that banner again</button>.
+            Prefilled from your HouseMuch sale. <button type="button" onClick={() => setHouseApplied(false)} style={{ background: 'none', border: 'none', padding: 0, color: C.accent, fontWeight: 600, cursor: 'pointer', fontSize: C.xs, fontFamily: C.fontBody }}>show that banner again</button>.
           </div>
         )}
 
@@ -245,7 +245,7 @@ export default function RetireWellPage() {
 
           {restoredFromSave && (
             <div style={{ marginBottom: 16, padding: '10px 14px', background: C.accentBg, border: `1px solid ${C.accent}55`, borderRadius: C.r, fontSize: C.xs, color: C.accent, fontWeight: 600 }}>
-              Restored what you last saved to this profile — edit freely.
+              Restored what you last saved to this profile. Edit freely.
             </div>
           )}
 
@@ -253,14 +253,14 @@ export default function RetireWellPage() {
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 16 }}>
             <NumberInput id="current-age" label="Current age" value={currentAge} onChange={e => setCurrentAge(e.target.value)} />
             <NumberInput id="retirement-age" label="Envisioned retirement age" value={retirementAge} onChange={e => setRetirementAge(e.target.value)} />
-            <NumberInput id="life-expectancy" label="Plan until age" hint="For the depletion stress-test — life expectancy is a median, not a ceiling, so this defaults conservatively higher" value={lifeExpectancy} onChange={e => setLifeExpectancy(e.target.value)} />
+            <NumberInput id="life-expectancy" label="Plan until age" hint="For the depletion stress-test. Life expectancy is a median, not a ceiling, so this defaults conservatively higher" value={lifeExpectancy} onChange={e => setLifeExpectancy(e.target.value)} />
           </div>
 
           <SectionDivider label="Income & CPF" />
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 16 }}>
             <MoneyInput id="salary" label="Monthly salary" value={salary} onChange={e => setSalary(e.target.value)} />
             <PercentInput id="salary-growth" label="Annual salary growth" hint="Long-run SG wage growth is roughly 3%" value={salaryGrowthRate} onChange={e => setSalaryGrowthRate(e.target.value)} />
-            <MoneyInput id="annual-bonus" label="Annual bonus / AWS" hint="Optional — capped by the CPF annual wage ceiling" value={annualBonus} onChange={e => setAnnualBonus(e.target.value)} />
+            <MoneyInput id="annual-bonus" label="Annual bonus / AWS" hint="Optional, capped by the CPF annual wage ceiling" value={annualBonus} onChange={e => setAnnualBonus(e.target.value)} />
           </div>
 
           {cpfPreview && (
@@ -298,7 +298,7 @@ export default function RetireWellPage() {
             {hasHousingDraw && (
               <div style={{ marginTop: 12, display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 16 }}>
                 <MoneyInput id="housing-oa-monthly" label="Monthly OA drawn for housing" value={housingOaMonthly} onChange={e => setHousingOaMonthly(e.target.value)} />
-                <NumberInput id="housing-oa-until" label="Until age" hint="Loan payoff age — leave blank if ongoing to retirement" value={housingOaUntilAge} onChange={e => setHousingOaUntilAge(e.target.value)} />
+                <NumberInput id="housing-oa-until" label="Until age" hint="Loan payoff age. Leave blank if it runs to retirement" value={housingOaUntilAge} onChange={e => setHousingOaUntilAge(e.target.value)} />
               </div>
             )}
           </div>
@@ -325,7 +325,7 @@ export default function RetireWellPage() {
                 </div>
                 <MoneyInput
                   id="rstu-amount" label={rstuFrequency === 'annual' ? 'Annual RSTU top-up' : 'Monthly RSTU top-up'}
-                  hint="Capped at the prevailing Full Retirement Sum — see the math"
+                  hint="Capped at the prevailing Full Retirement Sum (see the math)"
                   value={rstuAmount} onChange={e => setRstuAmount(e.target.value)}
                 />
               </div>
@@ -342,7 +342,7 @@ export default function RetireWellPage() {
           {driveNumbers && (
             <p style={{ marginTop: 10, fontSize: C.xs, color: C.muted, lineHeight: 1.5 }}>
               From DriveReady{driveNumbers.carLabel ? `, your ${driveNumbers.carLabel}` : ''}: you&apos;re committing {SGD(driveNumbers.monthlyInstalment)}/month to a car loan.
-              {num(investmentMonthly) > 0 && ` That's ${(driveNumbers.monthlyInstalment / (num(investmentMonthly) || 1)).toFixed(1)}× your planned monthly investment — worth weighing against each other.`}
+              {num(investmentMonthly) > 0 && ` That's ${(driveNumbers.monthlyInstalment / (num(investmentMonthly) || 1)).toFixed(1)}× your planned monthly investment, which is worth weighing against each other.`}
             </p>
           )}
 
@@ -361,24 +361,24 @@ export default function RetireWellPage() {
             {hasSrs && (
               <div style={{ marginTop: 12, display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 16 }}>
                 <MoneyInput id="srs-balance" label="Current SRS balance" value={srsBalance} onChange={e => setSrsBalance(e.target.value)} />
-                <MoneyInput id="srs-monthly" label="Monthly SRS contribution" hint={`Tax relief — see TaxWise for exactly how much this saves you now`} value={srsMonthly} onChange={e => setSrsMonthly(e.target.value)} />
+                <MoneyInput id="srs-monthly" label="Monthly SRS contribution" hint={`Tax relief. See TaxWise for exactly how much this saves you now`} value={srsMonthly} onChange={e => setSrsMonthly(e.target.value)} />
               </div>
             )}
             {hasSrs && (
               <p style={{ marginTop: 8, fontSize: C.xs, color: C.muted, lineHeight: 1.5 }}>
-                Grown at the same {investmentReturn || 0}% return assumed for your investments above, to age {SRS_RETIREMENT_AGE} — the statutory retirement age that unlocks penalty-free withdrawal.
+                Grown at the same {investmentReturn || 0}% return assumed for your investments above, to age {SRS_RETIREMENT_AGE}, the statutory retirement age that unlocks penalty-free withdrawal.
               </p>
             )}
           </div>
 
           <SectionDivider label="Retirement target" />
           <p style={{ marginTop: -8, marginBottom: 16, fontSize: C.xs, color: C.muted, lineHeight: 1.5 }}>
-            Checked against your combined portfolio at retirement — investments plus CPF Ordinary and Special Account (MediSave excluded, since it&apos;s earmarked for healthcare, not withdrawals).
+            Checked against your combined portfolio at retirement: investments plus CPF Ordinary and Special Account (MediSave excluded, since it&apos;s earmarked for healthcare, not withdrawals).
           </p>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 16 }}>
-            <MoneyInput id="desired-withdrawal" label="Desired monthly withdrawal" hint="In today's dollars — I'll escalate it for inflation" value={desiredMonthlyWithdrawal} onChange={e => setDesiredMonthlyWithdrawal(e.target.value)} />
+            <MoneyInput id="desired-withdrawal" label="Desired monthly withdrawal" hint="In today's dollars. I'll escalate it for inflation" value={desiredMonthlyWithdrawal} onChange={e => setDesiredMonthlyWithdrawal(e.target.value)} />
             <PercentInput id="inflation-rate" label="Inflation assumption" value={inflationRate} onChange={e => setInflationRate(e.target.value)} />
-            <PercentInput id="swr" label="Safe withdrawal rate" hint="3% is a conservative default — see the math" value={swr} onChange={e => setSwr(e.target.value)} />
+            <PercentInput id="swr" label="Safe withdrawal rate" hint="3% is a conservative default (see the math)" value={swr} onChange={e => setSwr(e.target.value)} />
           </div>
 
           <div style={{ marginTop: 24 }}>

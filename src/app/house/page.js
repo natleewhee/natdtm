@@ -265,7 +265,7 @@ export default function HouseMuchPage() {
       <ToolHero
         eyebrow="Singapore Property Profit/Loss Calculator"
         title="What did this house really make you?"
-        lede="Sale price minus purchase price is a myth. I'll show you the real number — CPF and all."
+        lede="Sale price minus purchase price is a myth. I'll show you the real number, CPF and all."
         badges={['CPF accrued interest, done right', 'BSD/SSD auto-computed']}
       />
 
@@ -281,7 +281,7 @@ export default function HouseMuchPage() {
 
           {restoredFromSave && (
             <div style={{ marginBottom: 16, padding: '10px 14px', background: C.accentBg, border: `1px solid ${C.accent}55`, borderRadius: C.r, fontSize: C.xs, color: C.accent, fontWeight: 600 }}>
-              Restored what you last saved to this profile — edit freely.
+              Restored what you last saved to this profile. Edit freely.
             </div>
           )}
 
@@ -294,7 +294,7 @@ export default function HouseMuchPage() {
             />
             <p style={{ marginTop: 8, fontSize: C.xs, color: C.muted, lineHeight: 1.5 }}>
               {propertyType === 'hdb'
-                ? 'HDB flats have a 5-year Minimum Occupation Period before you can sell. No Seller\'s Stamp Duty applies. If you received a CPF Housing Grant, fold it into "CPF used at purchase" below — it\'s refunded the same way as any other CPF principal.'
+                ? 'HDB flats have a 5-year Minimum Occupation Period before you can sell. No Seller\'s Stamp Duty applies. If you received a CPF Housing Grant, fold it into "CPF used at purchase" below. It\'s refunded the same way as any other CPF principal.'
                 : 'Private property may owe Seller\'s Stamp Duty if sold within 3 years of purchase.'}
             </p>
           </div>
@@ -303,9 +303,9 @@ export default function HouseMuchPage() {
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 16 }}>
             <MoneyInput id="purchase-price" label="Purchase price" value={purchasePrice} onChange={e => setPurchasePrice(e.target.value)} />
             <DateInput id="purchase-date" label="Purchase date" value={purchaseDate} onChange={e => setPurchaseDate(e.target.value)} />
-            <MoneyInput id="cpf-outlay" label={isJointLoan ? "Person A's CPF used at purchase" : 'CPF used at purchase'} hint="The full amount withdrawn at the time of purchase — down payment plus any fees paid via CPF (stamp duty, legal, valuation). Not your current CPF principal, which is entered separately below if you're servicing your mortgage via CPF" value={cpfOutlay} onChange={e => setCpfOutlay(e.target.value)} />
+            <MoneyInput id="cpf-outlay" label={isJointLoan ? "Person A's CPF used at purchase" : 'CPF used at purchase'} hint="The full amount withdrawn at the time of purchase: down payment plus any fees paid via CPF (stamp duty, legal, valuation). Not your current CPF principal, which is entered separately below if you're servicing your mortgage via CPF" value={cpfOutlay} onChange={e => setCpfOutlay(e.target.value)} />
             <MoneyInput
-              id="cpf-interest-known" label={isJointLoan ? "Person A's CPF accrued interest today" : 'CPF accrued interest today'} hint="Optional — your CPF portal's Property panel shows this live, right now, regardless of when you bought. Leave blank to estimate."
+              id="cpf-interest-known" label={isJointLoan ? "Person A's CPF accrued interest today" : 'CPF accrued interest today'} hint="Optional. Your CPF portal's Property panel shows this live, right now, regardless of when you bought. Leave blank to estimate."
               value={cpfInterestOverride} onChange={e => setCpfInterestOverride(e.target.value)}
             />
             <MoneyInput id="loan-taken" label="Loan taken" value={loanTaken} onChange={e => setLoanTaken(e.target.value)} />
@@ -313,13 +313,13 @@ export default function HouseMuchPage() {
             <NumberInput id="loan-tenure" label="Loan tenure" value={loanTenure} onChange={e => setLoanTenure(e.target.value)} suffix="years" />
             <MoneyInput id="legal-fees-purchase" label="Legal fees at purchase" value={legalFeesAtPurchase} onChange={e => setLegalFeesAtPurchase(e.target.value)} />
             <FeeInput
-              id="agent-fees-purchase" label="Agent fees at purchase" hint="Often S$0 — buyers don't usually pay an agent in SG"
+              id="agent-fees-purchase" label="Agent fees at purchase" hint="Often S$0, since buyers don't usually pay an agent in SG"
               base={num(purchasePrice)} mode={agentFeeAtPurchaseMode} onModeChange={setAgentFeeAtPurchaseMode}
               value={agentFeeAtPurchaseRaw} onChange={e => setAgentFeeAtPurchaseRaw(e.target.value)}
             />
             <MoneyInput id="sunk-cost" label="Renovation / sunk costs" hint="Optional" value={sunkCost} onChange={e => setSunkCost(e.target.value)} />
             <MoneyInput
-              id="monthly-cpf-servicing" label="...of your instalment, paid from CPF-OA" hint="Optional — only if you're still paying this mortgage off. Your own share only, same as above. Not used in the profit/loss above; only handed off to FlowState's cash-vs-CPF split."
+              id="monthly-cpf-servicing" label="...of your instalment, paid from CPF-OA" hint="Optional, only if you're still paying this mortgage off. Your own share only, same as above. Not used in the profit/loss above; only handed off to FlowState's cash-vs-CPF split."
               value={monthlyCpfServicing} onChange={e => setMonthlyCpfServicing(e.target.value)}
             />
           </div>
@@ -361,28 +361,28 @@ export default function HouseMuchPage() {
                     </div>
                     {(numSigned(myIncome) + numSigned(coBorrowerIncome)) > 0 && (
                       <p style={{ marginTop: 8, fontSize: C.xs, color: C.muted, lineHeight: 1.5 }}>
-                        Your share: <strong style={{ color: C.accent, fontFamily: C.fontMono }}>{effectiveSharePct.toFixed(1)}%</strong> — your income ÷ combined income, the same apportionment a bank uses on a joint TDSR assessment.
+                        Your share: <strong style={{ color: C.accent, fontFamily: C.fontMono }}>{effectiveSharePct.toFixed(1)}%</strong>: your income ÷ combined income, the same apportionment a bank uses on a joint TDSR assessment.
                       </p>
                     )}
                   </div>
                 )}
                 {shareMode === 'manual' && yourSharePct === '' ? (
                   <p style={{ marginTop: 6, fontSize: C.xs, color: C.redText, lineHeight: 1.5 }}>
-                    Empty is treated as a 0% share — your cash and profit/loss figures below will come out as zero until you enter a number.
+                    Empty is treated as a 0% share, so your cash and profit/loss figures below will come out as zero until you enter a number.
                   </p>
                 ) : shareMode === 'manual' && (numSigned(yourSharePct) < 0 || numSigned(yourSharePct) > 100) && (
                   <p style={{ marginTop: 6, fontSize: C.xs, color: C.redText, lineHeight: 1.5 }}>
-                    A share has to be between 0% and 100% — this will be treated as {numSigned(yourSharePct) > 100 ? '100%' : '0%'}.
+                    A share has to be between 0% and 100%, so this will be treated as {numSigned(yourSharePct) > 100 ? '100%' : '0%'}.
                   </p>
                 )}
                 <p style={{ marginTop: 8, fontSize: C.xs, color: C.muted, lineHeight: 1.5 }}>
-                  Purchase price, loan, and stamp duty above should still be the real, full figures for the property — this only scales the profit/loss and cash figures below down to your share. Each of you tracks your own CPF below; on sale, it&apos;s refunded to each of you first, then what&apos;s left is split (see below).
+                  Purchase price, loan, and stamp duty above should still be the real, full figures for the property. This only scales the profit/loss and cash figures below down to your share. Each of you tracks your own CPF below; on sale, it&apos;s refunded to each of you first, then what&apos;s left is split (see below).
                 </p>
                 <div style={{ marginTop: 18, paddingTop: 16, borderTop: `1px solid ${C.border}` }}>
                   <div style={{ fontSize: C.sm, fontWeight: 600, color: C.primary, marginBottom: 10 }}>Person B&apos;s CPF</div>
                   <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 16 }}>
-                    <MoneyInput id="person-b-cpf-outlay" label="Person B's CPF used at purchase" hint="Their own CPF withdrawn at purchase — down payment plus any fees paid via their CPF. Leave blank if only you used CPF." value={personBCpfOutlay} onChange={e => setPersonBCpfOutlay(e.target.value)} />
-                    <MoneyInput id="person-b-cpf-interest-known" label="Person B's CPF accrued interest today" hint="Optional — from their CPF portal's Property panel. Leave blank to estimate." value={personBCpfInterestOverride} onChange={e => setPersonBCpfInterestOverride(e.target.value)} />
+                    <MoneyInput id="person-b-cpf-outlay" label="Person B's CPF used at purchase" hint="Their own CPF withdrawn at purchase: down payment plus any fees paid via their CPF. Leave blank if only you used CPF." value={personBCpfOutlay} onChange={e => setPersonBCpfOutlay(e.target.value)} />
+                    <MoneyInput id="person-b-cpf-interest-known" label="Person B's CPF accrued interest today" hint="Optional, from their CPF portal's Property panel. Leave blank to estimate." value={personBCpfInterestOverride} onChange={e => setPersonBCpfInterestOverride(e.target.value)} />
                   </div>
                 </div>
                 <div style={{ marginTop: 18, paddingTop: 16, borderTop: `1px solid ${C.border}` }}>
@@ -394,7 +394,7 @@ export default function HouseMuchPage() {
                   />
                   <p style={{ marginTop: 8, fontSize: C.xs, color: C.muted, lineHeight: 1.5 }}>
                     {cashProceedsSplitMode === 'outlay'
-                      ? "CPF is refunded to each of you first, then what's left is split by how much cash each of you actually put in at purchase — not your ownership share."
+                      ? "CPF is refunded to each of you first, then what's left is split by how much cash each of you actually put in at purchase, not your ownership share."
                       : "CPF is refunded to each of you first, then what's left is split by your ownership share above."}
                   </p>
                 </div>
@@ -414,7 +414,7 @@ export default function HouseMuchPage() {
           )}
           {num(purchasePrice) > 0 && num(loanTaken) + num(cpfOutlay) > 0 && cashOutlayPreview < 0 && (
             <p style={{ marginTop: 6, fontSize: C.xs, color: C.redText, lineHeight: 1.5 }}>
-              That&apos;s negative — your loan + CPF add up to more than the price and fees combined. Double check those figures.
+              That&apos;s negative: your loan + CPF add up to more than the price and fees combined. Double check those figures.
             </p>
           )}
 

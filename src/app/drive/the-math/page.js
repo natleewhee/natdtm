@@ -78,7 +78,7 @@ export default function TheMathPage() {
         <Section noBorder>
           <div style={{ paddingTop: 40, paddingBottom: 8 }}>
             <h1 style={{ fontFamily: C.fontDisplay, fontSize: 'clamp(26px,5vw,36px)', color: C.primary, margin: '0 0 12px', lineHeight: 1.2 }}>How DriveReady calculates your numbers</h1>
-            <BodyText>DriveReady doesn&apos;t guess. Every figure — monthly instalment, depreciation, COE rebate, true cost — comes from Singapore&apos;s actual financing and vehicle regulations. Here&apos;s exactly what we do.</BodyText>
+            <BodyText>DriveReady doesn&apos;t guess. Every figure (monthly instalment, depreciation, COE rebate, true cost) comes from Singapore&apos;s actual financing and vehicle regulations. Here&apos;s exactly what we do.</BodyText>
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginTop: 16 }}>
               {['MAS loan-to-value rules', 'Budget 2026 PARF schedule', 'LTA COE framework', 'ARF tiered structure'].map(tag => (
                 <span key={tag} style={{ fontSize: 12, color: C.accentText, background: C.accentBg, padding: '4px 12px', borderRadius: 100, fontWeight: 500 }}>✓ {tag}</span>
@@ -104,8 +104,8 @@ export default function TheMathPage() {
             {[
               { emoji: '💳', label: 'Monthly instalment',    desc: 'Based on your actual loan amount, the applicable flat rate, and your chosen tenure.' },
               { emoji: '📉', label: 'Affordability verdict', desc: 'We compare your instalment against 30% of your take-home pay (after 20% CPF deduction). Above 45% is flagged as high.' },
-              { emoji: '🏚', label: 'Depreciation',          desc: 'True annual and monthly value loss — ARF paid, PARF rebate at sale, COE rebate, and paper value at your tenure.' },
-              { emoji: '💰', label: 'Cost of ownership',     desc: 'Total cash out at milestone years — downpayment plus all instalments — net of what you&apos;d recover.' },
+              { emoji: '🏚', label: 'Depreciation',          desc: 'True annual and monthly value loss: ARF paid, PARF rebate at sale, COE rebate, and paper value at your tenure.' },
+              { emoji: '💰', label: 'Cost of ownership',     desc: 'Total cash out at milestone years: downpayment plus all instalments, net of what you&apos;d recover.' },
             ].map(item => (
               <div key={item.label} style={{ display: 'flex', gap: 12, padding: 14, background: C.surface, borderRadius: 10, border: `1px solid ${C.border}`, alignItems: 'flex-start' }}>
                 <span style={{ fontSize: 20, flexShrink: 0 }}>{item.emoji}</span>
@@ -158,7 +158,7 @@ Monthly burden ratio = monthly instalment ÷ take-home pay
 Verdicts:
   ≤ 30%  → Affordable     (safe zone)
   31–45% → Stretch        (manageable, limited buffer)
-  > 45%  → Out of Range   (caution — high financial stress risk)
+  > 45%  → Out of Range   (caution: high financial stress risk)
   
   Also flagged: Insufficient Downpayment
     (when cash on hand < required minimum downpayment)`}</Formula>
@@ -166,7 +166,7 @@ Verdicts:
         </Section>
 
         {/* ARF */}
-        <Section title="ARF — Additional Registration Fee">
+        <Section title="ARF: Additional Registration Fee">
           <BodyText>ARF is a tax paid at registration, calculated as a percentage of the car&apos;s OMV. It&apos;s part of what you pay at purchase and what you recover (partly) at deregistration.</BodyText>
           <Formula>{`ARF tiers (tiered on OMV, effective Feb 2023):
   OMV up to S$20,000:           100% of OMV
@@ -181,9 +181,9 @@ Example (OMV = S$50,000):
         </Section>
 
         {/* PARF */}
-        <Section title="PARF — Preferential Additional Registration Fee rebate">
+        <Section title="PARF: Preferential Additional Registration Fee rebate">
           <BodyText>When you deregister your car (scrap or export), you get back a portion of the ARF you paid. This is the PARF rebate. It decreases the longer you keep the car.</BodyText>
-          <Formula>{`PARF schedule — cars with COEs from the 2nd Feb 2026 bidding exercise onwards:
+          <Formula>{`PARF schedule: cars with COEs from the 2nd Feb 2026 bidding exercise onwards:
   Deregistered at year ≤5:    30% of ARF paid (capped at S$30,000)
   Deregistered at year 6:     25% of ARF paid (capped at S$30,000)
   Deregistered at year 7:     20% of ARF paid (capped at S$30,000)
@@ -192,7 +192,7 @@ Example (OMV = S$50,000):
   Deregistered at year 10:     5% of ARF paid (capped at S$30,000)
   After year 10:                0% (no PARF rebate)
 
-PARF schedule — earlier cars (COE before that exercise):
+PARF schedule: earlier cars (COE before that exercise):
   Deregistered at year ≤5:    75% of ARF paid (capped at S$60,000)
   Deregistered at year 6:     70% of ARF paid (capped at S$60,000)
   Deregistered at year 7:     65% of ARF paid (capped at S$60,000)
@@ -206,17 +206,17 @@ PARF schedule — earlier cars (COE before that exercise):
         </Section>
 
         {/* COE */}
-        <Section title="COE — Certificate of Entitlement rebate">
+        <Section title="COE: Certificate of Entitlement rebate">
           <BodyText>Your COE entitles you to use the vehicle for 10 years. If you deregister early, you get back the unused portion pro-rated by remaining months.</BodyText>
           <Formula>{`COE rebate = (remaining months ÷ 120) × COE paid
 
-COE paid is NOT estimated by subtracting costs from price — it's taken
+COE paid is NOT estimated by subtracting costs from price. It's taken
 directly: the live Cat A/B premium from data.gov.sg's mirror of LTA's
 COE dataset when available, or the last-known fallback premium
 otherwise, matched to your car's own category (Cat A: OMV ≤ S$20,000,
 Cat B: above).
 
-This is an estimate where fallback figures are used — actual COE
+This is an estimate where fallback figures are used. Actual COE
 premiums change every bidding exercise.`}</Formula>
         </Section>
 

@@ -29,7 +29,7 @@ export default function Footer() {
         <div className="shell-footer-col">
           <p className="shell-footer-brand">ndtm</p>
           <p className="shell-footer-blurb">
-            Free calculators I built for the big Singapore financial decisions — insurance, cars, ETFs, property, retirement, tax.
+            Free calculators I built for the big Singapore financial decisions: insurance, cars, ETFs, property, retirement, tax.
             Every number is shown, not just the verdict.
           </p>
         </div>

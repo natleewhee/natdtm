@@ -53,7 +53,7 @@ function RebalanceContent() {
         <div className={styles.content}>
           <h1 className={styles.title}>Rebalancing Helper</h1>
           <p className={styles.subtitle}>
-            Enter your current holdings and your next contribution — we&apos;ll show how to split it so your portfolio drifts back toward target, without needing to sell anything.
+            Enter your current holdings and your next contribution. We&apos;ll show how to split it so your portfolio drifts back toward target, without needing to sell anything.
           </p>
 
           {!portfolio ? (
@@ -132,7 +132,7 @@ function RebalanceContent() {
               </div>
 
               <p className={styles.footnote}>
-                This buys only underweight funds first with your new money — no selling required, which avoids triggering any realised gains. If a fund is already at or above target, it gets $0 this round until the others catch up.
+                This buys only underweight funds first with your new money, no selling required, which avoids triggering any realised gains. If a fund is already at or above target, it gets $0 this round until the others catch up.
               </p>
             </div>
           )}

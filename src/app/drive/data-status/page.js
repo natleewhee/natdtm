@@ -54,16 +54,16 @@ function fmtWhen(iso) {
 // so the page says what to DO, not just that something is broken.
 const COE_STATES = {
   live:           { tone: 'ok',   label: 'Working',        fix: null },
-  upstream_error: { tone: 'warn', label: 'data.gov.sg error', fix: 'data.gov.sg returned an unexpected status or marked the request unsuccessful. Usually transient — retry shortly.' },
+  upstream_error: { tone: 'warn', label: 'data.gov.sg error', fix: 'data.gov.sg returned an unexpected status or marked the request unsuccessful. Usually transient. Retry shortly.' },
   no_results:     { tone: 'warn', label: 'No Cat A/B rows',fix: 'The dataset responded, but no row paired into a full Cat A/Cat B bidding exercise within the rows requested.' },
-  stale_data:     { tone: 'warn', label: 'Stale sort?',    fix: 'The newest row found looks implausibly old, which usually means the sort parameter isn\'t being honoured — check the note above for the exact month found.' },
+  stale_data:     { tone: 'warn', label: 'Stale sort?',    fix: 'The newest row found looks implausibly old, which usually means the sort parameter isn\'t being honoured. Check the note above for the exact month found.' },
   network_error:  { tone: 'bad',  label: 'Unreachable',    fix: 'Could not reach data.gov.sg at all. Check outbound network access from your deployment.' },
 }
 
 const CATALOG_STATES = {
   supabase:     { tone: 'ok',   label: 'Supabase',       fix: null },
   'bundled-json': { tone: 'ok', label: 'Bundled snapshot', fix: null },
-  unknown:      { tone: 'bad',  label: 'Failed',          fix: 'The catalog route did not return a recognised source — check /drive/api/car-catalog directly.' },
+  unknown:      { tone: 'bad',  label: 'Failed',          fix: 'The catalog route did not return a recognised source. Check /drive/api/car-catalog directly.' },
 }
 
 const STALE_CATALOG_AFTER_DAYS = 14 // refreshed weekly; two missed cycles is worth flagging
@@ -159,7 +159,7 @@ export default function DataStatusPage() {
     carsState = {
       tone: 'warn',
       label: 'Stale',
-      fix: `Car prices are ${carsStaleDays} days old — the weekly refresh (.github/workflows/refresh-data.yml) should keep this under ~7. Check whether its auto-merge is going through: github.com/natleewhee/natdtm/pulls?q=is:pr+refresh+car`,
+      fix: `Car prices are ${carsStaleDays} days old; the weekly refresh (.github/workflows/refresh-data.yml) should keep this under ~7. Check whether its auto-merge is going through: github.com/natleewhee/natdtm/pulls?q=is:pr+refresh+car`,
     }
   }
 
@@ -192,8 +192,8 @@ export default function DataStatusPage() {
         {!loading && (
           <>
             <Card
-              title="COE premiums — data.gov.sg"
-              subtitle="LTA's own COE Bidding Results dataset, mirrored by data.gov.sg — no API key needed. Powers the live Cat A / Cat B premiums used in every calculation."
+              title="COE premiums · data.gov.sg"
+              subtitle="LTA's own COE Bidding Results dataset, mirrored by data.gov.sg. No API key needed. Powers the live Cat A / Cat B premiums used in every calculation."
               tone={coeState.tone}
               verdict={coeState.label}
             >
@@ -216,7 +216,7 @@ export default function DataStatusPage() {
             </Card>
 
             <Card
-              title="Car prices — weekly catalog refresh"
+              title="Car prices · weekly catalog refresh"
               subtitle="Refreshed weekly from LTA's Car Cost Update PDF by a GitHub Actions job, not fetched live per request (that reliably got blocked by onemotoring.lta.gov.sg). Powers the official selling prices per model."
               tone={carsState.tone}
               verdict={carsState.label}

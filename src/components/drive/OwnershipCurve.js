@@ -23,7 +23,7 @@ export function OwnershipCurve({ coo, tenure, visible }) {
   const hasNaN = coo.some(d => isNaN(d.cashOut) || isNaN(d.paperValue))
   if (hasNaN) return (
     <div style={{background:C.surface,border:`1.5px solid ${C.border}`,borderRadius:C.rL,padding:24,marginBottom:14,textAlign:'center'}}>
-      <span style={{fontSize:C.sm,color:C.muted}}>Ownership curve unavailable — check car data.</span>
+      <span style={{fontSize:C.sm,color:C.muted}}>Ownership curve unavailable. Check car data.</span>
     </div>
   )
 
@@ -172,7 +172,7 @@ export function OwnershipCurve({ coo, tenure, visible }) {
               ))}
             </div>
             <p style={{fontSize: '12px',color:C.faint,margin:'8px 0 0',lineHeight:1.5}}>
-              &quot;Recovery value&quot; = PARF rebate + unused COE months. &quot;True cost&quot; = cash out minus recovery. Negative true cost in early years means you&apos;d recover more than you&apos;ve paid out — not a profit, but the loan still has to be repaid.
+              &quot;Recovery value&quot; = PARF rebate + unused COE months. &quot;True cost&quot; = cash out minus recovery. Negative true cost in early years means you&apos;d recover more than you&apos;ve paid out. Not a profit, but the loan still has to be repaid.
             </p>
           </div>
         )}

@@ -327,7 +327,7 @@ function ActionPlan({ items }) {
         </span>
       </div>
       <p style={{ fontSize: '12px', color: 'var(--color-faint)', margin: '0 0 12px' }}>
-        Check items off as you go — this list is saved on this device.
+        Check items off as you go. This list is saved on this device.
       </p>
       <div style={{
         background: 'var(--color-surface)',
@@ -516,7 +516,7 @@ export default function ResultsPage() {
         }}>
           {result.finalScore <= 39 && "Your coverage has critical gaps that need urgent attention."}
           {result.finalScore >= 40 && result.finalScore <= 59 && "You're partially covered, but there are meaningful gaps worth closing."}
-          {result.finalScore >= 60 && result.finalScore <= 79 && "You're in reasonable shape — a few areas to tighten up."}
+          {result.finalScore >= 60 && result.finalScore <= 79 && "You're in reasonable shape: a few areas to tighten up."}
           {result.finalScore >= 80 && "Your coverage is strong. Here's the full breakdown."}
         </p>
 
@@ -584,7 +584,7 @@ export default function ResultsPage() {
           color: 'var(--color-faint)',
           margin: '0 0 12px',
         }}>
-          Tap a row for why it scored that way — including if you might be over-insured.
+          Tap a row for why it scored that way, including if you might be over-insured.
         </p>
 
         {/* Coverage breakdown */}
@@ -803,7 +803,7 @@ export default function ResultsPage() {
 
             <button
               onClick={() => {
-                const text = `My Insurance Score: ${result.finalScore}/100 — ${result.band.label}. How covered are you? Check yours free at InsureCheck — a nat does the math project. ${SITE_URL}`
+                const text = `My Insurance Score: ${result.finalScore}/100 · ${result.band.label}. How covered are you? Check yours free at InsureCheck, a nat does the math project. ${SITE_URL}`
                 if (navigator.share) navigator.share({ text })
                 else navigator.clipboard.writeText(text)
                 setShareModal(false)
