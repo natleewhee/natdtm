@@ -10,7 +10,7 @@
 // actual filing — same posture as HouseMuch's stamp duty tables and
 // RetireWell's CPF rates.
 
-import { CPF_CONTRIBUTION_TABLE, CPF_OW_CEILING, CPF_ANNUAL_CEILING } from '../retire/cpf.js'
+import { CPF_OW_CEILING, CPF_ANNUAL_CEILING, contributionRatesForAge, cpfBandsForYear } from '../retire/cpf.js'
 
 // Verified against IRAS in docs/statutory-sources.md (audited 2026-08-31).
 export const TAX_RATES_AS_OF = '2026-01-01' // YA2024 onwards resident rate schedule
@@ -87,36 +87,22 @@ export function earnedIncomeRelief(age) {
   return band.amount
 }
 
-// Employee's own share of the CPF contribution, by age band. The
-// contribution TABLE in retire/cpf.js models only the combined total
-// (which is all that matters for what lands in CPF); take-home pay
-// depends on the employee half specifically, so it lives here.
-//
-// Boundaries are deliberately CONTIGUOUS (see the matching comment on
-// CPF_CONTRIBUTION_TABLE in retire/cpf.js) — a fractional age like 55.5
-// typed into the age field must still match exactly one band, not fall
-// through the gap between non-contiguous bounds (55,56) etc. into the
-// 71+ band.
-export const CPF_EMPLOYEE_SHARE = [
-  { minAge: 0, maxAge: 55, rate: 0.20 },
-  { minAge: 55, maxAge: 60, rate: 0.17 },
-  { minAge: 60, maxAge: 65, rate: 0.115 },
-  { minAge: 65, maxAge: 70, rate: 0.075 },
-  { minAge: 70, maxAge: 999, rate: 0.05 },
-]
+// Employee's own share of the CPF contribution, by age band. It lives
+// beside the totals and allocation in retire/cpf.js's CPF_RATE_SCHEDULE
+// (one table, date-aware), so a rate change is made in one place.
+// CPF_EMPLOYEE_SHARE is this year's bands, for the-math page.
+export const CPF_EMPLOYEE_SHARE = cpfBandsForYear().map(({ minAge, maxAge, employee }) => ({ minAge, maxAge, rate: employee }))
 
 /**
- * Employee's own share of the CPF contribution rate for a given age,
- * using contiguous age-band boundaries so a fractional age (e.g. 55.5)
- * always matches exactly one band.
+ * Employee's own share of the CPF contribution rate for a given age.
+ * Uses the same contiguous age bands as the contribution table, so a
+ * fractional age (e.g. 55.5) always matches exactly one band.
  * @param {number} age - Age in years.
+ * @param {number} [year] - Calendar year whose rates apply (defaults to this year).
  * @returns {number} The employee CPF contribution rate (e.g. 0.20 for 20%).
  */
-export function cpfEmployeeRateForAge(age) {
-  const a = Number(age) || 0
-  const band = CPF_EMPLOYEE_SHARE.find(b => a >= b.minAge && a <= b.maxAge)
-    || CPF_EMPLOYEE_SHARE[CPF_EMPLOYEE_SHARE.length - 1]
-  return band.rate
+export function cpfEmployeeRateForAge(age, year) {
+  return contributionRatesForAge(Number(age) || 0, year).employee
 }
 
 // Monthly employee CPF contribution, capped at the Ordinary Wage

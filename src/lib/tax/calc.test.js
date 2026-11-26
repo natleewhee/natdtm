@@ -72,23 +72,33 @@ test('earnedIncomeRelief scales with age', () => {
   assert.equal(earnedIncomeRelief(70), 8_000)
 })
 
-test('cpfEmployeeRateForAge steps down through the age bands', () => {
-  assert.equal(cpfEmployeeRateForAge(30), 0.20)
-  assert.equal(cpfEmployeeRateForAge(58), 0.17)
-  assert.equal(cpfEmployeeRateForAge(63), 0.115)
-  assert.equal(cpfEmployeeRateForAge(68), 0.075)
-  assert.equal(cpfEmployeeRateForAge(75), 0.05)
+// CPF Board: employee share (wages > S$750) from 1 Jan 2026 and 1 Jan 2027.
+// (Previously pinned to the 2025 shares of 17% / 11.5% for 55-60 / 60-65,
+// which overstated take-home pay for those ages.)
+test('cpfEmployeeRateForAge steps down through the age bands (2026 rates)', () => {
+  assert.equal(cpfEmployeeRateForAge(30, 2026), 0.20)
+  assert.equal(cpfEmployeeRateForAge(58, 2026), 0.18)
+  assert.equal(cpfEmployeeRateForAge(63, 2026), 0.125)
+  assert.equal(cpfEmployeeRateForAge(68, 2026), 0.075)
+  assert.equal(cpfEmployeeRateForAge(75, 2026), 0.05)
+})
+
+test('cpfEmployeeRateForAge picks up the 1 Jan 2027 senior-worker increase', () => {
+  assert.equal(cpfEmployeeRateForAge(58, 2027), 0.19)
+  assert.equal(cpfEmployeeRateForAge(63, 2027), 0.13)
+  assert.equal(cpfEmployeeRateForAge(30, 2027), 0.20)
+  assert.equal(cpfEmployeeRateForAge(68, 2030), 0.075)
 })
 
 test('cpfEmployeeRateForAge has no gap at fractional ages on any boundary (age field is free-text and accepts e.g. "55.5")', () => {
-  assert.equal(cpfEmployeeRateForAge(55), 0.20, 'exactly 55 stays in the below-55 band')
-  assert.equal(cpfEmployeeRateForAge(55.5), 0.17, '55.5 must not fall through to the 71+ band')
-  assert.equal(cpfEmployeeRateForAge(60), 0.17)
-  assert.equal(cpfEmployeeRateForAge(60.5), 0.115, '60.5 must not fall through to the 71+ band')
-  assert.equal(cpfEmployeeRateForAge(65), 0.115)
-  assert.equal(cpfEmployeeRateForAge(65.5), 0.075, '65.5 must not fall through to the 71+ band')
-  assert.equal(cpfEmployeeRateForAge(70), 0.075)
-  assert.equal(cpfEmployeeRateForAge(70.5), 0.05)
+  assert.equal(cpfEmployeeRateForAge(55, 2026), 0.20, 'exactly 55 stays in the below-55 band')
+  assert.equal(cpfEmployeeRateForAge(55.5, 2026), 0.18, '55.5 must not fall through to the 71+ band')
+  assert.equal(cpfEmployeeRateForAge(60, 2026), 0.18)
+  assert.equal(cpfEmployeeRateForAge(60.5, 2026), 0.125, '60.5 must not fall through to the 71+ band')
+  assert.equal(cpfEmployeeRateForAge(65, 2026), 0.125)
+  assert.equal(cpfEmployeeRateForAge(65.5, 2026), 0.075, '65.5 must not fall through to the 71+ band')
+  assert.equal(cpfEmployeeRateForAge(70, 2026), 0.075)
+  assert.equal(cpfEmployeeRateForAge(70.5, 2026), 0.05)
 })
 
 test('monthlyEmployeeCpf caps at the Ordinary Wage ceiling', () => {

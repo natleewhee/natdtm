@@ -26,19 +26,16 @@ export const CPF_ANNUAL_CEILING = 102_000
 
 // Age bands as at the start of the contribution year. `oa`/`sa`/`ma` are
 // each sub-account's share of SALARY (not of the total contribution); the
-// three always sum to `total`. Employer/employee split isn't modeled since
-// it doesn't change what lands in CPF, only how much hits your paycheck
-// first.
+// three always sum to `total`. `employee` is the employee's own share,
+// which is what comes off the payslip (TaxWise's take-home pay).
 //
 // From 55 the Special Account no longer exists: the `sa` share is credited
 // to the Retirement Account (up to the Full Retirement Sum). The model
 // keeps the `sa` key and treats that balance as the SA/RA pot.
 //
-// 2026 rates (CPF Board, "CPF contribution rates from 1 Jan 2026" and
-// "CPF Allocation Rates from 1 Jan 2026"). The 2026 increase for ages
-// 55-65 (+1.5 points) goes entirely to the Retirement Account:
-//   55-60: 34% = OA 12 + RA 11.5 + MA 10.5  (allocation ratios .353/.3382/.3088)
-//   60-65: 25% = OA 3.5 + RA 11 + MA 10.5   (allocation ratios .14/.44/.42)
+// Rates come from CPF Board's contribution and allocation tables for
+// 1 Jan 2026 and 1 Jan 2027; see CPF_RATE_SCHEDULE below and
+// docs/statutory-sources.md.
 //
 // Boundaries are deliberately CONTIGUOUS (each band's minAge equals the
 // previous band's maxAge, not maxAge+1) with no gap between them — a
@@ -53,13 +50,78 @@ export const CPF_ANNUAL_CEILING = 102_000
 // NOTHING, silently falling through to the 71+ band for anyone in those
 // gaps — a large, silent under-projection for exactly the age range
 // (55+) this table exists to model precisely.
-export const CPF_CONTRIBUTION_TABLE = [
-  { minAge: 0, maxAge: 55, total: 0.37, oa: 0.23, sa: 0.06, ma: 0.08 },
-  { minAge: 55, maxAge: 60, total: 0.34, oa: 0.12, sa: 0.115, ma: 0.105 },
-  { minAge: 60, maxAge: 65, total: 0.25, oa: 0.035, sa: 0.11, ma: 0.105 },
-  { minAge: 65, maxAge: 70, total: 0.165, oa: 0.035, sa: 0.025, ma: 0.105 },
-  { minAge: 70, maxAge: 999, total: 0.125, oa: 0.01, sa: 0.01, ma: 0.105 },
+// Allocation by band, as % of wages, from CPF Board's "CPF Allocation
+// Rates from 1 January 2026" and "... from 1 January 2027" tables
+// (private sector / non-pensionable). Each band's OA/SA(RA)/MA shares are
+// the official ratio of contribution × the total rate; `employee` is the
+// employee's own share (wages > S$750/month), used by TaxWise for
+// take-home pay. Below 55 the bands split by age (35 / 45 / 50 / 55):
+//   ≤35  37% = OA 23   + SA 6    + MA 8     (ratios .6217/.1621/.2162)
+//   35-45 37% = OA 21  + SA 7    + MA 9     (.5677/.1891/.2432)
+//   45-50 37% = OA 19  + SA 8    + MA 10    (.5136/.2162/.2702)
+//   50-55 37% = OA 15  + SA 11.5 + MA 10.5  (.4055/.3108/.2837)
+// From 55 the `sa` share is the Retirement Account. 65-70 is OA 1 / RA 5 /
+// MA 10.5 (.0607/.303/.6363); 70+ is OA 1 / RA 1 / MA 10.5.
+const BELOW_55 = [
+  { minAge: 0, maxAge: 35, total: 0.37, employee: 0.20, oa: 0.23, sa: 0.06, ma: 0.08 },
+  { minAge: 35, maxAge: 45, total: 0.37, employee: 0.20, oa: 0.21, sa: 0.07, ma: 0.09 },
+  { minAge: 45, maxAge: 50, total: 0.37, employee: 0.20, oa: 0.19, sa: 0.08, ma: 0.10 },
+  { minAge: 50, maxAge: 55, total: 0.37, employee: 0.20, oa: 0.15, sa: 0.115, ma: 0.105 },
 ]
+const ABOVE_65 = [
+  { minAge: 65, maxAge: 70, total: 0.165, employee: 0.075, oa: 0.01, sa: 0.05, ma: 0.105 },
+  { minAge: 70, maxAge: 999, total: 0.125, employee: 0.05, oa: 0.01, sa: 0.01, ma: 0.105 },
+]
+
+/**
+ * CPF contribution and allocation rates by the calendar year they take
+ * effect (1 January). Rates for a given year are the latest entry whose
+ * `from` is not after it, so the 2027 senior-worker increase applies
+ * automatically to wages from 1 Jan 2027, and RetireWell's projection
+ * uses the right table for every future year it simulates.
+ */
+export const CPF_RATE_SCHEDULE = [
+  {
+    from: 2026,
+    // 55-60: 34% (16 + 18) = OA 12 + RA 11.5 + MA 10.5  (.353/.3382/.3088)
+    // 60-65: 25% (12.5 + 12.5) = OA 3.5 + RA 11 + MA 10.5  (.14/.44/.42)
+    bands: [
+      ...BELOW_55,
+      { minAge: 55, maxAge: 60, total: 0.34, employee: 0.18, oa: 0.12, sa: 0.115, ma: 0.105 },
+      { minAge: 60, maxAge: 65, total: 0.25, employee: 0.125, oa: 0.035, sa: 0.11, ma: 0.105 },
+      ...ABOVE_65,
+    ],
+  },
+  {
+    from: 2027,
+    // Final step of the senior-worker increases; the extra goes to the RA.
+    // 55-60: 35.5% (16.5 + 19) = OA 12 + RA 13 + MA 10.5  (.3382/.3661/.2957)
+    // 60-65: 26% (13 + 13) = OA 3.5 + RA 12 + MA 10.5    (.1347/.4615/.4038)
+    bands: [
+      ...BELOW_55,
+      { minAge: 55, maxAge: 60, total: 0.355, employee: 0.19, oa: 0.12, sa: 0.13, ma: 0.105 },
+      { minAge: 60, maxAge: 65, total: 0.26, employee: 0.13, oa: 0.035, sa: 0.12, ma: 0.105 },
+      ...ABOVE_65,
+    ],
+  },
+]
+
+const thisYear = () => new Date().getFullYear()
+
+/**
+ * The band table in force in a calendar year (defaults to this year).
+ * Years before the first entry use the first entry.
+ * @param {number} [year]
+ */
+export function cpfBandsForYear(year = thisYear()) {
+  const y = Number(year) || thisYear()
+  let pick = CPF_RATE_SCHEDULE[0]
+  for (const entry of CPF_RATE_SCHEDULE) if (entry.from <= y) pick = entry
+  return pick.bands
+}
+
+// The table in force this year, for display on the-math pages.
+export const CPF_CONTRIBUTION_TABLE = cpfBandsForYear()
 
 /**
  * Looks up the age-banded CPF contribution rates (total + OA/SA/MA
@@ -67,12 +129,14 @@ export const CPF_CONTRIBUTION_TABLE = [
  * (e.g. currentAge + monthsElapsed/12) always matches exactly one band,
  * with an age exactly on a boundary landing in the lower, higher-rate band.
  * @param {number} age - Age in years (may be fractional).
- * @returns {{minAge: number, maxAge: number, total: number, oa: number, sa: number, ma: number}}
+ * @param {number} [year] - Calendar year whose rates apply (defaults to this year).
+ * @returns {{minAge: number, maxAge: number, total: number, employee: number, oa: number, sa: number, ma: number}}
  *   The matching contribution band.
  */
-export function contributionRatesForAge(age) {
-  const band = CPF_CONTRIBUTION_TABLE.find(b => age >= b.minAge && age <= b.maxAge)
-    || CPF_CONTRIBUTION_TABLE[CPF_CONTRIBUTION_TABLE.length - 1]
+export function contributionRatesForAge(age, year) {
+  const bands = cpfBandsForYear(year)
+  const band = bands.find(b => age >= b.minAge && age <= b.maxAge)
+    || bands[bands.length - 1]
   return band
 }
 
@@ -85,11 +149,12 @@ export function contributionRatesForAge(age) {
  * contribution calculations.
  * @param {number} wageBase - The CPF-able wage base, already capped, in dollars.
  * @param {number} age - Age in years.
+ * @param {number} [year] - Calendar year whose rates apply (defaults to this year).
  * @returns {{total: number, oa: number, sa: number, ma: number}} Dollar amounts per sub-account.
  */
-export function splitContribution(wageBase, age) {
+export function splitContribution(wageBase, age, year) {
   const wage = Math.max(0, Number(wageBase) || 0)
-  const { total, oa, sa, ma } = contributionRatesForAge(age)
+  const { total, oa, sa, ma } = contributionRatesForAge(age, year)
   return {
     total: wage * total,
     oa: wage * oa,
@@ -105,11 +170,12 @@ export function splitContribution(wageBase, age) {
  * ceiling. Returns dollar amounts credited to each sub-account this month.
  * @param {number} salary - Monthly salary in dollars.
  * @param {number} age - Age in years.
+ * @param {number} [year] - Calendar year whose rates apply (defaults to this year).
  * @returns {{total: number, oa: number, sa: number, ma: number}} Dollar amounts credited this month.
  */
-export function monthlyCpfContribution(salary, age) {
+export function monthlyCpfContribution(salary, age, year) {
   const wage = Math.min(Math.max(0, Number(salary) || 0), CPF_OW_CEILING)
-  return splitContribution(wage, age)
+  return splitContribution(wage, age, year)
 }
 
 export const CPF_OA_RATE = 0.025

@@ -104,7 +104,7 @@ export function simulateAccumulation(inputs) {
       currentBonus *= (1 + growthRate)
     }
 
-    const contrib = monthlyCpfContribution(currentSalary, ageNow)
+    const contrib = monthlyCpfContribution(currentSalary, ageNow, yearNow)
     if (contrib.ma > Math.max(0, effectiveBHS - balances.ma) && maCappedAtAge == null) {
       maCappedAtAge = Math.round(ageNow * 10) / 10
     }
@@ -116,7 +116,7 @@ export function simulateAccumulation(inputs) {
     if (isYearEnd && currentBonus > 0) {
       const awCeiling = Math.max(0, CPF_ANNUAL_CEILING - ordinaryWagesThisYear)
       const bonusSubjectToCpf = Math.min(currentBonus, awCeiling)
-      const bonusContrib = splitContribution(bonusSubjectToCpf, ageNow)
+      const bonusContrib = splitContribution(bonusSubjectToCpf, ageNow, yearNow)
       if (bonusContrib.ma > Math.max(0, effectiveBHS - balances.ma) && maCappedAtAge == null) {
         maCappedAtAge = Math.round(ageNow * 10) / 10
       }

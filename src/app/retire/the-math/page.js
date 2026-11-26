@@ -79,7 +79,7 @@ export default function RetireTheMathPage() {
             `Age ${b.minAge}${b.maxAge >= 999 ? '+' : `–${b.maxAge}`}: ${(b.total * 100).toFixed(1)}% total  (OA ${(b.oa * 100).toFixed(1)}% · SA ${(b.sa * 100).toFixed(1)}% · MA ${(b.ma * 100).toFixed(1)}%)`
           ).join('\n')}</Formula>
           <P>Ordinary Wage ceiling: S${CPF_OW_CEILING.toLocaleString('en-SG')}/month.</P>
-          <Caveat>Contribution rates for ages above 55 are being raised in steps toward the below-55 rate. The table above uses the rates in force from 1 January 2026 (34% for 55–60 and 25% for 60–65), and CPF Board has announced a further increase from 1 January 2027 that is not yet reflected here. From age 55 the Special Account is closed, so the &quot;SA&quot; share is credited to your Retirement Account. Figures are a good-faith snapshot as of {CPF_RATES_AS_OF}, not pulled live from CPF Board. Verify against the official CPF contribution rate tables, especially if you&apos;re in the 55+ bands.</Caveat>
+          <Caveat>The table above is the one in force this year. Rates for ages above 55 rise again on 1 January 2027 (to 35.5% for 55–60 and 26% for 60–65, the extra going to your Retirement Account); the calculator applies them automatically from that date, and the projection uses each future year&apos;s rates. From age 55 the Special Account is closed, so the &quot;SA&quot; share is credited to your Retirement Account. Figures follow CPF Board&apos;s published contribution and allocation tables as of {CPF_RATES_AS_OF}, not pulled live. Verify against the official tables, especially if you&apos;re in the 55+ bands.</Caveat>
         </Section>
 
         <Section title="Bonus and the annual wage ceiling">
