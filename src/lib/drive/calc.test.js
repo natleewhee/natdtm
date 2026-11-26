@@ -236,9 +236,11 @@ test('calcNetARF grants no EEAI to an EV registered in 2027', () => {
   approx(ev.netArf, 20_000)
 })
 
-test('calcNetARF still grants EEAI to an EV registered in 2025, even when asked in 2027', () => {
+test('calcNetARF still grants EEAI to an EV registered in 2025, at the 2025 cap', () => {
+  // 45% of 20,000 = 9,000, under 2025's S$15,000 cap (it was wrongly capped at
+  // 2026's S$7,500 before).
   const ev = calcNetARF(20_000, 0, true, new Date('2025-06-01'))
-  approx(ev.eeai, 7_500)
+  approx(ev.eeai, 9_000)
 })
 
 test('calcNetARF grants no EEAI to non-EVs', () => {

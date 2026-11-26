@@ -54,11 +54,57 @@ export const PARF_CAP = PARF_SCHEDULES.legacy.cap
 // https://www.lta.gov.sg/content/ltagov/en/newsroom/2025/9/news-releases/extension_of_ves_and_eeai_to_support_vehicle_electrification.html
 export const EEAI_AS_OF = '2026-01-01'
 export const EEAI_END = '2027-01-01'
-// 45% of ARF, S$7,500 cap for 2026 registrations (S$15,000 in 2025). Older
-// registrations are modeled at the 2026 cap too — a conservative simplification
-// that only touches EVs already on the road.
+// 45% of ARF, capped by registration date (OneMotoring, "Tax structure"):
+// S$20,000 for 2021-23, S$15,000 for 2024-25, S$7,500 for 2026. Used EVs
+// get the cap of the year they were registered.
 const EEAI_RATE = 0.45
-const EEAI_CAP = 7500
+export const EEAI_CAPS = [
+  { from: '2021-01-01', cap: 20_000 },
+  { from: '2024-01-01', cap: 15_000 },
+  { from: '2026-01-01', cap: 7_500 },
+]
+
+/**
+ * EEAI cap for a registration date: the latest entry starting on or
+ * before it. Registrations before 2021 got no EEAI (cap 0).
+ * @param {Date|string|number} registeredOn
+ */
+export function eeaiCapFor(registeredOn) {
+  const t = new Date(registeredOn).getTime()
+  if (!Number.isFinite(t)) return EEAI_CAPS[EEAI_CAPS.length - 1].cap
+  let cap = 0
+  for (const e of EEAI_CAPS) if (t >= new Date(e.from).getTime()) cap = e.cap
+  return cap
+}
+
+// ─── VES (Vehicle Emissions Scheme) ──────────────────────────────────────────
+// Rebate (+) or surcharge (−) on ARF by emissions band, for cars registered
+// 1 Jan 2026 – 31 Dec 2027 (OneMotoring, "Tax structure"; LTA/NEA Sep 2025:
+// only EVs get rebates from 2026). Band A ≤90 g/km CO2, B ≤120, C1 ≤159,
+// C2 ≤182, C3 above; the worst pollutant sets the band. Sign is the app's
+// convention (rebate positive), the reverse of LTA's table.
+// https://onemotoring.lta.gov.sg/content/onemotoring/home/buying/upfront-vehicle-costs/tax-structure.html
+export const VES_AS_OF = '2026-01-01'
+export const VES_SCHEDULE = [
+  { from: '2026-01-01', bands: { A: 22_500, B: 0, C1: -7_500, C2: -22_500, C3: -35_000 } },
+  { from: '2027-01-01', bands: { A: 20_000, B: 0, C1: -15_000, C2: -30_000, C3: -45_000 } },
+]
+
+/**
+ * VES amount for a band on a registration date, or null for an unknown
+ * band. Dates before 2026 use the 2026 table (the app prices new cars);
+ * dates after 2027 use the 2027 table until LTA announces the next one.
+ * @param {string} band - 'A' | 'B' | 'C1' | 'C2' | 'C3'
+ * @param {Date|string|number} [registeredOn=new Date()]
+ * @returns {number|null}
+ */
+export function vesForBand(band, registeredOn = new Date()) {
+  const t = new Date(registeredOn).getTime()
+  let pick = VES_SCHEDULE[0]
+  if (Number.isFinite(t)) for (const e of VES_SCHEDULE) if (t >= new Date(e.from).getTime()) pick = e
+  const v = pick.bands[band]
+  return v === undefined ? null : v
+}
 
 const MS_PER_YEAR = 365.25 * 86_400_000
 
@@ -96,15 +142,16 @@ export function parfRegimeForAge(ageYears, now = new Date()) {
 }
 
 /**
- * EV Early Adoption Incentive: 45% of (post-VES) ARF up to S$7,500 for pure
- * EVs registered before it ceases on 1 Jan 2027, nothing afterwards.
+ * EV Early Adoption Incentive: 45% of (post-VES) ARF, up to the cap for the
+ * registration year (S$20k 2021-23, S$15k 2024-25, S$7.5k 2026), for pure EVs
+ * registered before it ceases on 1 Jan 2027; nothing afterwards.
  * @param {number} arfAfterVes - ARF after any VES rebate/surcharge, in dollars.
  * @param {Date|string|number} [registeredOn=new Date()] - Registration date.
  * @returns {number} The EEAI rebate in dollars.
  */
 export function calcEEAI(arfAfterVes, registeredOn = new Date()) {
   if (new Date(registeredOn).getTime() >= new Date(EEAI_END).getTime()) return 0
-  return Math.min(arfAfterVes * EEAI_RATE, EEAI_CAP)
+  return Math.min(arfAfterVes * EEAI_RATE, eeaiCapFor(registeredOn))
 }
 
 // MAS Total Debt Servicing Ratio: all monthly debt obligations (this loan's
@@ -306,7 +353,9 @@ export function getCOEPremium(car, liveCOEPremium) {
  */
 export function calcGovtCosts(car, liveCOEPremium = null) {
   const pureEV = isPureEV(car)
-  const ves = car.ves ?? 0
+  // New cars: VES from the car's band and today's schedule, so the 2027
+  // amounts apply automatically; the stored `ves` is the fallback.
+  const ves = (car.vesBand ? vesForBand(car.vesBand) : null) ?? car.ves ?? 0
   const { grossArf, vesAmount, eeai, netArf } = calcNetARF(car.omv, ves, pureEV)
   const duty = car.omv * 0.308
   const regFee = 350

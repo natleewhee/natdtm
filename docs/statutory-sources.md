@@ -77,11 +77,19 @@ Two schedules, chosen by when the car's COE was issued (`parfRegimeFor` / `parfR
 | `PARF_SCHEDULES.revised2026` | 30% of ARF at ≤5yr, 25% / 20% / 15% / 10% / 5% at 6 / 7 / 8 / 9 / 10yr, nil after; cap **S$30,000**. Applies to COEs from the 2nd Feb 2026 bidding exercise onwards (and COE-exempt vehicles registered on/after 13 Feb 2026) | [LTA — Revision of PARF rebate schedule and cap (12 Feb 2026)](https://www.lta.gov.sg/content/ltagov/en/newsroom/2026/2/news-releases/revision-parf-rebate-schedule-cap.html) | 2026-10-18 ✓ |
 | `PARF_SCHEDULES.legacy` | 75% of ARF at ≤5yr, 70% / 65% / 60% / 55% / 50% at 6 / 7 / 8 / 9 / 10yr, nil after; cap **S$60,000**. Cars registered before the cutover keep this for life | same | 2026-10-18 ✓ |
 
+## Vehicle Emissions Scheme — `src/lib/drive/calc.js` (`VES_AS_OF = '2026-01-01'`)
+
+| Constant | Value | Source | Verified |
+|---|---|---|---|
+| `VES_SCHEDULE` (2026) | Rebate (+) / surcharge (−) by band: A +S$22,500 · B 0 · C1 −S$7,500 · C2 −S$22,500 · C3 −S$35,000. Only EVs get rebates (hybrids moved to neutral or surcharge bands) | [OneMotoring — Tax structure](https://onemotoring.lta.gov.sg/content/onemotoring/home/buying/upfront-vehicle-costs/tax-structure.html), [LTA/NEA — Extension of VES and EEAI (Sep 2025)](https://www.lta.gov.sg/content/ltagov/en/newsroom/2025/9/news-releases/extension_of_ves_and_eeai_to_support_vehicle_electrification.html) | 2026-11-26 ✓ |
+| `VES_SCHEDULE` (2027) | A +S$20,000 · B 0 · C1 −S$15,000 · C2 −S$30,000 · C3 −S$45,000; applied by date from 1 Jan 2027 | same | 2026-11-26 ✓ |
+| `cars.json` `ves` | 2026 amount for each car's `vesBand` (fallback only; the engine derives VES from the band and date) | same | 2026-11-26 ✓ |
+
 ## EV Early Adoption Incentive — `src/lib/drive/calc.js` (`EEAI_AS_OF = '2026-01-01'`, `EEAI_END = '2027-01-01'`)
 
 | Constant | Value | Source | Verified |
 |---|---|---|---|
-| `calcEEAI` | 45% of ARF, capped at S$7,500 for registrations in 2026 (S$15,000 in 2025, not modeled: older EVs use the 2026 cap); **ceases for registrations from 1 Jan 2027** | [LTA/NEA — Extension of VES and EEAI (Sep 2025)](https://www.lta.gov.sg/content/ltagov/en/newsroom/2025/9/news-releases/extension_of_ves_and_eeai_to_support_vehicle_electrification.html) | 2026-10-18 ✓ |
+| `calcEEAI` / `EEAI_CAPS` | 45% of ARF, capped by registration date: S$20,000 (2021–23), S$15,000 (2024–25), S$7,500 (2026); **ceases for registrations from 1 Jan 2027** | [OneMotoring — Tax structure](https://onemotoring.lta.gov.sg/content/onemotoring/home/buying/upfront-vehicle-costs/tax-structure.html), [LTA/NEA — Extension of VES and EEAI (Sep 2025)](https://www.lta.gov.sg/content/ltagov/en/newsroom/2025/9/news-releases/extension_of_ves_and_eeai_to_support_vehicle_electrification.html) | 2026-11-26 ✓ |
 
 ## COE fallback — `src/lib/drive/calc.js` (`COE_FALLBACK_AS_OF = '2026-07-01'`)
 
@@ -103,6 +111,8 @@ None.
 
 ## Resolved discrepancies
 
+- **2026-11-26** — VES: seven C2/C3 cars in `cars.json` carried pre-2026 surcharges (S$15,000 / S$25,000 instead of S$22,500 / S$35,000). VES is now derived from each car's band and the date (`VES_SCHEDULE`), with 2027's amounts applying from 1 Jan 2027.
+- **2026-11-26** — EEAI: older EVs were all capped at 2026's S$7,500; caps now follow the registration date (S$20k 2021–23, S$15k 2024–25).
 - **2026-11-26** — The single "0–55" CPF band (under-35 split for everyone below 55) is split into ≤35 / 35–45 / 45–50 / 50–55 per CPF Board's allocation table; SA and MA were understated for ages 35–55.
 - **2026-11-26** — 65–70 allocation corrected from OA 3.5 / SA 2.5 to OA 1 / RA 5 / MA 10.5.
 - **2026-11-26** — TaxWise's employee CPF share for 55–60 / 60–65 corrected from the 2025 rates (17% / 11.5%) to 2026's 18% / 12.5%; take-home pay was overstated for those ages. The employee share now lives in the same schedule as the totals.
@@ -121,4 +131,6 @@ row are updated together (set the last column to `applied`). Format of each row:
 | Effective | Change | Where | Status |
 |---|---|---|---|
 | 2027-01-01 | EEAI ceases for new registrations; `calcEEAI` is date-gated, so no code change is needed | `src/lib/drive/calc.js` | applied |
+| 2027-01-01 | VES 2027 amounts (EV rebate S$20,000; C1/C2/C3 surcharges S$15k/S$30k/S$45k); `VES_SCHEDULE` is date-gated | `src/lib/drive/calc.js` | applied |
+| 2028-01-01 | The VES schedule announced in Sep 2025 runs to 31 Dec 2027; check LTA for the 2028 bands and add them to `VES_SCHEDULE` | `src/lib/drive/calc.js` | pending |
 | 2027-01-01 | CPF senior-worker contribution rates rise a further 1.5 points for 55–60 (to 35.5%) and 1 point for 60–65 (to 26%), extra allocated to the RA; encoded in the date-aware `CPF_RATE_SCHEDULE`, so no change is needed on the day | `src/lib/retire/cpf.js` | applied |
