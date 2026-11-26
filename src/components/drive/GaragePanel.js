@@ -45,7 +45,7 @@ function EntryRow({ entry, onLoad, onDelete, onRename }) {
             {entry.name}
           </button>
         )}
-        <span style={{fontSize:'10px',color:C.faint,flexShrink:0}}>{timeAgo(entry.savedAt)}</span>
+        <span style={{fontSize: '12px',color:C.faint,flexShrink:0}}>{timeAgo(entry.savedAt)}</span>
       </div>
       <div style={{display:'flex',flexWrap:'wrap',gap:8,marginBottom:10}}>
         {cars.map((c, i) => (
@@ -53,8 +53,8 @@ function EntryRow({ entry, onLoad, onDelete, onRename }) {
             <span style={{color:C.text,fontWeight:600}}>{c.name}</span>
             <span style={{color:C.faint}}>·</span>
             <span style={{fontFamily:C.fontMono,color:C.primary,fontWeight:700}}>{SGD(c.monthly)}/mo</span>
-            <span style={{color:verdictColor(c.verdict),fontWeight:700,fontSize:'10px'}}>{c.verdict}</span>
-            {c.tdsrExceeded && <span style={{color:C.red,fontWeight:700,fontSize:'10px'}} title="Exceeds the bank's 55% TDSR limit">⚠ TDSR</span>}
+            <span style={{color:verdictColor(c.verdict),fontWeight:700,fontSize: '12px'}}>{c.verdict}</span>
+            {c.tdsrExceeded && <span style={{color:C.red,fontWeight:700,fontSize: '12px'}} title="Exceeds the bank's 55% TDSR limit">⚠ TDSR</span>}
           </div>
         ))}
         {cars.length === 0 && <span style={{fontSize:C.xs,color:C.faint}}>No result saved for this scenario</span>}
@@ -92,7 +92,7 @@ function CompareTable({ entries }) {
           <div key={i} style={{display:'flex',alignItems:'center',justifyContent:'space-between',gap:8,padding:'8px 10px',background:row.totalCoo===cheapest?C.accentBg:C.bg,border:`1px solid ${row.totalCoo===cheapest?C.accent:C.border}`,borderRadius:C.r}}>
             <div style={{minWidth:0}}>
               <div style={{fontSize:C.xs,fontWeight:700,color:C.text,whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis'}}>{row.name}</div>
-              <div style={{fontSize:'10px',color:C.faint}}>from &quot;{row.entryName}&quot; · {row.verdict}{row.tdsrExceeded ? ' · ⚠ exceeds TDSR' : ''}</div>
+              <div style={{fontSize: '12px',color:C.faint}}>from &quot;{row.entryName}&quot; · {row.verdict}{row.tdsrExceeded ? ' · ⚠ exceeds TDSR' : ''}</div>
             </div>
             <span style={{fontSize:C.sm,fontFamily:C.fontMono,fontWeight:700,color:row.totalCoo===cheapest?C.accentText:C.primary,flexShrink:0}}>{SGD(row.totalCoo)}</span>
           </div>
@@ -110,7 +110,7 @@ export function GaragePanel({ garage, canSave, onSave, onLoad, onDelete, onRenam
         <button type="button" onClick={() => setOpen(o => !o)} aria-expanded={open}
           style={{display:'flex',alignItems:'center',gap:6,fontSize:C.xs,fontWeight:700,color:C.primary,background:C.surface,border:`1.5px solid ${C.border}`,borderRadius:100,padding:'6px 14px',cursor:'pointer'}}>
           🚗 My Garage {garage.length > 0 && `(${garage.length})`}
-          <span aria-hidden="true" style={{fontSize:'10px',transition:'transform 0.2s',transform:open?'rotate(180deg)':'none'}}>▾</span>
+          <span aria-hidden="true" style={{fontSize: '12px',transition:'transform 0.2s',transform:open?'rotate(180deg)':'none'}}>▾</span>
         </button>
         {canSave && (
           <button type="button" onClick={onSave}

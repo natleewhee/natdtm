@@ -36,7 +36,7 @@ export function AffordabilityCeilingCard({ salary, down, tenure, existingDebt = 
             <div key={label} style={{background:'rgba(255,255,255,0.08)',border:'1px solid rgba(255,255,255,0.12)',borderRadius:C.r,padding:'10px 14px',textAlign:'center'}}>
               <div style={{fontSize:C.xs,color:'rgba(255,255,255,0.45)',marginBottom:3}}>{label}</div>
               <div style={{fontFamily:C.fontMono,fontWeight:700,fontSize:C.lg,color:'#fff'}}>{val}</div>
-              <div style={{fontSize:'10px',color:'rgba(255,255,255,0.3)',marginTop:2}}>{sub}</div>
+              <div style={{fontSize: '12px',color:'rgba(255,255,255,0.3)',marginTop:2}}>{sub}</div>
             </div>
           ))}
         </div>

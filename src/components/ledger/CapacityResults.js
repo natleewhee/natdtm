@@ -15,9 +15,9 @@ function Metric({ label, value, tone, note }) {
   const color = tone === 'green' ? C.greenText : tone === 'red' ? C.redText : tone === 'amber' ? C.accentText : C.text
   return (
     <div style={{ background: C.surface2 || C.bg, padding: '15px 16px 14px', display: 'grid', gap: 3 }}>
-      <span style={{ fontSize: 11, letterSpacing: '0.04em', textTransform: 'uppercase', color: C.faint, fontWeight: 600 }}>{label}</span>
+      <span style={{ fontSize: 12, letterSpacing: '0.04em', textTransform: 'uppercase', color: C.faint, fontWeight: 600 }}>{label}</span>
       <span style={{ fontFamily: C.fontMono, fontSize: 25, fontWeight: 700, fontVariantNumeric: 'tabular-nums', lineHeight: 1.15, color }}>{value}</span>
-      {note && <span style={{ fontSize: 11.5, color: C.muted, lineHeight: 1.45 }}>{note}</span>}
+      {note && <span style={{ fontSize: 12, color: C.muted, lineHeight: 1.45 }}>{note}</span>}
     </div>
   )
 }
@@ -58,7 +58,7 @@ export default function CapacityResults({ flow, metrics, primarySchedule, altSch
       <div style={{ background: C.surface, border: `1px solid ${C.border}`, borderRadius: C.rXL, boxShadow: C.shadow, padding: '26px 26px 24px' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap', marginBottom: 20 }}>
           <span style={{
-            fontFamily: C.fontMono, fontSize: 11, fontWeight: 600, letterSpacing: '0.07em', textTransform: 'uppercase',
+            fontFamily: C.fontMono, fontSize: 12, fontWeight: 600, letterSpacing: '0.07em', textTransform: 'uppercase',
             borderRadius: 100, padding: '5px 12px',
             color: isTight ? C.accentText : C.greenText,
             background: isTight ? C.accentBg : C.greenBg,

@@ -70,7 +70,7 @@ export function CoeTimingSignal() {
         <CategoryRow label="Cat A" trend={trendA}/>
         <CategoryRow label="Cat B" trend={trendB}/>
       </div>
-      <p style={{fontSize:'10px',color:C.faint,lineHeight:1.6,margin:0}}>
+      <p style={{fontSize: '12px',color:C.faint,lineHeight:1.6,margin:0}}>
         This describes the past — where today&apos;s premium sits relative to recent bidding and to all recorded history. COE prices are set by open bidding against a quota LTA controls, and nothing here predicts what a future bidding exercise will do. Treat it as context, not a signal to time a purchase around.
       </p>
     </>

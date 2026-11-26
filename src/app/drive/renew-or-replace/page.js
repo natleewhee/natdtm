@@ -43,7 +43,7 @@ function Label({ children }) {
   return <div style={{fontSize:C.xs,fontWeight:700,color:C.primary,textTransform:'uppercase',letterSpacing:'0.1em',marginBottom:4}}>{children}</div>
 }
 function Hint({ children }) {
-  return <div style={{fontSize:'10px',color:C.faint,marginBottom:6,lineHeight:1.5}}>{children}</div>
+  return <div style={{fontSize: '12px',color:C.faint,marginBottom:6,lineHeight:1.5}}>{children}</div>
 }
 function Card({ children, highlight=false }) {
   return (
@@ -252,7 +252,7 @@ export default function RenewOrReplacePage() {
       />
 
       <div style={{background:C.bg,borderBottom:`1px solid ${C.border}`,padding:'8px 24px',textAlign:'center'}}>
-        <p style={{fontSize:11,color:C.faint,margin:0}}>Educational tool only · Not financial advice · Not affiliated with any dealer or MAS-licensed entity</p>
+        <p style={{fontSize: 12,color:C.faint,margin:0}}>Educational tool only · Not financial advice · Not affiliated with any dealer or MAS-licensed entity</p>
       </div>
 
       <main style={{flex:1,maxWidth:960,margin:'0 auto',width:'100%',padding:'32px 16px 80px'}}>
@@ -336,7 +336,7 @@ export default function RenewOrReplacePage() {
               ['Est. annual maintenance', absSGD(getAnnualMaintenance(brandKey, carAge))+'/yr', C.muted],
             ].map(([k,v,col])=>(
               <div key={k} style={{background:C.bg,borderRadius:C.r,padding:'10px 12px',border:`1px solid ${C.border}`}}>
-                <div style={{fontSize:'10px',color:C.faint,marginBottom:3}}>{k}</div>
+                <div style={{fontSize: '12px',color:C.faint,marginBottom:3}}>{k}</div>
                 <div style={{fontSize:C.sm,fontFamily:C.fontMono,fontWeight:700,color:col}}>{v}</div>
               </div>
             ))}
@@ -347,21 +347,21 @@ export default function RenewOrReplacePage() {
             <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:6}}>
               <div style={{fontSize:C.xs,color:C.muted}}>
                 COE renewal price (PQP — {coeType==='catA'?'Cat A':'Cat B'}): <strong style={{color:C.primary}}>{absSGD(activePQP)}</strong>
-                {pqpLive && !pqpOverride && <span style={{color:C.accent,marginLeft:6,fontSize:'10px'}}>· live from LTA</span>}
+                {pqpLive && !pqpOverride && <span style={{color:C.accent,marginLeft:6,fontSize: '12px'}}>· live from LTA</span>}
               </div>
             </div>
             <div style={{display:'grid',gridTemplateColumns:'minmax(0,1fr) minmax(0,1fr)',gap:10}}>
               <div style={{padding:'8px 12px',background:C.accentBg,borderRadius:C.r,border:`1px solid ${C.accent}33`}}>
-                <div style={{fontSize:'10px',color:C.accentText,marginBottom:2}}>5-year renewal cost (50% PQP)</div>
+                <div style={{fontSize: '12px',color:C.accentText,marginBottom:2}}>5-year renewal cost (50% PQP)</div>
                 <div style={{fontFamily:C.fontMono,fontWeight:700,color:C.primary,fontSize:C.base}}>{absSGD(activePQP*0.5)}</div>
               </div>
               <div style={{padding:'8px 12px',background:C.blueBg,borderRadius:C.r,border:`1px solid ${C.blue}33`}}>
-                <div style={{fontSize:'10px',color:C.blueText,marginBottom:2}}>10-year renewal cost (100% PQP)</div>
+                <div style={{fontSize: '12px',color:C.blueText,marginBottom:2}}>10-year renewal cost (100% PQP)</div>
                 <div style={{fontFamily:C.fontMono,fontWeight:700,color:C.primary,fontSize:C.base}}>{absSGD(activePQP)}</div>
               </div>
             </div>
             <details style={{marginTop:10}}>
-              <summary style={{fontSize:'10px',color:C.muted,cursor:'pointer',userSelect:'none'}}>Override PQP or maintenance estimate</summary>
+              <summary style={{fontSize: '12px',color:C.muted,cursor:'pointer',userSelect:'none'}}>Override PQP or maintenance estimate</summary>
               <div style={{display:'grid',gridTemplateColumns:'minmax(0,1fr) minmax(0,1fr)',gap:10,marginTop:10}}>
                 <MoneyInput id="ror-override-pqp" label="Override PQP" hint="Leave blank to use live LTA value" value={pqpOverride} onChange={digitsInto(setPqpOverride)}/>
                 <MoneyInput id="ror-annual-maintenance-override" label="Annual maintenance override" hint={`Our estimate: ${absSGD(getAnnualMaintenance(brandKey,carAge))}/yr`} value={maintOverride} onChange={digitsInto(setMaintOverride)}/>

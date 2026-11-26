@@ -105,14 +105,14 @@ export function CoeHistoryChart() {
       <div style={{display:'flex',gap:16,marginTop:8}}>
         <div style={{display:'flex',alignItems:'center',gap:5}}>
           <div style={{width:16,height:2,background:C.primary,borderRadius:1}}/>
-          <span style={{fontSize:'10px',color:C.muted}}>Cat A</span>
+          <span style={{fontSize: '12px',color:C.muted}}>Cat A</span>
         </div>
         <div style={{display:'flex',alignItems:'center',gap:5}}>
           <div style={{width:16,height:2,background:C.blue,borderRadius:1}}/>
-          <span style={{fontSize:'10px',color:C.muted}}>Cat B</span>
+          <span style={{fontSize: '12px',color:C.muted}}>Cat B</span>
         </div>
       </div>
-      <p style={{fontSize:'10px',color:C.faint,marginTop:10,lineHeight:1.5}}>
+      <p style={{fontSize: '12px',color:C.faint,marginTop:10,lineHeight:1.5}}>
         {history.length} bidding exercises recorded, {monthLabel(history[0].month)}–{monthLabel(latest.month)}. This builds up going forward, one entry per scheduled refresh, rather than being fetched fresh each time.
       </p>
     </>

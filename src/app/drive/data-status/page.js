@@ -108,7 +108,7 @@ function FixNote({ text }) {
       fontSize: 12.5, lineHeight: 1.55, color: C.text, background: C.surface,
       border: `1px solid ${C.border}`, borderRadius: 4, padding: '10px 12px', margin: '14px 0 0',
     }}>
-      <strong style={{ fontFamily: 'var(--l-font-mono)', fontSize: 11, letterSpacing: '.06em', textTransform: 'uppercase', color: C.muted, display: 'block', marginBottom: 4 }}>What to do</strong>
+      <strong style={{ fontFamily: 'var(--l-font-mono)', fontSize: 12, letterSpacing: '.06em', textTransform: 'uppercase', color: C.muted, display: 'block', marginBottom: 4 }}>What to do</strong>
       {text}
     </p>
   )
@@ -168,7 +168,7 @@ export default function DataStatusPage() {
       <ShellHeader title="Data status" breadcrumb="Drive" backHref="/drive" />
       <div className="shell-wrap" style={{ padding: '40px 24px 72px', maxWidth: 760 }}>
         <p style={{
-          fontFamily: 'var(--l-font-mono)', fontSize: 11, letterSpacing: '.12em',
+          fontFamily: 'var(--l-font-mono)', fontSize: 12, letterSpacing: '.12em',
           textTransform: 'uppercase', color: C.muted, margin: '0 0 12px',
         }}>
           LTA data health

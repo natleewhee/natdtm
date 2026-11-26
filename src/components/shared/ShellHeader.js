@@ -105,6 +105,17 @@ export default function ShellHeader({
           </>)}
         </div>
       </div>
+      {/* Phones: the page's own links and status (e.g. DriveReady's live COE)
+          move to a scrollable sub-row, so the main row stays one line at
+          375px. Hidden on wider screens, where they sit in the main row. */}
+      {hasContext && (step || links.length > 0) && (
+        <nav className="shell-header-subnav" aria-label="This page">
+          {step && <span className="shell-header-step">{step}</span>}
+          {links.map((l) => (
+            <a key={l.href} href={l.href} className="shell-header-link">{l.label}</a>
+          ))}
+        </nav>
+      )}
       {below}
     </div>
   )

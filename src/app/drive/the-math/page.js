@@ -49,11 +49,11 @@ function PillarCard({ color, emoji, title, badge, summary, expandContent }) {
       <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10 }}>
         <span style={{ fontSize: 20 }}>{emoji}</span>
         <span style={{ fontFamily: C.fontDisplay, fontSize: 17, color: C.primary, flex: 1 }}>{title}</span>
-        <span style={{ padding: '2px 10px', borderRadius: 100, fontSize: 11, fontWeight: 700, background: c.badgeBg, color: c.badgeText }}>{badge}</span>
+        <span style={{ padding: '2px 10px', borderRadius: 100, fontSize: 12, fontWeight: 700, background: c.badgeBg, color: c.badgeText }}>{badge}</span>
       </div>
       <p style={{ fontSize: 14, color: C.text, lineHeight: 1.6, margin: '0 0 8px' }}>{summary}</p>
       <button onClick={() => setOpen(o => !o)} style={{ background: 'none', border: 'none', padding: '8px 0', cursor: 'pointer', fontSize: 13, fontWeight: 600, color: C.accent, display: 'flex', alignItems: 'center', gap: 6 }}>
-        <span style={{ display: 'inline-block', transition: 'transform 0.2s', transform: open ? 'rotate(90deg)' : 'none', fontSize: 11 }}>▶</span>
+        <span style={{ display: 'inline-block', transition: 'transform 0.2s', transform: open ? 'rotate(90deg)' : 'none', fontSize: 12 }}>▶</span>
         {open ? 'Hide details' : 'See how we calculate this'}
       </button>
       {open && (
@@ -235,7 +235,7 @@ True effective monthly cost = instalment + monthly depreciation`}</Formula>
 
         {/* Why free */}
         <div style={{ marginTop: 36, padding: 20, background: C.ndtm, borderRadius: 14 }}>
-          <p style={{ fontSize: 11, color: 'rgba(255,255,255,0.5)', textTransform: 'uppercase', letterSpacing: '0.06em', margin: '0 0 10px' }}>Why this is free</p>
+          <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.5)', textTransform: 'uppercase', letterSpacing: '0.06em', margin: '0 0 10px' }}>Why this is free</p>
           <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.8)', lineHeight: 1.7, margin: 0 }}>
             DriveReady has no ads, no affiliate links, and no dealer referral fees. We don&apos;t earn anything when you use it. It&apos;s free because Singaporeans deserve to know the real numbers before they sign a hire-purchase agreement.
           </p>
@@ -246,7 +246,7 @@ True effective monthly cost = instalment + monthly depreciation`}</Formula>
           <p style={{ fontSize: 12, color: C.muted, lineHeight: 1.6, margin: '0 0 6px' }}>
             DriveReady is an educational tool. It does not constitute financial advice. Car prices, COE premiums, and financing rates are indicative and subject to change. All figures should be verified with the relevant dealer, bank, and LTA before making a purchase decision.
           </p>
-          <p style={{ fontSize: 11, color: C.muted, margin: 0 }}>Not affiliated with any insurer or MAS-licensed entity.</p>
+          <p style={{ fontSize: 12, color: C.muted, margin: 0 }}>Not affiliated with any insurer or MAS-licensed entity.</p>
         </div>
       </div>
     </div>

@@ -352,7 +352,7 @@ export default function DriveReadyPage() {
 
       {/* ── MAS disclaimer ── */}
       <div style={{background:C.surface,borderBottom:`1px solid ${C.border}`,padding:'8px 24px',textAlign:'center'}}>
-        <p style={{fontSize:11,color:C.faint,margin:0}}>
+        <p style={{fontSize: 12,color:C.faint,margin:0}}>
           Educational tool only · Not financial advice · Not affiliated with any insurer or MAS-licensed entity
         </p>
       </div>
@@ -493,7 +493,7 @@ export default function DriveReadyPage() {
                   ) : (
                     <>
                       <UsedCarForm slot="A" onChange={c => { setUsedCarA(c); setCalculated(false) }}/>
-                      <p style={{marginTop:8,fontSize:'10px',color:C.faint,lineHeight:1.5}}>Used-car inputs aren&apos;t saved to your garage or a shareable link yet — they reset if you leave the page.</p>
+                      <p style={{marginTop:8,fontSize: '12px',color:C.faint,lineHeight:1.5}}>Used-car inputs aren&apos;t saved to your garage or a shareable link yet — they reset if you leave the page.</p>
                     </>
                   )}
                 </div>
@@ -516,7 +516,7 @@ export default function DriveReadyPage() {
                     ) : (
                       <>
                         <UsedCarForm slot="B" onChange={c => { setUsedCarB(c); setCalculated(false) }}/>
-                        <p style={{marginTop:8,fontSize:'10px',color:C.faint,lineHeight:1.5}}>Used-car inputs aren&apos;t saved to your garage or a shareable link yet — they reset if you leave the page.</p>
+                        <p style={{marginTop:8,fontSize: '12px',color:C.faint,lineHeight:1.5}}>Used-car inputs aren&apos;t saved to your garage or a shareable link yet — they reset if you leave the page.</p>
                       </>
                     )}
                   </div>
@@ -540,12 +540,12 @@ export default function DriveReadyPage() {
                 {coeLoading
                   ? <span style={{fontSize:C.xs,color:C.faint}}>Fetching live COE…</span>
                   : coeData
-                    ? <><span style={{fontSize:C.xs,fontFamily:C.fontMono,fontWeight:700,color:C.primary}}>Cat A: {SGD(coeData.catA.premium)}</span><span style={{fontSize:C.xs,color:C.faint}}>·</span><span style={{fontSize:C.xs,fontFamily:C.fontMono,fontWeight:700,color:C.primary}}>Cat B: {SGD(coeData.catB.premium)}</span><span style={{fontSize:C.xs,color:C.faint,fontSize:'10px'}}> · {coeData.month} · Live from LTA</span></>
-                    : <><span style={{fontSize:C.xs,fontFamily:C.fontMono,fontWeight:700,color:C.amberText}}>Cat A: ~{SGD(COE_FALLBACK.catA)}</span><span style={{fontSize:C.xs,color:C.faint}}>·</span><span style={{fontSize:C.xs,fontFamily:C.fontMono,fontWeight:700,color:C.amberText}}>Cat B: ~{SGD(COE_FALLBACK.catB)}</span><span style={{fontSize:C.xs,color:C.amberText,fontSize:'10px'}}> · {isCoeFallbackStale() ? `⚠ Estimate may be outdated, as of ${COE_FALLBACK_AS_OF}` : `Estimated as of ${COE_FALLBACK_AS_OF} — live LTA data temporarily unavailable`}</span></>
+                    ? <><span style={{fontSize:C.xs,fontFamily:C.fontMono,fontWeight:700,color:C.primary}}>Cat A: {SGD(coeData.catA.premium)}</span><span style={{fontSize:C.xs,color:C.faint}}>·</span><span style={{fontSize:C.xs,fontFamily:C.fontMono,fontWeight:700,color:C.primary}}>Cat B: {SGD(coeData.catB.premium)}</span><span style={{fontSize:C.xs,color:C.faint,fontSize: '12px'}}> · {coeData.month} · Live from LTA</span></>
+                    : <><span style={{fontSize:C.xs,fontFamily:C.fontMono,fontWeight:700,color:C.amberText}}>Cat A: ~{SGD(COE_FALLBACK.catA)}</span><span style={{fontSize:C.xs,color:C.faint}}>·</span><span style={{fontSize:C.xs,fontFamily:C.fontMono,fontWeight:700,color:C.amberText}}>Cat B: ~{SGD(COE_FALLBACK.catB)}</span><span style={{fontSize:C.xs,color:C.amberText,fontSize: '12px'}}> · {isCoeFallbackStale() ? `⚠ Estimate may be outdated, as of ${COE_FALLBACK_AS_OF}` : `Estimated as of ${COE_FALLBACK_AS_OF} — live LTA data temporarily unavailable`}</span></>
                 }
                 {/* Always reachable, whether live or not — "is the feed
                     actually working?" should never require reading code. */}
-                <a href="/drive/data-status" style={{fontSize:'10px',color:C.faint,textDecoration:'underline'}}>
+                <a href="/drive/data-status" style={{fontSize: '12px',color:C.faint,textDecoration:'underline'}}>
                   {coeLoading ? 'Data status' : coeStatus === 'live' ? '✓ Live — data status' : 'Why? — data status'}
                 </a>
               </div>

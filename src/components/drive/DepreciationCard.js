@@ -50,7 +50,7 @@ export function DepreciationCard({ r, tenure, visible }) {
             <div key={k} style={{background:C.bg,borderRadius:C.r,padding:'10px 12px',border:`1px solid ${C.border}`}}>
               <div style={{fontSize:C.xs,color:C.muted,marginBottom:4}}>{k}</div>
               <div style={{fontSize:C.base,fontFamily:C.fontMono,fontWeight:700,color:C.primary,marginBottom:3}}>{v}</div>
-              <div style={{fontSize:'10px',color:C.faint}}>{h}</div>
+              <div style={{fontSize: '12px',color:C.faint}}>{h}</div>
             </div>
           ))}
         </div>
@@ -85,9 +85,9 @@ export function DepreciationCard({ r, tenure, visible }) {
               {pg.sublabel}
             </p>
             <div style={{marginTop:6,display:'flex',alignItems:'center',gap:6}}>
-              <span style={{fontSize:'10px',color:C.blueText,opacity:0.6}}>COE used in this calc:</span>
-              <span style={{fontSize:'10px',fontFamily:C.fontMono,fontWeight:700,color:C.blue}}>{SGD(pg.govtCosts.coe)}</span>
-              <span style={{fontSize:'10px',color:C.blueText,opacity:0.5}}>{r.car.coe}{!r.liveCOE ? ' · est.' : ' · live'}</span>
+              <span style={{fontSize: '12px',color:C.blueText,opacity:0.6}}>COE used in this calc:</span>
+              <span style={{fontSize: '12px',fontFamily:C.fontMono,fontWeight:700,color:C.blue}}>{SGD(pg.govtCosts.coe)}</span>
+              <span style={{fontSize: '12px',color:C.blueText,opacity:0.5}}>{r.car.coe}{!r.liveCOE ? ' · est.' : ' · live'}</span>
             </div>
           </div>
         )}

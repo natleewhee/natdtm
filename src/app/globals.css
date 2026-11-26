@@ -509,6 +509,23 @@ main { min-height: 60vh; }
   }
 }
 
+/* ── header sub-row on phones (src/components/shared/ShellHeader.js) ── */
+.shell-header-subnav { display: none; }
+@media (max-width: 640px) {
+  .shell-header-right .shell-header-step,
+  .shell-header-right .shell-header-link { display: none; }
+  .shell-header-subnav {
+    display: flex; align-items: center; gap: 6px; overflow-x: auto;
+    padding: 0 16px 10px; scrollbar-width: none; -webkit-overflow-scrolling: touch;
+  }
+  .shell-header-subnav::-webkit-scrollbar { display: none; }
+  .shell-header-subnav > * { flex-shrink: 0; }
+  .shell-header-subnav .shell-header-link {
+    font-size: 13px; padding: 6px 12px; border-radius: 999px;
+    border: 1px solid var(--color-border); min-height: 32px; display: inline-flex; align-items: center;
+  }
+}
+
 /* ── mobile tab bar (src/components/shared/TabBar.js) ───────────── */
 .tabbar, .tabbar-sheet, .tabbar-scrim { display: none; }
 @media (max-width: 640px) {

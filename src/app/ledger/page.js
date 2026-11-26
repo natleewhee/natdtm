@@ -294,7 +294,7 @@ export default function MyLedgerPage() {
       />
 
       <div style={{ background: C.surface, borderBottom: `1px solid ${C.border}`, padding: '8px 24px', textAlign: 'center' }}>
-        <p style={{ fontSize: 11, color: C.faint, margin: 0 }}>Educational tool only · Not financial advice · Not affiliated with CPF Board or MAS</p>
+        <p style={{ fontSize: 12, color: C.faint, margin: 0 }}>Educational tool only · Not financial advice · Not affiliated with CPF Board or MAS</p>
       </div>
 
       <div style={{ maxWidth: 1000, margin: '0 auto', padding: '36px 20px 80px' }}>
