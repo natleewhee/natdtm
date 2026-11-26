@@ -128,7 +128,7 @@ export function CarPicker({ value, onChange, slot, ceiling, down, allCars = [], 
   return (
     <div ref={wrapRef}>
       <div style={{display:'flex',alignItems:'center',gap:8,marginBottom:6}}>
-        <span style={{background:slotCol,color:'#fff',fontSize:10,fontWeight:700,borderRadius:4,padding:'2px 8px',fontFamily:C.fontMono,letterSpacing:'0.1em'}}>{slot}</span>
+        <span style={{background:slotCol,color:'#fff',fontSize: 12,fontWeight:700,borderRadius:4,padding:'2px 8px',fontFamily:C.fontMono,letterSpacing:'0.1em'}}>{slot}</span>
         <span style={{fontSize:C.sm,fontWeight:600,color:C.primary}}>Select a car</span>
       </div>
       {!value && (
@@ -271,7 +271,7 @@ export function CarPicker({ value, onChange, slot, ceiling, down, allCars = [], 
                 <span style={{fontSize:C.xs,color:C.accent,fontWeight:700}}>✓ Your price</span>
               )}
               {!customPrice && (
-                <span style={{fontSize:'10px',color:C.faint}}>indicative — click to edit</span>
+                <span style={{fontSize: '12px',color:C.faint}}>indicative — click to edit</span>
               )}
             </div>
           </div>

@@ -49,11 +49,11 @@ function PillarCard({ color, emoji, title, badge, summary, expandContent }) {
       <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10 }}>
         <span style={{ fontSize: 20 }}>{emoji}</span>
         <span style={{ fontFamily: C.fontDisplay, fontSize: 17, color: C.primary, flex: 1 }}>{title}</span>
-        <span style={{ padding: '2px 10px', borderRadius: 100, fontSize: 11, fontWeight: 700, background: c.badgeBg, color: c.badgeText }}>{badge}</span>
+        <span style={{ padding: '2px 10px', borderRadius: 100, fontSize: 12, fontWeight: 700, background: c.badgeBg, color: c.badgeText }}>{badge}</span>
       </div>
       <p style={{ fontSize: 14, color: C.text, lineHeight: 1.6, margin: '0 0 8px' }}>{summary}</p>
       <button onClick={() => setOpen(o => !o)} style={{ background: 'none', border: 'none', padding: '8px 0', cursor: 'pointer', fontSize: 13, fontWeight: 600, color: C.accent, display: 'flex', alignItems: 'center', gap: 6 }}>
-        <span style={{ display: 'inline-block', transition: 'transform 0.2s', transform: open ? 'rotate(90deg)' : 'none', fontSize: 11 }}>▶</span>
+        <span style={{ display: 'inline-block', transition: 'transform 0.2s', transform: open ? 'rotate(90deg)' : 'none', fontSize: 12 }}>▶</span>
         {open ? 'Hide details' : 'See how we calculate this'}
       </button>
       {open && (
@@ -201,7 +201,8 @@ PARF schedule — earlier cars (COE before that exercise):
   Deregistered at year 10:    50% of ARF paid (capped at S$60,000)
   After year 10:                0% (no PARF rebate)`}</Formula>
           <Caveat>Budget 2026 cut the PARF schedule and halved the cap to S$30,000 for cars registered with COEs from the second February 2026 bidding exercise (16–20 Feb) onwards. Cars registered before that keep the earlier schedule for life, so the schedule used here depends on the car&apos;s registration date: a car you are buying new today gets the revised one, while a used car is matched by its age. (The S$60,000 cap on the earlier schedule dates from Budget 2023.) Source: LTA news release, 12 Feb 2026. Always verify current rates on the LTA website.</Caveat>
-          <Caveat>EV Early Adoption Incentive (EEAI): pure EVs registered in 2026 get 45% off ARF, capped at S$7,500. The incentive ceases for registrations from 1 January 2027, after which this calculator applies none. A car registered late in December may land in January once delivered, so check the registration date with the dealer.</Caveat>
+          <Caveat>EV Early Adoption Incentive (EEAI): pure EVs get 45% off ARF, capped by registration year: S$20,000 (2021–23), S$15,000 (2024–25) and S$7,500 (2026). Used EVs are given the cap of the year they were registered. The incentive ceases for registrations from 1 January 2027, after which this calculator applies none. A car registered late in December may land in January once delivered, so check the registration date with the dealer.</Caveat>
+          <Caveat>Vehicle Emissions Scheme (VES): each car&apos;s emissions band sets a rebate or surcharge on ARF. For cars registered in 2026: band A (EVs) S$22,500 rebate, B none, C1 S$7,500, C2 S$22,500 and C3 S$35,000 surcharge. From 1 January 2027: A S$20,000 rebate, C1 S$15,000, C2 S$30,000, C3 S$45,000 surcharge; the calculator switches automatically. Hybrids no longer get rebates. Source: LTA OneMotoring, tax structure.</Caveat>
         </Section>
 
         {/* COE */}
@@ -234,7 +235,7 @@ True effective monthly cost = instalment + monthly depreciation`}</Formula>
 
         {/* Why free */}
         <div style={{ marginTop: 36, padding: 20, background: C.ndtm, borderRadius: 14 }}>
-          <p style={{ fontSize: 11, color: 'rgba(255,255,255,0.5)', textTransform: 'uppercase', letterSpacing: '0.06em', margin: '0 0 10px' }}>Why this is free</p>
+          <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.5)', textTransform: 'uppercase', letterSpacing: '0.06em', margin: '0 0 10px' }}>Why this is free</p>
           <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.8)', lineHeight: 1.7, margin: 0 }}>
             DriveReady has no ads, no affiliate links, and no dealer referral fees. We don&apos;t earn anything when you use it. It&apos;s free because Singaporeans deserve to know the real numbers before they sign a hire-purchase agreement.
           </p>
@@ -245,7 +246,7 @@ True effective monthly cost = instalment + monthly depreciation`}</Formula>
           <p style={{ fontSize: 12, color: C.muted, lineHeight: 1.6, margin: '0 0 6px' }}>
             DriveReady is an educational tool. It does not constitute financial advice. Car prices, COE premiums, and financing rates are indicative and subject to change. All figures should be verified with the relevant dealer, bank, and LTA before making a purchase decision.
           </p>
-          <p style={{ fontSize: 11, color: C.muted, margin: 0 }}>Not affiliated with any insurer or MAS-licensed entity.</p>
+          <p style={{ fontSize: 12, color: C.muted, margin: 0 }}>Not affiliated with any insurer or MAS-licensed entity.</p>
         </div>
       </div>
     </div>

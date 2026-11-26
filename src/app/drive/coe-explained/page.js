@@ -73,7 +73,7 @@ export default function COEExplainerPage() {
       <div style={{ maxWidth: 720, margin: '0 auto', padding: '48px 24px 80px' }}>
 
         <div style={{ marginBottom: 40 }}>
-          <div style={{ fontFamily: C.fontNdtm, fontSize: 10, fontWeight: 600, color: C.accent, letterSpacing: '0.18em', textTransform: 'uppercase', marginBottom: 10 }}>ndtm Explains</div>
+          <div style={{ fontFamily: C.fontNdtm, fontSize: 12, fontWeight: 600, color: C.accent, letterSpacing: '0.18em', textTransform: 'uppercase', marginBottom: 10 }}>ndtm Explains</div>
           <h1 style={{ fontFamily: C.fontDisplay, fontSize: 'clamp(28px,5vw,44px)', color: C.primary, margin: '0 0 16px', lineHeight: 1.2 }}>COE, PARF, and ARF — demystified</h1>
           <p style={{ fontSize: C.lg, color: C.muted, margin: 0, lineHeight: 1.7 }}>You know what a COE is. But do you know what PARF means, why the COE rebate exists, and how it all affects what you actually pay and recover over 10 years?</p>
         </div>
@@ -145,7 +145,7 @@ export default function COEExplainerPage() {
 
         {/* Interactive element */}
         <div style={{ background: C.ndtm, borderRadius: C.rXL, padding: 32, margin: '40px 0 32px' }}>
-          <div style={{ fontFamily: C.fontNdtm, fontSize: 10, fontWeight: 600, color: 'rgba(255,255,255,0.5)', letterSpacing: '0.18em', textTransform: 'uppercase', marginBottom: 8 }}>Interactive</div>
+          <div style={{ fontFamily: C.fontNdtm, fontSize: 12, fontWeight: 600, color: 'rgba(255,255,255,0.5)', letterSpacing: '0.18em', textTransform: 'uppercase', marginBottom: 8 }}>Interactive</div>
           <h2 style={{ fontFamily: C.fontDisplay, fontSize: 22, color: '#fff', margin: '0 0 8px' }}>How does COE price affect what you pay?</h2>
           <p style={{ fontSize: C.sm, color: 'rgba(255,255,255,0.55)', margin: '0 0 24px' }}>Pick a car and drag the COE slider to see how the price and monthly cost change.</p>
 
@@ -168,7 +168,7 @@ export default function COEExplainerPage() {
             <input type="range" min={60000} max={150000} step={1000} value={coe}
               onChange={e => setCoe(Number(e.target.value))}
               style={{ width: '100%', accentColor: C.accent }} />
-            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '10px', color: 'rgba(255,255,255,0.3)', marginTop: 2 }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', color: 'rgba(255,255,255,0.3)', marginTop: 2 }}>
               <span>S$60,000 (historic low)</span><span>S$150,000 (historic high)</span>
             </div>
           </div>
@@ -181,9 +181,9 @@ export default function COEExplainerPage() {
               { label: 'Monthly Instalment', value: SGD(result.monthly), sub: `over ${selectedCar.tenure} years` },
             ].map(({ label, value, sub }) => (
               <div key={label} style={{ background: 'rgba(255,255,255,0.08)', borderRadius: C.r, padding: '12px 14px' }}>
-                <div style={{ fontSize: '10px', color: 'rgba(255,255,255,0.45)', marginBottom: 4, textTransform: 'uppercase', letterSpacing: '0.08em' }}>{label}</div>
+                <div style={{ fontSize: '12px', color: 'rgba(255,255,255,0.45)', marginBottom: 4, textTransform: 'uppercase', letterSpacing: '0.08em' }}>{label}</div>
                 <div style={{ fontSize: C.lg, fontFamily: C.fontMono, fontWeight: 700, color: '#fff', marginBottom: 2 }}>{value}</div>
-                <div style={{ fontSize: '10px', color: 'rgba(255,255,255,0.35)' }}>{sub}</div>
+                <div style={{ fontSize: '12px', color: 'rgba(255,255,255,0.35)' }}>{sub}</div>
               </div>
             ))}
           </div>

@@ -71,7 +71,7 @@ export function OwnershipCurve({ coo, tenure, visible }) {
           <div key={i} style={{padding:'14px 16px',borderRight:i<2?`1px solid ${C.border}`:'none',background:i===2?C.redBg+'44':'transparent'}}>
             <div style={{fontSize:C.xs,color:C.muted,marginBottom:4,lineHeight:1.3}}>{item.label}</div>
             <div style={{fontSize:C.lg,fontFamily:C.fontMono,fontWeight:700,color:item.color,lineHeight:1}}>{item.value}</div>
-            <div style={{fontSize:'10px',color:C.faint,marginTop:3}}>{item.sub}</div>
+            <div style={{fontSize: '12px',color:C.faint,marginTop:3}}>{item.sub}</div>
           </div>
         ))}
       </div>
@@ -118,15 +118,15 @@ export function OwnershipCurve({ coo, tenure, visible }) {
         <div style={{display:'flex',gap:16,marginTop:4}}>
           <div style={{display:'flex',alignItems:'center',gap:5}}>
             <div style={{width:16,height:2,background:C.primary,borderRadius:1}}/>
-            <span style={{fontSize:'10px',color:C.muted}}>Cash out</span>
+            <span style={{fontSize: '12px',color:C.muted}}>Cash out</span>
           </div>
           <div style={{display:'flex',alignItems:'center',gap:5}}>
             <div style={{width:16,height:2,background:C.accent,borderRadius:1}}/>
-            <span style={{fontSize:'10px',color:C.muted}}>Recovery value</span>
+            <span style={{fontSize: '12px',color:C.muted}}>Recovery value</span>
           </div>
           <div style={{display:'flex',alignItems:'center',gap:5}}>
             <div style={{width:12,height:8,background:`${C.red}30`,borderRadius:2,border:`1px solid ${C.red}44`}}/>
-            <span style={{fontSize:'10px',color:C.muted}}>True cost (gap)</span>
+            <span style={{fontSize: '12px',color:C.muted}}>True cost (gap)</span>
           </div>
         </div>
       </div>
@@ -135,19 +135,19 @@ export function OwnershipCurve({ coo, tenure, visible }) {
       {hovered && (
         <div style={{margin:'0 18px 12px',padding:'10px 14px',background:C.bg,borderRadius:C.r,border:`1px solid ${C.border}`,display:'grid',gridTemplateColumns:'minmax(0,1fr) minmax(0,1fr) minmax(0,1fr)',gap:8}}>
           <div>
-            <div style={{fontSize:'10px',color:C.muted,marginBottom:2}}>Year {hovered.year}</div>
+            <div style={{fontSize: '12px',color:C.muted,marginBottom:2}}>Year {hovered.year}</div>
             <div style={{fontSize:C.sm,fontWeight:700,color:C.primary,fontFamily:C.fontMono}}>{SGD(hovered.cashOut)}</div>
-            <div style={{fontSize:'10px',color:C.faint}}>cash out</div>
+            <div style={{fontSize: '12px',color:C.faint}}>cash out</div>
           </div>
           <div>
-            <div style={{fontSize:'10px',color:C.muted,marginBottom:2}}>Recovery</div>
+            <div style={{fontSize: '12px',color:C.muted,marginBottom:2}}>Recovery</div>
             <div style={{fontSize:C.sm,fontWeight:700,color:C.accent,fontFamily:C.fontMono}}>{SGD(hovered.paperValue)}</div>
-            <div style={{fontSize:'10px',color:C.faint}}>if scrapped now</div>
+            <div style={{fontSize: '12px',color:C.faint}}>if scrapped now</div>
           </div>
           <div>
-            <div style={{fontSize:'10px',color:C.muted,marginBottom:2}}>True cost</div>
+            <div style={{fontSize: '12px',color:C.muted,marginBottom:2}}>True cost</div>
             <div style={{fontSize:C.sm,fontWeight:700,color:hovered.sunkCost<0?C.accent:C.red,fontFamily:C.fontMono}}>{SGD(Math.abs(hovered.sunkCost))}</div>
-            <div style={{fontSize:'10px',color:C.faint}}>{hovered.sunkCost<0?'still net positive':'sunk so far'}</div>
+            <div style={{fontSize: '12px',color:C.faint}}>{hovered.sunkCost<0?'still net positive':'sunk so far'}</div>
           </div>
         </div>
       )}
@@ -164,14 +164,14 @@ export function OwnershipCurve({ coo, tenure, visible }) {
             <div style={{display:'grid',gridTemplateColumns:`repeat(${Math.min(tenure,7)}, minmax(0,1fr))`,gap:6}}>
               {coo.map(d => (
                 <div key={d.year} style={{background:C.bg,borderRadius:C.r,padding:'8px 10px',border:`1px solid ${C.border}`,textAlign:'center'}}>
-                  <div style={{fontSize:'10px',color:C.faint,marginBottom:4}}>Yr {d.year}</div>
+                  <div style={{fontSize: '12px',color:C.faint,marginBottom:4}}>Yr {d.year}</div>
                   <div style={{fontSize:C.xs,fontFamily:C.fontMono,fontWeight:700,color:C.primary,marginBottom:2}}>{SGD(d.cashOut)}</div>
-                  <div style={{fontSize:'10px',color:C.accent,marginBottom:2}}>{SGD(d.paperValue)} back</div>
-                  <div style={{fontSize:'10px',fontWeight:700,color:d.sunkCost<0?C.accent:C.red}}>{d.sunkCost<0?'net +':'net -'}{SGD(Math.abs(d.sunkCost))}</div>
+                  <div style={{fontSize: '12px',color:C.accent,marginBottom:2}}>{SGD(d.paperValue)} back</div>
+                  <div style={{fontSize: '12px',fontWeight:700,color:d.sunkCost<0?C.accent:C.red}}>{d.sunkCost<0?'net +':'net -'}{SGD(Math.abs(d.sunkCost))}</div>
                 </div>
               ))}
             </div>
-            <p style={{fontSize:'10px',color:C.faint,margin:'8px 0 0',lineHeight:1.5}}>
+            <p style={{fontSize: '12px',color:C.faint,margin:'8px 0 0',lineHeight:1.5}}>
               &quot;Recovery value&quot; = PARF rebate + unused COE months. &quot;True cost&quot; = cash out minus recovery. Negative true cost in early years means you&apos;d recover more than you&apos;ve paid out — not a profit, but the loan still has to be repaid.
             </p>
           </div>

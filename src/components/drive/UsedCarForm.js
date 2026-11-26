@@ -57,7 +57,7 @@ export function UsedCarForm({ slot, onChange }) {
   return (
     <div>
       <div style={{display:'flex',alignItems:'center',gap:8,marginBottom:12}}>
-        <span style={{background:slotCol,color:'#fff',fontSize:10,fontWeight:700,borderRadius:4,padding:'2px 8px',fontFamily:C.fontMono,letterSpacing:'0.1em'}}>{slot}</span>
+        <span style={{background:slotCol,color:'#fff',fontSize: 12,fontWeight:700,borderRadius:4,padding:'2px 8px',fontFamily:C.fontMono,letterSpacing:'0.1em'}}>{slot}</span>
         <span style={{fontSize:C.sm,fontWeight:600,color:C.primary}}>Used car details</span>
       </div>
       <div style={{display:'flex',flexDirection:'column',gap:14}}>

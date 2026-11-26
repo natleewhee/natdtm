@@ -36,9 +36,9 @@ export function RunningCostCard({ r, visible }) {
             ['Parking', SGD(running.parking)],
           ].map(([k,v]) => (
             <div key={k} style={{background:C.bg,borderRadius:C.r,padding:'10px 10px',border:`1px solid ${C.border}`}}>
-              <div style={{fontSize:'10px',color:C.muted,marginBottom:4}}>{k}</div>
+              <div style={{fontSize: '12px',color:C.muted,marginBottom:4}}>{k}</div>
               <div style={{fontSize:C.sm,fontFamily:C.fontMono,fontWeight:700,color:C.primary}}>{v}</div>
-              <div style={{fontSize:'9px',color:C.muted,marginTop:1}}>/yr</div>
+              <div style={{fontSize: '12px',color:C.muted,marginTop:1}}>/yr</div>
             </div>
           ))}
         </div>
@@ -53,7 +53,7 @@ export function RunningCostCard({ r, visible }) {
           </p>
         </div>
 
-        <p style={{fontSize:'10px',color:C.faint,lineHeight:1.6,margin:0}}>
+        <p style={{fontSize: '12px',color:C.faint,lineHeight:1.6,margin:0}}>
           Rough estimates, not quotes — insurance varies by driver profile (age, NCD, claims history), road tax depends on exact engine capacity/power rating, and parking depends on location. Maintenance is modeled off {running.brandKey.charAt(0).toUpperCase() + running.brandKey.slice(1)} year-1 service costs. Use these to compare cars directionally, not as a budget commitment.
         </p>
       </div>

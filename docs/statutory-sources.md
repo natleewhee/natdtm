@@ -38,10 +38,11 @@ at the bottom.
 |---|---|---|---|
 | `CPF_OW_CEILING` | $8,000/month (from 1 Jan 2026; phase-in from $6,000) | [CPFB — CPF changes 2026](https://www.cpf.gov.sg/employer/infohub/news/cpf-related-announcements) | 2026-08-31 ✓ |
 | `CPF_ANNUAL_CEILING` | $102,000/year (unchanged since 2016) | [CPFB — How much CPF contributions to pay](https://www.cpf.gov.sg/employer/employer-obligations/how-much-cpf-contributions-to-pay) | 2026-08-31 ✓ |
-| `CPF_CONTRIBUTION_TABLE` — 55 and below | total 37% | [CPFB — Contribution rates from 1 Jan 2026 (Table 1)](https://www.cpf.gov.sg/content/dam/web/employer/employer-obligations/documents/CPFcontributionratesfrom1Jan2026.pdf) | 2026-08-31 ✓ |
-| `CPF_CONTRIBUTION_TABLE` — above 55 to 60 | total 34% (16% employer + 18% employee); allocation OA 12% / RA 11.5% / MA 10.5% (CPF ratios .353 / .3382 / .3088 of the total) | [CPFB — Contribution rates from 1 Jan 2026](https://www.cpf.gov.sg/content/dam/web/employer/employer-obligations/documents/CPFcontributionratesfrom1Jan2026.pdf), [CPFB — Allocation rates from 1 Jan 2026](https://www.cpf.gov.sg/content/dam/web/employer/employer-obligations/documents/CPFAllocationRatesfromJanuary2026.pdf) | 2026-10-18 ✓ |
-| `CPF_CONTRIBUTION_TABLE` — above 60 to 65 | total 25% (12.5% + 12.5%); allocation OA 3.5% / RA 11% / MA 10.5% (CPF ratios .14 / .44 / .42 of the total) | same | 2026-10-18 ✓ |
-| `CPF_CONTRIBUTION_TABLE` — above 65 to 70 / above 70 | total 16.5% / 12.5% | same | 2026-08-31 ✓ |
+| `CPF_RATE_SCHEDULE` (2026) — 55 and below | total 37% (17% employer + 20% employee), split by age: ≤35 OA 23 / SA 6 / MA 8; 35–45 OA 21 / SA 7 / MA 9; 45–50 OA 19 / SA 8 / MA 10; 50–55 OA 15 / SA 11.5 / MA 10.5 (CPF ratios .6217/.1621/.2162, .5677/.1891/.2432, .5136/.2162/.2702, .4055/.3108/.2837) | [CPFB — Contribution rates from 1 Jan 2026](https://www.cpf.gov.sg/service/article/what-are-the-changes-to-the-cpf-contribution-rates-for-senior-workers-from-1-january-2026), [CPFB — Allocation rates from 1 Jan 2026 (PDF)](https://www.cpf.gov.sg/service/sfc/servlet.shepherd/document/download/069IW000005qFrJYAU) | 2026-11-26 ✓ |
+| `CPF_RATE_SCHEDULE` (2026) — above 55 to 60 | total 34% (16% + 18%); OA 12 / RA 11.5 / MA 10.5 (.353 / .3382 / .3088) | same | 2026-11-26 ✓ |
+| `CPF_RATE_SCHEDULE` (2026) — above 60 to 65 | total 25% (12.5% + 12.5%); OA 3.5 / RA 11 / MA 10.5 (.14 / .44 / .42) | same | 2026-11-26 ✓ |
+| `CPF_RATE_SCHEDULE` — above 65 to 70 / above 70 (both years) | 16.5% (9 + 7.5); OA 1 / RA 5 / MA 10.5 (.0607 / .303 / .6363) · 12.5% (7.5 + 5); OA 1 / RA 1 / MA 10.5 (.08 / .08 / .84) | same | 2026-11-26 ✓ |
+| `CPF_RATE_SCHEDULE` (2027) — above 55 to 60 / above 60 to 65 | 35.5% (16.5% + 19%); OA 12 / RA 13 / MA 10.5 (.3382 / .3661 / .2957) · 26% (13% + 13%); OA 3.5 / RA 12 / MA 10.5 (.1347 / .4615 / .4038). Other bands unchanged from 2026 | [CPFB — Changes from 1 Jan 2027](https://www.cpf.gov.sg/service/article/what-are-the-changes-to-the-cpf-contribution-rates-for-senior-workers-that-will-take-effect-from-1-january-2027), [CPFB — Allocation rates from 1 Jan 2027 (PDF)](https://www.cpf.gov.sg/content/dam/web/employer/employer-obligations/documents/jan2027cpfallocationrates.pdf) | 2026-11-26 ✓ |
 | `CPF_OA_RATE` | 2.5% p.a. | [CPFB — CPF interest rates Q1 2026](https://www.cpf.gov.sg/member/infohub/news/news-releases/cpf-interest-rates-from-1-january-to-31-march-2026-and-basic-healthcare-sum-for-2026) | 2026-08-31 ✓ |
 | `CPF_SA_RATE` / `CPF_MA_RATE` | 4% p.a. (4% floor extended to 31 Dec 2026) | [CPFB — 4% floor extended](https://www.cpf.gov.sg/member/infohub/news/news-releases/government-extends-4-per-cent-interest-rate-floor-on-special-medisave-and-retirement-account-monies-until-31-december-2026) | 2026-08-31 ✓ |
 | `CPF_EXTRA_*` (extra interest tiers/caps: +1% below 55 on $60k, +2%/+1% from 55 on $30k/$30k, OA sub-cap $20k) | as coded | [CPFB — Earning attractive interest](https://www.cpf.gov.sg/member/growing-your-savings/earning-higher-returns/earning-attractive-interest) | 2026-08-31 ✓ |
@@ -76,11 +77,19 @@ Two schedules, chosen by when the car's COE was issued (`parfRegimeFor` / `parfR
 | `PARF_SCHEDULES.revised2026` | 30% of ARF at ≤5yr, 25% / 20% / 15% / 10% / 5% at 6 / 7 / 8 / 9 / 10yr, nil after; cap **S$30,000**. Applies to COEs from the 2nd Feb 2026 bidding exercise onwards (and COE-exempt vehicles registered on/after 13 Feb 2026) | [LTA — Revision of PARF rebate schedule and cap (12 Feb 2026)](https://www.lta.gov.sg/content/ltagov/en/newsroom/2026/2/news-releases/revision-parf-rebate-schedule-cap.html) | 2026-10-18 ✓ |
 | `PARF_SCHEDULES.legacy` | 75% of ARF at ≤5yr, 70% / 65% / 60% / 55% / 50% at 6 / 7 / 8 / 9 / 10yr, nil after; cap **S$60,000**. Cars registered before the cutover keep this for life | same | 2026-10-18 ✓ |
 
+## Vehicle Emissions Scheme — `src/lib/drive/calc.js` (`VES_AS_OF = '2026-01-01'`)
+
+| Constant | Value | Source | Verified |
+|---|---|---|---|
+| `VES_SCHEDULE` (2026) | Rebate (+) / surcharge (−) by band: A +S$22,500 · B 0 · C1 −S$7,500 · C2 −S$22,500 · C3 −S$35,000. Only EVs get rebates (hybrids moved to neutral or surcharge bands) | [OneMotoring — Tax structure](https://onemotoring.lta.gov.sg/content/onemotoring/home/buying/upfront-vehicle-costs/tax-structure.html), [LTA/NEA — Extension of VES and EEAI (Sep 2025)](https://www.lta.gov.sg/content/ltagov/en/newsroom/2025/9/news-releases/extension_of_ves_and_eeai_to_support_vehicle_electrification.html) | 2026-11-26 ✓ |
+| `VES_SCHEDULE` (2027) | A +S$20,000 · B 0 · C1 −S$15,000 · C2 −S$30,000 · C3 −S$45,000; applied by date from 1 Jan 2027 | same | 2026-11-26 ✓ |
+| `cars.json` `ves` | 2026 amount for each car's `vesBand` (fallback only; the engine derives VES from the band and date) | same | 2026-11-26 ✓ |
+
 ## EV Early Adoption Incentive — `src/lib/drive/calc.js` (`EEAI_AS_OF = '2026-01-01'`, `EEAI_END = '2027-01-01'`)
 
 | Constant | Value | Source | Verified |
 |---|---|---|---|
-| `calcEEAI` | 45% of ARF, capped at S$7,500 for registrations in 2026 (S$15,000 in 2025, not modeled: older EVs use the 2026 cap); **ceases for registrations from 1 Jan 2027** | [LTA/NEA — Extension of VES and EEAI (Sep 2025)](https://www.lta.gov.sg/content/ltagov/en/newsroom/2025/9/news-releases/extension_of_ves_and_eeai_to_support_vehicle_electrification.html) | 2026-10-18 ✓ |
+| `calcEEAI` / `EEAI_CAPS` | 45% of ARF, capped by registration date: S$20,000 (2021–23), S$15,000 (2024–25), S$7,500 (2026); **ceases for registrations from 1 Jan 2027** | [OneMotoring — Tax structure](https://onemotoring.lta.gov.sg/content/onemotoring/home/buying/upfront-vehicle-costs/tax-structure.html), [LTA/NEA — Extension of VES and EEAI (Sep 2025)](https://www.lta.gov.sg/content/ltagov/en/newsroom/2025/9/news-releases/extension_of_ves_and_eeai_to_support_vehicle_electrification.html) | 2026-11-26 ✓ |
 
 ## COE fallback — `src/lib/drive/calc.js` (`COE_FALLBACK_AS_OF = '2026-07-01'`)
 
@@ -102,6 +111,12 @@ None.
 
 ## Resolved discrepancies
 
+- **2026-11-26** — VES: seven C2/C3 cars in `cars.json` carried pre-2026 surcharges (S$15,000 / S$25,000 instead of S$22,500 / S$35,000). VES is now derived from each car's band and the date (`VES_SCHEDULE`), with 2027's amounts applying from 1 Jan 2027.
+- **2026-11-26** — EEAI: older EVs were all capped at 2026's S$7,500; caps now follow the registration date (S$20k 2021–23, S$15k 2024–25).
+- **2026-11-26** — The single "0–55" CPF band (under-35 split for everyone below 55) is split into ≤35 / 35–45 / 45–50 / 50–55 per CPF Board's allocation table; SA and MA were understated for ages 35–55.
+- **2026-11-26** — 65–70 allocation corrected from OA 3.5 / SA 2.5 to OA 1 / RA 5 / MA 10.5.
+- **2026-11-26** — TaxWise's employee CPF share for 55–60 / 60–65 corrected from the 2025 rates (17% / 11.5%) to 2026's 18% / 12.5%; take-home pay was overstated for those ages. The employee share now lives in the same schedule as the totals.
+- **2026-11-26** — CPF rates are now a date-aware `CPF_RATE_SCHEDULE`; the 1 Jan 2027 senior-worker step-up is encoded and applies automatically (RetireWell's projection uses each simulated year's table).
 - **2026-10-18** — `CPF_CONTRIBUTION_TABLE` 55–60 (was 32.5%) and 60–65 (was 23.5%) updated to the 1 Jan 2026 rates of 34% and 25%, with the sub-account allocation re-derived from CPF Board's allocation table (the 2026 increase goes to the Retirement Account).
 - **2026-10-18** — `SRS_RETIREMENT_AGE` raised from 63 to 64 (statutory retirement age from 1 Jul 2026).
 - **2026-10-18** — PARF: Budget 2026 schedule and S$30,000 cap added; the old schedule is kept for cars registered before the cutover. Previously every car was given the old 75% / S$60,000 schedule.
@@ -116,4 +131,6 @@ row are updated together (set the last column to `applied`). Format of each row:
 | Effective | Change | Where | Status |
 |---|---|---|---|
 | 2027-01-01 | EEAI ceases for new registrations; `calcEEAI` is date-gated, so no code change is needed | `src/lib/drive/calc.js` | applied |
-| 2027-01-01 | CPF senior-worker contribution rates rise a further 1.5 points for 55–60 (to 35.5%) and 1 point for 60–65 (to 26%); the `CPF_CONTRIBUTION_TABLE` bands and their Retirement Account allocation need updating (or the table made date-aware) | `src/lib/retire/cpf.js` | pending |
+| 2027-01-01 | VES 2027 amounts (EV rebate S$20,000; C1/C2/C3 surcharges S$15k/S$30k/S$45k); `VES_SCHEDULE` is date-gated | `src/lib/drive/calc.js` | applied |
+| 2028-01-01 | The VES schedule announced in Sep 2025 runs to 31 Dec 2027; check LTA for the 2028 bands and add them to `VES_SCHEDULE` | `src/lib/drive/calc.js` | pending |
+| 2027-01-01 | CPF senior-worker contribution rates rise a further 1.5 points for 55–60 (to 35.5%) and 1 point for 60–65 (to 26%), extra allocated to the RA; encoded in the date-aware `CPF_RATE_SCHEDULE`, so no change is needed on the day | `src/lib/retire/cpf.js` | applied |

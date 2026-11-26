@@ -2,7 +2,7 @@
   "_meta": {
     "updated": "2026-07-23",
     "count": 145,
-    "note": "Edit prices here and commit. Vercel redeploys automatically. Prices are OTR indicative inclusive of prevailing COE. rateTier: green=EV/hybrid (2.08%), ice=petrol/diesel (2.60%), tesla=Tesla preferential (1.68%) ves: VES rebate (+) or surcharge (-) in S$. vesBand: A/B/C1/C2/C3. Prices updated 23 Jul 2026 from official dealer pricelists (Toyota/Tesla/VW/Audi/BMW/Hyundai/BYD) where available; other brands still reflect the previous LTA M032 Feb 2026 update."
+    "note": "Edit prices here and commit. Vercel redeploys automatically. Prices are OTR indicative inclusive of prevailing COE. rateTier: green=EV/hybrid (2.08%), ice=petrol/diesel (2.60%), tesla=Tesla preferential (1.68%) ves: VES rebate (+) or surcharge (-) in S$ under the 2026 schedule (fallback only; the app derives VES from vesBand and the date via VES_SCHEDULE in src/lib/drive/calc.js). vesBand: A/B/C1/C2/C3. Prices updated 23 Jul 2026 from official dealer pricelists (Toyota/Tesla/VW/Audi/BMW/Hyundai/BYD) where available; other brands still reflect the previous LTA M032 Feb 2026 update."
   },
   "cars": [
     {
@@ -866,7 +866,7 @@
       "coe": "Cat B",
       "loanCap": 60,
       "rateTier": "ice",
-      "ves": -15000,
+      "ves": -22500,
       "vesBand": "C2"
     },
     {
@@ -918,7 +918,7 @@
       "coe": "Cat B",
       "loanCap": 60,
       "rateTier": "ice",
-      "ves": -15000,
+      "ves": -22500,
       "vesBand": "C2"
     },
     {
@@ -970,7 +970,7 @@
       "coe": "Cat B",
       "loanCap": 60,
       "rateTier": "ice",
-      "ves": -15000,
+      "ves": -22500,
       "vesBand": "C2"
     },
     {
@@ -996,7 +996,7 @@
       "coe": "Cat B",
       "loanCap": 60,
       "rateTier": "ice",
-      "ves": -15000,
+      "ves": -22500,
       "vesBand": "C2"
     },
     {
@@ -1009,7 +1009,7 @@
       "coe": "Cat B",
       "loanCap": 60,
       "rateTier": "ice",
-      "ves": -15000,
+      "ves": -22500,
       "vesBand": "C2"
     },
     {
@@ -1455,7 +1455,7 @@
       "coe": "Cat B",
       "loanCap": 60,
       "rateTier": "green",
-      "ves": -25000,
+      "ves": -35000,
       "vesBand": "C3"
     },
     {
@@ -1468,7 +1468,7 @@
       "coe": "Cat B",
       "loanCap": 60,
       "rateTier": "ice",
-      "ves": -25000,
+      "ves": -35000,
       "vesBand": "C3"
     },
     {
