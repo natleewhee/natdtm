@@ -390,7 +390,7 @@ export function calcPriceGap(car, liveCOEPremium = null) {
     return {
       gap: car.subtotalExCOE, gapPct: subtotalPct, isTesla: true, govtCosts,
       label: 'Tesla vehicle price (ex-govt costs)',
-      sublabel: `Tesla sells direct at a fixed global price. Vehicle subtotal ${SGD(car.subtotalExCOE)} (${subtotalPct.toFixed(0)}% of total price) — the remaining ${govtPct.toFixed(0)}% is ARF, COE, duty, and registration.`,
+      sublabel: `Tesla sells direct at a fixed global price. Vehicle subtotal ${SGD(car.subtotalExCOE)} (${subtotalPct.toFixed(0)}% of total price); the remaining ${govtPct.toFixed(0)}% is ARF, COE, duty, and registration.`,
       isSubtotal: true,
     }
   }
@@ -412,9 +412,9 @@ export function calcPriceGap(car, liveCOEPremium = null) {
     gap, gapPct, unreliable, isTesla, govtCosts,
     label: isTesla ? 'Est. price above govt costs' : 'Est. distributor margin',
     sublabel: unreliable
-      ? `This car's seeded price predates the current ${SGD(govtCosts.coe)} ${car.coe} COE, so a margin can't be estimated from it — enter your actual dealer quote above to see it.`
+      ? `This car's seeded price predates the current ${SGD(govtCosts.coe)} ${car.coe} COE, so a margin can't be estimated from it. Enter your actual dealer quote above to see it.`
       : isTesla
-      ? 'Tesla sells direct — no local distributor. Calculated from car price minus all known government costs.'
+      ? 'Tesla sells direct. No local distributor. Calculated from car price minus all known government costs.'
       : 'Estimated as car price minus OMV, ARF (net of EEAI for EVs), excise duty, GST, COE, and registration fee.',
   }
 }

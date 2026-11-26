@@ -2,7 +2,7 @@ import JsonLd from '@/components/shared/JsonLd'
 import { mathArticleLd } from '@/lib/shared/structuredData'
 
 export const metadata = {
-  title: 'The Math — RetireWell — nat does the math',
+  title: 'The Math · RetireWell · nat does the math',
   description: 'How RetireWell calculates retirement readiness: CPF contribution/interest tables, the safe-withdrawal-rate target, and the year-by-year depletion simulation.',
 }
 

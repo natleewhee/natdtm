@@ -18,7 +18,7 @@ export function buildRecheckIcs(currentScore, now = new Date()) {
 
   const uid = `insurecheck-recheck-${now.getTime()}@natdtm.vercel.app`
   const scoreLine = typeof currentScore === 'number' ? `Your score on ${now.toLocaleDateString('en-SG')} was ${currentScore}/100. ` : ''
-  const description = escapeIcsText(`${scoreLine}Coverage needs change with income, debt, and life events — take a fresh check at natdtm.vercel.app/insure.`)
+  const description = escapeIcsText(`${scoreLine}Coverage needs change with income, debt, and life events. Take a fresh check at natdtm.vercel.app/insure.`)
 
   return [
     'BEGIN:VCALENDAR',

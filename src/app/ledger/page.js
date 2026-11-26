@@ -288,7 +288,7 @@ export default function MyLedgerPage() {
       <ToolHero
         layout="left"
         eyebrow="Timed Scenario Planner"
-        title="Sell, buy, upgrade, add a car — see the whole path."
+        title="Sell, buy, upgrade, add a car. See the whole path."
         lede="A dated sequence of moves, projected against doing nothing, across three sets of assumptions."
         badges={['Pulls from your other ndtm tools', 'Compare up to 3 paths']}
       />
@@ -300,7 +300,7 @@ export default function MyLedgerPage() {
       <div style={{ maxWidth: 1000, margin: '0 auto', padding: '36px 20px 80px' }}>
         {stale.length > 0 && (
           <div style={{ background: C.amberBg, border: `1px solid ${C.amber}`, borderRadius: C.rL, padding: '12px 16px', marginBottom: 16, fontSize: C.xs, color: C.amberText, lineHeight: 1.5 }}>
-            Your {stale.map((s) => s.slot).join(', ')} figures were last synced over {Math.max(...stale.map((s) => s.months))} months ago — re-run those tools so the baseline here matches what they now show.
+            Your {stale.map((s) => s.slot).join(', ')} figures were last synced over {Math.max(...stale.map((s) => s.months))} months ago. Re-run those tools so the baseline here matches what they now show.
           </div>
         )}
         {restoredNote && (
@@ -310,7 +310,7 @@ export default function MyLedgerPage() {
         )}
         {saveFailed && (
           <div style={{ background: C.redBg, border: `1px solid ${C.red}`, borderRadius: C.rL, padding: '12px 16px', marginBottom: 16, fontSize: C.xs, color: C.redText, fontWeight: 600 }}>
-            Changes are not being saved on this browser (private browsing or storage full) — your scenarios will be lost on reload.
+            Changes are not being saved on this browser (private browsing or storage full), so your scenarios will be lost on reload.
           </div>
         )}
 
@@ -329,7 +329,7 @@ export default function MyLedgerPage() {
             color: capacityOpen ? C.accent : C.muted, fontFamily: C.fontBody,
           }}
         >
-          {capacityOpen ? '− Hide' : '+ Show'} how much you can actually invest — CPF/cash split, living expenses, lumpy items
+          {capacityOpen ? '− Hide' : '+ Show'} how much you can actually invest: CPF/cash split, living expenses, lumpy items
         </button>
         {capacityOpen && (
           <div style={{ marginTop: 14 }}>
@@ -358,7 +358,7 @@ export default function MyLedgerPage() {
                 </p>
               ) : retireContribution > 0 ? (
                 <p style={{ marginTop: 5, fontSize: C.xs, color: C.muted, lineHeight: 1.5 }}>
-                  RetireWell has S${Math.round(retireContribution).toLocaleString('en-SG')} synced —
+                  RetireWell has S${Math.round(retireContribution).toLocaleString('en-SG')} synced:
                   {capacityGap > 0 ? ` S$${Math.round(capacityGap).toLocaleString('en-SG')}/mo below your capacity.`
                     : capacityGap < 0 ? ` S$${Math.round(-capacityGap).toLocaleString('en-SG')}/mo above your capacity.`
                     : ' exactly matches your capacity.'}
@@ -376,7 +376,7 @@ export default function MyLedgerPage() {
           </div>
         </div>
 
-        <SectionDivider label="Assumption bundles — low · base · high" />
+        <SectionDivider label="Assumption bundles: low · base · high" />
         <div style={{ background: C.surface, border: `1px solid ${C.border}`, borderRadius: C.rXL, padding: 22, boxShadow: C.shadow }}>
           <BundleEditor bundles={bundles} onChange={setBundles} />
         </div>

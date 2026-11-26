@@ -261,7 +261,7 @@ export default function HowItWorksPage() {
             <BodyText>
               Your Insurance Score is a simple 0–100 number that shows how well your
               current coverage stacks up against Singapore financial planning benchmarks.
-              It&apos;s not a verdict — it&apos;s a starting point.
+              It&apos;s not a verdict. It&apos;s a starting point.
             </BodyText>
             <div style={{
               display: 'flex',
@@ -272,7 +272,7 @@ export default function HowItWorksPage() {
               {[
                 'Based on CFP needs-analysis',
                 'Singapore-specific benchmarks',
-                'Educational only — not financial advice',
+                'Educational only, not financial advice',
               ].map(tag => (
                 <span key={tag} style={{
                   fontSize: '12px',
@@ -300,16 +300,16 @@ export default function HowItWorksPage() {
         ]} />
 
         {/* ── TL;DR ── */}
-        <Section title="TL;DR — the quick version">
+        <Section title="TL;DR: the quick version">
           <BodyText>
             We look at four things. Each one tells us something different about your financial safety net.
           </BodyText>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
             {[
-              { emoji: '🏥', label: 'Hospitalisation', desc: "Do you have cover if you need to be hospitalised? This is a yes/no gate — without it, your score is capped at 50." },
+              { emoji: '🏥', label: 'Hospitalisation', desc: "Do you have cover if you need to be hospitalised? This is a yes/no gate. Without it, your score is capped at 50." },
               { emoji: '🩺', label: 'Critical illness (CI + ECI)', desc: "Do you have enough cover if you're diagnosed with cancer, a heart attack, or a stroke? Weighted at 40%." },
               { emoji: '🛡️', label: 'Life and TPD', desc: "Are the people who depend on you protected if you pass away or can no longer work? Weighted at 30%." },
-              { emoji: '💰', label: 'Premium efficiency', desc: "Are your premiums proportionate to your income — or are you overspending? Weighted at 20%." },
+              { emoji: '💰', label: 'Premium efficiency', desc: "Are your premiums proportionate to your income, or are you overspending? Weighted at 20%." },
             ].map(item => (
               <div key={item.label} style={{
                 display: 'flex',
@@ -337,12 +337,12 @@ export default function HowItWorksPage() {
         {/* ── Score meaning ── */}
         <Section title="What does your score actually mean?">
           <BodyText>
-            Think of it like a health check — not a pass/fail exam.
+            Think of it like a health check, not a pass/fail exam.
           </BodyText>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
             {[
               { color: '#f2a99f', bg: '#341714', range: '0 – 39',   label: 'At risk',           desc: 'You have critical gaps. At least one major area of protection is missing.' },
-              { color: '#f0cf8f', bg: '#2e2313', range: '40 – 59',  label: 'Partially covered', desc: "You have some coverage but meaningful gaps remain — worth addressing." },
+              { color: '#f0cf8f', bg: '#2e2313', range: '40 – 59',  label: 'Partially covered', desc: "You have some coverage but meaningful gaps remain that are worth addressing." },
               { color: '#a8d0ee', bg: '#16232e', range: '60 – 79',  label: 'Mostly covered',    desc: "You're in reasonable shape. A few areas to tighten up." },
               { color: '#8fd9b2', bg: '#16271f', range: '80 – 100', label: 'Well protected',    desc: 'Your coverage meets or exceeds the key benchmarks. Well done.' },
             ].map(band => (
@@ -379,7 +379,7 @@ export default function HowItWorksPage() {
         <Section title="How the score is built">
           <BodyText>
             Your score is a weighted combination of four pillars. But hospitalisation
-            comes first — it acts as a gate.
+            comes first because it acts as a gate.
           </BodyText>
           <div style={{
             background: 'var(--color-surface)',
@@ -392,7 +392,7 @@ export default function HowItWorksPage() {
               The gate rule
             </p>
             <p style={{ margin: 0, fontSize: '14px', color: 'var(--color-text)', lineHeight: 1.6 }}>
-              If you don&apos;t have hospitalisation cover, your score is <strong>capped at 50</strong> — no matter how strong your other pillars are. One hospital stay without cover can wipe out years of savings.
+              If you don&apos;t have hospitalisation cover, your score is <strong>capped at 50</strong>, no matter how strong your other pillars are. One hospital stay without cover can wipe out years of savings.
             </p>
           </div>
           <div style={{
@@ -442,7 +442,7 @@ Band inputs → band midpoint used as proxy → score shown as "estimated"`}
           <BodyText>
             Every benchmark on this page is a default, not a rule. The check
             flow asks two questions that let you set the norm to match your
-            own situation — everything above describes the &quot;Balanced&quot; default.
+            own situation. Everything above describes the &quot;Balanced&quot; default.
           </BodyText>
 
           <div style={{
@@ -453,7 +453,7 @@ Band inputs → band midpoint used as proxy → score shown as "estimated"`}
             marginBottom: '16px',
           }}>
             <p style={{ margin: '0 0 10px', fontSize: '13px', fontWeight: '700', color: 'var(--color-faint)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
-              Risk profile — scales the CI and Life/TPD targets
+              Risk profile: scales the CI and Life/TPD targets
             </p>
             <div style={{ overflowX: 'auto' }}>
               <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '13px' }}>
@@ -492,11 +492,11 @@ Band inputs → band midpoint used as proxy → score shown as "estimated"`}
             padding: '16px 20px',
           }}>
             <p style={{ margin: '0 0 10px', fontSize: '13px', fontWeight: '700', color: 'var(--color-faint)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
-              Dependants — changes the Life/TPD target directly
+              Dependants: changes the Life/TPD target directly
             </p>
             <p style={{ margin: 0, fontSize: '14px', color: 'var(--color-text)', lineHeight: 1.6 }}>
               If no one depends on your income, the {BENCHMARKS.LIFE_ADEQUATE_MULTIPLE}× income-replacement
-              logic doesn&apos;t apply — your Life/TPD target drops to your outstanding
+              logic doesn&apos;t apply, and your Life/TPD target drops to your outstanding
               loans plus a {`S$${(BENCHMARKS.FINAL_EXPENSES_BUFFER / 1000).toFixed(0)}k`} final-expenses
               buffer. This is a bigger swing than the risk profile, because it changes
               which formula applies, not just the multiple.
@@ -505,7 +505,7 @@ Band inputs → band midpoint used as proxy → score shown as "estimated"`}
 
           <Caveat>
             Deviating from the norm doesn&apos;t change what a serious illness or death actually
-            costs — it changes how much of that cost you&apos;re choosing to self-insure against
+            costs. It changes how much of that cost you&apos;re choosing to self-insure against
             with savings or other assets instead of a policy payout. Scores computed under a
             non-default profile are still shown against that profile&apos;s own benchmark, not
             silently compared to the standard one.
@@ -572,7 +572,7 @@ Band inputs → band midpoint used as proxy → score shown as "estimated"`}
               emoji="🏥"
               title="Hospitalisation"
               weight="Gate"
-              summary="This is binary — you either have it or you don't. If you don't, your final score is capped at 50 regardless of everything else."
+              summary="This is binary: you either have it or you don't. If you don't, your final score is capped at 50 regardless of everything else."
               why="A single hospitalisation without cover can cost S$10,000–S$50,000+ out of pocket. It's the most immediate financial risk for most people."
               expandContent={
                 <>
@@ -586,8 +586,8 @@ Not sure → treated as No (capped at 50, flagged in results)`}
                   </Formula>
                   <Caveat>
                     We treat all hospitalisation cover equally regardless of ward class or plan tier.
-                    A basic MediShield Life policy and a full private ISP are both scored as &quot;covered&quot;
-                    — your actual level of protection may differ significantly.
+                    A basic MediShield Life policy and a full private ISP are both scored as &quot;covered&quot;,
+                    so your actual level of protection may differ significantly.
                   </Caveat>
                 </>
               }
@@ -600,7 +600,7 @@ Not sure → treated as No (capped at 50, flagged in results)`}
               title="Critical illness (CI)"
               weight="40%"
               summary="We check whether your CI sum assured is roughly 5× your annual income. That's enough to cover a few years of lost income plus treatment costs."
-              why="A cancer diagnosis or major heart event can stop your income for years. CI cover is the lump sum that bridges that gap — your hospitalisation insurance doesn't cover it."
+              why="A cancer diagnosis or major heart event can stop your income for years. CI cover is the lump sum that bridges that gap. Your hospitalisation insurance doesn't cover it."
               expandContent={
                 <>
                   <p style={{ fontSize: '13px', color: 'var(--color-text)', lineHeight: 1.6, margin: '0 0 8px' }}>
@@ -635,7 +635,7 @@ Band scoring (if exact amount unknown):
                     and LIA Singapore industry studies. The LIA estimates Singaporeans are underinsured
                     on CI by approximately 70% on average. If your cover comes in well above the
                     benchmark, your results page will flag it as possibly over-insured rather than
-                    just showing a full score — a high number doesn&apos;t automatically mean the right amount.
+                    just showing a full score. A high number doesn&apos;t automatically mean the right amount.
                   </Caveat>
                 </>
               }
@@ -652,12 +652,12 @@ Band scoring (if exact amount unknown):
                 emoji="⚡"
                 title="Early critical illness (ECI)"
                 weight="Boost +20pts"
-                summary="ECI is a bonus on top of your CI score. Standard CI pays out late — ECI pays out earlier, when treatment costs are highest."
+                summary="ECI is a bonus on top of your CI score. Standard CI pays out late; ECI pays out earlier, when treatment costs are highest."
                 why="Early-stage cancer treatment in Singapore can cost S$30k–S$80k before a standard CI policy would even trigger. ECI covers that window."
                 expandContent={
                   <>
                     <p style={{ fontSize: '13px', color: 'var(--color-text)', lineHeight: 1.6, margin: '0 0 8px' }}>
-                      ECI is not a separate pillar — it boosts your CI pillar score. Having ECI alongside CI shows you&apos;re covered at both early and late stages of illness.
+                      ECI is not a separate pillar. It boosts your CI pillar score. Having ECI alongside CI shows you&apos;re covered at both early and late stages of illness.
                     </p>
                     <Formula>
                       {`ECI boost:
@@ -668,10 +668,10 @@ Band scoring (if exact amount unknown):
 
 Combined resilience = min(CI base score + ECI boost, 100)
 
-ECI can only boost — it cannot compensate for a low CI base score.`}
+ECI can only boost. It cannot compensate for a low CI base score.`}
                     </Formula>
                     <Caveat>
-                      ECI is flagged as a gap even when your CI score is strong — they cover
+                      ECI is flagged as a gap even when your CI score is strong, because they cover
                       different stages of the same illness.
                     </Caveat>
                   </>
@@ -685,8 +685,8 @@ ECI can only boost — it cannot compensate for a low CI base score.`}
               emoji="🛡️"
               title="Life and TPD"
               weight="30%"
-              summary="We check whether your life and TPD sum assured is roughly 9× your annual income — enough to replace your income for the people who depend on you."
-              why="Life insurance protects your dependants if you pass away. TPD cover protects you if you're permanently unable to work — even if you have no dependants."
+              summary="We check whether your life and TPD sum assured is roughly 9× your annual income, enough to replace your income for the people who depend on you."
+              why="Life insurance protects your dependants if you pass away. TPD cover protects you if you're permanently unable to work, even if you have no dependants."
               expandContent={
                 <>
                   <p style={{ fontSize: '13px', color: 'var(--color-text)', lineHeight: 1.6, margin: '0 0 8px' }}>
@@ -705,10 +705,10 @@ Band scoring (if exact amount unknown):
                   </Formula>
                   <Caveat>
                     We ask directly whether anyone depends on your income. If no one does, the
-                    9× income-replacement benchmark doesn&apos;t really apply — standard guidance is
+                    9× income-replacement benchmark doesn&apos;t really apply. Standard guidance is
                     that your need drops to clearing debts plus a final-expenses buffer, not
                     years of income replacement. TPD cover is still relevant regardless of
-                    dependants — it funds your own care if you can no longer work. As with CI,
+                    dependants. It funds your own care if you can no longer work. As with CI,
                     cover well above your target is flagged as possibly over-insured, not just
                     scored 100.
                   </Caveat>
@@ -739,7 +739,7 @@ At 15% or above → score: 0 (flagged as overpaying)`}
                   <Caveat>
                     High premiums are not always wrong. Investment-linked policies (ILPs) carry
                     higher premiums because they include a savings component. This flag is a
-                    starting point for reflection — not a verdict.
+                    starting point for reflection, not a verdict.
                   </Caveat>
                 </>
               }
@@ -750,15 +750,15 @@ At 15% or above → score: 0 (flagged as overpaying)`}
               color="gray"
               emoji="🧑‍🦽"
               title="Disability income (DI)"
-              weight="Bonus — not in score"
-              summary="Optional, supplementary check: does your monthly DI benefit reach 60% of your gross income, the typical payout cap? This never affects the 0–100 score above — it's shown separately so answering it (or skipping it) never changes your main result or its history over time."
+              weight="Bonus, not in score"
+              summary="Optional, supplementary check: does your monthly DI benefit reach 60% of your gross income, the typical payout cap? This never affects the 0–100 score above. It's shown separately so answering it (or skipping it) never changes your main result or its history over time."
               why="A temporary disability that keeps you off work isn't covered by CI (needs a diagnosis) or hospitalisation (only covers the stay itself). It's a common Singapore blind spot even among well-insured people."
               expandContent={
                 <>
                   <p style={{ fontSize: '13px', color: 'var(--color-text)', lineHeight: 1.6, margin: '0 0 8px' }}>
                     We deliberately kept this out of the weighted formula. Adding a new weighted
-                    pillar would silently change what every past score meant — including the score
-                    history trend line — for everyone who never answered this question.
+                    pillar would silently change what every past score meant, including the score
+                    history trend line, for everyone who never answered this question.
                   </p>
                   <Formula>
                     {`DI monthly target = 60% × (annual income ÷ 12)
@@ -771,7 +771,7 @@ This score is never included in finalScore.`}
                   </Formula>
                   <Caveat>
                     60% is a typical payout cap insurers apply to avoid over-insuring against
-                    working — most DI riders and standalone policies won&apos;t sell you more than this
+                    working. Most DI riders and standalone policies won&apos;t sell you more than this
                     regardless of premium. Employer group insurance often already includes some
                     income protection; check that before buying a new policy.
                   </Caveat>
@@ -791,7 +791,7 @@ This score is never included in finalScore.`}
             {[
               {
                 title: 'CFP needs-analysis framework',
-                desc: 'Used for CI lump sum calculation — income replacement plus estimated treatment costs.',
+                desc: 'Used for CI lump sum calculation: income replacement plus estimated treatment costs.',
               },
               {
                 title: 'MAS financial planning guidelines',
@@ -828,7 +828,7 @@ This score is never included in finalScore.`}
         <Section title="What this tool doesn't account for">
           <BodyText muted>
             Benchmarks are generalisations. We ask about dependants and outstanding
-            debt directly, and let you shift your risk profile — but these factors
+            debt directly, and let you shift your risk profile, but these factors
             still aren&apos;t captured:
           </BodyText>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
@@ -836,7 +836,7 @@ This score is never included in finalScore.`}
               ['Existing assets',        'Savings, CPF, and investments can partially offset your insurance needs. The "Self-insured" risk profile is a rough proxy for this, but it isn\'t sized to your actual asset value.'],
               ['Employer / group insurance', 'Cover through work isn\'t captured here, so your true position may be better than shown.'],
               ['Health history',         'Pre-existing conditions may affect what you can get and at what cost.'],
-              ['Hospitalisation tier',   'We treat all H&S cover equally — MediShield Life and a full private plan both score as "covered."'],
+              ['Hospitalisation tier',   'We treat all H&S cover equally. MediShield Life and a full private plan both score as "covered."'],
               ['Policy exclusions',      'Your actual cover may be lower than your sum assured due to exclusions or conditions.'],
               ['Medical inflation',      'Healthcare costs in Singapore rise ~8–10% a year. A sum assured that works today may not in 10 years.'],
             ].map(([title, desc]) => (

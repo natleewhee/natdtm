@@ -242,25 +242,25 @@ export function getVerdict(options) {
 
   if (pctDearer < 5) {
     headline = 'The options are roughly equal'
-    rationale = `All options cost within 5% of each other per year. The decision comes down to personal preference — peace of mind from a new car, or keeping a familiar vehicle.`
+    rationale = `All options cost within 5% of each other per year. The decision comes down to personal preference: peace of mind from a new car, or keeping a familiar vehicle.`
   } else if (pctDearer < 20) {
     headline = `${cheapestLabel} appears slightly cheaper`
-    rationale = `${cheapestLabel} costs roughly ${fmtSGD(diff)}/year less — a meaningful difference but not dramatic. Other factors like reliability, warranty, and your financial situation matter here.`
+    rationale = `${cheapestLabel} costs roughly ${fmtSGD(diff)}/year less, a meaningful difference but not dramatic. Other factors like reliability, warranty, and your financial situation matter here.`
   } else {
     headline = `${cheapestLabel} is meaningfully cheaper`
-    rationale = `${cheapestLabel} costs roughly ${fmtSGD(diff)}/year less — a ${pctDearer.toFixed(0)}% difference that's hard to ignore from a purely financial standpoint.`
+    rationale = `${cheapestLabel} costs roughly ${fmtSGD(diff)}/year less, a ${pctDearer.toFixed(0)}% difference that's hard to ignore from a purely financial standpoint.`
   }
 
   // Specific caveats
   for (const opt of options) {
     if (opt.type === 'renew' && opt.renewYears === 5 && opt.finalCoe) {
-      caveats.push(`After the 5-year renewal, your car must be deregistered — budget for a replacement car at that point. This cost is not included above.`)
+      caveats.push(`After the 5-year renewal, your car must be deregistered. Budget for a replacement car at that point. This cost is not included above.`)
     }
     if (opt.batteryRisk) {
       caveats.push(`EV battery replacement risk: your car will be ${opt.endAge} years old at end of renewal. Battery replacement can cost S$15,000–30,000.`)
     }
     if (opt.type === 'new' && opt.ratio !== null && opt.ratio > 0.30) {
-      caveats.push(`New car monthly instalment (${fmtSGD(opt.monthly)}/mo) exceeds 30% of take-home pay — may strain your budget.`)
+      caveats.push(`New car monthly instalment (${fmtSGD(opt.monthly)}/mo) exceeds 30% of take-home pay and may strain your budget.`)
     }
     if (opt.type === 'used' && opt.mileageFactor > 1) {
       caveats.push(`High mileage on the used car adds estimated maintenance costs.`)

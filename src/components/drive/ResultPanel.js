@@ -112,10 +112,10 @@ export function ResultPanel({ r, tenure, visible, slim=false }) {
           {!canDown
             ? <>{SGD(reqDown)} min. downpayment required ({100-car.loanCap}% of price). You&apos;re short by <strong style={{color:C.red}}>{SGD(shortfall)}</strong>.</>
             : verdict==='Affordable'
-            ? <>{SGD(monthly)}/mo is {(ratio*100).toFixed(1)}% of take-home — comfortably within the 30% safe threshold.</>
+            ? <>{SGD(monthly)}/mo is {(ratio*100).toFixed(1)}% of take-home, comfortably within the 30% safe threshold.</>
             : verdict==='Stretch'
             ? <>{SGD(monthly)}/mo is {(ratio*100).toFixed(1)}% of take-home. Manageable, but leaves limited savings buffer.</>
-            : <>{SGD(monthly)}/mo is {(ratio*100).toFixed(1)}% of take-home — above the 45% caution threshold. Consider a longer tenure or lower-priced car.</>}
+            : <>{SGD(monthly)}/mo is {(ratio*100).toFixed(1)}% of take-home, above the 45% caution threshold. Consider a longer tenure or lower-priced car.</>}
         </p>
       </div>
       <div style={{padding:slim?'14px 18px 22px':'18px 24px 26px'}}>
@@ -124,12 +124,12 @@ export function ResultPanel({ r, tenure, visible, slim=false }) {
             <div style={{fontSize:C.xs,fontWeight:700,color:C.red,textTransform:'uppercase',letterSpacing:'0.08em',marginBottom:5}}>⚠ Exceeds MAS TDSR limit</div>
             <p style={{fontSize:C.sm,color:C.redText,lineHeight:1.65,margin:0}}>
               {existingDebt > 0
-                ? <>Your existing debt (<strong>{SGD(existingDebt)}/mo</strong>) plus {mySharePct < 100 ? 'your share of' : ''} this car&apos;s instalment (<strong>{SGD(r.myMonthlyShare)}/mo</strong>) comes to <strong>{(tdsr*100).toFixed(1)}%</strong> of your gross income — above the bank&apos;s 55% Total Debt Servicing Ratio ceiling. A lender may reject this loan regardless of the verdict above.</>
-                : <>{mySharePct < 100 ? 'Your share of this instalment alone is' : 'This instalment alone is'} <strong>{(tdsr*100).toFixed(1)}%</strong> of your gross income — above the bank&apos;s 55% Total Debt Servicing Ratio ceiling. A lender may reject this loan regardless of the verdict above.</>}
+                ? <>Your existing debt (<strong>{SGD(existingDebt)}/mo</strong>) plus {mySharePct < 100 ? 'your share of' : ''} this car&apos;s instalment (<strong>{SGD(r.myMonthlyShare)}/mo</strong>) comes to <strong>{(tdsr*100).toFixed(1)}%</strong> of your gross income, above the bank&apos;s 55% Total Debt Servicing Ratio ceiling. A lender may reject this loan regardless of the verdict above.</>
+                : <>{mySharePct < 100 ? 'Your share of this instalment alone is' : 'This instalment alone is'} <strong>{(tdsr*100).toFixed(1)}%</strong> of your gross income, above the bank&apos;s 55% Total Debt Servicing Ratio ceiling. A lender may reject this loan regardless of the verdict above.</>}
             </p>
             {mySharePct < 100 && (
               <p style={{fontSize:C.xs,color:C.redText,opacity:0.85,lineHeight:1.6,margin:'8px 0 0'}}>
-                Joint loan: the full instalment is {SGD(monthly)}/mo — you&apos;re counted for {mySharePct.toFixed(1)}% ({SGD(r.myMonthlyShare)}/mo) against your own TDSR.
+                Joint loan: the full instalment is {SGD(monthly)}/mo; you&apos;re counted for {mySharePct.toFixed(1)}% ({SGD(r.myMonthlyShare)}/mo) against your own TDSR.
               </p>
             )}
           </div>
@@ -152,7 +152,7 @@ export function ResultPanel({ r, tenure, visible, slim=false }) {
         {tenureClamped && (
           <div style={{background:C.amberBg,border:`1px solid ${C.amber}44`,borderRadius:C.r,padding:'11px 14px',marginBottom:14,opacity:metricsIn?1:0,transition:'opacity 0.5s'}}>
             <p style={{fontSize:C.sm,color:C.amberText,lineHeight:1.6,margin:0}}>
-              Shortened to <strong>{rTenure} year{rTenure>1?'s':''}</strong> — this car&apos;s COE only has {maxTenureFromCoe} year{maxTenureFromCoe>1?'s':''} left, so a loan can&apos;t run longer than that.
+              Shortened to <strong>{rTenure} year{rTenure>1?'s':''}</strong>. This car&apos;s COE only has {maxTenureFromCoe} year{maxTenureFromCoe>1?'s':''} left, so a loan can&apos;t run longer than that.
             </p>
           </div>
         )}
@@ -171,7 +171,7 @@ export function ResultPanel({ r, tenure, visible, slim=false }) {
             <span style={{fontSize:20,flexShrink:0}}>💰</span>
             <div>
               <div style={{fontSize:C.xs,fontWeight:700,color:C.accent,textTransform:'uppercase',letterSpacing:'0.08em',marginBottom:4}}>Green rate savings vs ICE</div>
-              <p style={{fontSize:C.sm,color:C.accentText,lineHeight:1.65}}>Save <strong>{SGD(saving)}</strong> total — <strong>{SGD(saving/(rTenure*12))}/mo</strong> less than a petrol loan at the same amount.</p>
+              <p style={{fontSize:C.sm,color:C.accentText,lineHeight:1.65}}>Save <strong>{SGD(saving)}</strong> total: <strong>{SGD(saving/(rTenure*12))}/mo</strong> less than a petrol loan at the same amount.</p>
             </div>
           </div>
         )}
@@ -181,7 +181,7 @@ export function ResultPanel({ r, tenure, visible, slim=false }) {
             <div>
               <div style={{fontSize:C.xs,fontWeight:700,color:C.accent,textTransform:'uppercase',letterSpacing:'0.08em',marginBottom:4}}>ndtm / invest</div>
               <p style={{fontSize:C.sm,color:C.accentText,lineHeight:1.65,margin:'0 0 8px'}}>
-                This leaves <strong>{SGD(headroom)}/mo</strong> under your 30% comfort limit — untouched by this car.
+                This leaves <strong>{SGD(headroom)}/mo</strong> under your 30% comfort limit, untouched by this car.
               </p>
               <a
                 href={`/etf/preferences?${encodePrefsToParams({ risk: 'Balanced', simplicity: '2-3 ETFs', tilts: [], monthlyInvestment: String(headroom) }).toString()}`}
@@ -197,8 +197,8 @@ export function ResultPanel({ r, tenure, visible, slim=false }) {
             <div style={{fontSize:C.xs,fontWeight:700,color:C.muted,textTransform:'uppercase',letterSpacing:'0.08em',marginBottom:6}}>💡 What would make this {tdsrExceeded && verdict==='Affordable' ? 'clear the TDSR limit' : 'affordable'}</div>
             {!canDown ? (
               <p style={{fontSize:C.sm,color:C.text,lineHeight:1.75,margin:0}}>
-                You&apos;re short <strong style={{color:C.primary}}>{SGD(shortfall)}</strong> of the minimum downpayment ({100-car.loanCap}% of price) — this car isn&apos;t financeable at your current cash on hand, regardless of tenure.
-                {suggestions.ceiling && <> At your current salary and cash, your affordability ceiling is roughly <strong style={{color:C.primary}}>{SGD(Math.max(suggestions.ceiling.catA, suggestions.ceiling.catB))}</strong> — worth looking at cars in that range.</>}
+                You&apos;re short <strong style={{color:C.primary}}>{SGD(shortfall)}</strong> of the minimum downpayment ({100-car.loanCap}% of price). This car isn&apos;t financeable at your current cash on hand, regardless of tenure.
+                {suggestions.ceiling && <> At your current salary and cash, your affordability ceiling is roughly <strong style={{color:C.primary}}>{SGD(Math.max(suggestions.ceiling.catA, suggestions.ceiling.catB))}</strong>, worth looking at cars in that range.</>}
               </p>
             ) : (
               <div style={{display:'flex',flexDirection:'column',gap:8}}>
@@ -214,7 +214,7 @@ export function ResultPanel({ r, tenure, visible, slim=false }) {
                 )}
                 {suggestions.extraDown == null && suggestions.minTenure == null && suggestions.ceiling && (
                   <p style={{fontSize:C.sm,color:C.text,lineHeight:1.6,margin:0}}>
-                    Neither more cash down nor a longer tenure alone gets this to Affordable within a 7-year loan. Your current affordability ceiling is roughly <strong style={{color:C.primary}}>{SGD(Math.max(suggestions.ceiling.catA, suggestions.ceiling.catB))}</strong> — worth comparing against a lower-priced car.
+                    Neither more cash down nor a longer tenure alone gets this to Affordable within a 7-year loan. Your current affordability ceiling is roughly <strong style={{color:C.primary}}>{SGD(Math.max(suggestions.ceiling.catA, suggestions.ceiling.catB))}</strong>, worth comparing against a lower-priced car.
                   </p>
                 )}
               </div>

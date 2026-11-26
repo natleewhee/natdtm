@@ -87,13 +87,13 @@ function PreferencesForm() {
           <h1 className={styles.title}>Your Preferences</h1>
           <p className={styles.subtitle}>Help us understand your investing style. No personal data is collected.</p>
           {restoredFromSave && (
-            <p className={styles.sectionNote}>Restored what you last had for this profile — edit freely.</p>
+            <p className={styles.sectionNote}>Restored what you last had for this profile. Edit freely.</p>
           )}
           {loadedFromUrl && (
-            <p className={styles.sectionNote}>Loaded from a shared link — not saved to this profile until you change something below.</p>
+            <p className={styles.sectionNote}>Loaded from a shared link. Not saved to this profile until you change something below.</p>
           )}
           <p className={styles.sectionNote} style={{ color: justSaved ? 'var(--color-accent)' : undefined, fontWeight: justSaved ? 700 : undefined }}>
-            {loadedFromUrl ? 'Not yet saved to this profile' : justSaved ? 'Saved to this profile ✓' : 'Autosaved to this profile as you go — nothing to press.'}
+            {loadedFromUrl ? 'Not yet saved to this profile' : justSaved ? 'Saved to this profile ✓' : 'Autosaved to this profile as you go. Nothing to press.'}
           </p>
 
           <div className={styles.sections}>
@@ -197,7 +197,7 @@ function PreferencesForm() {
             <div className={styles.previewBox}>
               <span className={styles.previewLabel}>Preview</span>
               <p className={styles.previewText}>
-                <strong>{preview.title}</strong> — {preview.allocations.length} fund{preview.allocations.length !== 1 ? 's' : ''}:{' '}
+                <strong>{preview.title}</strong> · {preview.allocations.length} fund{preview.allocations.length !== 1 ? 's' : ''}:{' '}
                 {preview.allocations.map(a => `${a.etf.ticker} ${a.percentage}%`).join(' · ')}
               </p>
             </div>

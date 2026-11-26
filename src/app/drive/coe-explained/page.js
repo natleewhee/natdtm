@@ -74,17 +74,17 @@ export default function COEExplainerPage() {
 
         <div style={{ marginBottom: 40 }}>
           <div style={{ fontFamily: C.fontNdtm, fontSize: 12, fontWeight: 600, color: C.accent, letterSpacing: '0.18em', textTransform: 'uppercase', marginBottom: 10 }}>ndtm Explains</div>
-          <h1 style={{ fontFamily: C.fontDisplay, fontSize: 'clamp(28px,5vw,44px)', color: C.primary, margin: '0 0 16px', lineHeight: 1.2 }}>COE, PARF, and ARF — demystified</h1>
+          <h1 style={{ fontFamily: C.fontDisplay, fontSize: 'clamp(28px,5vw,44px)', color: C.primary, margin: '0 0 16px', lineHeight: 1.2 }}>COE, PARF, and ARF, demystified</h1>
           <p style={{ fontSize: C.lg, color: C.muted, margin: 0, lineHeight: 1.7 }}>You know what a COE is. But do you know what PARF means, why the COE rebate exists, and how it all affects what you actually pay and recover over 10 years?</p>
         </div>
 
         {/* Section 1: COE */}
         <h2 style={{ fontFamily: C.fontDisplay, fontSize: 24, color: C.primary, margin: '0 0 12px' }}>The COE: what you&apos;re really buying</h2>
         <p style={{ fontSize: C.base, color: C.text, lineHeight: 1.8, margin: '0 0 14px' }}>
-          A Certificate of Entitlement is a 10-year right to own and use a car in Singapore. When you buy a new car, the COE price is bundled into the sticker price — but it&apos;s worth understanding it separately, because it&apos;s the single most volatile component of what you pay.
+          A Certificate of Entitlement is a 10-year right to own and use a car in Singapore. When you buy a new car, the COE price is bundled into the sticker price, but it&apos;s worth understanding it separately, because it&apos;s the single most volatile component of what you pay.
         </p>
         <p style={{ fontSize: C.base, color: C.text, lineHeight: 1.8, margin: '0 0 14px' }}>
-          COE prices are set by open bidding, twice a month. LTA releases a fixed quota of certificates; whoever bids above the clearing price wins. If demand is high (lots of people want cars), prices surge. If quota is large or demand is weak, prices fall. This has nothing to do with the car itself — it&apos;s purely a function of how many Singaporeans want to drive that month.
+          COE prices are set by open bidding, twice a month. LTA releases a fixed quota of certificates; whoever bids above the clearing price wins. If demand is high (lots of people want cars), prices surge. If quota is large or demand is weak, prices fall. This has nothing to do with the car itself. It&apos;s purely a function of how many Singaporeans want to drive that month.
         </p>
         <Callout>
           <p style={{ fontSize: C.sm, color: C.accentText, margin: 0, lineHeight: 1.6 }}>
@@ -103,7 +103,7 @@ export default function COEExplainerPage() {
         {/* Section 2: ARF */}
         <h2 style={{ fontFamily: C.fontDisplay, fontSize: 24, color: C.primary, margin: '32px 0 12px' }}>ARF: the government&apos;s take on your car&apos;s value</h2>
         <p style={{ fontSize: C.base, color: C.text, lineHeight: 1.8, margin: '0 0 14px' }}>
-          The Additional Registration Fee (ARF) is a tax paid when you register a new car, calculated as a percentage of the car&apos;s OMV. It&apos;s tiered — the more expensive the car (by OMV), the higher the rate.
+          The Additional Registration Fee (ARF) is a tax paid when you register a new car, calculated as a percentage of the car&apos;s OMV. It&apos;s tiered: the more expensive the car (by OMV), the higher the rate.
         </p>
         <div style={{ background: C.surface, border: `1px solid ${C.border}`, borderRadius: C.rL, overflow: 'hidden', marginBottom: 20 }}>
           {[
@@ -120,7 +120,7 @@ export default function COEExplainerPage() {
           ))}
         </div>
         <p style={{ fontSize: C.base, color: C.text, lineHeight: 1.8, margin: '0 0 14px' }}>
-          For EVs, you also get the EEAI (Electric Vehicle Early Adoption Incentive) — 45% off ARF, capped at S$7,500 for cars registered in 2026. The incentive ends for registrations from 1 January 2027, so EVs registered after that pay full ARF. Until then, this is why EVs can be surprisingly affordable despite high sticker prices.
+          For EVs, you also get the EEAI (Electric Vehicle Early Adoption Incentive): 45% off ARF, capped at S$7,500 for cars registered in 2026. The incentive ends for registrations from 1 January 2027, so EVs registered after that pay full ARF. Until then, this is why EVs can be surprisingly affordable despite high sticker prices.
         </p>
 
         {/* Section 3: PARF */}
@@ -137,10 +137,10 @@ export default function COEExplainerPage() {
         {/* Section 4: COE Rebate */}
         <h2 style={{ fontFamily: C.fontDisplay, fontSize: 24, color: C.primary, margin: '32px 0 12px' }}>COE rebate: your unused COE months</h2>
         <p style={{ fontSize: C.base, color: C.text, lineHeight: 1.8, margin: '0 0 14px' }}>
-          If you deregister a car before its COE expires, you also get back a pro-rated refund of the COE — proportional to how many months are left. Deregister with 36 months left on a S$110,000 COE, and you get back S$110,000 × (36/120) = S$33,000.
+          If you deregister a car before its COE expires, you also get back a pro-rated refund of the COE, proportional to how many months are left. Deregister with 36 months left on a S$110,000 COE, and you get back S$110,000 × (36/120) = S$33,000.
         </p>
         <p style={{ fontSize: C.base, color: C.text, lineHeight: 1.8, margin: '0 0 14px' }}>
-          Together, PARF + COE rebate is what you recover when you scrap or export your car. This is why cars don&apos;t depreciate to zero in Singapore — they always retain a floor value equal to their scrap value.
+          Together, PARF + COE rebate is what you recover when you scrap or export your car. This is why cars don&apos;t depreciate to zero in Singapore; they always retain a floor value equal to their scrap value.
         </p>
 
         {/* Interactive element */}
@@ -189,7 +189,7 @@ export default function COEExplainerPage() {
           </div>
 
           <div style={{ marginTop: 16, padding: '12px 14px', background: 'rgba(255,255,255,0.06)', borderRadius: C.r, fontSize: C.xs, color: 'rgba(255,255,255,0.5)', lineHeight: 1.6 }}>
-            Moving COE from S$80,000 to S$130,000 changes the monthly instalment for {selectedCar.name} by <strong style={{ color: '#fff' }}>{SGD(monthlyDiff)}/month</strong> — a S$50,000 swing in COE price adds {SGD(monthlyDiff * selectedCar.tenure * 12)} in total loan repayments.
+            Moving COE from S$80,000 to S$130,000 changes the monthly instalment for {selectedCar.name} by <strong style={{ color: '#fff' }}>{SGD(monthlyDiff)}/month</strong>. A S$50,000 swing in COE price adds {SGD(monthlyDiff * selectedCar.tenure * 12)} in total loan repayments.
           </div>
         </div>
 

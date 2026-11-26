@@ -158,7 +158,7 @@ export default function DataAvatar({ score = 50, label = 'Score' }) {
     <div>
       <div ref={mountRef} style={{ width: '100%', height: 360, borderRadius: 12, overflow: 'hidden' }} />
       <p style={{ textAlign: 'center', marginTop: 8, fontSize: 14, opacity: 0.7 }}>
-        {label}: {score} — {scoreToState(score)}
+        {label}: {score} · {scoreToState(score)}
       </p>
     </div>
   )

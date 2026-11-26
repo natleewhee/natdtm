@@ -166,7 +166,7 @@ export default function Sankey({ flow }) {
 
 const NODE_LABELS = {
   oaGrow: 'Your OA grows', equity: 'Into your equity', mortgageInterest: 'Mortgage interest',
-  saLock: 'SA — locked away', maHealth: 'Health insurance', maGrow: 'MediSave grows',
+  saLock: 'SA (locked away)', maHealth: 'Health insurance', maGrow: 'MediSave grows',
   taxNode: 'Income tax', car: 'Car loan', insurance: 'Life & CI cover',
   living: 'Living expenses', invest: 'Invested', surplus: 'Cash left over',
 }

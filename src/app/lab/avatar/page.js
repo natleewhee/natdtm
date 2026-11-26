@@ -12,7 +12,7 @@ export default function AvatarLabPage() {
 
   return (
     <div style={{ maxWidth: 480, margin: '40px auto', padding: 16 }}>
-      <h1 style={{ fontSize: 20, marginBottom: 4 }}>Data Avatar — proof of concept</h1>
+      <h1 style={{ fontSize: 20, marginBottom: 4 }}>Data Avatar: proof of concept</h1>
       <p style={{ fontSize: 14, opacity: 0.7, marginBottom: 16 }}>
         Drag the slider to see the character shift between idle (0-33), walk (34-66), and celebrate (67-100).
         In a real tool this score would come from a computed value instead of a slider.

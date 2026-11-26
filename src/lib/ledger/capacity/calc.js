@@ -201,13 +201,13 @@ export const SOURCE = {
   age: { tool: 'TaxWise', href: '/tax' },
   cpf: { tool: 'CPF Board contribution tables (computed here)', href: null },
   tax: { tool: 'TaxWise', href: '/tax' },
-  taxEstimated: { tool: 'estimated — run TaxWise for your exact figure', href: '/tax' },
+  taxEstimated: { tool: 'estimated, run TaxWise for your exact figure', href: '/tax' },
   house: { tool: 'HouseMuch', href: '/house' },
   car: { tool: 'DriveReady', href: '/drive' },
   insure: { tool: 'InsureCheck', href: '/insure' },
   etf: { tool: 'WhatETF', href: '/etf' },
   living: { tool: 'entered on this page', href: null },
-  maHealth: { tool: 'estimate — edit on this page', href: null },
+  maHealth: { tool: 'estimate, edit on this page', href: null },
 }
 
 // Builds the node/link graph for one typical month (no bonus — bonuses
@@ -270,7 +270,7 @@ export function buildMonthlyFlow(state) {
     bank: { label: 'Bank account', fate: FATE.NEUTRAL, value: cash, source: 'tax' },
 
     oaGrow: { label: 'Your OA grows', fate: FATE.KEPT, value: oaGrows, source: 'cpf' },
-    saLock: { label: 'SA — locked away', fate: FATE.KEPT, value: cpf.sa, source: 'cpf' },
+    saLock: { label: 'SA (locked away)', fate: FATE.KEPT, value: cpf.sa, source: 'cpf' },
     maGrow: { label: 'MediSave grows', fate: FATE.KEPT, value: maGrows, source: 'cpf' },
     maHealth: { label: 'Health insurance', fate: FATE.GONE, value: maSpentOnHealth, source: 'maHealth', sub: 'paid from MediSave' },
     taxNode: { label: 'Income tax', fate: FATE.GONE, value: tax.monthly, source: tax.exact ? 'tax' : 'taxEstimated', sub: tax.exact ? 'exact, from TaxWise' : 'estimated' },

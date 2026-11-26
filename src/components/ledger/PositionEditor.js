@@ -23,8 +23,8 @@ export default function PositionEditor({ position, onChange, synced }) {
   const set = (k) => (e) => onChange({ ...position, [k]: e.target.value })
   // A "synced from …" hint when the store has a value and the user has
   // not typed over it.
-  const hint = (k, label) => (synced?.[k] && !position[k] ? `Synced: S$${Number(synced[k]).toLocaleString('en-SG')} — ${label}` : undefined)
-  const pctHint = (k, label) => (synced?.[k] && !position[k] ? `Synced ${synced[k]} — ${label}` : undefined)
+  const hint = (k, label) => (synced?.[k] && !position[k] ? `Synced: S$${Number(synced[k]).toLocaleString('en-SG')} · ${label}` : undefined)
+  const pctHint = (k, label) => (synced?.[k] && !position[k] ? `Synced ${synced[k]} · ${label}` : undefined)
 
   return (
     <div>
@@ -44,12 +44,12 @@ export default function PositionEditor({ position, onChange, synced }) {
         <MoneyInput id="pos-mb" label="Mortgage balance" value={position.mortgageBalance} onChange={set('mortgageBalance')} hint={hint('mortgageBalance', 'HouseMuch')} />
         <PercentInput id="pos-mr" label="Mortgage rate" value={position.mortgageRate} onChange={set('mortgageRate')} hint={pctHint('mortgageRate', 'HouseMuch')} />
         <NumberInput id="pos-my" label="Years left" suffix="yr" value={position.mortgageYearsLeft} onChange={set('mortgageYearsLeft')} hint={pctHint('mortgageYearsLeft', 'HouseMuch')} />
-        <PercentInput id="pos-mortgage-share" label="Your share, if joint" value={position.mortgageSharePct} onChange={set('mortgageSharePct')} hint="Blank = 100% yours. Only affects the TDSR figure below — HouseMuch's own joint-loan support (income-weighted or manual) is the fuller version of this." />
+        <PercentInput id="pos-mortgage-share" label="Your share, if joint" value={position.mortgageSharePct} onChange={set('mortgageSharePct')} hint="Blank = 100% yours. Only affects the TDSR figure below. HouseMuch's own joint-loan support (income-weighted or manual) is the fuller version of this." />
       </Group>
 
       <Group title="Car & other loans">
         <MoneyInput id="pos-cv" label="Car value" value={position.carValue} onChange={set('carValue')} hint={hint('carValue', 'DriveReady')} />
-        <MoneyInput id="pos-lm" label="Loan payments / mo" value={position.loansMonthly} onChange={set('loansMonthly')} hint={hint('loansMonthly', 'DriveReady — car, personal')} />
+        <MoneyInput id="pos-lm" label="Loan payments / mo" value={position.loansMonthly} onChange={set('loansMonthly')} hint={hint('loansMonthly', 'DriveReady: car, personal')} />
         <NumberInput id="pos-ly" label="Years until paid off" suffix="yr" value={position.loansYearsLeft} onChange={set('loansYearsLeft')} hint={pctHint('loansYearsLeft', 'DriveReady')} />
         <PercentInput id="pos-car-share" label="Your share, if joint" value={position.carSharePct} onChange={set('carSharePct')} hint="Blank = 100% yours. Only affects the TDSR figure below." />
       </Group>

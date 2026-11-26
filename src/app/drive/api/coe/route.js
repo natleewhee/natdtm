@@ -99,7 +99,7 @@ export async function GET() {
         {
           status: 'stale_data',
           latestMonthFound: latest.month,
-          detail: `The newest bidding exercise found was ${latest.month}, which is over ${STALE_AFTER_DAYS} days old — likely means the sort parameter isn't returning the most recent rows, not that LTA has genuinely gone quiet that long.`,
+          detail: `The newest bidding exercise found was ${latest.month}, which is over ${STALE_AFTER_DAYS} days old. Likely means the sort parameter isn't returning the most recent rows, not that LTA has genuinely gone quiet that long.`,
           checkedAt: new Date().toISOString(),
           catA: null,
           catB: null,

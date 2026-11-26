@@ -6,7 +6,7 @@ export const metadata = {
   description: 'Singapore car affordability calculator. Know your true monthly cost before you commit.',
   keywords: ['Singapore car loan', 'car affordability', 'COE calculator', 'car depreciation Singapore'],
   openGraph: {
-    title: 'DriveReady — Car Affordability Calculator',
+    title: 'DriveReady · Car Affordability Calculator',
     description: 'Know exactly what a car will cost you every month. 100+ SG models, true depreciation, green loan rates.',
     siteName: 'DriveReady',
   },

@@ -40,7 +40,7 @@ export default function WhatIfExplorer({ inputs }) {
         What changes if…
       </p>
       <p style={{ fontSize: '12px', color: 'var(--color-faint)', margin: '0 0 12px' }}>
-        Tap one or more life events to see how they&apos;d shift your score together — nothing here is saved.
+        Tap one or more life events to see how they&apos;d shift your score together. Nothing here is saved.
       </p>
 
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', marginBottom: sim ? '12px' : 0 }}>
@@ -127,7 +127,7 @@ export default function WhatIfExplorer({ inputs }) {
           />
 
           <p style={{ fontSize: '11px', color: 'var(--color-faint)', margin: '10px 0 0', lineHeight: 1.5 }}>
-            This is a simulation based on your current inputs — it doesn&apos;t change your saved score.
+            This is a simulation based on your current inputs. It doesn&apos;t change your saved score.
             {sim.presets.length > 1 && ' Combined events apply in order, so a later one can override an earlier one on the same field (e.g. paying off loans after buying a home nets to zero debt).'}
           </p>
         </div>

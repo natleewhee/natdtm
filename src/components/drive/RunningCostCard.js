@@ -49,12 +49,12 @@ export function RunningCostCard({ r, visible }) {
             <span style={{fontSize:C.base,fontFamily:C.fontMono,fontWeight:700,color:C.blue}}>{SGD(allInMonthly)}</span>
           </div>
           <p style={{fontSize:C.xs,color:C.blueText,margin:0,lineHeight:1.5,opacity:0.8}}>
-            Instalment ({SGD(monthly)}) + depreciation ({SGD(deprAtTenure.monthlyDepr)}) + insurance, road tax, maintenance &amp; parking ({SGD(running.monthly)}) — the fullest picture of what this car costs you per month.
+            Instalment ({SGD(monthly)}) + depreciation ({SGD(deprAtTenure.monthlyDepr)}) + insurance, road tax, maintenance &amp; parking ({SGD(running.monthly)}), the fullest picture of what this car costs you per month.
           </p>
         </div>
 
         <p style={{fontSize: '12px',color:C.faint,lineHeight:1.6,margin:0}}>
-          Rough estimates, not quotes — insurance varies by driver profile (age, NCD, claims history), road tax depends on exact engine capacity/power rating, and parking depends on location. Maintenance is modeled off {running.brandKey.charAt(0).toUpperCase() + running.brandKey.slice(1)} year-1 service costs. Use these to compare cars directionally, not as a budget commitment.
+          Rough estimates, not quotes; insurance varies by driver profile (age, NCD, claims history), road tax depends on exact engine capacity/power rating, and parking depends on location. Maintenance is modeled off {running.brandKey.charAt(0).toUpperCase() + running.brandKey.slice(1)} year-1 service costs. Use these to compare cars directionally, not as a budget commitment.
         </p>
       </div>
     </div>

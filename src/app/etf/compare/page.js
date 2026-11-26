@@ -134,7 +134,7 @@ function CompareContent() {
       <main className={styles.main}>
         <div className={styles.content}>
           <h1 className={styles.title}>Compare Two Portfolios</h1>
-          <p className={styles.subtitle}>Pick two mixes and see the allocation, cost, and historical risk side by side — often the extra complexity of a &quot;precision&quot; portfolio buys less than it looks like.</p>
+          <p className={styles.subtitle}>Pick two mixes and see the allocation, cost, and historical risk side by side. Often the extra complexity of a &quot;precision&quot; portfolio buys less than it looks like.</p>
 
           <div className={styles.pickerGrid}>
             <PrefsPicker label="Portfolio A" prefs={prefsA} onChange={setPrefsA} />
@@ -152,7 +152,7 @@ function CompareContent() {
                 <ResultCard summary={comparison.b} isWinnerOnCost={!aCheaper} />
               </div>
               <p className={styles.footnote}>
-                The highlighted card has the lower blended TER, not necessarily the &quot;better&quot; portfolio — cost is only one factor. CAGR and drawdown figures use the same approximate 2015–2024 index data as the rest of WhatETF; a different historical window would show different numbers.
+                The highlighted card has the lower blended TER, not necessarily the &quot;better&quot; portfolio. Cost is only one factor. CAGR and drawdown figures use the same approximate 2015–2024 index data as the rest of WhatETF; a different historical window would show different numbers.
               </p>
             </>
           )}

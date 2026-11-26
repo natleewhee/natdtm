@@ -19,11 +19,11 @@ export default function PrintSummary({ result, gaps, actionPlan }) {
 
   return (
     <div className="print-summary" style={printStyles.page}>
-      <h1 style={printStyles.h1}>InsureCheck — Insurance Score Summary</h1>
+      <h1 style={printStyles.h1}>InsureCheck · Insurance Score Summary</h1>
       <p style={printStyles.meta}>Generated {generatedDate} · Educational tool, not financial advice · natdtm.vercel.app</p>
 
       <p style={printStyles.scoreLine}>
-        Score: {result.finalScore}/100 — {result.band.label}{result.isEstimated ? ' (estimated)' : ''}
+        Score: {result.finalScore}/100 · {result.band.label}{result.isEstimated ? ' (estimated)' : ''}
       </p>
 
       <div style={printStyles.section}>

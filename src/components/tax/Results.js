@@ -21,8 +21,8 @@ const RELIEF_LABELS = {
   earnedIncome: 'Earned Income Relief (automatic)',
   cpf: 'CPF relief (your own contributions)',
   srs: 'SRS contributions',
-  rstuSelf: 'CPF top-up — your own account',
-  rstuFamily: 'CPF top-up — family members',
+  rstuSelf: 'CPF top-up: your own account',
+  rstuFamily: 'CPF top-up: family members',
   courseFees: 'Course fees',
   nsman: 'NSman relief',
   child: 'Qualifying Child Relief',
@@ -67,7 +67,7 @@ export default function TaxResults({ result }) {
             You&apos;re past the {SGD(PERSONAL_RELIEF_CAP)} personal relief cap by {SGD(reliefs.raw - PERSONAL_RELIEF_CAP)}
           </div>
           <div style={{ fontSize: C.xs, color: C.muted, lineHeight: 1.6 }}>
-            Total personal reliefs are capped at {SGD(PERSONAL_RELIEF_CAP)}. Everything above that is claimed but does nothing — further SRS contributions or CPF top-ups would give you no tax saving at all this year, though they may still make sense for retirement reasons.
+            Total personal reliefs are capped at {SGD(PERSONAL_RELIEF_CAP)}. Everything above that is claimed but does nothing: further SRS contributions or CPF top-ups would give you no tax saving at all this year, though they may still make sense for retirement reasons.
           </div>
         </div>
       )}
@@ -91,11 +91,11 @@ export default function TaxResults({ result }) {
           </div>
           {capHeadroomSharedBetweenSrsAndRstu && (
             <div style={{ fontSize: C.xs, color: C.amberText, lineHeight: 1.6, marginTop: 8 }}>
-              These two are shown at their own individual limits, but they draw from the same {SGD(PERSONAL_RELIEF_CAP)} overall cap — you don&apos;t have enough headroom left to claim both maximums at once, so doing both means splitting this room between them, not adding the two savings together.
+              These two are shown at their own individual limits, but they draw from the same {SGD(PERSONAL_RELIEF_CAP)} overall cap: you don&apos;t have enough headroom left to claim both maximums at once, so doing both means splitting this room between them, not adding the two savings together.
             </div>
           )}
           <div style={{ fontSize: C.xs, color: C.faint, lineHeight: 1.6, marginTop: 8 }}>
-            Both lock your money away — SRS until statutory retirement age (withdrawals before that face a 5% penalty and are fully taxable), CPF top-ups permanently. The tax saving is real, but it isn&apos;t free money.
+            Both lock your money away, and SRS until statutory retirement age (withdrawals before that face a 5% penalty and are fully taxable), CPF top-ups permanently. The tax saving is real, but it isn&apos;t free money.
           </div>
         </div>
       )}
@@ -125,7 +125,7 @@ export default function TaxResults({ result }) {
         <Row label="Annual take-home" value={SGD(annualTakeHome)} bold />
         <Row label="Monthly take-home" value={SGD(monthlyTakeHome)} bold tone="green" />
         <p style={{ fontSize: C.xs, color: C.faint, lineHeight: 1.6, marginTop: 10 }}>
-          Tax is spread evenly across twelve months here. IRAS actually bills once a year (or in GIRO instalments), so a real payslip shows the CPF deduction but not the tax — budget for it separately.
+          Tax is spread evenly across twelve months here. IRAS actually bills once a year (or in GIRO instalments), so a real payslip shows the CPF deduction but not the tax. Budget for it separately.
         </p>
       </div>
 
@@ -139,7 +139,7 @@ export default function TaxResults({ result }) {
           <Row label="Marginal rate (on your next dollar)" value={`${(marginal * 100).toFixed(1)}%`} />
           <Row
             label="What the next $1,000 of relief saves"
-            value={nextThousand.blockedByCap ? 'Nothing — cap reached' : SGD(nextThousand.saving)}
+            value={nextThousand.blockedByCap ? 'Nothing (cap reached)' : SGD(nextThousand.saving)}
             tone={nextThousand.blockedByCap ? 'red' : 'green'}
           />
         </div>

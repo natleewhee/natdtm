@@ -20,7 +20,7 @@ export default function LandingPage() {
           __html: JSON.stringify({
             "@context": "https://schema.org",
             "@type": "WebApplication",
-            "name": "InsureCheck — nat does the math",
+            "name": "InsureCheck · nat does the math",
             "url": SITE_URL,
             "description": "Free insurance coverage checker for Singaporeans. Get your Insurance Score in 3 minutes.",
             "applicationCategory": "FinanceApplication",
@@ -61,7 +61,7 @@ export default function LandingPage() {
           whiteSpace: 'nowrap',
           borderWidth: 0,
         }}>
-          Free Insurance Coverage Checker Singapore — InsureCheck — nat does the math
+          Free Insurance Coverage Checker Singapore · InsureCheck · nat does the math
         </h1>
 
         <h2 style={{
@@ -80,11 +80,11 @@ export default function LandingPage() {
           lineHeight: 1.7,
           margin: '0 0 32px',
         }}>
-          I&apos;ll score your coverage in 3 minutes flat — free, neutral, no agent calling you after.
+          I&apos;ll score your coverage in 3 minutes flat. Free, neutral, and no agent calling you after.
         </p>
 
         <Button href="/insure/check">
-          Check my score — it&apos;s free
+          Score my cover in 3 minutes
         </Button>
 
         <div style={{ marginTop: '20px' }}>
@@ -140,12 +140,12 @@ export default function LandingPage() {
               {
                 step: '2',
                 title: 'I run the numbers',
-                body: 'Your coverage gets checked against real Singapore financial planning benchmarks — not a generic template.',
+                body: 'Your coverage gets checked against real Singapore financial planning benchmarks, not a generic template.',
               },
               {
                 step: '3',
                 title: 'See exactly where you stand',
-                body: 'Gaps, overpayment, what to fix next — laid out plainly, no sales pitch.',
+                body: 'Gaps, overpayment and what to fix next, laid out plainly with no sales pitch.',
               },
             ].map(({ step, title, body }) => (
               <div key={step} style={{ display: 'flex', gap: '16px', alignItems: 'flex-start' }}>

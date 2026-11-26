@@ -79,7 +79,7 @@ export function UsedCarForm({ slot, onChange }) {
               onChange={e => setOmvText(e.target.value)} onBlur={blurOmv} placeholder="0"
               style={{width:'100%',background:C.surface,border:`1.5px solid ${omvText?C.accent:C.border}`,borderRadius:C.r,padding:'11px 12px 11px 36px',color:C.primary,fontSize:C.lg,fontFamily:C.fontMono,fontWeight:500,outline:'none'}}/>
           </div>
-          <p style={{marginTop:5,fontSize:C.xs,color:C.muted,lineHeight:1.5}}>From the log card or OneMotoring — determines Cat A/B and PARF</p>
+          <p style={{marginTop:5,fontSize:C.xs,color:C.muted,lineHeight:1.5}}>From the log card or OneMotoring; determines Cat A/B and PARF</p>
         </div>
         <Slider id={`used-age-${slot}`} showRange={false} label="Age of car now" value={ageNow} onChange={setAgeNow} min={1} max={10} unit=" years"/>
         <Slider id={`used-coe-months-${slot}`} showRange={false} label="COE months remaining" value={monthsRemaining} onChange={setMonthsRemaining} min={1} max={119} unit=" months" hint="Check the log card or OneMotoring"/>
@@ -103,12 +103,12 @@ export function UsedCarForm({ slot, onChange }) {
         {rateTier === 'green' && (
           <label style={{display:'flex',alignItems:'center',gap:8,fontSize:C.xs,color:C.muted,cursor:'pointer'}}>
             <input type="checkbox" checked={isElectric} onChange={e => setIsElectric(e.target.checked)}/>
-            Pure electric (not a hybrid) — affects EEAI/ARF math
+            Pure electric (not a hybrid): affects EEAI/ARF math
           </label>
         )}
         <div style={{padding:'10px 12px',background:canGetPARF?C.accentBg:C.amberBg,borderRadius:C.r,border:`1px solid ${canGetPARF?C.accent:C.amber}44`}}>
           <p style={{fontSize:C.xs,color:canGetPARF?C.accentText:C.amberText,margin:0,lineHeight:1.6}}>
-            Car will be <strong>{ageAtExpiry.toFixed(1)} years old</strong> when this COE expires — {canGetPARF ? 'PARF rebate will be available then.' : 'no PARF rebate (car will be over 10 years old).'}
+            Car will be <strong>{ageAtExpiry.toFixed(1)} years old</strong> when this COE expires: {canGetPARF ? 'PARF rebate will be available then.' : 'no PARF rebate (car will be over 10 years old).'}
           </p>
         </div>
       </div>

@@ -133,7 +133,7 @@ export function CarPicker({ value, onChange, slot, ceiling, down, allCars = [], 
       </div>
       {!value && (
         <p style={{fontSize:C.xs,color:C.faint,marginBottom:12,lineHeight:1.5}}>
-          Already have a dealer quote? Pick the closest match below, then edit its price to match — that gives you the most accurate numbers.
+          Already have a dealer quote? Pick the closest match below, then edit its price to match. That gives you the most accurate numbers.
         </p>
       )}
       <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:8}}>
@@ -271,7 +271,7 @@ export function CarPicker({ value, onChange, slot, ceiling, down, allCars = [], 
                 <span style={{fontSize:C.xs,color:C.accent,fontWeight:700}}>✓ Your price</span>
               )}
               {!customPrice && (
-                <span style={{fontSize: '12px',color:C.faint}}>indicative — click to edit</span>
+                <span style={{fontSize: '12px',color:C.faint}}>indicative · click to edit</span>
               )}
             </div>
           </div>
@@ -289,7 +289,7 @@ export function CarPicker({ value, onChange, slot, ceiling, down, allCars = [], 
               <div style={{display:'flex',alignItems:'center',gap:8}}>
                 <span style={{fontSize:C.xs,color:C.muted}}>{pg.label}:</span>
                 {pg.unreliable ? (
-                  <span style={{fontSize:C.xs,color:C.muted}}>Not estimable at current COE — enter your dealer quote above</span>
+                  <span style={{fontSize:C.xs,color:C.muted}}>Not estimable at current COE. Enter your dealer quote above</span>
                 ) : (
                   <>
                     <span style={{fontSize:C.xs,fontFamily:C.fontMono,fontWeight:700,color:C.blue}}>{SGD(pg.gap)}</span>

@@ -385,7 +385,7 @@ export default function CapacityModule({ onCapacityChange }) {
     <div style={{ background: C.surface, border: `1px solid ${C.border}`, borderRadius: C.rXL, padding: 22, boxShadow: C.shadow }}>
       {restoredFromSave && (
         <p style={{ margin: '0 0 14px', fontSize: C.xs, color: C.faint, textAlign: 'center' }}>
-          Restored what you last saved to this profile — edit freely.
+          Restored what you last saved to this profile. Edit freely.
         </p>
       )}
 
@@ -395,7 +395,7 @@ export default function CapacityModule({ onCapacityChange }) {
         <MoneyInput id="flow-salary" label="Monthly gross salary" value={salary} onChange={e => { setSalary(e.target.value); setSalaryPrefilled(false) }} />
       </div>
       {salaryPrefilled && (
-        <p style={{ marginTop: 10, fontSize: C.xs, color: C.faint }}>Salary prefilled from another ndtm tool on this browser — edit it freely.</p>
+        <p style={{ marginTop: 10, fontSize: C.xs, color: C.faint }}>Salary prefilled from another ndtm tool on this browser. Edit it freely.</p>
       )}
 
       <SectionDivider label="Mortgage" />
@@ -403,20 +403,20 @@ export default function CapacityModule({ onCapacityChange }) {
       {hasHouse && (
         <>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(170px, 1fr))', gap: 14, marginTop: 14 }}>
-            <MoneyInput id="flow-house-balance" label="Full outstanding balance" hint="The whole loan, even if it's joint — the share toggle below scales it down" value={outstandingBalance} onChange={e => setOutstandingBalance(e.target.value)} />
+            <MoneyInput id="flow-house-balance" label="Full outstanding balance" hint="The whole loan, even if it's joint; the share toggle below scales it down" value={outstandingBalance} onChange={e => setOutstandingBalance(e.target.value)} />
             <PercentInput id="flow-house-rate" label="Interest rate (p.a.)" value={rate} onChange={e => setRate(e.target.value)} />
             <MoneyInput id="flow-house-instalment" label="Full monthly instalment" value={monthlyInstalment} onChange={e => setMonthlyInstalment(e.target.value)} />
-            <MoneyInput id="flow-house-cpf" label="...of YOUR instalment, paid from CPF-OA" hint="Your own share only — CPF is tracked per-person and isn't split by the joint-loan ratio below" value={cpfServicing} onChange={e => setCpfServicing(e.target.value)} />
+            <MoneyInput id="flow-house-cpf" label="...of YOUR instalment, paid from CPF-OA" hint="Your own share only. CPF is tracked per-person and isn't split by the joint-loan ratio below" value={cpfServicing} onChange={e => setCpfServicing(e.target.value)} />
           </div>
           {houseSource === 'auto' && (
-            <p style={{ marginTop: 8, fontSize: C.xs, color: C.faint }}>Synced from HouseMuch — edit freely, this won&apos;t change what&apos;s saved there.</p>
+            <p style={{ marginTop: 8, fontSize: C.xs, color: C.faint }}>Synced from HouseMuch. Edit freely; this won&apos;t change what&apos;s saved there.</p>
           )}
 
           <div style={{ marginTop: 14 }}>
             <Toggle active={hasJointLoan} onClick={() => setHasJointLoan(j => !j)}>This is a joint loan</Toggle>
             {hasJointLoan && houseSource === 'auto' && (
               <p style={{ marginTop: 8, fontSize: C.xs, color: C.redText, lineHeight: 1.5 }}>
-                These figures were synced from HouseMuch, where they may already be scaled down to your share of a joint loan — turning this on could scale them down a second time. Only use this if the numbers above are the FULL household loan.
+                These figures were synced from HouseMuch, where they may already be scaled down to your share of a joint loan. Turning this on could scale them down a second time. Only use this if the numbers above are the FULL household loan.
               </p>
             )}
             {hasJointLoan && (
@@ -433,11 +433,11 @@ export default function CapacityModule({ onCapacityChange }) {
                 )}
                 {yourSharePct === '' ? (
                   <p style={{ marginTop: 8, fontSize: C.xs, color: C.redText, lineHeight: 1.5 }}>
-                    Empty is treated as a 0% share — this house won&apos;t count toward your mortgage figures below until you enter a number.
+                    Empty is treated as a 0% share, so this house won&apos;t count toward your mortgage figures below until you enter a number.
                   </p>
                 ) : (numSigned(yourSharePct) < 0 || numSigned(yourSharePct) > 100) && (
                   <p style={{ marginTop: 8, fontSize: C.xs, color: C.redText, lineHeight: 1.5 }}>
-                    A share has to be between 0% and 100% — this will be treated as {numSigned(yourSharePct) > 100 ? '100%' : '0%'}.
+                    A share has to be between 0% and 100%, so this will be treated as {numSigned(yourSharePct) > 100 ? '100%' : '0%'}.
                   </p>
                 )}
                 {num(outstandingBalance) > 0 && (
@@ -459,7 +459,7 @@ export default function CapacityModule({ onCapacityChange }) {
             <MoneyInput id="flow-car-instalment" label="Monthly instalment" value={carInstalment} onChange={e => setCarInstalment(e.target.value)} />
           </div>
           {carSource === 'auto' && (
-            <p style={{ marginTop: 8, fontSize: C.xs, color: C.faint }}>Synced from DriveReady — edit freely.</p>
+            <p style={{ marginTop: 8, fontSize: C.xs, color: C.faint }}>Synced from DriveReady. Edit freely.</p>
           )}
         </>
       )}
@@ -484,13 +484,13 @@ export default function CapacityModule({ onCapacityChange }) {
           </div>
           <MoneyInput
             id="flow-ma-health" label={maHealthFrequency === 'annual' ? 'Annual amount' : 'Monthly amount'}
-            hint={maHealthFrequency === 'annual' && num(maHealthPremium) > 0 ? `≈ ${SGD(num(maHealthPremium) / 12)}/month` : "An estimate — most Integrated Shield Plan premiums are paid from MediSave, not cash"}
+            hint={maHealthFrequency === 'annual' && num(maHealthPremium) > 0 ? `≈ ${SGD(num(maHealthPremium) / 12)}/month` : "An estimate. Most Integrated Shield Plan premiums are paid from MediSave, not cash"}
             value={maHealthPremium} onChange={e => setMaHealthPremium(e.target.value)}
           />
         </div>
       </div>
       {insuranceSource === 'auto' && (
-        <p style={{ marginTop: 8, fontSize: C.xs, color: C.faint }}>Cash premium synced from InsureCheck — edit freely.</p>
+        <p style={{ marginTop: 8, fontSize: C.xs, color: C.faint }}>Cash premium synced from InsureCheck. Edit freely.</p>
       )}
 
       <SectionDivider label="Investing" />
@@ -498,7 +498,7 @@ export default function CapacityModule({ onCapacityChange }) {
         <MoneyInput id="flow-invest" label="Monthly DCA / investing" value={investMonthly} onChange={e => setInvestMonthly(e.target.value)} />
       </div>
       {investSource === 'auto' && (
-        <p style={{ marginTop: 8, fontSize: C.xs, color: C.faint }}>Synced from WhatETF — edit freely.</p>
+        <p style={{ marginTop: 8, fontSize: C.xs, color: C.faint }}>Synced from WhatETF. Edit freely.</p>
       )}
 
       <SectionDivider label="Income tax" />
@@ -508,7 +508,7 @@ export default function CapacityModule({ onCapacityChange }) {
         </p>
       ) : (
         <p style={{ fontSize: C.sm, color: C.muted, lineHeight: 1.6 }}>
-          No TaxWise figure found — <a href="/tax" style={{ color: C.accent }}>run TaxWise</a> for your exact tax, or this will estimate it from your salary and age with no reliefs applied.
+          No TaxWise figure found. <a href="/tax" style={{ color: C.accent }}>Run TaxWise</a> for your exact tax, or this will estimate it from your salary and age with no reliefs applied.
         </p>
       )}
 
@@ -532,7 +532,7 @@ export default function CapacityModule({ onCapacityChange }) {
       {livingMode === 'backsolve' && (
         <div style={{ marginTop: 14 }}>
           <p style={{ fontSize: C.xs, color: C.muted, lineHeight: 1.6, marginBottom: 12 }}>
-            Nobody remembers what they actually spend — but a bank balance from a year ago and today pins it exactly. Whatever came in and isn&apos;t in the account went somewhere.
+            Nobody remembers what they actually spend, but a bank balance from a year ago and today pins it exactly. Whatever came in and isn&apos;t in the account went somewhere.
           </p>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: 14 }}>
             <MoneyInput id="flow-back-start" label="Bank balance, a while ago" value={backStart} onChange={e => setBackStart(e.target.value)} />
@@ -568,12 +568,12 @@ export default function CapacityModule({ onCapacityChange }) {
 
       <SectionDivider label="Runway" />
       <div style={{ maxWidth: 260 }}>
-        <MoneyInput id="flow-liquid" label="Liquid cash savings" hint="Not CPF, not invested — money you could spend today" value={liquidSavings} onChange={e => setLiquidSavings(e.target.value)} />
+        <MoneyInput id="flow-liquid" label="Liquid cash savings" hint="Not CPF, not invested. Money you could spend today" value={liquidSavings} onChange={e => setLiquidSavings(e.target.value)} />
       </div>
 
       <SectionDivider label="The twelve-month plan" />
       <p style={{ marginTop: -8, marginBottom: 16, fontSize: C.xs, color: C.muted, lineHeight: 1.5 }}>
-        Add anything lumpy — road tax, insurance renewals, travel, SRS top-ups, or a bonus. Mark each one as an expense or a bonus; a monthly average hides exactly the months that actually hurt.
+        Add anything lumpy: road tax, insurance renewals, travel, SRS top-ups, or a bonus. Mark each one as an expense or a bonus; a monthly average hides exactly the months that actually hurt.
       </p>
 
       <div style={{ marginBottom: 14 }}>
@@ -584,7 +584,7 @@ export default function CapacityModule({ onCapacityChange }) {
         />
         {taxPaymentMode === 'monthly' && (
           <p style={{ marginTop: 8, fontSize: C.xs, color: C.muted, lineHeight: 1.5 }}>
-            Spread evenly across all twelve months — no due-month needed.
+            Spread evenly across all twelve months, so no due-month needed.
           </p>
         )}
       </div>
@@ -615,7 +615,7 @@ export default function CapacityModule({ onCapacityChange }) {
               <div style={{ display: 'flex', gap: 4 }}>
                 <button
                   type="button" onClick={() => updateLumpyItem(item.id, { type: 'expense' })} aria-pressed={!isBonus}
-                  title="Expense — subtracts from your balance"
+                  title="Expense: subtracts from your balance"
                   style={{
                     padding: '10px 10px', fontSize: 13, fontWeight: 700, borderRadius: C.r, cursor: 'pointer', fontFamily: C.fontBody,
                     background: !isBonus ? C.redBg : C.bg, border: `1.5px solid ${!isBonus ? C.red : C.border}`,
@@ -624,7 +624,7 @@ export default function CapacityModule({ onCapacityChange }) {
                 >−</button>
                 <button
                   type="button" onClick={() => updateLumpyItem(item.id, { type: 'bonus' })} aria-pressed={isBonus}
-                  title="Bonus / income — adds to your balance"
+                  title="Bonus / income: adds to your balance"
                   style={{
                     padding: '10px 10px', fontSize: 13, fontWeight: 700, borderRadius: C.r, cursor: 'pointer', fontFamily: C.fontBody,
                     background: isBonus ? C.greenBg : C.bg, border: `1.5px solid ${isBonus ? C.green : C.border}`,
@@ -666,7 +666,7 @@ export default function CapacityModule({ onCapacityChange }) {
       {calculated && flow && (
         <>
           <p style={{ margin: '20px 0 0', fontSize: C.xs, color: C.faint, textAlign: 'center' }}>
-            This report updates live as you edit anything above — no need to press the button again.
+            This report updates live as you edit anything above. No need to press the button again.
           </p>
           <CapacityResults
             flow={flow} metrics={metrics} primarySchedule={primarySchedule} altSchedule={altSchedule} taxPaymentMode={taxPaymentMode}

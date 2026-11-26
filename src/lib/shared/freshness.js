@@ -93,7 +93,7 @@ export function freshnessLabel(asOf, windowDays, now = new Date()) {
   const { months, stale } = checkFreshness(asOf, windowDays, now)
   if (stale == null) return null
   if (!stale) return `Data as of ${asOf}`
-  if (months >= 24) return `⚠ Data as of ${asOf} — over ${Math.floor(months / 12)} years old`
-  if (months >= 2) return `⚠ Data as of ${asOf} — around ${months} months old`
-  return `⚠ Data as of ${asOf} — may be outdated`
+  if (months >= 24) return `⚠ Data as of ${asOf}, over ${Math.floor(months / 12)} years old`
+  if (months >= 2) return `⚠ Data as of ${asOf}, around ${months} months old`
+  return `⚠ Data as of ${asOf}, may be outdated`
 }

@@ -183,7 +183,7 @@ export default function TaxWisePage() {
         layout="left"
         eyebrow="Singapore Income Tax & Relief Calculator"
         title="What do you actually owe IRAS?"
-        lede="And what every relief is really worth — in dollars saved, not percentages."
+        lede="And what every relief is really worth, in dollars saved, not percentages."
         badges={['Every relief cap modeled', 'Shows what the next $1k saves']}
       />
 
@@ -206,7 +206,7 @@ export default function TaxWisePage() {
 
           {restoredFromSave && (
             <div style={{ marginBottom: 16, padding: '10px 14px', background: C.accentBg, border: `1px solid ${C.accent}55`, borderRadius: C.r, fontSize: C.xs, color: C.accent, fontWeight: 600 }}>
-              Restored what you last saved to this profile — edit freely.
+              Restored what you last saved to this profile. Edit freely.
             </div>
           )}
 
@@ -233,18 +233,18 @@ export default function TaxWisePage() {
           </div>
           {prefilled && (
             <p style={{ marginTop: 10, fontSize: C.xs, color: C.faint }}>
-              Salary prefilled from another ndtm tool on this browser — edit it freely.
+              Salary prefilled from another ndtm tool on this browser. Edit it freely.
             </p>
           )}
 
           <SectionDivider label="Reliefs worth optimising" />
           <p style={{ marginTop: -8, marginBottom: 16, fontSize: C.xs, color: C.muted, lineHeight: 1.5 }}>
-            Your own CPF contributions and Earned Income Relief are added automatically — no need to enter them. These are the ones you actively choose.
+            Your own CPF contributions and Earned Income Relief are added automatically, so there is no need to enter them. These are the ones you actively choose.
           </p>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 16 }}>
             <MoneyInput id="tax-srs" label="SRS contributions this year" hint={`Capped at ${SGD(srsCap)}`} value={srsContribution} onChange={e => setSrsContribution(e.target.value)} />
-            <MoneyInput id="tax-rstu-self" label="CPF top-up — your own account" hint={`Capped at ${SGD(RSTU_RELIEF_CAP_SELF)}`} value={rstuSelf} onChange={e => setRstuSelf(e.target.value)} />
-            <MoneyInput id="tax-rstu-family" label="CPF top-up — family" hint={`Capped at ${SGD(RSTU_RELIEF_CAP_FAMILY)}, separate from your own`} value={rstuFamily} onChange={e => setRstuFamily(e.target.value)} />
+            <MoneyInput id="tax-rstu-self" label="CPF top-up: your own account" hint={`Capped at ${SGD(RSTU_RELIEF_CAP_SELF)}`} value={rstuSelf} onChange={e => setRstuSelf(e.target.value)} />
+            <MoneyInput id="tax-rstu-family" label="CPF top-up: family" hint={`Capped at ${SGD(RSTU_RELIEF_CAP_FAMILY)}, separate from your own`} value={rstuFamily} onChange={e => setRstuFamily(e.target.value)} />
           </div>
 
           <div style={{ marginTop: 16 }}>

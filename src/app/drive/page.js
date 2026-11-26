@@ -316,7 +316,7 @@ export default function DriveReadyPage() {
       {/* ── STRUCTURED DATA ─── */}
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify({
         '@context':'https://schema.org','@type':'WebApplication',
-        name:'DriveReady — nat does the math',url:'https://natdtm.vercel.app/drive',
+        name:'DriveReady · nat does the math',url:'https://natdtm.vercel.app/drive',
         description:'Singapore car affordability calculator. Know your true monthly cost before you commit.',
         applicationCategory:'FinanceApplication',operatingSystem:'Web',
         offers:{'@type':'Offer',price:'0',priceCurrency:'SGD'},
@@ -369,7 +369,7 @@ export default function DriveReadyPage() {
           <div style={{background:C.surface,border:`1.5px solid ${C.border}`,borderRadius:C.rXL,boxShadow:C.shadowMd,overflow:'hidden',marginBottom:20}}>
             <div style={{padding:'22px 28px 18px',borderBottom:`1px solid ${C.border}`,background:C.bg,display:'flex',alignItems:'center',justifyContent:'space-between',flexWrap:'wrap',gap:12}}>
               <div>
-                <div style={{fontSize:C.xs,fontWeight:700,color:C.accent,textTransform:'uppercase',letterSpacing:'0.14em',marginBottom:4}}>Step 1 — Your finances</div>
+                <div style={{fontSize:C.xs,fontWeight:700,color:C.accent,textTransform:'uppercase',letterSpacing:'0.14em',marginBottom:4}}>Step 1 · Your finances</div>
                 <h2 style={{fontFamily:C.fontDisplay,fontSize:22,color:C.primary,lineHeight:1.1}}>Enter your details</h2>
               </div>
               <div style={{display:'flex',background:C.surface,border:`1.5px solid ${C.border}`,borderRadius:C.r,padding:3}}>
@@ -393,7 +393,7 @@ export default function DriveReadyPage() {
               </div>
               <div style={{marginTop:18}}>
                 <MoneyInput grouped id="debt-input" label="Existing Monthly Debt Payments (optional)" value={existingDebt} onChange={handleExistingDebt}
-                  hint="Other loans, credit cards, etc. — counted against the bank's 55% TDSR limit alongside this car's instalment"/>
+                  hint="Other loans, credit cards and so on. They count against the bank's 55% TDSR limit alongside this car's instalment."/>
               </div>
 
               <div style={{marginTop:16}}>
@@ -419,7 +419,7 @@ export default function DriveReadyPage() {
                     {carShareMode === 'income' ? (
                       <div style={{marginTop:10}}>
                         <MoneyInput grouped id="co-borrower-income" label="Co-borrower's monthly gross income" value={coBorrowerIncome} onChange={handleCoBorrowerIncome}
-                          hint="Your share of the instalment = your income ÷ (your income + theirs) — the same income-weighted apportionment a bank uses on a joint TDSR assessment."/>
+                          hint="Your share of the instalment = your income ÷ (your income + theirs), the same income-weighted apportionment a bank uses on a joint TDSR assessment."/>
                         {dSalary > 0 && (
                           <p style={{marginTop:8,fontSize:C.xs,color:C.muted,lineHeight:1.5}}>
                             Your share: <strong style={{color:C.accent,fontFamily:C.fontMono}}>{carSharePct.toFixed(1)}%</strong> of this loan&apos;s instalment counts against your own TDSR.
@@ -432,7 +432,7 @@ export default function DriveReadyPage() {
                       </div>
                     )}
                     <p style={{marginTop:10,fontSize:C.xs,color:C.muted,lineHeight:1.5}}>
-                      The instalment itself doesn&apos;t change — this only affects how much of it counts against YOUR own TDSR limit below, since your co-borrower services the rest with their own income.
+                      The instalment itself doesn&apos;t change. This only affects how much of it counts against YOUR own TDSR limit below, since your co-borrower services the rest with their own income.
                     </p>
                   </div>
                 )}
@@ -493,7 +493,7 @@ export default function DriveReadyPage() {
                   ) : (
                     <>
                       <UsedCarForm slot="A" onChange={c => { setUsedCarA(c); setCalculated(false) }}/>
-                      <p style={{marginTop:8,fontSize: '12px',color:C.faint,lineHeight:1.5}}>Used-car inputs aren&apos;t saved to your garage or a shareable link yet — they reset if you leave the page.</p>
+                      <p style={{marginTop:8,fontSize: '12px',color:C.faint,lineHeight:1.5}}>Used-car inputs aren&apos;t saved to your garage or a shareable link yet, so they reset if you leave the page.</p>
                     </>
                   )}
                 </div>
@@ -516,7 +516,7 @@ export default function DriveReadyPage() {
                     ) : (
                       <>
                         <UsedCarForm slot="B" onChange={c => { setUsedCarB(c); setCalculated(false) }}/>
-                        <p style={{marginTop:8,fontSize: '12px',color:C.faint,lineHeight:1.5}}>Used-car inputs aren&apos;t saved to your garage or a shareable link yet — they reset if you leave the page.</p>
+                        <p style={{marginTop:8,fontSize: '12px',color:C.faint,lineHeight:1.5}}>Used-car inputs aren&apos;t saved to your garage or a shareable link yet, so they reset if you leave the page.</p>
                       </>
                     )}
                   </div>
@@ -541,12 +541,12 @@ export default function DriveReadyPage() {
                   ? <span style={{fontSize:C.xs,color:C.faint}}>Fetching live COE…</span>
                   : coeData
                     ? <><span style={{fontSize:C.xs,fontFamily:C.fontMono,fontWeight:700,color:C.primary}}>Cat A: {SGD(coeData.catA.premium)}</span><span style={{fontSize:C.xs,color:C.faint}}>·</span><span style={{fontSize:C.xs,fontFamily:C.fontMono,fontWeight:700,color:C.primary}}>Cat B: {SGD(coeData.catB.premium)}</span><span style={{fontSize:C.xs,color:C.faint,fontSize: '12px'}}> · {coeData.month} · Live from LTA</span></>
-                    : <><span style={{fontSize:C.xs,fontFamily:C.fontMono,fontWeight:700,color:C.amberText}}>Cat A: ~{SGD(COE_FALLBACK.catA)}</span><span style={{fontSize:C.xs,color:C.faint}}>·</span><span style={{fontSize:C.xs,fontFamily:C.fontMono,fontWeight:700,color:C.amberText}}>Cat B: ~{SGD(COE_FALLBACK.catB)}</span><span style={{fontSize:C.xs,color:C.amberText,fontSize: '12px'}}> · {isCoeFallbackStale() ? `⚠ Estimate may be outdated, as of ${COE_FALLBACK_AS_OF}` : `Estimated as of ${COE_FALLBACK_AS_OF} — live LTA data temporarily unavailable`}</span></>
+                    : <><span style={{fontSize:C.xs,fontFamily:C.fontMono,fontWeight:700,color:C.amberText}}>Cat A: ~{SGD(COE_FALLBACK.catA)}</span><span style={{fontSize:C.xs,color:C.faint}}>·</span><span style={{fontSize:C.xs,fontFamily:C.fontMono,fontWeight:700,color:C.amberText}}>Cat B: ~{SGD(COE_FALLBACK.catB)}</span><span style={{fontSize:C.xs,color:C.amberText,fontSize: '12px'}}> · {isCoeFallbackStale() ? `⚠ Estimate may be outdated, as of ${COE_FALLBACK_AS_OF}` : `Estimated as of ${COE_FALLBACK_AS_OF}. Live LTA data is temporarily unavailable`}</span></>
                 }
                 {/* Always reachable, whether live or not — "is the feed
                     actually working?" should never require reading code. */}
                 <a href="/drive/data-status" style={{fontSize: '12px',color:C.faint,textDecoration:'underline'}}>
-                  {coeLoading ? 'Data status' : coeStatus === 'live' ? '✓ Live — data status' : 'Why? — data status'}
+                  {coeLoading ? 'Data status' : coeStatus === 'live' ? '✓ Live · data status' : 'Why? · data status'}
                 </a>
               </div>
               <p style={{marginTop:6,textAlign:'center',fontSize:C.xs,color:C.faint}}>

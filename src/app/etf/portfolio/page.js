@@ -197,7 +197,7 @@ function BacktestCard({ allocations }) {
       </svg>
       <div className={styles.chartFootnote}>
         <p className={styles.chartFootnoteText}>
-          Note: approximate calendar-year total returns of each fund&apos;s underlying index, not fund NAV. Past performance never guarantees future results — this shows what one specific historical decade looked like, not a forecast.
+          Note: approximate calendar-year total returns of each fund&apos;s underlying index, not fund NAV. Past performance never guarantees future results. This shows what one specific historical decade looked like, not a forecast.
         </p>
       </div>
     </div>
@@ -267,7 +267,7 @@ function GoalProjectorCard({ allocations, monthlyInvestment, blendedTer }) {
       </div>
       <div className={styles.chartFootnote}>
         <p className={styles.chartFootnoteText}>
-          Illustrative only. &quot;Expected&quot; is derived from this portfolio&apos;s approximate 2015–2024 historical growth rate; pessimistic and optimistic are ±5 percentage-point bands, not statistical confidence intervals. The contribution escalator assumes you actually increase your monthly transfer each year — nothing does that automatically. Real returns will differ, possibly by a lot.
+          Illustrative only. &quot;Expected&quot; is derived from this portfolio&apos;s approximate 2015–2024 historical growth rate; pessimistic and optimistic are ±5 percentage-point bands, not statistical confidence intervals. The contribution escalator assumes you actually increase your monthly transfer each year. Nothing does that automatically. Real returns will differ, possibly by a lot.
         </p>
       </div>
     </div>
@@ -298,7 +298,7 @@ function StressTestCard({ allocations }) {
       </p>
       <div className={styles.chartFootnote}>
         <p className={styles.chartFootnoteText}>
-          Based on approximate historical index returns, not fund NAV. Past drawdowns don&apos;t bound future ones — a future downturn could be worse than anything in this ten-year window.
+          Based on approximate historical index returns, not fund NAV. Past drawdowns don&apos;t bound future ones. A future downturn could be worse than anything in this ten-year window.
         </p>
       </div>
     </div>
@@ -338,7 +338,7 @@ function BrokerCostCard({ monthlyInvestment }) {
       </div>
       <div className={styles.chartFootnote}>
         <p className={styles.chartFootnoteText}>
-          Approximate and illustrative only — not live rates. Brokerage pricing, promotions, and product availability change often; verify directly before choosing. WhatETF is not affiliated with, and earns nothing from, any broker.
+          Approximate and illustrative only, not live rates. Brokerage pricing, promotions, and product availability change often; verify directly before choosing. WhatETF is not affiliated with, and earns nothing from, any broker.
         </p>
       </div>
     </div>
@@ -363,7 +363,7 @@ function FeeComparisonCard({ blendedTer, monthlyInvestment }) {
   return (
     <div className={`${styles.card} ${styles.feeCompareCard}`}>
       <p className={styles.chartTitle}>DIY vs Robo-Advisor vs Unit Trust</p>
-      <p className={styles.chartSubtitle}>Same ${amount.toLocaleString()}/month, same assumed growth rate — the only difference is fees · {freshnessLabel(FEE_BENCHMARK_AS_OF, FRESHNESS_WINDOWS.fees) ?? `as of ${FEE_BENCHMARK_AS_OF}`}</p>
+      <p className={styles.chartSubtitle}>Same ${amount.toLocaleString()}/month, same assumed growth rate. The only difference is fees · {freshnessLabel(FEE_BENCHMARK_AS_OF, FRESHNESS_WINDOWS.fees) ?? `as of ${FEE_BENCHMARK_AS_OF}`}</p>
       <div className={styles.timeframeGroup}>
         {[10, 20, 30].map(y => (
           <button key={y} onClick={() => setYears(y)}
@@ -387,7 +387,7 @@ function FeeComparisonCard({ blendedTer, monthlyInvestment }) {
       </div>
       <div className={styles.chartFootnote}>
         <p className={styles.chartFootnoteText}>
-          Illustrative only. Robo-advisor and unit trust fee levels are rough typical ranges, not quotes from any specific product — actual fees vary widely. Growth rate assumption held constant across all three so the comparison isolates the cost of fees.
+          Illustrative only. Robo-advisor and unit trust fee levels are rough typical ranges, not quotes from any specific product. Actual fees vary widely. Growth rate assumption held constant across all three so the comparison isolates the cost of fees.
         </p>
       </div>
     </div>
@@ -408,7 +408,7 @@ function LookThroughCard({ allocations }) {
     <div className={`${styles.card} ${styles.lookThroughCard}`}>
       <h3 className={styles.lookThroughTitle}>True regional exposure</h3>
       <p className={styles.lookThroughDesc}>
-        Your actual weight to each region after looking through every fund&apos;s holdings — because a global fund like VWRA already contains the US, Japan, and emerging markets.
+        Your actual weight to each region after looking through every fund&apos;s holdings, because a global fund like VWRA already contains the US, Japan, and emerging markets.
       </p>
       <div className={styles.lookThroughList}>
         {buckets.map(b => (
@@ -441,7 +441,7 @@ function DiversificationAvatarCard({ allocations }) {
     <div className={`${styles.card} ${styles.lookThroughCard}`}>
       <h3 className={styles.lookThroughTitle}>Diversification, at a glance</h3>
       <p className={styles.lookThroughDesc}>
-        Proof-of-concept view of the same look-through data above — a character whose state reflects how spread out your true regional exposure is, instead of reading the bars.
+        Proof-of-concept view of the same look-through data above: a character whose state reflects how spread out your true regional exposure is, instead of reading the bars.
       </p>
       <DataAvatar score={score} label="Diversification score" />
     </div>
@@ -664,7 +664,7 @@ function PortfolioContent() {
                 <div className={`${styles.card} ${styles.sideCard}`}>
                   <h4 className={styles.sideCardTitle}>Before You Commit</h4>
                   <p className={styles.stepText} style={{ marginBottom: 10 }}>
-                    DCA works best once critical illness, life/TPD, and hospitalisation gaps are covered — so a health event doesn&apos;t force you to sell mid-plan.
+                    DCA works best once critical illness, life/TPD, and hospitalisation gaps are covered, so a health event doesn&apos;t force you to sell mid-plan.
                   </p>
                   <a href="/insure" className={styles.learnMoreLink}>Check your coverage first →</a>
                 </div>
@@ -678,7 +678,7 @@ function PortfolioContent() {
                     'Choose a low-cost brokerage (e.g. IBKR, Moomoo, Tiger Brokers).',
                     'Search for the tickers (e.g. VWRA) on the London Stock Exchange (LSE) for UCITS versions.',
                     'Set up a recurring monthly buy to automate your DCA.',
-                    'Review your allocation annually — rebalance if any holding drifts significantly.',
+                    'Review your allocation annually; rebalance if any holding drifts significantly.',
                   ].map((step, i) => (
                     <div key={i} className={styles.stepRow}>
                       <div className={styles.stepNum}>{i + 1}</div>

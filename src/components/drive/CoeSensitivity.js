@@ -68,7 +68,7 @@ export function CoeSensitivity({ r, tenure }) {
         <p style={{fontSize:C.xs,color:C.muted,lineHeight:1.6,margin:0}}>
           {scenario === 'base'
             ? `This is the figure used throughout this page: today's ${!r.liveCOE ? 'estimated' : 'live'} COE premium, held flat to year ${tenure}.`
-            : `If COE at deregistration ends up ${active.mult < 1 ? 'this much lower' : 'this much higher'} than assumed, your true cost over ${tenure} year${tenure>1?'s':''} would be ${delta === 0 ? 'about the same' : `${SGD(Math.abs(delta))} ${delta > 0 ? 'higher' : 'lower'}`} — COE moves the money you get back at scrap, not your instalment (the price you're financing already includes COE).`}
+            : `If COE at deregistration ends up ${active.mult < 1 ? 'this much lower' : 'this much higher'} than assumed, your true cost over ${tenure} year${tenure>1?'s':''} would be ${delta === 0 ? 'about the same' : `${SGD(Math.abs(delta))} ${delta > 0 ? 'higher' : 'lower'}`}. COE moves the money you get back at scrap, not your instalment (the price you're financing already includes COE).`}
         </p>
       </div>
     </div>

@@ -36,7 +36,7 @@ export async function GET() {
   if (!supabase) {
     return Response.json({
       source: 'bundled-json',
-      detail: 'Supabase is not configured (SUPABASE_URL/SUPABASE_ANON_KEY missing) — serving the bundled snapshot.',
+      detail: 'Supabase is not configured (SUPABASE_URL/SUPABASE_ANON_KEY missing). Serving the bundled snapshot.',
       cars: bundledCars.cars,
       updatedAt: bundledCars._meta?.updated ?? null,
       checkedAt: new Date().toISOString(),
@@ -49,7 +49,7 @@ export async function GET() {
     console.error('car-catalog Supabase query failed:', error.message)
     return Response.json({
       source: 'bundled-json',
-      detail: `Supabase query failed (${error.message}) — serving the bundled snapshot.`,
+      detail: `Supabase query failed (${error.message}). Serving the bundled snapshot.`,
       cars: bundledCars.cars,
       updatedAt: bundledCars._meta?.updated ?? null,
       checkedAt: new Date().toISOString(),
@@ -59,7 +59,7 @@ export async function GET() {
   if (!data || data.length === 0) {
     return Response.json({
       source: 'bundled-json',
-      detail: 'Supabase returned zero cars — table likely not seeded yet. Serving the bundled snapshot.',
+      detail: 'Supabase returned zero cars. Table likely not seeded yet. Serving the bundled snapshot.',
       cars: bundledCars.cars,
       updatedAt: bundledCars._meta?.updated ?? null,
       checkedAt: new Date().toISOString(),
