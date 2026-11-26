@@ -18,21 +18,11 @@ what's left.
   `docs/plans/2026-09-11-0225-feat-flowstate-into-ledger-plan.md`), which
   is exactly the "collapse-by-default with synced-value previews" option
   this item was waiting on a design decision for.
-- **Assumption-bundle table doesn't reflow on mobile.** `/ledger`'s
-  Conservative/Base/Optimistic grid is a fixed multi-column table that
-  squashes at 375px. Needs a real mobile layout (stacked cards?), not
-  just a breakpoint tweak.
+- ~~**Assumption-bundle table doesn't reflow on mobile.**~~ Fixed earlier: below 480px each bundle row stacks into its own card (`.ledger-bundle-row` in `globals.css`).
 - ~~**Car names truncate in DriveReady's best-sellers list.**~~ Fixed in
   PR #17 (`-webkit-line-clamp: 2` instead of ellipsis truncation).
-- **~35 uses of 10-11px type in Drive and Flow.** Legible now that PR
-  #11 fixed contrast, but under most mobile type-size guidelines (16px
-  body / 12px floor is the usual recommendation). Broad pass, not a
-  single fix.
-- **DriveReady's header wraps to two rows at 375px.** The tool switcher
-  + "Car prices indicative" + mode toggle + "Renew or Replace?" + "The
-  Math" links don't fit one row on a small phone. Cosmetic crowding, not
-  breaking, but inconsistent with how tight the rest of the mobile
-  layout is.
+- ~~**~35 uses of 10-11px type in Drive and Flow.**~~ Fixed in the 2026-11-26 rates + mobile PR: 62 sub-12px HTML sizes in DriveReady and the Capacity module raised to the 12px floor (SVG chart text scales with its chart and is left as is).
+- ~~**DriveReady's header wraps to two rows at 375px.**~~ Fixed in the 2026-11-26 rates + mobile PR: below 640px a page's links and status move to a scrollable sub-row (`.shell-header-subnav`), so the main header row stays one line.
 
 ## Design taste (taste-skill audit, 2026-09-09)
 
@@ -42,22 +32,8 @@ all 8 verticals' landing pages (rendered at 1440px, light + dark). Not
 bugs — these are "reads as templated/generic" findings, all evidenced
 against the actual source, not just the rubric's hard-ban list.
 
-- **The exact same hero shell is copy-pasted across 6 of 8 verticals.**
-  `background: C.ndtm, padding: '48px 32px 52px', textAlign: 'center'`
-  appears verbatim in `drive`, `house`, `flow`, `retire`, `tax`, and
-  `ledger`'s `page.js` — same eyebrow-label-then-centered-h1-then-italic-
-  subtext anatomy each time. `etf` and `insure` don't share the literal
-  string but use the identical visual pattern with inline styles. This
-  is precisely taste-skill's "no centered hero by default" ban, and
-  it's systemic rather than one page's choice.
-- **A single shared `TrustBadges` component renders an identical
-  4-pill trust row under every hero**, ending in the same two pills
-  verbatim every time: `'Zero data collected', 'Free, forever'`
-  (`drive`, `house`, `flow`, `ledger`, `retire`, `tax` — see
-  `src/app/*/page.js` call sites). `etf`/`insure` use their own
-  4-pill row in the same slot (`No sign-up / No data stored / No ads /
-  No commissions`). This is the generic SaaS "trust badge row" pattern
-  the skill flags, repeated 8 times with only the words swapped.
+- ~~**The exact same hero shell is copy-pasted across 6 of 8 verticals.**~~ Fixed in PR #34: `ToolHero` (`center` / `left` layouts) replaces the pasted bands; InsureCheck and WhatETF keep their own heroes.
+- ~~**A single shared `TrustBadges` component renders an identical 4-pill trust row under every hero**~~ Fixed in PR #34: each tool lists only its own claims; the shared 'Zero data collected / Free, forever' pair is `TRUST_COMMON`, defined once.
 - **Duplicate CTA copy template.** `etf` and `insure` both render
   `"Check my {noun} — it's free"` as their primary CTA
   (`src/app/etf/page.js:37`, `src/app/insure/page.js:87`) — same
@@ -136,55 +112,15 @@ get re-audited from scratch next time.
 
 **Maintainability**
 
-- **Seven near-identical `save<Module>Numbers` functions in
-  `src/lib/shared/profile.js` (lines 395-536) duplicate the same
-  read-merge-write skeleton.** `saveHouseNumbers`, `saveDriveNumbers`,
-  `saveRetireNumbers`, `saveInsureNumbers`, `saveTaxNumbers`,
-  `saveEtfNumbers`, `saveFlowNumbers` each independently call
-  `loadMyNumbers()`, spread the existing slot, coerce each field
-  (`Number(x) || 0` or the nullable variant), stamp `savedAt:
-  Date.now()`, and call `save(data)` — roughly 130 lines of boilerplate
-  a `mergeModuleSlot(tool, coercedFields)` helper (fields declared
-  per-module as `{key, coerce}` pairs) would collapse to one
-  implementation plus seven short field-list declarations. Medium
-  effort — `profile.test.js` is 645 lines, so the refactor needs full
-  regression coverage, but the mechanical shape is simple.
-- **`src/app/drive/renew-or-replace/page.js` (511 lines) defines 9 local
-  presentational components inline** (`Label`, `Hint`, `MoneyInput`,
-  `Slider`, `BrandSelect`, `Card`, `SectionTitle`, `ResultCard`, `Row` —
-  lines 24-162) instead of using `src/components/drive/ui.js`, which
-  already exists and already exports a `MoneyInput` for the same
-  vertical — a near-duplicate implementation, not just an unextracted
-  one. Every other canonical vertical keeps these primitives in
-  `components/<tool>/ui.js` per `docs/architecture.md`; this page is the
-  one holdout. Medium effort — consolidate the overlapping components
-  (`MoneyInput` at minimum) into the shared file rather than just
-  relocating, since a naive move would create two competing definitions.
+- ~~**Seven near-identical `save<Module>Numbers` functions in `src/lib/shared/profile.js` (lines 395-536) duplicate the same read-merge-write skeleton.**~~ Fixed in PR #33: `MODULE_SCHEMA` + `saveModule` / `clearModule`; the old names remain as deprecated one-line wrappers.
+- ~~**`src/app/drive/renew-or-replace/page.js` (511 lines) defines 9 local presentational components inline**~~ Mostly fixed in PR #34: its form fields (money inputs, sliders, brand selects) now come from `components/shared/inputs.js`. The page's own layout pieces (Card, Label, Hint, SectionTitle) remain local.
 
 **Design/UX — Capacity module** (new since the last UI/UX audit, so
 never checked for the same contrast/touch-target/mobile-reflow class of
 defect that audit found and fixed elsewhere):
 
-- **The lumpy-items row uses a fixed 5-column grid with no mobile
-  breakpoint**, unlike every other grid in the same file.
-  `src/components/ledger/CapacityModule.js:606`:
-  `gridTemplateColumns: '2fr auto 1fr 1fr auto'` (What / type-toggle /
-  Amount / Month / remove) — every other grid in `CapacityModule.js` and
-  `CapacityResults.js` uses `repeat(auto-fit, minmax(Npx, 1fr))`, which
-  reflows to fewer columns at phone width; this fixed one can't, and at
-  375px each field squashes well under a usable input width. Same
-  category of defect as the already-logged "Assumption-bundle table
-  doesn't reflow on mobile" item above, on a component built after that
-  audit ran. Medium effort — needs a stacked-card mobile layout for this
-  row, same open question as that item.
-- **The lumpy-item remove button is under the touch-target floor.**
-  `src/components/ledger/CapacityModule.js:645-646` — `padding: '10px
-  4px'` with `C.sm` (~14px) text gives a tappable area roughly 34×22px,
-  below the ~44×44px minimum PR #11's touch-target work established
-  elsewhere. The sibling +/− type-toggle buttons three lines above
-  (`CapacityModule.js:615-632`) use `padding: '10px 10px'` and don't
-  have this problem — only this one button was left narrower. Small
-  effort — widen the horizontal padding to match.
+- ~~**The lumpy-items row uses a fixed 5-column grid with no mobile breakpoint**~~ Fixed earlier: below 480px each lumpy item stacks into its own card (`.ledger-lumpy-row` in `globals.css`).
+- ~~**The lumpy-item remove button is under the touch-target floor.**~~ Fixed earlier: the remove button is now 44×44px (`minWidth`/`minHeight: 44`).
 
 No other Capacity-module regression found: contrast pairings all route
 through the shared `C.*` tokens the light/dark audit already covers,
@@ -194,6 +130,9 @@ interactive pattern outside what PR #11 already audited.
 
 ## Rates accuracy follow-ups (2026-10-18)
 
+All items below were verified against CPF Board and LTA sources and fixed
+on 2026-11-26; see `docs/statutory-sources.md` "Resolved discrepancies".
+
 Found while fixing PARF, EEAI, the 55–65 CPF rates and the SRS age (see
 `docs/statutory-sources.md` "Resolved discrepancies"). These rest on
 third-party calculators whose figures reconcile arithmetically with CPF's
@@ -202,23 +141,8 @@ wasn't reachable from the session), so verify against the official table
 before changing a value. Once verified, a wrong value belongs under *Open
 discrepancies* in the register, which fails CI until it is fixed.
 
-- **`CPF_CONTRIBUTION_TABLE` has one "0–55" band using the under-35 split
-  (OA 23 / SA 6 / MA 8).** The published 2026 allocation splits it by age:
-  35–45 is OA 21 / SA 7 / MA 9, 45–50 is OA 19 / SA 8 / MA 10, 50–55 is
-  OA 15 / SA 11.5 / MA 10.5 (all % of wages, total still 37%). Most users
-  are in 35–55, so SA/MA, and therefore interest, are understated for them in
-  RetireWell. Fix means splitting the band in `src/lib/retire/cpf.js` and
-  re-checking `golden-masters.test.js`.
-- **The 65–70 band allocates OA 3.5 / SA 2.5 / MA 10.5.** The published split
-  is OA 1 / RA 5 / MA 10.5 (16.5% total). Same file. The 70+ band (OA 1 /
-  RA 1 / MA 10.5) matches.
-- **CPF senior-worker rates step up again on 1 Jan 2027** (55–60 to 35.5%,
-  60–65 to 26%). Tracked as a `pending` row under *Scheduled changes*, so CI
-  goes red on that date until `cpf.js` and the register are updated.
-- **EEAI cap for older EVs.** The cap was S$15,000 for 2025 registrations;
-  `calcEEAI` applies the 2026 cap of S$7,500 to every pre-2027 registration,
-  which slightly overstates a used EV's net ARF. Only matters for EVs
-  already on the road.
-- **VES bands were revised for 2026–27 (hybrids lose rebates, only EVs get
-  them).** Confirm the `ves` values in `public/data/cars.json` (from LTA's
-  Car Cost Update) reflect the new bands.
+- ~~**`CPF_CONTRIBUTION_TABLE` has one "0–55" band using the under-35 split (OA 23 / SA 6 / MA 8).**~~ Fixed in the 2026-11-26 rates + mobile PR: verified against CPF Board's allocation table and split into ≤35 / 35–45 / 45–50 / 50–55 in `CPF_RATE_SCHEDULE`.
+- ~~**The 65–70 band allocates OA 3.5 / SA 2.5 / MA 10.5.**~~ Fixed in the 2026-11-26 rates + mobile PR: now OA 1 / RA 5 / MA 10.5.
+- ~~**CPF senior-worker rates step up again on 1 Jan 2027**~~ Fixed in the 2026-11-26 rates + mobile PR: `CPF_RATE_SCHEDULE` is date-aware and holds the 2027 rates, which apply automatically. The same PR also corrected TaxWise's 55–65 employee shares (were the 2025 rates).
+- ~~**EEAI cap for older EVs.**~~ Fixed in the 2026-11-26 rates + mobile PR: `EEAI_CAPS` by registration date (S$20k 2021–23, S$15k 2024–25, S$7.5k 2026).
+- ~~**VES bands were revised for 2026–27 (hybrids lose rebates, only EVs get them).**~~ Fixed in the 2026-11-26 rates + mobile PR: verified against OneMotoring; `VES_SCHEDULE` holds 2026 and 2027 amounts by date, VES is derived from each car's band, and seven C2/C3 cars with stale surcharges were corrected.
