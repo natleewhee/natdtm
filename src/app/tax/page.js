@@ -7,6 +7,7 @@ import { calcTax, NSMAN_RELIEF, SRS_CAP_CITIZEN_PR, SRS_CAP_FOREIGNER, RSTU_RELI
 import { loadMyNumbers, saveTaxNumbers, saveToolInputs, loadToolInputs } from '@/lib/shared/profile'
 import { MoneyInput, NumberInput, SectionDivider, Segmented } from '@/components/shared/inputs'
 import TaxResults from '@/components/tax/Results'
+import ReliefsOptimiser from '@/components/tax/ReliefsOptimiser'
 import ShellHeader from '@/components/shared/ShellHeader'
 import ToolHero from '@/components/shared/ToolHero'
 import Button from '@/components/shared/Button'
@@ -307,6 +308,7 @@ export default function TaxWisePage() {
         </div>
 
         {result && <TaxResults result={result} />}
+        {result && <ReliefsOptimiser inputs={inputs} tax={result.tax} />}
         {result && !fromShare && (
           <div className="share-row">
             <button type="button" className="share-btn" onClick={share}>Share this result</button>
