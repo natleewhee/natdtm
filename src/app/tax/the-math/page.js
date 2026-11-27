@@ -10,6 +10,8 @@ import {
   CHILD_RELIEF, NSMAN_RELIEF, CPF_EMPLOYEE_SHARE,
 } from '@/lib/tax/calc'
 import { CPF_OW_CEILING, CPF_ANNUAL_CEILING } from '@/lib/retire/cpf'
+import { FAMILY_INCOME_LIMIT, PRIORITY_ORDER, LEVER_INFO } from '@/lib/tax/optimise'
+import { SRS_RETIREMENT_AGE } from '@/lib/retire/srs'
 import ShellHeader from '@/components/shared/ShellHeader'
 import MathTOC from '@/components/shared/MathTOC'
 
@@ -68,6 +70,7 @@ export default function TaxTheMathPage() {
           { id: 'cpf-relief-and-take-home-pay', label: 'CPF & take-home' },
           { id: 'reliefs-and-the-80-000-cap', label: 'Reliefs & the cap' },
           { id: 'what-a-relief-is-actually-worth', label: 'What a relief is worth' },
+          { id: 'the-reliefs-optimiser', label: 'Reliefs optimiser' },
           { id: 'limitations', label: 'Limitations' },
         ]} />
 
@@ -133,6 +136,24 @@ effective = min(amount you'd contribute, headroom)
 saving = tax(chargeable income) − tax(chargeable income − effective)`}</Formula>
           <P>Computing it as a difference of two tax calculations rather than multiplying by a single rate handles the case where a relief straddles a band boundary: the first part comes off at the higher rate, the rest at the lower one.</P>
           <Caveat>A tax saving is not the same as a good decision. SRS money is locked until statutory retirement age, and withdrawing early costs a 5% penalty on top of full taxation of the amount. CPF top-ups are irreversible. That money is never coming back out as cash before your payout age. The tool prices the tax benefit; whether the lock-up is worth it is a separate question, and depends on what else you&apos;d do with the money.</Caveat>
+        </Section>
+
+        <Section title="The reliefs optimiser">
+          <P>Below your results, the optimiser takes a lump of spare cash and fills four reliefs in order: SRS, a CPF cash top-up to your own MediSave, a CPF cash top-up to your own SA (or RA from 55), and a top-up for a family member. Each one cuts chargeable income dollar for dollar, so they all save tax at the same marginal rate. The order only decides where the money ends up.</P>
+          <Formula>{`Keeping access:     ${PRIORITY_ORDER.access.map(k => LEVER_INFO[k].label).join(' → ')}
+Never taxed later:  ${PRIORITY_ORDER.taxFree.map(k => LEVER_INFO[k].label).join(' → ')}
+
+each step = min(cash left, that relief's room, ${SGD(PERSONAL_RELIEF_CAP)} cap headroom)
+saving    = tax before − tax after (re-run in full after every step)`}</Formula>
+          <P>The limits it uses:</P>
+          <ul style={{ fontSize: C.base, color: C.text, lineHeight: 1.8, margin: '0 0 14px', paddingLeft: 20 }}>
+            <li><strong>SRS:</strong> {SGD(SRS_CAP_CITIZEN_PR)} a year for citizens and PRs, {SGD(SRS_CAP_FOREIGNER)} for foreigners, less what you&apos;ve already put in.</li>
+            <li><strong>Your own CPF:</strong> one {SGD(RSTU_RELIEF_CAP_SELF)} limit shared between MediSave and SA/RA top-ups (MediSave joined CPF Cash Top-up Relief from 1 Jan 2022). MediSave is also limited by the room under your Basic Healthcare Sum, and SA/RA by the room under your Full Retirement Sum. Enter those under &quot;Room left in your CPF&quot;, or leave them blank to assume enough room.</li>
+            <li><strong>Family:</strong> a further {SGD(RSTU_RELIEF_CAP_FAMILY)} across parents, grandparents (and in-laws), a spouse and siblings. For a spouse or sibling it only counts if they earned {SGD(FAMILY_INCOME_LIMIT)} or less the year before, or have a disability. It&apos;s off by default, because the money becomes theirs.</li>
+            <li><strong>Foreigners</strong> have no CPF account, so only SRS applies.</li>
+          </ul>
+          <P>The &quot;why the later dollars save less&quot; table splits your relief by the tax band it comes out of, top band first. That&apos;s why a big contribution can save a smaller percentage than a small one.</P>
+          <Caveat>SRS and CPF are not taxed the same way later. SRS defers tax: from age {SRS_RETIREMENT_AGE}, 50% of each withdrawal is taxable. CPF top-ups are never taxed again, but they stay in CPF for good. Also, from 1 Jan 2026, a MediSave top-up that attracts a Matched MediSave Scheme grant gets no tax relief (YA 2027 onwards). The optimiser assumes yours doesn&apos;t.</Caveat>
         </Section>
 
         <Section title="Limitations">
