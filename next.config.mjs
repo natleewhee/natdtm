@@ -20,6 +20,13 @@ function resolveCommitSha() {
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  // React Compiler: memoizes components and hooks automatically, so no
+  // hand-written useMemo/useCallback is needed for render performance.
+  // Safe with the mutable theme object `C` (src/lib/shared/theme.js)
+  // because ThemeBoot remounts the app subtree on a mode switch, which
+  // drops every memo cache. eslint-plugin-react-hooks v7 (via
+  // eslint-config-next) already lints the rules the compiler relies on.
+  reactCompiler: true,
   env: {
     NEXT_PUBLIC_APP_VERSION: pkgVersion,
     NEXT_PUBLIC_BUILD_SHA: resolveCommitSha(),
