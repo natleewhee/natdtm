@@ -68,8 +68,8 @@ Findings from a full read of the repo at the merge of PR #32 (2026-11-24):
 ### Scope Boundaries
 
 **Deferred**
-- ~~Tax×Retire reliefs optimiser as a standalone module.~~ Shipped 2026-11-27 as a section of TaxWise's results (`src/lib/tax/optimise.js`), not a separate tool.
-- TypeScript migration; ~~`--l-*` token codemod~~ (done 2026-11-27); React Compiler repo-wide.
+- ~~Tax×Retire reliefs optimiser as a standalone module.~~ Shipped 2026-11-27 as a section of TaxWise's results (`src/lib/tax/optimise.ts`), not a separate tool.
+- TypeScript migration (`src/lib` done 2026-11-27); ~~`--l-*` token codemod~~ (done 2026-11-27); React Compiler repo-wide.
 - New verticals (e.g. a CPF housing-grant checker). Add them only after R1, as a registry entry plus a canonical module.
 - The CPF band fixes already listed in `docs/backlog.md` (2026-10-18). They go through the statutory register as before, separately from this plan.
 

@@ -100,7 +100,7 @@ get re-audited from scratch next time.
 
 **Maintainability**
 
-- ~~**Seven near-identical `save<Module>Numbers` functions in `src/lib/shared/profile.js` (lines 395-536) duplicate the same read-merge-write skeleton.**~~ Fixed in PR #33: `MODULE_SCHEMA` + `saveModule` / `clearModule`; the old names remain as deprecated one-line wrappers.
+- ~~**Seven near-identical `save<Module>Numbers` functions in `src/lib/shared/profile.ts` (lines 395-536) duplicate the same read-merge-write skeleton.**~~ Fixed in PR #33: `MODULE_SCHEMA` + `saveModule` / `clearModule`; the old names remain as deprecated one-line wrappers.
 - ~~**`src/app/drive/renew-or-replace/page.js` (511 lines) defines 9 local presentational components inline**~~ Mostly fixed in PR #34: its form fields (money inputs, sliders, brand selects) now come from `components/shared/inputs.js`. The page's own layout pieces (Card, Label, Hint, SectionTitle) remain local.
 
 **Design/UX — Capacity module** (new since the last UI/UX audit, so

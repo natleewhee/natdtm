@@ -1,12 +1,12 @@
 # Statutory constants — source register
 
 Every hard-coded Singapore statutory figure in the calculation engines, with
-its authoritative source and the date it was last verified. `src/lib/shared/statutory-currency.test.js`
+its authoritative source and the date it was last verified. `src/lib/shared/statutory-currency.test.ts`
 asserts this file stays current and lists every `*_AS_OF` marker in the code.
 
 **Audit date: 2026-08-31**
 
-`src/lib/shared/statutory-currency.test.js` fails CI when this audit is more
+`src/lib/shared/statutory-currency.test.ts` fails CI when this audit is more
 than ~3 months old, when anything is left under *Open discrepancies*, or when
 an entry under *Scheduled changes* has reached its effective date while still
 `pending`. Rows re-checked on 2026-10-18 (marked below) were verified against
@@ -21,7 +21,7 @@ at the bottom.
 
 ---
 
-## Income tax — `src/lib/tax/calc.js` (`TAX_RATES_AS_OF = '2026-01-01'`)
+## Income tax — `src/lib/tax/calc.ts` (`TAX_RATES_AS_OF = '2026-01-01'`)
 
 | Constant | Value | Source | Verified |
 |---|---|---|---|
@@ -29,11 +29,11 @@ at the bottom.
 | `PERSONAL_RELIEF_CAP` | $80,000 per YA (unchanged since YA2018) | [IRAS — Personal income tax relief cap](https://www.iras.gov.sg/taxes/individual-income-tax/basics-of-individual-income-tax/tax-reliefs-rebates-and-deductions/tax-reliefs/personal-income-tax-relief-cap) | 2026-08-31 ✓ |
 | `SRS_CAP_CITIZEN_PR` / `SRS_CAP_FOREIGNER` | $15,300 / $35,700 (unchanged since 2016) | [IRAS — SRS contributions](https://www.iras.gov.sg/taxes/individual-income-tax/basics-of-individual-income-tax/special-tax-schemes/srs-contributions) | 2026-08-31 ✓ |
 | `RSTU_RELIEF_CAP_SELF` / `_FAMILY` | $8,000 / $8,000 | [IRAS — CPF cash top-up relief](https://www.iras.gov.sg/taxes/individual-income-tax/basics-of-individual-income-tax/tax-reliefs-rebates-and-deductions/tax-reliefs/central-provident-fund-(cpf)-cash-top-up-relief) | 2026-08-31 ✓ |
-| `FAMILY_INCOME_LIMIT` (`src/lib/tax/optimise.js`) | $8,000: the most a spouse or sibling may have earned the year before for a cash top-up to them to earn relief (was $4,000 up to YA 2024). Also encoded: MediSave cash top-ups share the $8,000 self cap from 1 Jan 2022, and top-ups attracting a Matched MediSave grant get no relief for top-ups made from 1 Jan 2026 | [IRAS — CPF cash top-up relief](https://www.iras.gov.sg/taxes/individual-income-tax/basics-of-individual-income-tax/tax-reliefs-rebates-and-deductions/tax-reliefs/central-provident-fund-(cpf)-cash-top-up-relief), [IRAS — CPF relief for employees](https://www.iras.gov.sg/taxes/individual-income-tax/basics-of-individual-income-tax/tax-reliefs-rebates-and-deductions/tax-reliefs/central-provident-fund(cpf)-relief-for-employees) | 2026-11-27 ✓ |
+| `FAMILY_INCOME_LIMIT` (`src/lib/tax/optimise.ts`) | $8,000: the most a spouse or sibling may have earned the year before for a cash top-up to them to earn relief (was $4,000 up to YA 2024). Also encoded: MediSave cash top-ups share the $8,000 self cap from 1 Jan 2022, and top-ups attracting a Matched MediSave grant get no relief for top-ups made from 1 Jan 2026 | [IRAS — CPF cash top-up relief](https://www.iras.gov.sg/taxes/individual-income-tax/basics-of-individual-income-tax/tax-reliefs-rebates-and-deductions/tax-reliefs/central-provident-fund-(cpf)-cash-top-up-relief), [IRAS — CPF relief for employees](https://www.iras.gov.sg/taxes/individual-income-tax/basics-of-individual-income-tax/tax-reliefs-rebates-and-deductions/tax-reliefs/central-provident-fund(cpf)-relief-for-employees) | 2026-11-27 ✓ |
 | `COURSE_FEES_CAP` | $5,500 | [IRAS — Course fees relief](https://www.iras.gov.sg/taxes/individual-income-tax/basics-of-individual-income-tax/tax-reliefs-rebates-and-deductions/tax-reliefs/course-fees-relief) | 2026-08-31 ✓ |
 | `EARNED_INCOME_RELIEF`, `PARENT_RELIEF_*`, `CHILD_RELIEF`, `NSMAN_RELIEF` | $1k/$6k/$8k by age; $9k/$5.5k; $4k; $1.5k–$5k | [IRAS — Tax reliefs](https://www.iras.gov.sg/taxes/individual-income-tax/basics-of-individual-income-tax/tax-reliefs-rebates-and-deductions/tax-reliefs) | 2026-08-31 ✓ |
 
-## CPF — `src/lib/retire/cpf.js` (`CPF_RATES_AS_OF = '2026-01-01'`)
+## CPF — `src/lib/retire/cpf.ts` (`CPF_RATES_AS_OF = '2026-01-01'`)
 
 | Constant | Value | Source | Verified |
 |---|---|---|---|
@@ -52,7 +52,7 @@ at the bottom.
 
 `CPF_FRS_GROWTH_RATE` (3.5% p.a.) and `CPF_BHS_GROWTH_RATE` (4.75% p.a.) are the app's own forward-projection assumptions off the labeled base year, not statutory figures.
 
-## SRS withdrawal — `src/lib/retire/srs.js` (`SRS_AS_OF = '2026-01-01'`)
+## SRS withdrawal — `src/lib/retire/srs.ts` (`SRS_AS_OF = '2026-01-01'`)
 
 | Constant | Value | Source | Verified |
 |---|---|---|---|
@@ -60,7 +60,7 @@ at the bottom.
 | `SRS_WITHDRAWAL_TAXABLE_FRACTION` | 50% (from statutory retirement age, spread over up to 10 years) | [IRAS — Withdrawing from SRS](https://www.iras.gov.sg/taxes/individual-income-tax/basics-of-individual-income-tax/special-tax-schemes/withdrawing-from-srs) | 2026-08-31 ✓ |
 | `SRS_EARLY_WITHDRAWAL_PENALTY_PCT` / `SRS_MAX_WITHDRAWAL_YEARS` | 5% / 10 years | same | 2026-08-31 ✓ |
 
-## Stamp duty — `src/lib/house/stampDuty.js`
+## Stamp duty — `src/lib/house/stampDuty.ts`
 
 | Constant | Value | Source | Verified |
 |---|---|---|---|
@@ -69,7 +69,7 @@ at the bottom.
 | `calcSSD` schedules (`SSD_AS_OF = '2025-07-03'`, `SSD_REGIME_CUTOVER_DATE = '2025-07-04'`) | old: 12/8/4% over 3 yrs; new: 16/12/8/4% over 4 yrs (purchases on/after 4 Jul 2025) | [IRAS — Seller's Stamp Duty](https://www.iras.gov.sg/taxes/stamp-duty/for-property/selling-or-disposing-property/seller's-stamp-duty-(ssd)-for-residential-property) | 2026-08-31 ✓ |
 | `HDB_MOP_YEARS` | 5 years | [HDB — Minimum Occupation Period](https://www.hdb.gov.sg/residential/selling-a-flat/eligibility) | 2026-08-31 ✓ |
 
-## PARF rebate — `src/lib/drive/calc.js` (`PARF_AS_OF = '2026-02-16'`)
+## PARF rebate — `src/lib/drive/calc.ts` (`PARF_AS_OF = '2026-02-16'`)
 
 Two schedules, chosen by when the car's COE was issued (`parfRegimeFor` / `parfRegimeForAge`). `PARF_AS_OF` is the first day of the 2nd Feb 2026 COE bidding exercise, the first COE the revised schedule applies to.
 
@@ -78,7 +78,7 @@ Two schedules, chosen by when the car's COE was issued (`parfRegimeFor` / `parfR
 | `PARF_SCHEDULES.revised2026` | 30% of ARF at ≤5yr, 25% / 20% / 15% / 10% / 5% at 6 / 7 / 8 / 9 / 10yr, nil after; cap **S$30,000**. Applies to COEs from the 2nd Feb 2026 bidding exercise onwards (and COE-exempt vehicles registered on/after 13 Feb 2026) | [LTA — Revision of PARF rebate schedule and cap (12 Feb 2026)](https://www.lta.gov.sg/content/ltagov/en/newsroom/2026/2/news-releases/revision-parf-rebate-schedule-cap.html) | 2026-10-18 ✓ |
 | `PARF_SCHEDULES.legacy` | 75% of ARF at ≤5yr, 70% / 65% / 60% / 55% / 50% at 6 / 7 / 8 / 9 / 10yr, nil after; cap **S$60,000**. Cars registered before the cutover keep this for life | same | 2026-10-18 ✓ |
 
-## Vehicle Emissions Scheme — `src/lib/drive/calc.js` (`VES_AS_OF = '2026-01-01'`)
+## Vehicle Emissions Scheme — `src/lib/drive/calc.ts` (`VES_AS_OF = '2026-01-01'`)
 
 | Constant | Value | Source | Verified |
 |---|---|---|---|
@@ -86,13 +86,13 @@ Two schedules, chosen by when the car's COE was issued (`parfRegimeFor` / `parfR
 | `VES_SCHEDULE` (2027) | A +S$20,000 · B 0 · C1 −S$15,000 · C2 −S$30,000 · C3 −S$45,000; applied by date from 1 Jan 2027 | same | 2026-11-26 ✓ |
 | `cars.json` `ves` | 2026 amount for each car's `vesBand` (fallback only; the engine derives VES from the band and date) | same | 2026-11-26 ✓ |
 
-## EV Early Adoption Incentive — `src/lib/drive/calc.js` (`EEAI_AS_OF = '2026-01-01'`, `EEAI_END = '2027-01-01'`)
+## EV Early Adoption Incentive — `src/lib/drive/calc.ts` (`EEAI_AS_OF = '2026-01-01'`, `EEAI_END = '2027-01-01'`)
 
 | Constant | Value | Source | Verified |
 |---|---|---|---|
 | `calcEEAI` / `EEAI_CAPS` | 45% of ARF, capped by registration date: S$20,000 (2021–23), S$15,000 (2024–25), S$7,500 (2026); **ceases for registrations from 1 Jan 2027** | [OneMotoring — Tax structure](https://onemotoring.lta.gov.sg/content/onemotoring/home/buying/upfront-vehicle-costs/tax-structure.html), [LTA/NEA — Extension of VES and EEAI (Sep 2025)](https://www.lta.gov.sg/content/ltagov/en/newsroom/2025/9/news-releases/extension_of_ves_and_eeai_to_support_vehicle_electrification.html) | 2026-11-26 ✓ |
 
-## COE fallback — `src/lib/drive/calc.js` (`COE_FALLBACK_AS_OF = '2026-07-01'`)
+## COE fallback — `src/lib/drive/calc.ts` (`COE_FALLBACK_AS_OF = '2026-07-01'`)
 
 `COE_FALLBACK` is a stale-data fallback only; the live figure comes from data.gov.sg's mirror of LTA's COE Bidding Results. Freshness is surfaced on `/drive/data-status`. Not re-verified here — it self-heals from the live feed.
 
@@ -131,7 +131,7 @@ row are updated together (set the last column to `applied`). Format of each row:
 
 | Effective | Change | Where | Status |
 |---|---|---|---|
-| 2027-01-01 | EEAI ceases for new registrations; `calcEEAI` is date-gated, so no code change is needed | `src/lib/drive/calc.js` | applied |
-| 2027-01-01 | VES 2027 amounts (EV rebate S$20,000; C1/C2/C3 surcharges S$15k/S$30k/S$45k); `VES_SCHEDULE` is date-gated | `src/lib/drive/calc.js` | applied |
-| 2028-01-01 | The VES schedule announced in Sep 2025 runs to 31 Dec 2027; check LTA for the 2028 bands and add them to `VES_SCHEDULE` | `src/lib/drive/calc.js` | pending |
-| 2027-01-01 | CPF senior-worker contribution rates rise a further 1.5 points for 55–60 (to 35.5%) and 1 point for 60–65 (to 26%), extra allocated to the RA; encoded in the date-aware `CPF_RATE_SCHEDULE`, so no change is needed on the day | `src/lib/retire/cpf.js` | applied |
+| 2027-01-01 | EEAI ceases for new registrations; `calcEEAI` is date-gated, so no code change is needed | `src/lib/drive/calc.ts` | applied |
+| 2027-01-01 | VES 2027 amounts (EV rebate S$20,000; C1/C2/C3 surcharges S$15k/S$30k/S$45k); `VES_SCHEDULE` is date-gated | `src/lib/drive/calc.ts` | applied |
+| 2028-01-01 | The VES schedule announced in Sep 2025 runs to 31 Dec 2027; check LTA for the 2028 bands and add them to `VES_SCHEDULE` | `src/lib/drive/calc.ts` | pending |
+| 2027-01-01 | CPF senior-worker contribution rates rise a further 1.5 points for 55–60 (to 35.5%) and 1 point for 60–65 (to 26%), extra allocated to the RA; encoded in the date-aware `CPF_RATE_SCHEDULE`, so no change is needed on the day | `src/lib/retire/cpf.ts` | applied |
