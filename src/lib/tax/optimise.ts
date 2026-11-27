@@ -1,4 +1,4 @@
-// src/lib/tax/optimise.js
+// src/lib/tax/optimise.ts
 // Reliefs optimiser: given some spare cash, how far can SRS and CPF cash
 // top-ups cut this year's tax bill, in which order, and what does each
 // dollar cost you in access? Pure functions on top of calc.js.
@@ -27,13 +27,16 @@
 import {
   calcTax, TAX_BANDS, PERSONAL_RELIEF_CAP,
   RSTU_RELIEF_CAP_SELF, RSTU_RELIEF_CAP_FAMILY,
-} from './calc.js'
+} from './calc.ts'
 
 export const FAMILY_INCOME_LIMIT = 8_000
 
-export const LEVERS = ['srs', 'cpfMa', 'cpfRa', 'cpfFamily']
+export type Lever = 'srs' | 'cpfMa' | 'cpfRa' | 'cpfFamily'
+export type Priority = 'access' | 'taxFree'
 
-export const LEVER_INFO = {
+export const LEVERS: Lever[] = ['srs', 'cpfMa', 'cpfRa', 'cpfFamily']
+
+export const LEVER_INFO: Record<Lever, { label: string; destination: string; access: string; taxLater: boolean }> = {
   srs: {
     label: 'SRS contribution',
     destination: 'Your SRS account, which you can invest',
@@ -63,13 +66,13 @@ export const LEVER_INFO = {
 // Fill order for each priority. MediSave comes before SA/RA because it is
 // the more usable of the two; a family top-up is always last because the
 // money stops being yours.
-export const PRIORITY_ORDER = {
+export const PRIORITY_ORDER: Record<Priority, Lever[]> = {
   access: ['srs', 'cpfMa', 'cpfRa', 'cpfFamily'],
   taxFree: ['cpfMa', 'cpfRa', 'srs', 'cpfFamily'],
 }
 
-const pos = (v) => Math.max(0, Number(v) || 0)
-const roomOr = (v) => (v === null || v === undefined || v === '' ? Infinity : pos(v))
+const pos = (v: unknown): number => Math.max(0, Number(v) || 0)
+const roomOr = (v: unknown): number => (v === null || v === undefined || v === '' ? Infinity : pos(v))
 
 /**
  * How much each lever can still take this year, before the shared
@@ -80,7 +83,7 @@ const roomOr = (v) => (v === null || v === undefined || v === '' ? Infinity : po
  *   means "assume enough room".
  * @returns {{srs: number, cpfSelf: number, cpfMa: number, cpfRa: number, cpfFamily: number, capHeadroom: number}}
  */
-export function leverCapacity(taxInputs, rooms = {}) {
+export function leverCapacity(taxInputs: Record<string, any>, rooms: {maRoom?: number|null, raRoom?: number|null} = {}): {srs: number, cpfSelf: number, cpfMa: number, cpfRa: number, cpfFamily: number, capHeadroom: number} {
   const base = calcTax(taxInputs)
   // Only citizens and PRs have CPF accounts to top up.
   const noCpf = !!taxInputs.isForeigner
@@ -95,7 +98,7 @@ export function leverCapacity(taxInputs, rooms = {}) {
   }
 }
 
-function withAllocation(taxInputs, alloc) {
+function withAllocation(taxInputs: Record<string, any>, alloc: Record<Lever, number>) {
   return {
     ...taxInputs,
     srsContribution: pos(taxInputs.srsContribution) + (alloc.srs || 0),
@@ -111,7 +114,7 @@ function withAllocation(taxInputs, alloc) {
  * @param {number} amount - Total reduction in dollars.
  * @returns {{rate: number, amount: number, saving: number}[]}
  */
-export function bandSlices(chargeableIncome, amount) {
+export function bandSlices(chargeableIncome: number, amount: number): {rate: number, amount: number, saving: number}[] {
   let top = pos(chargeableIncome)
   let left = Math.min(pos(amount), top)
   const out = []
@@ -139,17 +142,17 @@ export function bandSlices(chargeableIncome, amount) {
  * @param {number|null} [options.raRoom] - Room under the Full Retirement Sum.
  * @returns {object} steps, totals, the band slices and what limited the plan.
  */
-export function optimiseReliefs(taxInputs, options = {}) {
+export function optimiseReliefs(taxInputs: Record<string, any>, options: { spare?: number; priority?: Priority; levers?: Partial<Record<Lever, boolean>>; maRoom?: number | null; raRoom?: number | null } = {}) {
   const { spare = 0, priority = 'access', levers = {}, maRoom = null, raRoom = null } = options
   const base = calcTax(taxInputs)
   const cap = leverCapacity(taxInputs, { maRoom, raRoom })
   const order = PRIORITY_ORDER[priority] || PRIORITY_ORDER.access
-  const enabled = (k) => levers[k] !== false
+  const enabled = (k: Lever) => levers[k] !== false
 
   let budget = Math.min(pos(spare), cap.capHeadroom)
   let selfLeft = cap.cpfSelf
-  const alloc = { srs: 0, cpfMa: 0, cpfRa: 0, cpfFamily: 0 }
-  const steps = []
+  const alloc: Record<Lever, number> = { srs: 0, cpfMa: 0, cpfRa: 0, cpfFamily: 0 }
+  const steps: Array<{ lever: Lever; amount: number; saving: number; label: string; destination: string; access: string; taxLater: boolean }> = []
   let prevTax = base.tax
 
   for (const k of order) {
@@ -170,7 +173,7 @@ export function optimiseReliefs(taxInputs, options = {}) {
   const after = calcTax(withAllocation(taxInputs, alloc))
   const saving = base.tax - after.tax
   const unused = Math.max(0, pos(spare) - used)
-  let limitedBy = null
+  let limitedBy: 'reliefCap' | 'leverLimits' | null = null
   if (unused > 0) {
     limitedBy = cap.capHeadroom <= used ? 'reliefCap' : 'leverLimits'
   }
