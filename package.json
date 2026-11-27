@@ -8,9 +8,10 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "test": "node --test \"src/lib/**/*.test.js\"",
+    "test": "node --test \"src/lib/**/*.test.ts\"",
     "test:e2e": "playwright test --project=chromium",
-    "test:e2e:visual": "playwright test --project=visual"
+    "test:e2e:visual": "playwright test --project=visual",
+    "typecheck": "tsc --noEmit"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.112.0",
@@ -22,7 +23,11 @@
   },
   "devDependencies": {
     "@playwright/test": "^1.62.1",
+    "@types/node": "^22.20.7",
+    "@types/react": "^19.3.3",
+    "@types/react-dom": "^19.3.0",
     "eslint": "^9",
-    "eslint-config-next": "16.2.1"
+    "eslint-config-next": "16.2.1",
+    "typescript": "^5.9.3"
   }
 }

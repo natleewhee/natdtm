@@ -47,7 +47,7 @@ src/app/
   layout.js, page.js, globals.css   the shell: root layout, home page, and
   not-found.js, error.js            the single source of truth for the dark
                                     palette + type system; themed error screens
-  robots.js, sitemap.js            derived from src/lib/shared/site.js
+  robots.js, sitemap.js            derived from src/lib/shared/site.ts
   <tool>/                          one directory per vertical: page.js,
                                     layout.js (route metadata), the-math/,
                                     plus any sub-routes (e.g. drive/api/,
@@ -105,7 +105,7 @@ detail.
 
 One theme, permanently dark, pinned via `data-theme` on `<html>`. The
 palette is defined once in `src/app/globals.css` and mirrored as literal
-hex in `src/lib/shared/theme.js` (components build alpha variants by
+hex in `src/lib/shared/theme.ts` (components build alpha variants by
 string-concatenating a hex suffix, `${C.accent}44`, which needs real hex).
 
 - **Background** `#0b1120` / **surface** `#1e293b`
@@ -136,7 +136,7 @@ assets cache-first; `/drive/api/*` network-first with a cached copy.
 
 ## Cross-tool "My Numbers"
 
-`src/lib/shared/profile.js` is a client-side (localStorage) store that
+`src/lib/shared/profile.ts` is a client-side (localStorage) store that
 lets the tools hand figures to each other, to MyLedger and to the home
 dashboard, without re-typing. It holds up to three named profiles
 ("Me", "Joint with Alex", …), each with a full per-tool slot set, and a
@@ -159,11 +159,11 @@ receives a dual write. `/drive/data-status` shows live feed health.
 Every hard-coded Singapore rate, bracket, and cap in the engines is
 listed in [`docs/statutory-sources.md`](docs/statutory-sources.md) with
 its authoritative source and verification date.
-`src/lib/shared/statutory-currency.test.js` fails CI if that audit is more
+`src/lib/shared/statutory-currency.test.ts` fails CI if that audit is more
 than ~3 months old, if any known wrong constant is left under *Open
 discrepancies*, or if a *Scheduled changes* entry (for example the 1 Jan
 2027 CPF senior-worker step) reaches its effective date still `pending`.
-`src/lib/shared/golden-masters.test.js` checks engine output against
+`src/lib/shared/golden-masters.test.ts` checks engine output against
 figures IRAS and CPF Board publish.
 
 ## Development
