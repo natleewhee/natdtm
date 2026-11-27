@@ -12,7 +12,7 @@ renders one card per tool from the tool registry.
 
 ## The tool registry
 
-`src/lib/shared/tools.js` is the only list of tools. Each entry is plain
+`src/lib/shared/tools.ts` is the only list of tools. Each entry is plain
 data (`id`, `name`, `label`, `eyebrow`, `route`, `mathRoute`, `desc`,
 `disclaimer`, extra `sitemap` routes); icons are drawn by
 `src/components/shared/ToolIcon.js`, keyed by `id`. The home page, the
@@ -58,29 +58,29 @@ src/lib/<tool>/
   calc.test.js       node --test coverage for calc.js
   theme.js           only when the vertical has tokens of its own (drive:
                      RATE_TIERS, brandTier); otherwise import C from
-                     src/lib/shared/theme.js directly
+                     src/lib/shared/theme.ts directly
 ```
 
 All seven verticals now match this shape (`insure/calc.js`, `etf/calc.js`;
 MyLedger's Capacity engine, formerly FlowState, is
-`src/lib/ledger/capacity/calc.js`). WhatETF keeps CSS modules (they
+`src/lib/ledger/capacity/calc.ts`). WhatETF keeps CSS modules (they
 already read the shared `--color-*` tokens) and its `.v-etf` wrapper,
 which scopes a few WhatETF-only custom properties.
 
 ## Shared engine core
 
-- `src/lib/shared/money.js`: `SGD`, `SGDCompact`, `parseMoney` (0 for
+- `src/lib/shared/money.ts`: `SGD`, `SGDCompact`, `parseMoney` (0 for
   empty) and `parseMoneyOrNull` (rounded, null for empty; DriveReady's
   convention). `theme.js` files hold design tokens only.
-- `src/lib/shared/loan.js`: `monthlyPayment`, `balanceAfter`,
+- `src/lib/shared/loan.ts`: `monthlyPayment`, `balanceAfter`,
   `interestPaid` (reducing-balance) and `fvAnnuityFactor`. HouseMuch,
   MyLedger and RetireWell use it; `loan.test.js` pins it to the formulas
   it replaced. Car loans are flat-rate and stay in `drive/calc.js`.
-- `src/lib/shared/tieredTax.js`, `jointShare.js`, `freshness.js` as before.
+- `src/lib/shared/tieredTax.ts`, `jointShare.js`, `freshness.js` as before.
 
 ## The "My Numbers" store
 
-`src/lib/shared/profile.js` is a `localStorage`-only store (key
+`src/lib/shared/profile.ts` is a `localStorage`-only store (key
 `ndtm_my_numbers_v1`) that lets tools hand figures to each other and to
 MyLedger, so a number typed in one tool is not re-typed in another. Never
 sent to a server.
@@ -162,7 +162,7 @@ earlier version of this pipeline (see below).
   actually worked in production. `/drive/data-status` reports the
   catalog's source and freshness (`updatedAt`) rather than a live/dead
   verdict for this feed.
-- `src/lib/drive/lta-parse.js` holds the pure parsing (`extractPdfText`,
+- `src/lib/drive/lta-parse.ts` holds the pure parsing (`extractPdfText`,
   `parseLTARows`, `matchToId`, `buildPriceMaps`, `isLowCoverage`,
   `getPdfNumbers`), covered by `lta-parse.test.js` against a committed
   synthetic `/FlateDecode` fixture in `src/lib/drive/__fixtures__/`. It
@@ -177,7 +177,7 @@ earlier version of this pipeline (see below).
   week stale without needing a human to review and merge it. Both
   scripts optionally dual-write to a Supabase mirror when
   `SUPABASE_URL` + `SUPABASE_SERVICE_ROLE_KEY` are set (CI secrets only;
-  `src/lib/shared/supabase.js` reads `SUPABASE_ANON_KEY` for the
+  `src/lib/shared/supabase.ts` reads `SUPABASE_ANON_KEY` for the
   browser-side read path).
 
 ## Design tokens
@@ -185,7 +185,7 @@ earlier version of this pipeline (see below).
 `src/app/globals.css` is the source of truth for the `--color-*` /
 `--l-*` / `--font-*` custom properties and the box-sizing reset, the
 `prefers-reduced-motion` guard, and the shared `fadeUp` / `spin`
-keyframes. `src/lib/shared/theme.js` mirrors the palette as a literal-hex
+keyframes. `src/lib/shared/theme.ts` mirrors the palette as a literal-hex
 `C` object plus `SGD` and `parseMoney` helpers, because components build
 alpha-transparent variants by concatenating a hex suffix (`${C.accent}44`),
 which `var()` cannot do.

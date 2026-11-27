@@ -1,0 +1,750 @@
+// src/lib/shared/profile.test.ts
+import { test } from 'node:test'
+import assert from 'node:assert/strict'
+
+// Minimal in-memory localStorage shim so this module can be tested under
+// plain node (no jsdom/browser) — mirrors the shape the module expects.
+function makeStorage(): any {
+  const store = new Map()
+  return {
+    getItem: (k: any) => (store.has(k) ? store.get(k) : null),
+    setItem: (k: any, v: any) => store.set(k, String(v)),
+    removeItem: (k: any) => store.delete(k),
+  }
+}
+
+;(globalThis as any).window = { localStorage: makeStorage() }
+
+const {
+  loadMyNumbers, saveHouseNumbers, saveDriveNumbers, saveRetireNumbers,
+  saveInsureNumbers, saveTaxNumbers, saveEtfNumbers, saveFlowNumbers, saveFlowInputs, loadFlowInputs,
+  saveToolInputs, loadToolInputs,
+  clearHouseNumbers, clearDriveNumbers, clearRetireNumbers, clearEtfNumbers, clearFlowNumbers,
+  listProfiles, createProfile, renameProfile, deleteProfile, setActiveProfile, getActiveProfileId,
+  exportProfiles, importProfiles,
+  MAX_PROFILES,
+} = await import('./profile.ts')
+
+test('loadMyNumbers returns empty v7 defaults when nothing stored', () => {
+  const data = loadMyNumbers()
+  assert.equal(data.version, 7)
+  assert.equal(data.house, null)
+  assert.equal(data.drive, null)
+  assert.equal(data.retire, null)
+  assert.equal(data.insure, null)
+  assert.equal(data.tax, null)
+  assert.equal(data.etf, null)
+  assert.equal(data.flow, null)
+  assert.equal(data.ledger, null)
+})
+
+test('loadMyNumbers safely ignores malformed JSON', () => {
+  window.localStorage.setItem('ndtm_my_numbers_v1', 'not json{{{')
+  const data = loadMyNumbers()
+  assert.equal(data.house, null)
+})
+
+test('loadMyNumbers migrates a v1 record into the v3 shape', () => {
+  window.localStorage.setItem('ndtm_my_numbers_v1', JSON.stringify({
+    version: 1,
+    house: { cashProceeds: 500000, totalCPFRefund: 120000, salePrice: 1200000, saleDate: '2026-06-01', savedAt: 123 },
+    drive: { monthlyCost: 1500, carLabel: 'Toyota Corolla', salary: 6000, savedAt: 456 },
+  }))
+  const data = loadMyNumbers()
+  assert.equal(data.version, 7)
+  assert.equal(data.house.cashProceeds, 500000)
+  assert.equal(data.house.propertyValue, 1200000)
+  assert.equal(data.house.outstandingBalance, null)
+  assert.equal(data.drive.monthlyInstalment, 1500)
+  assert.equal(data.drive.carLabel, 'Toyota Corolla')
+  assert.equal(data.retire, null)
+  assert.equal(data.etf, null)
+  assert.equal(data.flow, null)
+})
+
+test('loadMyNumbers migrates a v2 record, preserving existing slots', () => {
+  window.localStorage.setItem('ndtm_my_numbers_v1', JSON.stringify({
+    version: 2,
+    house: { outstandingBalance: 400000, monthlyInstalment: 2500, source: 'auto', savedAt: 1 },
+    drive: null,
+    retire: { salary: 7000, oaBalance: 80000, source: 'auto', savedAt: 2 },
+  }))
+  const data = loadMyNumbers()
+  assert.equal(data.version, 7)
+  assert.equal(data.house.outstandingBalance, 400000)
+  assert.equal(data.retire.salary, 7000)
+  assert.equal(data.insure, null)
+  assert.equal(data.tax, null)
+  assert.equal(data.etf, null)
+  assert.equal(data.flow, null)
+})
+
+test('loadMyNumbers migrates a v3 record, preserving existing slots and adding etf', () => {
+  window.localStorage.setItem('ndtm_my_numbers_v1', JSON.stringify({
+    version: 3,
+    house: null, drive: null, retire: null,
+    insure: { monthlyPremium: 300, score: 60, source: 'auto', savedAt: 1 },
+    tax: { monthlyTakeHome: 5000, source: 'auto', savedAt: 2 },
+  }))
+  const data = loadMyNumbers()
+  assert.equal(data.version, 7)
+  assert.equal(data.insure.monthlyPremium, 300)
+  assert.equal(data.tax.monthlyTakeHome, 5000)
+  assert.equal(data.etf, null)
+  assert.equal(data.flow, null)
+})
+
+test('loadMyNumbers migrates a v4 record, preserving existing slots and adding flow', () => {
+  window.localStorage.setItem('ndtm_my_numbers_v1', JSON.stringify({
+    version: 4,
+    house: null, drive: null, retire: null, insure: null, tax: null,
+    etf: { portfolioValue: 25000, monthlyContribution: 800, source: 'auto', savedAt: 1 },
+  }))
+  const data = loadMyNumbers()
+  assert.equal(data.version, 7)
+  assert.equal(data.etf.portfolioValue, 25000)
+  assert.equal(data.flow, null)
+})
+
+test('saveInsureNumbers and saveTaxNumbers round-trip independently', () => {
+  window.localStorage.removeItem('ndtm_my_numbers_v1')
+  saveInsureNumbers({ monthlyPremium: 450, score: 72 })
+  saveTaxNumbers({ monthlyTakeHome: 6200, annualTax: 4300, marginalRate: 0.115, age: 40 })
+  const data = loadMyNumbers()
+  assert.equal(data.insure.monthlyPremium, 450)
+  assert.equal(data.insure.score, 72)
+  assert.equal(data.tax.monthlyTakeHome, 6200)
+  assert.equal(data.tax.marginalRate, 0.115)
+  assert.equal(data.tax.age, 40)
+})
+
+test('saveEtfNumbers round-trips independently', () => {
+  window.localStorage.removeItem('ndtm_my_numbers_v1')
+  saveEtfNumbers({ portfolioValue: 25000, monthlyContribution: 800 })
+  const data = loadMyNumbers()
+  assert.equal(data.etf.portfolioValue, 25000)
+  assert.equal(data.etf.monthlyContribution, 800)
+  assert.equal(data.etf.source, 'auto')
+  assert.equal(typeof data.etf.savedAt, 'number')
+})
+
+test('saveFlowNumbers round-trips independently', () => {
+  window.localStorage.removeItem('ndtm_my_numbers_v1')
+  saveFlowNumbers({ livingExpenses: 3200, monthlySurplus: 1739, trueSavingsRate: 0.38, cashSavingsRate: 0.29 })
+  const data = loadMyNumbers()
+  assert.equal(data.flow.livingExpenses, 3200)
+  assert.equal(data.flow.monthlySurplus, 1739)
+  assert.equal(data.flow.trueSavingsRate, 0.38)
+  assert.equal(data.flow.cashSavingsRate, 0.29)
+  assert.equal(data.flow.source, 'auto')
+  assert.equal(typeof data.flow.savedAt, 'number')
+})
+
+test('saveFlowInputs and saveFlowNumbers do not clobber each other', () => {
+  window.localStorage.removeItem('ndtm_my_numbers_v1')
+  // Metrics saved first (as the auto-recompute effect does continuously)...
+  saveFlowNumbers({ livingExpenses: 3200, monthlySurplus: 1739 })
+  // ...then an explicit input save happens.
+  saveFlowInputs(({ age: '35', salary: '8000' } as any))
+  let data = loadMyNumbers()
+  assert.equal(data.flow.livingExpenses, 3200, 'metrics survive an inputs save')
+  assert.deepEqual(data.flow.inputs, { age: '35', salary: '8000' })
+
+  // Now the auto-recompute effect fires again (as it does on every
+  // render while the page is open) — the saved inputs must survive it.
+  saveFlowNumbers({ livingExpenses: 4000, monthlySurplus: 1500 })
+  data = loadMyNumbers()
+  assert.equal(data.flow.livingExpenses, 4000, 'metrics still update normally')
+  assert.deepEqual(data.flow.inputs, { age: '35', salary: '8000' }, 'inputs survive a later metrics save')
+})
+
+test('loadFlowInputs returns null when nothing has been saved', () => {
+  window.localStorage.removeItem('ndtm_my_numbers_v1')
+  assert.equal(loadFlowInputs(), null)
+})
+
+test('saveFlowInputs / loadFlowInputs round-trips an arbitrary inputs object', () => {
+  window.localStorage.removeItem('ndtm_my_numbers_v1')
+  const inputs = { age: '40', lumpyItems: [{ id: 'x', label: 'Road tax', amount: '500', type: 'expense' }] }
+  saveFlowInputs((inputs as any))
+  assert.deepEqual(loadFlowInputs(), inputs)
+})
+
+test('saveFlowInputs is scoped per profile, same as everything else', () => {
+  window.localStorage.removeItem('ndtm_my_numbers_v1')
+  saveFlowInputs(({ age: '35' } as any))
+  const other = createProfile('Other')
+  assert.equal(loadFlowInputs(), null, 'a fresh profile has no saved inputs')
+  saveFlowInputs(({ age: '50' } as any))
+  setActiveProfile((other as any)) // no-op, already active, but exercise the API
+  assert.deepEqual(loadFlowInputs(), { age: '50' })
+})
+
+test('loadToolInputs returns null when nothing has been saved', () => {
+  window.localStorage.removeItem('ndtm_my_numbers_v1')
+  assert.equal(loadToolInputs('house'), null)
+})
+
+test('saveToolInputs / loadToolInputs round-trips for every supported tool', () => {
+  window.localStorage.removeItem('ndtm_my_numbers_v1')
+  for (const tool of ['house', 'drive', 'retire', 'insure', 'tax', 'etf', 'ledger']) {
+    const inputs = { tool, purchasePrice: '900000' }
+    saveToolInputs(tool, inputs)
+    assert.deepEqual(loadToolInputs(tool), inputs, `${tool} round-trips`)
+  }
+})
+
+test('saveToolInputs for an unsupported tool name is a no-op', () => {
+  window.localStorage.removeItem('ndtm_my_numbers_v1')
+  saveToolInputs('notarealtool', { x: 1 })
+  assert.equal(loadToolInputs('notarealtool'), null)
+})
+
+// ─── export / import ──────────────────────────────────────────────────
+
+test('exportProfiles / importProfiles round-trips every profile\'s numbers', () => {
+  window.localStorage.removeItem('ndtm_my_numbers_v1')
+  saveHouseNumbers({ cashProceeds: 123, totalCPFRefund: 0, salePrice: 0, saleDate: null })
+  createProfile('Joint')
+  saveToolInputs('tax', { monthlySalary: '9000' })
+
+  const dump = exportProfiles()
+  window.localStorage.removeItem('ndtm_my_numbers_v1') // wipe
+
+  const res = importProfiles(dump)
+  assert.equal(res.ok, true)
+  assert.equal(res.imported, 2)
+  assert.equal(res.truncated, 0)
+  const names = listProfiles().map(p => p.name).sort()
+  assert.deepEqual(names, ['Joint', 'My Numbers'])
+  // "Joint" was the active profile at export time (created last), and
+  // import restores active-by-position, not by name/order — so its tax
+  // inputs are what loadToolInputs sees.
+  assert.deepEqual(loadToolInputs('tax'), { monthlySalary: '9000' })
+})
+
+test('importProfiles rejects a file from a newer schema instead of blanking it', () => {
+  window.localStorage.removeItem('ndtm_my_numbers_v1')
+  saveToolInputs('drive', { carLabel: 'Civic' })
+  const future = { schemaVersion: 1, activeProfileId: 'a', profiles: [{ id: 'a', name: 'Me', data: { version: 99, house: { cashProceeds: 1 } } }] }
+  const res = importProfiles(JSON.stringify(future))
+  assert.equal(res.ok, false)
+  assert.match((res.error as any), /newer version/)
+  assert.deepEqual(loadToolInputs('drive'), { carLabel: 'Civic' }, 'store untouched')
+})
+
+test('importProfiles rejects a JSON array (wrong file)', () => {
+  window.localStorage.removeItem('ndtm_my_numbers_v1')
+  saveToolInputs('drive', { carLabel: 'Civic' })
+  const res = importProfiles('[1,2,3]')
+  assert.equal(res.ok, false)
+  assert.deepEqual(loadToolInputs('drive'), { carLabel: 'Civic' })
+})
+
+test('importProfiles migrates a bare pre-profiles v1 flat payload', () => {
+  window.localStorage.removeItem('ndtm_my_numbers_v1')
+  const legacy = JSON.stringify({ version: 1, house: { savedAt: 1, cashProceeds: 50, totalCPFRefund: 0, salePrice: 50, saleDate: null } })
+  const res = importProfiles(legacy)
+  assert.equal(res.ok, true)
+  assert.equal(res.imported, 1)
+  assert.equal(loadMyNumbers().house.cashProceeds, 50)
+})
+
+test('importProfiles rejects malformed JSON and leaves the store untouched', () => {
+  window.localStorage.removeItem('ndtm_my_numbers_v1')
+  saveToolInputs('drive', { carLabel: 'Civic' })
+  const res = importProfiles('{ not json')
+  assert.equal(res.ok, false)
+  assert.match((res.error as any), /JSON/)
+  assert.deepEqual(loadToolInputs('drive'), { carLabel: 'Civic' })
+})
+
+test('importProfiles keeps only MAX_PROFILES and reports the rest as truncated', () => {
+  window.localStorage.removeItem('ndtm_my_numbers_v1')
+  const many = { schemaVersion: 1, activeProfileId: 'x', profiles: Array.from({ length: MAX_PROFILES + 2 }, (_, i) => ({ id: `p${i}`, name: `P${i}`, data: { version: 6 } })) }
+  const res = importProfiles(JSON.stringify(many))
+  assert.equal(res.ok, true)
+  assert.equal(res.imported, MAX_PROFILES)
+  assert.equal(res.truncated, 2)
+  assert.equal(listProfiles().length, MAX_PROFILES)
+})
+
+test('saveToolInputs(house) does not clobber saveHouseNumbers metrics, and vice versa', () => {
+  window.localStorage.removeItem('ndtm_my_numbers_v1')
+  saveHouseNumbers({ cashProceeds: 500000, totalCPFRefund: 120000, salePrice: 1200000, saleDate: '2026-01-01' })
+  saveToolInputs('house', { purchasePrice: '900000' })
+  let data = loadMyNumbers()
+  assert.equal(data.house.cashProceeds, 500000, 'metrics survive an inputs save')
+  assert.deepEqual(data.house.inputs, { purchasePrice: '900000' })
+
+  saveHouseNumbers({ cashProceeds: 600000, totalCPFRefund: 130000, salePrice: 1300000, saleDate: '2026-02-01' })
+  data = loadMyNumbers()
+  assert.equal(data.house.cashProceeds, 600000, 'metrics still update normally')
+  assert.deepEqual(data.house.inputs, { purchasePrice: '900000' }, 'inputs survive a later metrics save')
+})
+
+test('saveToolInputs(etf) does not clobber saveEtfNumbers metrics, and vice versa', () => {
+  window.localStorage.removeItem('ndtm_my_numbers_v1')
+  saveEtfNumbers({ portfolioValue: 25000, monthlyContribution: 800 })
+  saveToolInputs('etf', { risk: 'Growth', simplicity: '4-5 ETFs', tilts: ['Japan'] })
+  let data = loadMyNumbers()
+  assert.equal(data.etf.portfolioValue, 25000, 'metrics survive an inputs save')
+  assert.deepEqual(data.etf.inputs, { risk: 'Growth', simplicity: '4-5 ETFs', tilts: ['Japan'] })
+
+  saveEtfNumbers({ portfolioValue: 30000, monthlyContribution: 900 })
+  data = loadMyNumbers()
+  assert.equal(data.etf.portfolioValue, 30000, 'metrics still update normally')
+  assert.deepEqual(data.etf.inputs, { risk: 'Growth', simplicity: '4-5 ETFs', tilts: ['Japan'] }, 'inputs survive a later metrics save')
+})
+
+test('saveToolInputs is scoped per profile, same as saveFlowInputs', () => {
+  window.localStorage.removeItem('ndtm_my_numbers_v1')
+  saveToolInputs('drive', { carLabel: 'Toyota Corolla' })
+  const other = createProfile('Other')
+  assert.equal(loadToolInputs('drive'), null, 'a fresh profile has no saved inputs')
+  saveToolInputs('drive', { carLabel: 'Honda Civic' })
+  setActiveProfile((other as any))
+  assert.deepEqual(loadToolInputs('drive'), { carLabel: 'Honda Civic' })
+})
+
+// ─── Scenario-planner payload (U7 / KTD9) ──────────────────────────────
+// The rebuilt /ledger stores its whole {assumptions, bundles, scenarios}
+// object in the ledger slot's `inputs`. saveToolInputs REPLACES `inputs`
+// wholesale on every write — the page must therefore always persist the
+// full object, never a partial one.
+
+test('the ledger slot round-trips the full scenario-planner payload intact', () => {
+  window.localStorage.removeItem('ndtm_my_numbers_v1')
+  const payload = {
+    assumptions: {
+      currentAge: 40, retirementAge: 65, lifeExpectancy: 90,
+      desiredMonthlyWithdrawal: 4000, inflationRate: 2.5, swr: 3,
+      investmentReturn: 5, salaryGrowthRate: 3, startingCash: 200000, reference: 4200,
+    },
+    bundles: [
+      { label: 'Conservative', equityReturn: 3, propertyAppreciation: 1, inflation: 3 },
+      { label: 'Base', equityReturn: 5, propertyAppreciation: 2.5, inflation: 2.5 },
+      { label: 'Optimistic', equityReturn: 7, propertyAppreciation: 4, inflation: 2 },
+    ],
+    scenarios: [
+      { label: 'Upgrade + car', moves: [
+        { type: 'sell-property', year: 0, inputs: { salePrice: 900000 } },
+        { type: 'buy-car', year: 2, inputs: { carId: 'sealion7', down: 50000, tenure: 7 } },
+      ] },
+    ],
+  }
+  saveToolInputs('ledger', payload)
+  assert.deepEqual(loadToolInputs('ledger'), payload)
+})
+
+test('saveToolInputs REPLACES the inputs object — a later partial write drops omitted keys', () => {
+  window.localStorage.removeItem('ndtm_my_numbers_v1')
+  saveToolInputs('ledger', { assumptions: { currentAge: 40 }, bundles: [1, 2, 3], scenarios: [{ label: 'A', moves: [] }] })
+  // A partial write that forgets `scenarios` and `bundles`:
+  saveToolInputs('ledger', { assumptions: { currentAge: 41 } })
+  const loaded: any = loadToolInputs('ledger')
+  assert.deepEqual(loaded, { assumptions: { currentAge: 41 } })
+  assert.equal((loaded as any).scenarios, undefined, 'the omitted key is gone — this is why U6 writes the whole object every autosave')
+})
+
+test('a legacy assumptions-only ledger payload restores without error and has no scenarios', () => {
+  window.localStorage.removeItem('ndtm_my_numbers_v1')
+  saveToolInputs('ledger', { currentAge: '40', retirementAge: '65', lifeExpectancy: '90', swr: '3' })
+  const loaded: any = loadToolInputs('ledger')
+  assert.equal(loaded.scenarios, undefined)
+  assert.equal(loaded.currentAge, '40')
+})
+
+test('the ledger scenario payload survives a profile switch away and back', () => {
+  window.localStorage.removeItem('ndtm_my_numbers_v1')
+  const mine = getActiveProfileId()
+  const payload = { assumptions: { currentAge: 40 }, bundles: [], scenarios: [{ label: 'Mine', moves: [] }] }
+  saveToolInputs('ledger', payload)
+  const other = createProfile('Other')
+  assert.equal(loadToolInputs('ledger'), null, 'the new profile has its own empty ledger slot')
+  setActiveProfile((mine as any))
+  assert.deepEqual(loadToolInputs('ledger'), payload)
+  setActiveProfile((other as any))
+  assert.equal(loadToolInputs('ledger'), null)
+})
+
+test('clearFlowNumbers nulls only the flow slot', () => {
+  window.localStorage.removeItem('ndtm_my_numbers_v1')
+  saveFlowNumbers({ livingExpenses: 3200 })
+  saveEtfNumbers({ portfolioValue: 25000, monthlyContribution: 800 })
+  clearFlowNumbers()
+  const data = loadMyNumbers()
+  assert.equal(data.flow, null)
+  assert.notEqual(data.etf, null)
+})
+
+test('loadMyNumbers ignores an unknown version', () => {
+  window.localStorage.setItem('ndtm_my_numbers_v1', JSON.stringify({ version: 99, house: { salePrice: 1 } }))
+  const data = loadMyNumbers()
+  assert.equal(data.house, null)
+})
+
+test('saveHouseNumbers round-trips full v2 fields', () => {
+  window.localStorage.removeItem('ndtm_my_numbers_v1')
+  saveHouseNumbers({
+    cashProceeds: '500000', totalCPFRefund: 120000, salePrice: 1200000, saleDate: '2026-06-01',
+    outstandingBalance: 400000, rate: 2.6, tenureRemaining: 18, monthlyInstalment: 2500, propertyValue: 1250000, cpfServicing: 1800,
+  })
+  const data = loadMyNumbers()
+  assert.equal(data.house.cashProceeds, 500000)
+  assert.equal(data.house.outstandingBalance, 400000)
+  assert.equal(data.house.rate, 2.6)
+  assert.equal(data.house.tenureRemaining, 18)
+  assert.equal(data.house.monthlyInstalment, 2500)
+  assert.equal(data.house.propertyValue, 1250000)
+  assert.equal(data.house.cpfServicing, 1800)
+  assert.equal(data.house.source, 'auto')
+  assert.equal(typeof data.house.savedAt, 'number')
+})
+
+test('saveDriveNumbers round-trips and does not clobber house numbers', () => {
+  window.localStorage.removeItem('ndtm_my_numbers_v1')
+  saveHouseNumbers({ cashProceeds: 100, totalCPFRefund: 50, salePrice: 900000, saleDate: '2026-01-01' })
+  saveDriveNumbers({ monthlyInstalment: 1500, carLabel: 'Toyota Corolla', salary: 6000, loanOutstanding: 60000, rate: 2.8, tenureRemaining: 7, carValue: 90000 })
+  const data = loadMyNumbers()
+  assert.equal(data.drive.monthlyInstalment, 1500)
+  assert.equal(data.drive.loanOutstanding, 60000)
+  assert.equal(data.drive.carValue, 90000)
+  assert.equal(data.house.cashProceeds, 100)
+})
+
+test('saveRetireNumbers round-trips', () => {
+  window.localStorage.removeItem('ndtm_my_numbers_v1')
+  saveRetireNumbers({ salary: 7000, oaBalance: 80000, saBalance: 60000, maBalance: 40000, investmentBalance: 150000, monthlyContribution: 1000 })
+  const data = loadMyNumbers()
+  assert.equal(data.retire.salary, 7000)
+  assert.equal(data.retire.oaBalance, 80000)
+  assert.equal(data.retire.investmentBalance, 150000)
+  assert.equal(data.retire.source, 'auto')
+})
+
+test('clear functions null out only their own slot', () => {
+  window.localStorage.removeItem('ndtm_my_numbers_v1')
+  saveHouseNumbers({ cashProceeds: 1, totalCPFRefund: 1, salePrice: 1, saleDate: '2026-01-01' })
+  saveDriveNumbers({ monthlyInstalment: 1, carLabel: 'x', salary: 1 })
+  saveRetireNumbers({ salary: 1, oaBalance: 1, saBalance: 1, maBalance: 1, investmentBalance: 1, monthlyContribution: 1 })
+  clearHouseNumbers()
+  let data = loadMyNumbers()
+  assert.equal(data.house, null)
+  assert.notEqual(data.drive, null)
+  assert.notEqual(data.retire, null)
+  clearDriveNumbers()
+  data = loadMyNumbers()
+  assert.equal(data.drive, null)
+  assert.notEqual(data.retire, null)
+  clearRetireNumbers()
+  data = loadMyNumbers()
+  assert.equal(data.retire, null)
+})
+
+// ─── Named profiles ─────────────────────────────────────────────────────
+
+test('a fresh browser starts with a single default profile that is active', () => {
+  window.localStorage.removeItem('ndtm_my_numbers_v1')
+  const profiles = listProfiles()
+  assert.equal(profiles.length, 1)
+  assert.equal(profiles[0].name, 'My Numbers')
+  assert.equal(profiles[0].isActive, true)
+  assert.equal(getActiveProfileId(), profiles[0].id)
+})
+
+test('an old flat (pre-profiles) payload migrates into a single "My Numbers" profile, data intact', () => {
+  window.localStorage.setItem('ndtm_my_numbers_v1', JSON.stringify({
+    version: 3,
+    house: { outstandingBalance: 400000, source: 'auto', savedAt: 1 },
+    drive: null, retire: null,
+    insure: { monthlyPremium: 300, source: 'auto', savedAt: 2 },
+    tax: null,
+  }))
+  const profiles = listProfiles()
+  assert.equal(profiles.length, 1)
+  assert.equal(profiles[0].name, 'My Numbers')
+  const data = loadMyNumbers()
+  assert.equal(data.house.outstandingBalance, 400000)
+  assert.equal(data.insure.monthlyPremium, 300)
+  assert.equal(data.version, 7)
+})
+
+test('createProfile adds a new empty profile and makes it active', () => {
+  window.localStorage.removeItem('ndtm_my_numbers_v1')
+  saveHouseNumbers({ cashProceeds: 1, totalCPFRefund: 1, salePrice: 1, saleDate: '2026-01-01' })
+  const newId = createProfile('Joint with Alex')
+  assert.notEqual(newId, null)
+  assert.equal(getActiveProfileId(), newId)
+  // the new profile starts empty — it does NOT inherit the old profile's house data
+  const data = loadMyNumbers()
+  assert.equal(data.house, null)
+  const profiles = listProfiles()
+  assert.equal(profiles.length, 2)
+  assert.equal(profiles.find(p => p.id === newId)!.name, 'Joint with Alex')
+})
+
+test('each profile holds independent data — switching does not leak numbers across profiles', () => {
+  window.localStorage.removeItem('ndtm_my_numbers_v1')
+  const profileA = getActiveProfileId()
+  saveHouseNumbers({ cashProceeds: 100, totalCPFRefund: 1, salePrice: 1, saleDate: '2026-01-01' })
+
+  const profileB = createProfile('Profile B')
+  saveHouseNumbers({ cashProceeds: 200, totalCPFRefund: 1, salePrice: 1, saleDate: '2026-01-01' })
+  assert.equal(loadMyNumbers().house.cashProceeds, 200)
+
+  setActiveProfile((profileA as any))
+  assert.equal(loadMyNumbers().house.cashProceeds, 100)
+
+  setActiveProfile((profileB as any))
+  assert.equal(loadMyNumbers().house.cashProceeds, 200)
+})
+
+test('createProfile refuses beyond MAX_PROFILES', () => {
+  window.localStorage.removeItem('ndtm_my_numbers_v1')
+  assert.equal(MAX_PROFILES, 3)
+  createProfile('Second')
+  const third = createProfile('Third')
+  assert.notEqual(third, null)
+  const fourth = createProfile('Fourth')
+  assert.equal(fourth, null)
+  assert.equal(listProfiles().length, 3)
+})
+
+test('a store with more than MAX_PROFILES (e.g. hand-edited, or a lowered cap) gets truncated AND the truncation is persisted back to localStorage', () => {
+  window.localStorage.removeItem('ndtm_my_numbers_v1')
+  const makeRawProfile = (id: any, name: any) => ({ id, name, createdAt: 1, updatedAt: 1, data: { version: 6, house: null, drive: null, retire: null, insure: null, tax: null, etf: null, flow: null, ledger: null } })
+  const rawStore = {
+    schemaVersion: 1,
+    activeProfileId: 'p1',
+    profiles: [makeRawProfile('p1', 'One'), makeRawProfile('p2', 'Two'), makeRawProfile('p3', 'Three'), makeRawProfile('p4', 'Four')],
+  }
+  window.localStorage.setItem('ndtm_my_numbers_v1', JSON.stringify(rawStore))
+
+  // Triggers loadStore() internally, which should truncate to MAX_PROFILES...
+  const profiles = listProfiles()
+  assert.equal(profiles.length, MAX_PROFILES, 'in-memory result is truncated')
+
+  // ...AND persist that truncation back to localStorage, not just return
+  // a truncated view while leaving the 4th profile sitting in storage.
+  const persisted = JSON.parse((window.localStorage.getItem('ndtm_my_numbers_v1') as any))
+  assert.equal(persisted.profiles.length, MAX_PROFILES, 'truncation is written back to localStorage, not just held in memory')
+  assert.deepEqual(persisted.profiles.map((p: any) => p.id), ['p1', 'p2', 'p3'])
+})
+
+test('a stale activeProfileId pointing at a truncated-away profile falls back to the first surviving profile, and that fallback is persisted', () => {
+  window.localStorage.removeItem('ndtm_my_numbers_v1')
+  const makeRawProfile = (id: any, name: any) => ({ id, name, createdAt: 1, updatedAt: 1, data: { version: 6, house: null, drive: null, retire: null, insure: null, tax: null, etf: null, flow: null, ledger: null } })
+  const rawStore = {
+    schemaVersion: 1,
+    activeProfileId: 'p4', // points at the profile that will be truncated away
+    profiles: [makeRawProfile('p1', 'One'), makeRawProfile('p2', 'Two'), makeRawProfile('p3', 'Three'), makeRawProfile('p4', 'Four')],
+  }
+  window.localStorage.setItem('ndtm_my_numbers_v1', JSON.stringify(rawStore))
+
+  assert.equal(getActiveProfileId(), 'p1', 'falls back to the first surviving profile')
+  const persisted = JSON.parse((window.localStorage.getItem('ndtm_my_numbers_v1') as any))
+  assert.equal(persisted.activeProfileId, 'p1', 'the fallback is persisted, not just returned in memory')
+})
+
+test('renameProfile updates the name without touching data or other profiles', () => {
+  window.localStorage.removeItem('ndtm_my_numbers_v1')
+  const id = getActiveProfileId()
+  saveHouseNumbers({ cashProceeds: 500, totalCPFRefund: 1, salePrice: 1, saleDate: '2026-01-01' })
+  renameProfile((id as any), 'Retirement plan')
+  assert.equal(listProfiles().find(p => p.id === id)!.name, 'Retirement plan')
+  assert.equal(loadMyNumbers().house.cashProceeds, 500)
+})
+
+test('renameProfile ignores a blank name', () => {
+  window.localStorage.removeItem('ndtm_my_numbers_v1')
+  const id = getActiveProfileId()
+  const originalName = listProfiles()[0].name
+  renameProfile((id as any), '   ')
+  assert.equal(listProfiles().find(p => p.id === id)!.name, originalName)
+})
+
+test('deleteProfile refuses to delete the last remaining profile', () => {
+  window.localStorage.removeItem('ndtm_my_numbers_v1')
+  const id = getActiveProfileId()
+  const deleted = deleteProfile((id as any))
+  assert.equal(deleted, false)
+  assert.equal(listProfiles().length, 1)
+})
+
+test('deleting the active profile switches to another one and its own data survives', () => {
+  window.localStorage.removeItem('ndtm_my_numbers_v1')
+  const profileA = getActiveProfileId()
+  saveHouseNumbers({ cashProceeds: 111, totalCPFRefund: 1, salePrice: 1, saleDate: '2026-01-01' })
+  const profileB = createProfile('B')
+  saveHouseNumbers({ cashProceeds: 222, totalCPFRefund: 1, salePrice: 1, saleDate: '2026-01-01' })
+
+  const deleted = deleteProfile((profileB as any))
+  assert.equal(deleted, true)
+  assert.equal(getActiveProfileId(), profileA)
+  assert.equal(loadMyNumbers().house.cashProceeds, 111)
+  assert.equal(listProfiles().length, 1)
+})
+
+test('deleting a non-active profile leaves the active one untouched', () => {
+  window.localStorage.removeItem('ndtm_my_numbers_v1')
+  const profileA = getActiveProfileId()
+  saveHouseNumbers({ cashProceeds: 111, totalCPFRefund: 1, salePrice: 1, saleDate: '2026-01-01' })
+  const profileB = createProfile('B')
+  setActiveProfile((profileA as any))
+
+  deleteProfile((profileB as any))
+  assert.equal(getActiveProfileId(), profileA)
+  assert.equal(loadMyNumbers().house.cashProceeds, 111)
+})
+
+test('setActiveProfile ignores an unknown id', () => {
+  window.localStorage.removeItem('ndtm_my_numbers_v1')
+  const original = getActiveProfileId()
+  setActiveProfile('not-a-real-id')
+  assert.equal(getActiveProfileId(), original)
+})
+
+// ─── Save functions report write success/failure ──────────────────────────
+// The autosave indicator flashes "Saved" based on this return value — it
+// must not report true when the underlying localStorage write silently
+// failed (private browsing quota, etc.), or the UI would lie about whether
+// the user's inputs will actually be there next time.
+
+test('saveToolInputs returns true when the write succeeds', () => {
+  window.localStorage.removeItem('ndtm_my_numbers_v1')
+  assert.equal(saveToolInputs('house', { purchasePrice: '1000000' }), true)
+})
+
+test('saveToolInputs returns false for an unrecognized tool, without touching storage', () => {
+  window.localStorage.removeItem('ndtm_my_numbers_v1')
+  assert.equal(saveToolInputs('not-a-real-tool', {}), false)
+})
+
+test('saveHouseNumbers/saveDriveNumbers/etc. return false when the underlying localStorage write throws', () => {
+  window.localStorage.removeItem('ndtm_my_numbers_v1')
+  const real = window.localStorage.setItem
+  window.localStorage.setItem = () => { throw new Error('QuotaExceededError') }
+  try {
+    assert.equal(saveHouseNumbers({ cashProceeds: 1, totalCPFRefund: 1, salePrice: 1, saleDate: '2026-01-01' }), false)
+    assert.equal(saveToolInputs('house', { purchasePrice: '1000000' }), false)
+  } finally {
+    window.localStorage.setItem = real
+  }
+})
+
+test('save functions return false when window is unavailable (SSR)', async () => {
+  const savedWindow = global.window
+  delete (globalThis as any).window
+  try {
+    // Re-import isn't needed — the functions check `typeof window` at call time.
+    assert.equal(saveToolInputs('house', { purchasePrice: '1000000' }), false)
+  } finally {
+    ;(globalThis as any).window = savedWindow
+  }
+})
+
+// ─── v7: declarative store + InsureCheck history (super-app plan U4) ──────
+
+const { MODULE_SCHEMA, saveModule, clearModule, loadSlot, writeSlot } = await import('./profile.ts')
+
+test('v7: empty store has an insureHistory slot', () => {
+  window.localStorage = makeStorage()
+  const data = loadMyNumbers()
+  assert.equal(data.version, 7)
+  assert.equal(data.insureHistory, null)
+})
+
+test('v7: a v6 store migrates up and is re-persisted at v7', () => {
+  window.localStorage = makeStorage()
+  window.localStorage.setItem('ndtm_my_numbers_v1', JSON.stringify({
+    schemaVersion: 1, activeProfileId: 'a',
+    profiles: [{ id: 'a', name: 'Me', createdAt: 1, updatedAt: 1, data: { version: 6, tax: { annualTax: 900 } } }],
+  }))
+  assert.equal(loadMyNumbers().tax.annualTax, 900)
+  const raw = JSON.parse((window.localStorage.getItem('ndtm_my_numbers_v1') as any))
+  assert.equal(raw.profiles[0].data.version, 7)
+})
+
+test('v7: legacy per-profile score history keys move into insureHistory and are removed', () => {
+  window.localStorage = makeStorage()
+  window.localStorage.setItem('ndtm_my_numbers_v1', JSON.stringify({
+    schemaVersion: 1, activeProfileId: 'a',
+    profiles: [
+      { id: 'a', name: 'Me', createdAt: 1, updatedAt: 1, data: { version: 6 } },
+      { id: 'b', name: 'Joint', createdAt: 1, updatedAt: 1, data: { version: 6 } },
+    ],
+  }))
+  window.localStorage.setItem('iga_score_history:a', JSON.stringify([{ score: 60, date: '2026-01-01' }]))
+  window.localStorage.setItem('iga_score_history:b', JSON.stringify([{ score: 80, date: '2026-02-01' }]))
+  assert.deepEqual(loadMyNumbers().insureHistory, [{ score: 60, date: '2026-01-01' }])
+  assert.equal(window.localStorage.getItem('iga_score_history:a'), null)
+  assert.equal(window.localStorage.getItem('iga_score_history:b'), null)
+  setActiveProfile('b')
+  assert.deepEqual(loadMyNumbers().insureHistory, [{ score: 80, date: '2026-02-01' }])
+})
+
+test('v7: the unscoped pre-profiles history key goes to the active profile', () => {
+  window.localStorage = makeStorage()
+  window.localStorage.setItem('iga_score_history', JSON.stringify([{ score: 55, date: '2025-12-01' }]))
+  assert.deepEqual(loadMyNumbers().insureHistory, [{ score: 55, date: '2025-12-01' }])
+  assert.equal(window.localStorage.getItem('iga_score_history'), null)
+})
+
+test('v7: a failed store write leaves the legacy history key in place', () => {
+  window.localStorage = makeStorage()
+  window.localStorage.setItem('iga_score_history', JSON.stringify([{ score: 55, date: '2025-12-01' }]))
+  const realSet = window.localStorage.setItem
+  window.localStorage.setItem = () => { throw new Error('quota') }
+  loadMyNumbers()
+  window.localStorage.setItem = realSet
+  assert.notEqual(window.localStorage.getItem('iga_score_history'), null)
+})
+
+test('v7: export → import round-trips insureHistory', () => {
+  window.localStorage = makeStorage()
+  writeSlot('insureHistory', [{ score: 70, date: '2026-03-01' }])
+  const text = exportProfiles()
+  window.localStorage = makeStorage()
+  assert.equal(importProfiles(text).ok, true)
+  assert.deepEqual(loadSlot('insureHistory'), [{ score: 70, date: '2026-03-01' }])
+})
+
+test('saveModule coerces every schema field, matching the old hand-written savers', () => {
+  window.localStorage = makeStorage()
+  saveModule('drive', { monthlyInstalment: '1500', carValue: '0' })
+  const d = loadMyNumbers().drive
+  assert.equal(d.source, 'auto')
+  assert.equal(d.monthlyInstalment, 1500)
+  assert.equal(d.salary, 0)
+  assert.equal(d.carLabel, null)
+  assert.equal(d.rate, null)
+  assert.equal(d.carValue, 0)
+  assert.equal(typeof d.savedAt, 'number')
+  saveModule('house', {})
+  assert.equal(loadMyNumbers().house.propertyType, 'private')
+})
+
+test('saveModule keeps saved inputs and the etf keep-coercer keeps the other half', () => {
+  window.localStorage = makeStorage()
+  saveToolInputs('etf', { risk: 'high' })
+  saveModule('etf', { portfolioValue: 10000 })
+  saveModule('etf', { monthlyContribution: 500 })
+  const e = loadMyNumbers().etf
+  assert.equal(e.portfolioValue, 10000)
+  assert.equal(e.monthlyContribution, 500)
+  assert.deepEqual(e.inputs, { risk: 'high' })
+})
+
+test('saveModule / clearModule reject unknown slots; clearModule empties a slot', () => {
+  window.localStorage = makeStorage()
+  assert.equal(saveModule(('nope' as any), {}), false)
+  assert.equal(clearModule('version'), false)
+  saveModule('tax', { annualTax: 1 })
+  assert.equal(clearModule('tax'), true)
+  assert.equal(loadMyNumbers().tax, null)
+})
+
+test('MODULE_SCHEMA covers every synced tool slot', () => {
+  assert.deepEqual(Object.keys(MODULE_SCHEMA).sort(), ['drive', 'etf', 'flow', 'house', 'insure', 'retire', 'tax'])
+})

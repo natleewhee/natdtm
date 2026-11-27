@@ -1,0 +1,32 @@
+// src/lib/shared/jointShare.ts
+// Shared by DriveReady and HouseMuch — a co-borrower's share of a joint
+// loan's debt obligation, for TDSR purposes. Not vertical-specific: a car
+// loan and a mortgage apportion a joint TDSR the same way.
+
+/**
+ * Resolves a co-borrower's share of a joint loan's instalment for TDSR
+ * purposes — MAS's income-weighted apportionment (each borrower's share
+ * of the debt = their income ÷ combined income) when both incomes are
+ * given, or a direct manual percentage otherwise. Only the SHARE OF THE
+ * INSTALMENT counted against your own TDSR changes; the loan's actual
+ * monthly instalment, principal, and interest are unaffected — a joint
+ * loan doesn't cost less, it's just serviced by two incomes.
+ * @param {'income'|'manual'} mode - 'income' computes from `myIncome`/`coBorrowerIncome`; 'manual' uses `manualPct` directly.
+ * @param {number} myIncome - Your gross monthly income, only used in 'income' mode.
+ * @param {number} coBorrowerIncome - Co-borrower's gross monthly income, only used in 'income' mode.
+ * @param {number|null} manualPct - Your share as a 0-100 percentage, only used in 'manual' mode. `null`/`undefined` means "not entered" (defaults to 100); an explicit `0` is a valid, deliberate share.
+ * @returns {number} Your share of the instalment, clamped to [0, 100]. Defaults to 100 (not a joint loan) when unset or invalid.
+ */
+export function resolveJointSharePct(mode: 'income'|'manual', myIncome: number, coBorrowerIncome: number, manualPct: number | string | null | undefined): number {
+  if (mode === 'income') {
+    const my = Number(myIncome) || 0
+    const co = Number(coBorrowerIncome) || 0
+    const combined = my + co
+    if (combined <= 0) return 100
+    return Math.min(100, Math.max(0.01, (my / combined) * 100))
+  }
+  if (manualPct === null || manualPct === undefined || manualPct === '') return 100
+  const pct = Number(manualPct)
+  if (!Number.isFinite(pct) || pct < 0) return 100
+  return Math.min(100, pct)
+}
