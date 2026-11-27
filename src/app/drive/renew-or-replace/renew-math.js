@@ -11,7 +11,7 @@
 // Moved to src/lib/maintenance.js so it can be shared with the total-cost-of-
 // ownership estimate on the main calculator (src/lib/tco.js) without
 // reaching from src/lib into src/app.
-import { MAINTENANCE_BY_BRAND, getAnnualMaintenance, getTotalMaintenance } from '@/lib/drive/maintenance.js'
+import { MAINTENANCE_BY_BRAND, getAnnualMaintenance, getTotalMaintenance } from '@/lib/drive/maintenance'
 export { MAINTENANCE_BY_BRAND, getAnnualMaintenance, getTotalMaintenance }
 
 // ─── ARF / PARF ──────────────────────────────────────────────────────────────
@@ -23,7 +23,7 @@ export { MAINTENANCE_BY_BRAND, getAnnualMaintenance, getTotalMaintenance }
 import { SGD } from '@/lib/shared/money'
 import {
   calcARF, parfPct, calcPARF, calcCOERebate, calcEEAI, parfRegimeFor, parfRegimeForAge, registrationDateForAge,
-} from '@/lib/drive/calc.js'
+} from '@/lib/drive/calc'
 export {
   calcARF, parfPct, calcPARF, calcCOERebate, calcEEAI, parfRegimeFor, parfRegimeForAge, registrationDateForAge,
 }
