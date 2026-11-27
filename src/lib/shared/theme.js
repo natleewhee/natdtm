@@ -6,7 +6,7 @@
 // Literal hex, deliberately — NOT `var(--color-*)` strings. Components
 // build alpha-transparent variants by string-concatenating a hex suffix
 // straight onto these values (e.g. `${C.accent}44`), which only works
-// with real hex. Kept in sync by hand with the `--color-*` / `--l-*`
+// with real hex. Kept in sync by hand with the `--color-*`
 // custom properties in src/app/globals.css.
 //
 // `accent` (clay/terracotta) is the BRAND/chrome color — CTAs, focus

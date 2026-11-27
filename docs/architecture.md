@@ -183,7 +183,7 @@ earlier version of this pipeline (see below).
 ## Design tokens
 
 `src/app/globals.css` is the source of truth for the `--color-*` /
-`--l-*` / `--font-*` custom properties and the box-sizing reset, the
+`--font-*` custom properties and the box-sizing reset, the
 `prefers-reduced-motion` guard, and the shared `fadeUp` / `spin`
 keyframes. `src/lib/shared/theme.js` mirrors the palette as a literal-hex
 `C` object plus `SGD` and `parseMoney` helpers, because components build
@@ -191,9 +191,10 @@ alpha-transparent variants by concatenating a hex suffix (`${C.accent}44`),
 which `var()` cannot do.
 
 **Brand history:** the app was formerly "Coah". All brand identifiers and
-strings have since been renamed to "ndtm" / "nat does the math"; the only
-deliberate leftover is the `--l-*` CSS custom-property prefix, kept
-because a repo-wide token rename was judged higher risk than value.
+strings have since been renamed to "ndtm" / "nat does the math". The last
+leftover, the `--l-*` CSS custom-property prefix, was retired on
+2026-11-27: each theme block now defines the `--color-*` / `--font-*`
+tokens directly, and `kit-guard.test.js` fails if `--l-` comes back.
 
 ## CI
 

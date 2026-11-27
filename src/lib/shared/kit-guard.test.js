@@ -47,3 +47,9 @@ test('the shared kit reads theme tokens at render, not at module load', () => {
   const moduleLevel = src.split('\n').filter((l) => /^const \w+ = \{[^}]*\bC\.\w+/.test(l))
   assert.deepEqual(moduleLevel, [])
 })
+
+test('the legacy --l-* CSS tokens stay retired', () => {
+  const css = readFileSync(join(ROOT, 'src/app/globals.css'), 'utf8')
+  const offenders = [...FILES, { path: 'src/app/globals.css', src: css }].filter((f) => /--l-[a-z]/.test(f.src)).map((f) => f.path)
+  assert.deepEqual(offenders, [])
+})
