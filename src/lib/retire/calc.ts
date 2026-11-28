@@ -57,7 +57,7 @@ export function simulateAccumulation(inputs: Record<string, any>): Record<string
     // them from this call's (later) start year. Every standalone caller
     // omits both, and `null` then reproduces the original "freeze the
     // first time age crosses 55 / 65" behaviour exactly. Used only by the
-    // scenario planner's segmented driver (src/lib/ledger/scenario/project.js).
+    // scenario planner's segmented driver (src/lib/ledger/scenario/project.ts).
     frozenFRS: frozenFRSIn = null, frozenBHS: frozenBHSIn = null,
   } = inputs
 

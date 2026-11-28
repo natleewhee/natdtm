@@ -91,7 +91,7 @@ PRs #21-#23) postdates all of them.
 
 **Performance** — the calc-heavy paths already have the memoization an
 audit would normally flag as missing: `/ledger`'s `recompute` is
-debounced 150ms and keyed-cached (`src/app/ledger/page.js`), and
+debounced 150ms and keyed-cached (`src/app/ledger/page.tsx`), and
 `Sankey.js`'s `buildLayout` is `useMemo`'d on `flow`. `loadMyNumbers()`
 is called often across the codebase but only ever once per mount
 effect, never per-render or per-keystroke. No confident, material
@@ -101,7 +101,7 @@ get re-audited from scratch next time.
 **Maintainability**
 
 - ~~**Seven near-identical `save<Module>Numbers` functions in `src/lib/shared/profile.ts` (lines 395-536) duplicate the same read-merge-write skeleton.**~~ Fixed in PR #33: `MODULE_SCHEMA` + `saveModule` / `clearModule`; the old names remain as deprecated one-line wrappers.
-- ~~**`src/app/drive/renew-or-replace/page.js` (511 lines) defines 9 local presentational components inline**~~ Mostly fixed in PR #34: its form fields (money inputs, sliders, brand selects) now come from `components/shared/inputs.js`. The page's own layout pieces (Card, Label, Hint, SectionTitle) remain local.
+- ~~**`src/app/drive/renew-or-replace/page.tsx` (511 lines) defines 9 local presentational components inline**~~ Mostly fixed in PR #34: its form fields (money inputs, sliders, brand selects) now come from `components/shared/inputs.tsx`. The page's own layout pieces (Card, Label, Hint, SectionTitle) remain local.
 
 **Design/UX — Capacity module** (new since the last UI/UX audit, so
 never checked for the same contrast/touch-target/mobile-reflow class of

@@ -6,7 +6,7 @@
 // name says otherwise.
 //
 // Note: Singapore car loans are flat-rate, not reducing-balance, so
-// DriveReady's instalment maths (src/lib/drive/calc.js) deliberately does
+// DriveReady's instalment maths (src/lib/drive/calc.ts) deliberately does
 // not use monthlyPayment().
 
 /**

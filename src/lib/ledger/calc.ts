@@ -41,7 +41,7 @@ export const TAKE_HOME_RATE = 0.80
 // }
 
 // Builds a baseline ledger state from the shared "My Numbers" store
-// (see src/lib/shared/profile.js) — whatever HouseMuch/DriveReady/
+// (see src/lib/shared/profile.ts) — whatever HouseMuch/DriveReady/
 // RetireWell last saved, filled to zero/null where a module is empty.
 // cashProceeds/totalCPFRefund are carried through even though the
 // resolved shape below doesn't use them directly — they're there so an
@@ -51,7 +51,7 @@ export const TAKE_HOME_RATE = 0.80
 // and is manual-entry only.
 /**
  * Builds a baseline ledger state from the shared "My Numbers" store
- * (src/lib/shared/profile.js) — whatever HouseMuch/DriveReady/RetireWell
+ * (src/lib/shared/profile.ts) — whatever HouseMuch/DriveReady/RetireWell
  * last saved, filled to zero/null where a module is empty. Cash savings
  * has no source tool to sync from, so it always starts at zero and is
  * manual-entry only.
@@ -190,7 +190,7 @@ export function calcHouseUpgrade({
 // (your share of the asset minus your share of the debt), not your
 // share of the debt against the full household asset. If this house
 // module was auto-synced from a HouseMuch sale, its figures are
-// already scaled there (see src/app/house/page.js) — yourSharePct here
+// already scaled there (see src/app/house/page.tsx) — yourSharePct here
 // is for a scenario's own manually-entered or purchase/upgrade mortgage.
 /**
  * Resolves a scenario's house input — a plain existing-mortgage shape, a

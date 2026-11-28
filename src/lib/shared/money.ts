@@ -1,8 +1,8 @@
 // src/lib/shared/money.ts
 // The one home for money formatting and money-input parsing. Pure — no
 // React, no DOM — so engines, components and tests all import it.
-// (These used to live in src/lib/shared/theme.js beside the colour tokens,
-// plus a second SGD/parser pair in src/lib/drive/theme.js.)
+// (These used to live in src/lib/shared/theme.ts beside the colour tokens,
+// plus a second SGD/parser pair in src/lib/drive/theme.ts.)
 
 /**
  * Format a number as Singapore dollars, rounded, with thousands separators.

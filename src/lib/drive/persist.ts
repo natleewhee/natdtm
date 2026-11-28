@@ -82,7 +82,7 @@ export function serializeToJSON(state: Record<string, any>) {
 // Validates/whitelists a plain restored-state object — shared by
 // deserializeFromJSON (the old global-localStorage path, parsed from a
 // JSON string) and loadToolInputs('drive')'s restore path (already a
-// plain object, no JSON.parse needed) in src/app/drive/page.js.
+// plain object, no JSON.parse needed) in src/app/drive/page.tsx.
 export function sanitizeState(parsed: any) {
   if (typeof parsed !== 'object' || parsed === null) return {}
   const out: Record<string, any> = {}

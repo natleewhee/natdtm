@@ -16,10 +16,10 @@
 //
 // Both return null (not throw) when their env vars are missing, so every
 // caller degrades the same way the rest of this app already does for
-// missing LTA config — see src/app/drive/api/coe/route.js's `no_key`
+// missing LTA config — see src/app/drive/api/coe/route.ts's `no_key`
 // status for the established pattern. A reference-data outage should
 // never crash the calculator; it should fall back to the bundled JSON
-// snapshot (see src/app/drive/api/car-catalog/route.js).
+// snapshot (see src/app/drive/api/car-catalog/route.ts).
 
 import { createClient, type SupabaseClient } from '@supabase/supabase-js'
 

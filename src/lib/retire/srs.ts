@@ -2,7 +2,7 @@
 // Supplementary Retirement Scheme: withdrawal-side modeling. The
 // contribution-side optimization (how much tax a dollar into SRS saves
 // right now, given your marginal rate and remaining relief headroom)
-// already lives in TaxWise (src/lib/tax/calc.js's srsHeadroom/maxSrsSaving).
+// already lives in TaxWise (src/lib/tax/calc.ts's srsHeadroom/maxSrsSaving).
 // This is the other half — once the money's in SRS, what withdrawing it
 // actually costs in tax, and why spreading it out beats a lump sum.
 //

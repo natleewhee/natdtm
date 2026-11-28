@@ -1,5 +1,5 @@
 // InsureCheck's score history, kept in the active profile's
-// `insureHistory` slot of the "My Numbers" store (src/lib/shared/profile.js,
+// `insureHistory` slot of the "My Numbers" store (src/lib/shared/profile.ts,
 // schema v7). It used to live under its own `iga_score_history[:profileId]`
 // localStorage key, which profile export/import never carried; the v7
 // migration moves any such key into the profile on first load.

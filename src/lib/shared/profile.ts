@@ -3,7 +3,7 @@
 // hand off their numbers to each other (RetireWell prefills) and to
 // MyLedger (the holistic dashboard), so numbers aren't re-typed across
 // tools. Client-side only (localStorage), never sent anywhere. Same
-// pattern as src/lib/insure/scoreHistory.js, which already persists
+// pattern as src/lib/insure/scoreHistory.ts, which already persists
 // locally alongside a "No data stored" trust badge — the badges are
 // about not sending data to a server, not about the browser never
 // remembering anything.
@@ -68,7 +68,7 @@ const EMPTY: ProfileData = {
   // below), so its own retirement-planning fields can be restored.
   ledger: null,
   // v7: InsureCheck's score history, oldest-first [{ score, date }], capped
-  // at 24 by src/lib/insure/scoreHistory.js. Its own slot (not inside
+  // at 24 by src/lib/insure/scoreHistory.ts. Its own slot (not inside
   // `insure`) so clearing InsureCheck's synced numbers keeps the history,
   // as it did when history lived under its own localStorage key.
   insureHistory: null,
@@ -168,7 +168,7 @@ function saveStore(store: Store) {
 
 // The `storage` event only fires in OTHER tabs, never the one that wrote,
 // so a same-tab profile switch also dispatches this synthetic event.
-// ProfileScope (src/components/shared/ProfileScope.js) subscribes via
+// ProfileScope (src/components/shared/ProfileScope.tsx) subscribes via
 // subscribeToProfileChanges and remounts the tool subtree so its
 // "load my numbers" effect re-runs, instead of a full page reload.
 const PROFILE_CHANGE_EVENT = 'ndtm:profile-change'
@@ -614,7 +614,7 @@ export const saveEtfNumbers = (v: Record<string,unknown>|undefined) => saveModul
 /** @deprecated use saveModule('flow', …) */
 export const saveFlowNumbers = (v: Record<string,unknown>|undefined) => saveModule('flow', v)
 /** @deprecated use saveToolInputs('flow', …) */
-export const saveFlowInputs = (inputs: { age: string; salary: string; salaryPrefilled: boolean; hasHouse: boolean; houseSource: string; outstandingBalance: string; rate: string; monthlyInstalment: string; cpfServicing: string; hasJointLoan: boolean; yourSharePct: string; hasCar: boolean; carSource: string; carInstalment: string; insuranceSource: string; insurancePremium: string; insuranceFrequency: string; maHealthPremium: string; maHealthFrequency: string; investSource: string; investMonthly: string; taxSource: string; annualTax: string; livingMode: string; quickAmount: string; categories: { [k: string]: string }; backStart: string; backEnd: string; backMonths: string; showReconcile: boolean; liquidSavings: string; taxPaymentMode: string; taxDueMonth: string; lumpyItems: never[] }) => saveToolInputs('flow', inputs)
+export const saveFlowInputs = (inputs: Record<string, any>) => saveToolInputs('flow', inputs)
 /** @deprecated use loadToolInputs('flow') */
 export const loadFlowInputs = () => loadToolInputs('flow')
 
