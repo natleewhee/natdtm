@@ -56,17 +56,6 @@ export default function ProfileSwitcher() {
   const triggerRef = useRef(null)
   const fileInputRef = useRef(null)
 
-  useEffect(() => {
-    if (!open) return
-    function onDocClick(e) {
-      if (menuRef.current && !menuRef.current.contains(e.target)) closeMenu()
-    }
-    document.addEventListener('mousedown', onDocClick)
-    return () => document.removeEventListener('mousedown', onDocClick)
-  }, [open])
-
-  if (!profiles) return null // nothing to show before the client-only profile list has loaded
-
   // returnFocus is set when the menu was dismissed from the keyboard
   // (Escape) so focus lands back on the trigger rather than being lost;
   // an outside click already moves focus elsewhere and passes nothing.
@@ -77,6 +66,17 @@ export default function ProfileSwitcher() {
     setNewName('')
     if (returnFocus) triggerRef.current?.focus()
   }
+
+  useEffect(() => {
+    if (!open) return
+    function onDocClick(e) {
+      if (menuRef.current && !menuRef.current.contains(e.target)) closeMenu()
+    }
+    document.addEventListener('mousedown', onDocClick)
+    return () => document.removeEventListener('mousedown', onDocClick)
+  }, [open])
+
+  if (!profiles) return null // nothing to show before the client-only profile list has loaded
 
   const active = profiles.find(p => p.isActive) || profiles[0]
 
