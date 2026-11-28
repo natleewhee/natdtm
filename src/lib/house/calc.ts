@@ -43,7 +43,7 @@ export function yearsBetween(startISO: string, endISO: string): number {
   return (end - start) / MS_PER_DAY / DAYS_PER_YEAR
 }
 
-// Reducing-balance loan maths lives in src/lib/shared/loan.js (one
+// Reducing-balance loan maths lives in src/lib/shared/loan.ts (one
 // implementation for every engine); these names are kept because
 // HouseMuch, MyLedger's property moves and their tests import them.
 import { monthlyPayment, balanceAfter } from '../shared/loan.ts'

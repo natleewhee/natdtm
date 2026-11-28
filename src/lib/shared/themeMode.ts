@@ -1,6 +1,6 @@
 // src/lib/shared/themeMode.ts
 // Light/dark mode resolution and switching. Same shape as
-// src/lib/shared/profile.js's change-broadcast pattern: a synthetic
+// src/lib/shared/profile.ts's change-broadcast pattern: a synthetic
 // window event so every subscriber (the toggle, the app-wide remount
 // wrapper) hears a switch in the same tab, no React context needed.
 //
@@ -12,7 +12,7 @@
 //     see theme.js's block comment for why those mutate in place rather
 //     than getting reassigned. Components that read `C.x` in an inline
 //     style only see the new value on their NEXT render, which is why
-//     ThemeBoot (src/components/shared/ThemeBoot.js) remounts the app
+//     ThemeBoot (src/components/shared/ThemeBoot.tsx) remounts the app
 //     subtree on a mode change.
 import { applyMode as applyShared } from './theme.ts'
 import { applyMode as applyDrive } from '../drive/theme.ts'
@@ -47,7 +47,7 @@ export function getSystemMode(): 'light'|'dark' {
  * The mode actually in effect: the user's stored choice if they've made
  * one, else the system preference. Safe to call during SSR (`hasWindow`
  * guards it) — always resolves 'dark' there, matching the server-rendered
- * `<html data-theme="dark">` default in src/app/layout.js.
+ * `<html data-theme="dark">` default in src/app/layout.tsx.
  * @returns {'light'|'dark'}
  */
 export function getEffectiveMode(): 'light'|'dark' {

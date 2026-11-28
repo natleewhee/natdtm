@@ -24,7 +24,7 @@ test('registry: ids, routes and math routes are unique and well-formed', () => {
 test('registry: every landing and the-math route has a page on disk', () => {
   for (const t of TOOLS) {
     for (const route of [t.route, t.mathRoute, ...t.sitemap.map((s) => s.path)]) {
-      assert.ok(existsSync(join(ROOT, 'src/app', route, 'page.js')), `missing page for ${route}`)
+      assert.ok(existsSync(join(ROOT, 'src/app', route, 'page.tsx')), `missing page for ${route}`)
     }
   }
 })
@@ -63,13 +63,13 @@ test('no shell file hard-codes the tool list', () => {
   // 'href="/tax/the-math"' in any of them means a second tool list has
   // crept back in.
   const SHELL = [
-    'src/app/page.js',
-    'src/app/sitemap.js',
-    'src/components/shared/ShellHeader.js',
-    'src/components/shared/Footer.js',
-    'src/components/shared/TabBar.js',
-    'src/app/manifest.js',
-    'src/app/sw.js/route.js',
+    'src/app/page.tsx',
+    'src/app/sitemap.ts',
+    'src/components/shared/ShellHeader.tsx',
+    'src/components/shared/Footer.tsx',
+    'src/components/shared/TabBar.tsx',
+    'src/app/manifest.ts',
+    'src/app/sw.js/route.ts',
   ]
   const literal = new RegExp(`["'\`]/(${TOOLS.map((t) => t.id).join('|')})(/the-math)?["'\`]`)
   for (const f of SHELL) {

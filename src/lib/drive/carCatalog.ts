@@ -4,7 +4,7 @@
 // supabase/migrations/0001_reference_data.sql) and the app's existing car
 // object shape (camelCase, historically read straight from
 // public/data/cars.json). Kept in one place so the API route
-// (src/app/drive/api/car-catalog/route.js) and the refresh script
+// (src/app/drive/api/car-catalog/route.ts) and the refresh script
 // (scripts/refresh-cars.mjs) can't drift into two different ideas of what
 // a "car" looks like.
 //

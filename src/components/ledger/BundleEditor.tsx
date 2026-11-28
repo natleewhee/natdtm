@@ -1,0 +1,31 @@
+'use client'
+
+// The three assumption bundles — Conservative / Base / Optimistic — each
+// a fixed (equity return, property appreciation, inflation) triple.
+// Editing any rate re-runs every scenario (R12).
+
+import { C } from '@/lib/shared/theme'
+import { parseMoney } from '@/lib/shared/money'
+import { BUNDLE_KEYS } from '@/lib/ledger/scenario/index'
+import { PercentInput } from '@/components/shared/inputs'
+
+const num = parseMoney
+const NAME: Record<string, any> = { conservative: 'Conservative', base: 'Base', optimistic: 'Optimistic' }
+
+export default function BundleEditor({ bundles, onChange }: { bundles?: any; onChange?: any; }) {
+  const setRate = (key: string, field: string) => (e: any) =>
+    onChange({ ...bundles, [key]: { ...bundles[key], [field]: num(e.target.value) } })
+
+  return (
+    <div style={{ display: 'grid', gap: 10 }}>
+      {BUNDLE_KEYS.map((key) => (
+        <div key={key} className="ledger-bundle-row" style={{ display: 'grid', gridTemplateColumns: '110px repeat(3, 1fr)', gap: 10, alignItems: 'end' }}>
+          <div style={{ fontSize: C.sm, fontWeight: 700, color: key === 'base' ? C.primary : C.muted, paddingBottom: 10 }}>{NAME[key]}</div>
+          <PercentInput id={`bundle-${key}-equity`} label="Equity return" value={String(bundles[key].equityReturn)} onChange={setRate(key, 'equityReturn')} />
+          <PercentInput id={`bundle-${key}-property`} label="Property appr." value={String(bundles[key].propertyAppreciation)} onChange={setRate(key, 'propertyAppreciation')} />
+          <PercentInput id={`bundle-${key}-inflation`} label="Inflation" value={String(bundles[key].inflation)} onChange={setRate(key, 'inflation')} />
+        </div>
+      ))}
+    </div>
+  )
+}

@@ -76,12 +76,12 @@ export const C = { ...DARK }
  * Switches the shared token object to light or dark values in place.
  * Vertical `theme.js` files that spread `{ ...BASE }` for their own `C`
  * export a matching `applyMode` that calls this and re-applies their own
- * extra keys — see src/lib/drive/theme.js for the pattern.
+ * extra keys — see src/lib/drive/theme.ts for the pattern.
  * @param {'light'|'dark'} mode
  */
 export function applyMode(mode: 'light'|'dark') {
   Object.assign(C, mode === 'light' ? LIGHT : DARK)
 }
 
-// Money formatting and parsing moved to src/lib/shared/money.js — this
+// Money formatting and parsing moved to src/lib/shared/money.ts — this
 // file holds design tokens only.

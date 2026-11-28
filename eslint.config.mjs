@@ -21,9 +21,9 @@ const eslintConfig = defineConfig([
     // needs no exception. Replaces every scattered inline
     // eslint-disable for the rule (see docs/plans/2026-08-30 U6).
     files: [
-      "src/app/**/page.js",
-      "src/components/drive/CarPicker.js",
-      "src/components/ledger/CapacityModule.js",
+      "src/app/**/page.tsx",
+      "src/components/drive/CarPicker.tsx",
+      "src/components/ledger/CapacityModule.tsx",
     ],
     rules: {
       "react-hooks/set-state-in-effect": "off",

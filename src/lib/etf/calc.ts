@@ -164,7 +164,7 @@ export function computeLookThrough(allocations: Array<{etf: Record<string, any>,
  * @returns {{title: string, description: string, allocations: Array<{etf: object, percentage: number}>, whyItWorks: string}}
  *   The generated portfolio.
  */
-export function generatePortfolio(prefs: {simplicity: string, risk: string, tilts: string[]}): {title: string, description: string, allocations: Array<{etf: Record<string, any>, percentage: number}>, whyItWorks: string} {
+export function generatePortfolio(prefs: {simplicity: string, risk: string, tilts: string[], monthlyInvestment?: string | number}): {title: string, description: string, allocations: Array<{etf: Record<string, any>, percentage: number}>, whyItWorks: string} {
   let allocations: { etf: Record<string,any>; percentage: number }[]|{ etf: { ticker: string; name: string; region: string; ter: number; exchange: string; description: string }; percentage: number }[] = [], title = '', description = '', whyItWorks = ''
 
   if (prefs.simplicity === '1 ETF') {

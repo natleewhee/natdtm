@@ -1,5 +1,5 @@
 // src/lib/ledger/scenario/adapt.ts
-// Maps the shared "My Numbers" store (src/lib/shared/profile.js) into the
+// Maps the shared "My Numbers" store (src/lib/shared/profile.ts) into the
 // baseState / retireAssumptions shapes runScenario (index.js) expects.
 // Kept separate from the page so the mapping is unit-testable and shared
 // by /ledger and the /ledger/preview slice. Pure — no React, no fetch.
@@ -36,7 +36,7 @@ export const EMPTY_POSITION = {
   // Your share (0-100) of a JOINT mortgage's instalment, for TDSR purposes
   // only — blank means "not joint, it's all yours" (100%). This is a
   // lighter-weight manual-% version of HouseMuch's own income-weighted
-  // joint-loan support (src/app/house/page.js), for someone typing
+  // joint-loan support (src/app/house/page.tsx), for someone typing
   // numbers directly into the planner without having used HouseMuch.
   mortgageSharePct: '',
   carValue: '', loansMonthly: '', loansYearsLeft: '',

@@ -196,7 +196,7 @@ export const FATE = { KEPT: 'kept', GONE: 'gone', INVESTED: 'invested', NEUTRAL:
 // Which tool a figure came from, for the hover-to-explain UI. `tool` is
 // a display name, `href` a link to that tool (null when the figure is
 // computed here rather than synced, or purely user-entered).
-export const SOURCE = {
+export const SOURCE: Record<string, { tool: string; href: string | null }> = {
   salary: { tool: 'RetireWell / DriveReady', href: '/retire' },
   age: { tool: 'TaxWise', href: '/tax' },
   cpf: { tool: 'CPF Board contribution tables (computed here)', href: null },

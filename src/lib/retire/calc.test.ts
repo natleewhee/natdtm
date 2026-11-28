@@ -351,7 +351,7 @@ assert('With no salary, bonus alone still escalates at the assumed growth rate, 
 // ─── Segmented-driver continuation inputs (frozenFRS / frozenBHS) ────────
 // simulateAccumulation gained two optional inputs so the scenario
 // planner can run one projection as back-to-back segments (see
-// src/lib/ledger/scenario/project.js). These characterization checks pin
+// src/lib/ledger/scenario/project.ts). These characterization checks pin
 // that every EXISTING caller — which passes neither key — is completely
 // unaffected, and that the new lever actually takes effect when used.
 const charInputs = {

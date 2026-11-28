@@ -31,13 +31,13 @@ and citing its sources.
 | Route | What it does |
 |---|---|
 | `/` | With numbers saved: a "Your money" dashboard (net worth, free to invest, TDSR, Insurance Score, tax, CPF), each tile linking to its tool with a "checked N days ago" stamp, plus up to three cross-tool insights. Without: a "Set up my numbers" card. The tool grid is always below. |
-| `/start` | Six skippable questions that fill every tool's slot at once (`lib/shared/onboarding.js`). Never overwrites a value typed in a tool. |
+| `/start` | Six skippable questions that fill every tool's slot at once (`lib/shared/onboarding.ts`). Never overwrites a value typed in a tool. |
 | `/me` | Profiles, backup download/restore, and **Send to my phone**: a QR code / link carrying the numbers in the URL fragment, which browsers never send to a server. |
 | `/import` | The receiving end of a transfer link; confirms before replacing. |
 
-Insights (`lib/shared/insights.js`) state calculated facts and link to the
+Insights (`lib/shared/insights.ts`) state calculated facts and link to the
 working; they never recommend a product. TaxWise results can be shared as
-a link carrying only the inputs (`lib/shared/share.js`); opening one is
+a link carrying only the inputs (`lib/shared/share.ts`); opening one is
 view-only until the visitor keeps the numbers.
 
 ## Structure
@@ -126,7 +126,7 @@ layout), the form kit in `inputs.js`, and the site-wide `ShellHeader` /
 
 ## Installable app
 
-The whole site is one PWA: `src/app/manifest.js` (PNG + maskable icons
+The whole site is one PWA: `src/app/manifest.ts` (PNG + maskable icons
 in `public/icons/`) and a service worker served from
 `src/app/sw.js/route.js`, generated at build time from the tool registry
 (scope `/`). Pages are network-first with an offline fallback; static

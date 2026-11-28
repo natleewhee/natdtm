@@ -1,7 +1,7 @@
 // src/lib/shared/structuredData.ts
 // schema.org JSON-LD for search engines (super-app plan U12), built from
 // the tool registry so names, routes and descriptions never drift. Pure
-// data; rendered by components/shared/JsonLd.js.
+// data; rendered by components/shared/JsonLd.tsx.
 //
 // Only facts the site actually states are described: each tool is a free
 // web application, and each the-math page is a methodology article for

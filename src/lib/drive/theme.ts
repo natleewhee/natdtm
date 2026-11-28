@@ -1,5 +1,5 @@
 // src/lib/drive/theme.ts
-// DriveReady's tokens are the shared set (src/lib/shared/theme.js) —
+// DriveReady's tokens are the shared set (src/lib/shared/theme.ts) —
 // `iceBg`/`iceText` live in the shared DARK/LIGHT dictionaries since
 // they're just another semantic pair, not a Drive-only key.
 // Pure data — safe to import from both client components and the calc engine.
@@ -26,7 +26,7 @@ export const RATE_TIERS = [
   { id:'tesla', label:'Tesla Preferential', sub:'Tesla models only', rate:0.0168, display:'1.68%', color:'#c4b5fd',   bg:'#241c33' },
 ]
 
-// SGD formatting and the k/m money parser live in src/lib/shared/money.js
+// SGD formatting and the k/m money parser live in src/lib/shared/money.ts
 // (`SGD`, `parseMoneyOrNull`).
 
 // Coarse Singapore-market popularity by brand — a transparent heuristic for

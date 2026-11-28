@@ -1,0 +1,254 @@
+'use client'
+
+import { useState } from 'react'
+import { useRouter } from 'next/navigation'
+import ShellHeader from '@/components/shared/ShellHeader'
+import MathTOC from '@/components/shared/MathTOC'
+import { C } from '@/lib/drive/theme'
+
+function slug(title: string) {
+  return title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '')
+}
+
+function Section({ title, children, noBorder }: { title?: any; children?: any; noBorder?: any; }) {
+  return (
+    <div id={title ? slug(title) : undefined} style={{ paddingTop: 36, borderTop: noBorder ? 'none' : `1px solid ${C.border}`, marginTop: noBorder ? 0 : 8, scrollMarginTop: 80 }}>
+      {title && <h2 style={{ fontFamily: C.fontDisplay, fontSize: 22, color: C.primary, margin: '0 0 16px', lineHeight: 1.3 }}>{title}</h2>}
+      {children}
+    </div>
+  )
+}
+function BodyText({ children, muted }: { children?: any; muted?: any; }) {
+  return <p style={{ fontSize: 15, color: muted ? C.muted : C.text, lineHeight: 1.7, margin: '0 0 12px' }}>{children}</p>
+}
+function Formula({ children }: { children?: any; }) {
+  return (
+    <div style={{ fontFamily: C.fontMono, fontSize: 12, color: C.text, lineHeight: 1.8, margin: '10px 0', padding: '12px 14px', background: C.surface, borderRadius: 8, border: `1px solid ${C.border}`, whiteSpace: 'pre-wrap' }}>
+      {children}
+    </div>
+  )
+}
+function Caveat({ children }: { children?: any; }) {
+  return (
+    <div style={{ fontSize: 13, color: C.muted, lineHeight: 1.6, padding: '12px 16px', background: C.surface, borderRadius: 8, borderLeft: `3px solid ${C.border}`, marginTop: 10 }}>
+      {children}
+    </div>
+  )
+}
+function PillarCard({ color, emoji, title, badge, summary, expandContent }: { color?: any; emoji?: any; title?: any; badge?: any; summary?: any; expandContent?: any; }) {
+  const [open, setOpen] = useState(false)
+  const colors: Record<string, any> = {
+    teal:  { bg: C.greenBg, border: C.green, badgeBg: C.greenBg, badgeText: C.greenText },
+    amber: { bg: C.amberBg, border: C.amber, badgeBg: C.amberBg, badgeText: C.amberText },
+    blue:  { bg: C.blueBg, border: C.blue, badgeBg: C.blueBg, badgeText: C.blueText },
+    gray:  { bg: C.iceBg, border: C.faint, badgeBg: C.iceBg, badgeText: C.iceText },
+  }
+  const c = colors[color] || colors.gray
+  return (
+    <div style={{ background: C.surface, borderRadius: 14, border: `1px solid ${C.border}`, borderTop: `3px solid ${c.border}`, padding: 20, boxShadow: C.shadow }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10 }}>
+        <span style={{ fontSize: 20 }}>{emoji}</span>
+        <span style={{ fontFamily: C.fontDisplay, fontSize: 17, color: C.primary, flex: 1 }}>{title}</span>
+        <span style={{ padding: '2px 10px', borderRadius: 100, fontSize: 12, fontWeight: 700, background: c.badgeBg, color: c.badgeText }}>{badge}</span>
+      </div>
+      <p style={{ fontSize: 14, color: C.text, lineHeight: 1.6, margin: '0 0 8px' }}>{summary}</p>
+      <button onClick={() => setOpen(o => !o)} style={{ background: 'none', border: 'none', padding: '8px 0', cursor: 'pointer', fontSize: 13, fontWeight: 600, color: C.accent, display: 'flex', alignItems: 'center', gap: 6 }}>
+        <span style={{ display: 'inline-block', transition: 'transform 0.2s', transform: open ? 'rotate(90deg)' : 'none', fontSize: 12 }}>▶</span>
+        {open ? 'Hide details' : 'See how we calculate this'}
+      </button>
+      {open && (
+        <div style={{ marginTop: 8, padding: 16, background: C.bg, borderRadius: 10, borderLeft: `3px solid ${C.accent}` }}>
+          {expandContent}
+        </div>
+      )}
+    </div>
+  )
+}
+
+export default function TheMathPage() {
+  const router = useRouter()
+  return (
+    <div style={{ minHeight: '100vh', background: C.bg, fontFamily: C.fontBody, paddingBottom: 64 }}>
+
+      <ShellHeader title="The Math" onBack={() => router.back()} />
+
+      <div style={{ maxWidth: 680, margin: '0 auto', padding: '0 20px' }}>
+
+        {/* Hero */}
+        <Section noBorder>
+          <div style={{ paddingTop: 40, paddingBottom: 8 }}>
+            <h1 style={{ fontFamily: C.fontDisplay, fontSize: 'clamp(26px,5vw,36px)', color: C.primary, margin: '0 0 12px', lineHeight: 1.2 }}>How DriveReady calculates your numbers</h1>
+            <BodyText>DriveReady doesn&apos;t guess. Every figure (monthly instalment, depreciation, COE rebate, true cost) comes from Singapore&apos;s actual financing and vehicle regulations. Here&apos;s exactly what we do.</BodyText>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginTop: 16 }}>
+              {['MAS loan-to-value rules', 'Budget 2026 PARF schedule', 'LTA COE framework', 'ARF tiered structure'].map(tag => (
+                <span key={tag} style={{ fontSize: 12, color: C.accentText, background: C.accentBg, padding: '4px 12px', borderRadius: 100, fontWeight: 500 }}>✓ {tag}</span>
+              ))}
+            </div>
+          </div>
+        </Section>
+
+        <MathTOC items={[
+          { id: 'what-driveready-shows-you', label: 'What we show' },
+          { id: 'loan-calculation', label: 'Loan calculation' },
+          { id: 'affordability-verdict', label: 'Affordability verdict' },
+          { id: 'arf-additional-registration-fee', label: 'ARF' },
+          { id: 'parf-preferential-additional-registration-fee-rebate', label: 'PARF rebate' },
+          { id: 'coe-certificate-of-entitlement-rebate', label: 'COE rebate' },
+          { id: 'true-depreciation', label: 'True depreciation' },
+        ]} />
+
+        {/* TL;DR */}
+        <Section title="What DriveReady shows you">
+          <BodyText>Four things drive the true cost of owning a car in Singapore. DriveReady calculates all of them.</BodyText>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+            {[
+              { emoji: '💳', label: 'Monthly instalment',    desc: 'Based on your actual loan amount, the applicable flat rate, and your chosen tenure.' },
+              { emoji: '📉', label: 'Affordability verdict', desc: 'We compare your instalment against 30% of your take-home pay (after 20% CPF deduction). Above 45% is flagged as high.' },
+              { emoji: '🏚', label: 'Depreciation',          desc: 'True annual and monthly value loss: ARF paid, PARF rebate at sale, COE rebate, and paper value at your tenure.' },
+              { emoji: '💰', label: 'Cost of ownership',     desc: 'Total cash out at milestone years: downpayment plus all instalments, net of what you&apos;d recover.' },
+            ].map(item => (
+              <div key={item.label} style={{ display: 'flex', gap: 12, padding: 14, background: C.surface, borderRadius: 10, border: `1px solid ${C.border}`, alignItems: 'flex-start' }}>
+                <span style={{ fontSize: 20, flexShrink: 0 }}>{item.emoji}</span>
+                <div>
+                  <p style={{ margin: '0 0 3px', fontWeight: 600, fontSize: 14, color: C.primary }}>{item.label}</p>
+                  <p style={{ margin: 0, fontSize: 13, color: C.muted, lineHeight: 1.5 }}>{item.desc}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </Section>
+
+        {/* Loan & Rate Tiers */}
+        <Section title="Loan calculation">
+          <BodyText>We use MAS loan-to-value (LTV) rules which depend on the car&apos;s Open Market Value (OMV).</BodyText>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 16 }}>
+            {[
+              { label: 'Cat A (OMV ≤ S$20,000)',  loan: '70% max loan', down: '30% min downpayment', example: 'Most sedans, MPVs, smaller SUVs' },
+              { label: 'Cat B (OMV > S$20,000)',   loan: '60% max loan', down: '40% min downpayment', example: 'Larger SUVs, performance cars' },
+            ].map(row => (
+              <div key={row.label} style={{ padding: '12px 16px', background: C.surface, borderRadius: 10, border: `1px solid ${C.border}` }}>
+                <p style={{ margin: '0 0 4px', fontWeight: 600, fontSize: 14, color: C.primary }}>{row.label}</p>
+                <p style={{ margin: '0 0 2px', fontSize: 13, color: C.text }}>{row.loan} · {row.down}</p>
+                <p style={{ margin: 0, fontSize: 12, color: C.muted }}>{row.example}</p>
+              </div>
+            ))}
+          </div>
+          <Formula>{`Monthly instalment = (Loan × (1 + flat_rate × tenure)) ÷ (tenure × 12)
+
+Flat rates applied:
+  Standard ICE (petrol/diesel):    2.60% p.a.
+  Green (EV / hybrid):             2.08% p.a.  ← preferred rate for clean vehicles
+  Tesla preferential:              1.68% p.a.
+
+Your loan amount:
+  If downpayment > minimum required:
+    Loan = min(price − downpayment, max_loan)
+  Otherwise:
+    Loan = max_loan (and a shortfall is flagged)`}</Formula>
+          <Caveat>Tesla preferential rate applies only to Tesla models and is shown for comparison only. All other EVs and hybrids use the 2.08% green rate. Rates are indicative and subject to change by financial institutions.</Caveat>
+        </Section>
+
+        {/* Affordability */}
+        <Section title="Affordability verdict">
+          <BodyText>We use 20% as the CPF employee contribution estimate (standard rate for most Singaporean workers) to arrive at take-home pay.</BodyText>
+          <Formula>{`Take-home pay ≈ gross salary × 0.80
+
+Monthly burden ratio = monthly instalment ÷ take-home pay
+
+Verdicts:
+  ≤ 30%  → Affordable     (safe zone)
+  31–45% → Stretch        (manageable, limited buffer)
+  > 45%  → Out of Range   (caution: high financial stress risk)
+  
+  Also flagged: Insufficient Downpayment
+    (when cash on hand < required minimum downpayment)`}</Formula>
+          <Caveat>CPF rates vary by age and residency status. The 20% estimate applies to Singapore Citizens and PRs aged 35–55 earning above the CPF wage ceiling. Your actual take-home may differ.</Caveat>
+        </Section>
+
+        {/* ARF */}
+        <Section title="ARF: Additional Registration Fee">
+          <BodyText>ARF is a tax paid at registration, calculated as a percentage of the car&apos;s OMV. It&apos;s part of what you pay at purchase and what you recover (partly) at deregistration.</BodyText>
+          <Formula>{`ARF tiers (tiered on OMV, effective Feb 2023):
+  OMV up to S$20,000:           100% of OMV
+  OMV S$20,001 – S$40,000:      140% on the excess
+  OMV S$40,001 – S$60,000:      190% on the excess
+  OMV S$60,001 – S$80,000:      250% on the excess
+  OMV above S$80,000:           320% on the excess
+
+Example (OMV = S$50,000):
+  ARF = (20,000 × 100%) + (20,000 × 140%) + (10,000 × 190%)
+      = S$20,000 + S$28,000 + S$19,000 = S$67,000`}</Formula>
+        </Section>
+
+        {/* PARF */}
+        <Section title="PARF: Preferential Additional Registration Fee rebate">
+          <BodyText>When you deregister your car (scrap or export), you get back a portion of the ARF you paid. This is the PARF rebate. It decreases the longer you keep the car.</BodyText>
+          <Formula>{`PARF schedule: cars with COEs from the 2nd Feb 2026 bidding exercise onwards:
+  Deregistered at year ≤5:    30% of ARF paid (capped at S$30,000)
+  Deregistered at year 6:     25% of ARF paid (capped at S$30,000)
+  Deregistered at year 7:     20% of ARF paid (capped at S$30,000)
+  Deregistered at year 8:     15% of ARF paid (capped at S$30,000)
+  Deregistered at year 9:     10% of ARF paid (capped at S$30,000)
+  Deregistered at year 10:     5% of ARF paid (capped at S$30,000)
+  After year 10:                0% (no PARF rebate)
+
+PARF schedule: earlier cars (COE before that exercise):
+  Deregistered at year ≤5:    75% of ARF paid (capped at S$60,000)
+  Deregistered at year 6:     70% of ARF paid (capped at S$60,000)
+  Deregistered at year 7:     65% of ARF paid (capped at S$60,000)
+  Deregistered at year 8:     60% of ARF paid (capped at S$60,000)
+  Deregistered at year 9:     55% of ARF paid (capped at S$60,000)
+  Deregistered at year 10:    50% of ARF paid (capped at S$60,000)
+  After year 10:                0% (no PARF rebate)`}</Formula>
+          <Caveat>Budget 2026 cut the PARF schedule and halved the cap to S$30,000 for cars registered with COEs from the second February 2026 bidding exercise (16–20 Feb) onwards. Cars registered before that keep the earlier schedule for life, so the schedule used here depends on the car&apos;s registration date: a car you are buying new today gets the revised one, while a used car is matched by its age. (The S$60,000 cap on the earlier schedule dates from Budget 2023.) Source: LTA news release, 12 Feb 2026. Always verify current rates on the LTA website.</Caveat>
+          <Caveat>EV Early Adoption Incentive (EEAI): pure EVs get 45% off ARF, capped by registration year: S$20,000 (2021–23), S$15,000 (2024–25) and S$7,500 (2026). Used EVs are given the cap of the year they were registered. The incentive ceases for registrations from 1 January 2027, after which this calculator applies none. A car registered late in December may land in January once delivered, so check the registration date with the dealer.</Caveat>
+          <Caveat>Vehicle Emissions Scheme (VES): each car&apos;s emissions band sets a rebate or surcharge on ARF. For cars registered in 2026: band A (EVs) S$22,500 rebate, B none, C1 S$7,500, C2 S$22,500 and C3 S$35,000 surcharge. From 1 January 2027: A S$20,000 rebate, C1 S$15,000, C2 S$30,000, C3 S$45,000 surcharge; the calculator switches automatically. Hybrids no longer get rebates. Source: LTA OneMotoring, tax structure.</Caveat>
+        </Section>
+
+        {/* COE */}
+        <Section title="COE: Certificate of Entitlement rebate">
+          <BodyText>Your COE entitles you to use the vehicle for 10 years. If you deregister early, you get back the unused portion pro-rated by remaining months.</BodyText>
+          <Formula>{`COE rebate = (remaining months ÷ 120) × COE paid
+
+COE paid is NOT estimated by subtracting costs from price. It's taken
+directly: the live Cat A/B premium from data.gov.sg's mirror of LTA's
+COE dataset when available, or the last-known fallback premium
+otherwise, matched to your car's own category (Cat A: OMV ≤ S$20,000,
+Cat B: above).
+
+This is an estimate where fallback figures are used. Actual COE
+premiums change every bidding exercise.`}</Formula>
+        </Section>
+
+        {/* Depreciation */}
+        <Section title="True depreciation">
+          <BodyText>Depreciation is the difference between what you paid and what you&apos;d get back if you deregistered the car today. It&apos;s the biggest hidden cost most buyers overlook.</BodyText>
+          <Formula>{`Paper value at year Y = PARF rebate (Y) + COE rebate (Y)
+
+Total depreciation = price paid − paper value
+Annual depreciation = total depreciation ÷ Y
+Monthly depreciation = annual depreciation ÷ 12
+
+True effective monthly cost = instalment + monthly depreciation`}</Formula>
+          <Caveat>Paper value reflects Singapore regulatory rebates, not resale market value. Actual resale prices may be higher or lower depending on demand, condition, and remaining COE.</Caveat>
+        </Section>
+
+        {/* Why free */}
+        <div style={{ marginTop: 36, padding: 20, background: C.ndtm, borderRadius: 14 }}>
+          <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.5)', textTransform: 'uppercase', letterSpacing: '0.06em', margin: '0 0 10px' }}>Why this is free</p>
+          <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.8)', lineHeight: 1.7, margin: 0 }}>
+            DriveReady has no ads, no affiliate links, and no dealer referral fees. We don&apos;t earn anything when you use it. It&apos;s free because Singaporeans deserve to know the real numbers before they sign a hire-purchase agreement.
+          </p>
+        </div>
+
+        {/* Disclaimer */}
+        <div style={{ marginTop: 36, paddingTop: 24, borderTop: `1px solid ${C.border}` }}>
+          <p style={{ fontSize: 12, color: C.muted, lineHeight: 1.6, margin: '0 0 6px' }}>
+            DriveReady is an educational tool. It does not constitute financial advice. Car prices, COE premiums, and financing rates are indicative and subject to change. All figures should be verified with the relevant dealer, bank, and LTA before making a purchase decision.
+          </p>
+          <p style={{ fontSize: 12, color: C.muted, margin: 0 }}>Not affiliated with any insurer or MAS-licensed entity.</p>
+        </div>
+      </div>
+    </div>
+  )
+}

@@ -26,8 +26,8 @@ function definers(re: any) {
 const PRIMITIVES = ['SectionDivider', 'MoneyInput', 'PercentInput', 'NumberInput', 'TextInput', 'DateInput', 'SelectInput', 'Slider', 'Segmented', 'Toggle', 'OverrideField']
 
 for (const name of PRIMITIVES) {
-  test(`${name} is defined once, in components/shared/inputs.js`, () => {
-    assert.deepEqual(definers(new RegExp(`(function|const) ${name}\\b`)), ['src/components/shared/inputs.js'])
+  test(`${name} is defined once, in components/shared/inputs.tsx`, () => {
+    assert.deepEqual(definers(new RegExp(`(function|const) ${name}\\b`)), ['src/components/shared/inputs.tsx'])
   })
 }
 
@@ -43,7 +43,7 @@ test('the shared kit reads theme tokens at render, not at module load', () => {
   // C is mutated in place on a theme switch; a module-level object holding
   // C.* values would freeze the first mode's colours (seen as unreadable
   // labels in light mode).
-  const src = readFileSync(join(ROOT, 'src/components/shared/inputs.js'), 'utf8')
+  const src = readFileSync(join(ROOT, 'src/components/shared/inputs.tsx'), 'utf8')
   const moduleLevel = src.split('\n').filter((l) => /^const \w+ = \{[^}]*\bC\.\w+/.test(l))
   assert.deepEqual(moduleLevel, [])
 })

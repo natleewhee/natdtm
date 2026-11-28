@@ -2,11 +2,11 @@
 // The single source of truth for which tools natdtm ships. The home page,
 // the shell header's tool switcher, the shell footer (the-math links and
 // per-vertical disclaimers) and the sitemap all read from here; no other
-// shell file lists the tools (enforced by tools.test.js).
+// shell file lists the tools (enforced by tools.test.ts).
 //
 // Plain data only — no JSX, no React — so it is safe to import from server
 // components, route handlers (sitemap.js) and the pure calc engines alike.
-// Icons are referenced by `id` and drawn by components/shared/ToolIcon.js.
+// Icons are referenced by `id` and drawn by components/shared/ToolIcon.tsx.
 
 /**
  * @typedef {Object} Tool
