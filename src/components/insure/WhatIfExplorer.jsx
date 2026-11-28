@@ -56,7 +56,7 @@ export default function WhatIfExplorer({ inputs }) {
                 borderRadius: '100px',
                 border: `1.5px solid ${active ? 'var(--color-accent)' : 'var(--color-border)'}`,
                 background: active ? 'var(--color-accent)' : 'var(--color-surface)',
-                color: active ? 'var(--l-accent-ink)' : 'var(--color-primary)',
+                color: active ? 'var(--color-primary-text)' : 'var(--color-primary)',
                 fontSize: '13px',
                 fontWeight: '500',
                 cursor: 'pointer',

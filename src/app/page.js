@@ -14,19 +14,19 @@ export default function HomePage() {
       }}>
         <span style={{ width: 5, height: 5, borderRadius: '50%', background: 'var(--color-accent)' }} />
         <span style={{
-          fontFamily: 'var(--l-font-mono)', fontSize: 11, letterSpacing: '.06em',
+          fontFamily: 'var(--font-mono)', fontSize: 11, letterSpacing: '.06em',
           color: 'var(--color-accent-text)',
         }}>
           {toolCountWord()} calculators, one household
         </span>
       </div>
       <h1 style={{
-        fontFamily: 'var(--l-font-display)', fontWeight: 600, fontSize: 'clamp(28px,4vw,42px)',
+        fontFamily: 'var(--font-display)', fontWeight: 600, fontSize: 'clamp(28px,4vw,42px)',
         lineHeight: 1.1, letterSpacing: '-0.01em', margin: '0 0 16px', maxWidth: '18ch',
       }}>
         The math behind your biggest Singapore money decisions.
       </h1>
-      <p style={{ color: 'var(--l-sub)', maxWidth: '58ch', fontSize: 16, margin: '0 0 32px' }}>
+      <p style={{ color: 'var(--color-muted)', maxWidth: '58ch', fontSize: 16, margin: '0 0 32px' }}>
         No accounts, no upsells. Each tool shows exactly how it got to its answer:
         pick the decision you&apos;re facing.
       </p>
@@ -41,10 +41,10 @@ export default function HomePage() {
             <div className="home-tool-icon">
               <ToolIcon id={t.id} />
             </div>
-            <p style={{ fontFamily: 'var(--l-font-display)', fontWeight: 600, fontSize: 19, margin: '0 0 8px' }}>
+            <p style={{ fontFamily: 'var(--font-display)', fontWeight: 600, fontSize: 19, margin: '0 0 8px' }}>
               {t.name}
             </p>
-            <p style={{ fontSize: 13.5, color: 'var(--l-sub)', margin: '0 0 18px', lineHeight: 1.5 }}>
+            <p style={{ fontSize: 13.5, color: 'var(--color-muted)', margin: '0 0 18px', lineHeight: 1.5 }}>
               {t.desc}
             </p>
             <span className="home-tool-cta">the math →</span>

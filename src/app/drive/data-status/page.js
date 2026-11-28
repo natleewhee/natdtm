@@ -81,8 +81,8 @@ function Card({ title, subtitle, tone, verdict, children }) {
   return (
     <section style={{ border: `1px solid ${C.border}`, borderRadius: 4, padding: '20px 22px', marginBottom: 16 }}>
       <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap', marginBottom: 4 }}>
-        <h2 style={{ fontFamily: 'var(--l-font-display)', fontWeight: 600, fontSize: 17, margin: 0 }}>{title}</h2>
-        <span style={{ display: 'flex', alignItems: 'center', fontFamily: 'var(--l-font-mono)', fontSize: 12, fontWeight: 700, color: toneColor(tone) }}>
+        <h2 style={{ fontFamily: 'var(--font-display)', fontWeight: 600, fontSize: 17, margin: 0 }}>{title}</h2>
+        <span style={{ display: 'flex', alignItems: 'center', fontFamily: 'var(--font-mono)', fontSize: 12, fontWeight: 700, color: toneColor(tone) }}>
           <Dot tone={tone} />{verdict}
         </span>
       </div>
@@ -96,7 +96,7 @@ function Row({ label, value, mono }) {
   return (
     <div style={{ display: 'flex', justifyContent: 'space-between', gap: 16, padding: '7px 0', borderTop: `1px solid ${C.border}`, fontSize: 13 }}>
       <span style={{ color: C.muted }}>{label}</span>
-      <span style={{ fontFamily: mono ? 'var(--l-font-mono)' : undefined, fontWeight: mono ? 700 : 400, textAlign: 'right' }}>{value}</span>
+      <span style={{ fontFamily: mono ? 'var(--font-mono)' : undefined, fontWeight: mono ? 700 : 400, textAlign: 'right' }}>{value}</span>
     </div>
   )
 }
@@ -108,7 +108,7 @@ function FixNote({ text }) {
       fontSize: 12.5, lineHeight: 1.55, color: C.text, background: C.surface,
       border: `1px solid ${C.border}`, borderRadius: 4, padding: '10px 12px', margin: '14px 0 0',
     }}>
-      <strong style={{ fontFamily: 'var(--l-font-mono)', fontSize: 12, letterSpacing: '.06em', textTransform: 'uppercase', color: C.muted, display: 'block', marginBottom: 4 }}>What to do</strong>
+      <strong style={{ fontFamily: 'var(--font-mono)', fontSize: 12, letterSpacing: '.06em', textTransform: 'uppercase', color: C.muted, display: 'block', marginBottom: 4 }}>What to do</strong>
       {text}
     </p>
   )
@@ -168,13 +168,13 @@ export default function DataStatusPage() {
       <ShellHeader title="Data status" breadcrumb="Drive" backHref="/drive" />
       <div className="shell-wrap" style={{ padding: '40px 24px 72px', maxWidth: 760 }}>
         <p style={{
-          fontFamily: 'var(--l-font-mono)', fontSize: 12, letterSpacing: '.12em',
+          fontFamily: 'var(--font-mono)', fontSize: 12, letterSpacing: '.12em',
           textTransform: 'uppercase', color: C.muted, margin: '0 0 12px',
         }}>
           LTA data health
         </p>
         <h1 style={{
-          fontFamily: 'var(--l-font-display)', fontWeight: 600, fontSize: 'clamp(24px,3.2vw,32px)',
+          fontFamily: 'var(--font-display)', fontWeight: 600, fontSize: 'clamp(24px,3.2vw,32px)',
           lineHeight: 1.15, margin: '0 0 12px',
         }}>
           Is the data feeding into the calculator fresh?
@@ -233,7 +233,7 @@ export default function DataStatusPage() {
               type="button"
               onClick={() => { setCoe(null); setCars(null); setTick(t => t + 1) }}
               style={{
-                fontFamily: 'var(--l-font-mono)', fontSize: 12, letterSpacing: '.06em',
+                fontFamily: 'var(--font-mono)', fontSize: 12, letterSpacing: '.06em',
                 textTransform: 'uppercase', padding: '10px 18px', borderRadius: 4,
                 border: `1px solid ${C.border}`, background: C.surface, color: C.text, cursor: 'pointer',
               }}

@@ -373,7 +373,7 @@ function ActionPlan({ items }) {
                 justifyContent: 'center',
                 marginTop: '1px',
               }}>
-                {isChecked && <span style={{ color: 'var(--l-accent-ink)', fontSize: '12px', fontWeight: '700' }}>✓</span>}
+                {isChecked && <span style={{ color: 'var(--color-primary-text)', fontSize: '12px', fontWeight: '700' }}>✓</span>}
               </div>
               <div>
                 <p style={{
@@ -622,7 +622,7 @@ export default function ResultsPage() {
               width: '100%',
               padding: '15px',
               background: 'var(--color-accent)',
-              color: 'var(--l-accent-ink)',
+              color: 'var(--color-primary-text)',
               border: 'none',
               borderRadius: 'var(--radius-md)',
               fontSize: '16px',
@@ -812,7 +812,7 @@ export default function ResultsPage() {
                 width: '100%',
                 padding: '15px',
                 background: 'var(--color-accent)',
-                color: 'var(--l-accent-ink)',
+                color: 'var(--color-primary-text)',
                 border: 'none',
                 borderRadius: 'var(--radius-md)',
                 fontSize: '16px',

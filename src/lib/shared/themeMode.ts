@@ -7,7 +7,7 @@
 // Applying a mode does two independent things, both required:
 //  1. Sets `data-theme` on <html> — the CSS custom properties in
 //     globals.css key off that attribute, so anything styled with
-//     var(--color-*) / var(--l-*) updates INSTANTLY, no re-render needed.
+//     var(--color-*) updates INSTANTLY, no re-render needed.
 //  2. Calls applyMode() on the shared (and per-vertical) token objects —
 //     see theme.js's block comment for why those mutate in place rather
 //     than getting reassigned. Components that read `C.x` in an inline
